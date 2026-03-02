@@ -5,13 +5,13 @@ window.Icon = ({ name, size = 24, className = "" }) => {
 
     useEffect(() => {
         if (window.lucide && iconRef.current) {
-            // Vi rensar och skapar om ikonen manuellt så React inte tappar bort noden
+            // Rensa gammalt innehåll för att undvika removeChild-fel
             iconRef.current.innerHTML = ''; 
             const i = document.createElement('i');
             i.setAttribute('data-lucide', name);
-            i.className = className;
             i.style.width = `${size}px`;
             i.style.height = `${size}px`;
+            if (className) i.className = className;
             iconRef.current.appendChild(i);
             
             try {
@@ -22,7 +22,8 @@ window.Icon = ({ name, size = 24, className = "" }) => {
         }
     }, [name, size, className]);
 
-    return <span ref={iconRef} key={name} className="inline-flex shrink-0"></span>;
+    // Vi mappar name till key för att React ska rendera om korrekt vid sökning
+    return <span ref={iconRef} key={name} className="inline-flex"></span>;
 };
 
 // --- STATISK DATA ---
@@ -88,6 +89,158 @@ const CarSkeleton = () => (
     </div>
 );
 
+const CarCard = ({ car, handleShare, setFinanceCar, calculateMonthlyCost }) => {
+    const [currentImg, setCurrentImg] = useState(0);
+    const [showDesc, setShowDesc] = useState(false); // Nytt state för att visa beskrivningen
+
+    const nextImg = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImg((prev) => (prev === car.images.length - 1 ? 0 : prev + 1));
+    };
+
+    const prevImg = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImg((prev) => (prev === 0 ? car.images.length - 1 : prev - 1));
+    };
+
+    return (
+        <article className="bg-brand-900 rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/50 transition-all group shadow-xl flex flex-col relative">
+            <div className="h-56 overflow-hidden relative bg-brand-950 flex items-center justify-center shrink-0 group/slider">
+                <img 
+                    src={car.images[currentImg]} 
+                    alt={`${car.brand} ${car.model}`} 
+                    loading="lazy" 
+                    className="w-full h-full object-cover transition-opacity duration-300" 
+                    onError={(e) => {e.target.src = "https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80"}} 
+                />
+                
+                {car.images.length > 1 && (
+                    <>
+                        <button onClick={prevImg} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-brand-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-20">
+                            <window.Icon name="chevron-left" size={18} />
+                        </button>
+                        <button onClick={nextImg} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-brand-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-all duration-300 z-20">
+                            <window.Icon name="chevron-right" size={18} />
+                        </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm">
+                            {car.images.map((_, idx) => (
+                                <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${currentImg === idx ? 'bg-brand-500 w-3' : 'bg-white/50'}`} />
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShare(car); }} className="absolute top-4 right-4 z-20 w-10 h-10 bg-brand-950/80 backdrop-blur hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg border border-white/10" title="Tipsa en vän">
+                    <window.Icon name="share-2" size={18} />
+                </button>
+
+                {/* NYA BADGES UPPETILL VÄNSTER */}
+                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                    {car.regNo && (
+                        <div className="bg-white text-black text-[10px] sm:text-xs font-bold px-2 py-1 border border-black/20 rounded shadow-md uppercase tracking-widest w-fit">
+                            {car.regNo}
+                        </div>
+                    )}
+                    {car.isEco && (
+                        <div className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md uppercase tracking-widest w-fit flex items-center gap-1">
+                            <window.Icon name="leaf" size={10} /> Miljöbil
+                        </div>
+                    )}
+                    {car.hasWarranty && (
+                        <div className="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md uppercase tracking-widest w-fit flex items-center gap-1">
+                            <window.Icon name="shield-check" size={10} /> Garanti
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="p-6 flex flex-col flex-grow">
+                <div className="text-brand-500 text-sm font-bold uppercase tracking-wider mb-1 flex justify-between items-center">
+                    <span>{car.brand}</span>
+                    {car.carfaxUrl && (
+                        <a href={car.carfaxUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                            <window.Icon name="file-text" size={12} /> CARFAX
+                        </a>
+                    )}
+                </div>
+                
+                <h3 className="text-xl font-bold text-white mb-3 line-clamp-2" title={car.model}>{car.model}</h3>
+                
+                {car.equipment.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {car.equipment.slice(0, 3).map((item, i) => (
+                            <span key={i} className="text-[10px] bg-brand-500/10 text-brand-500 border border-brand-500/20 px-2 py-1 rounded truncate max-w-[120px]" title={item}>{item}</span>
+                        ))}
+                    </div>
+                )}
+                
+                <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-4 text-sm text-slate-400">
+                    <div className="flex items-center gap-2"><window.Icon name="calendar" size={16} /> {car.year}</div>
+                    <div className="flex items-center gap-2"><window.Icon name="gauge" size={16} /> {car.mil}</div>
+                    <div className="flex items-center gap-2"><window.Icon name="settings-2" size={16} /> {car.gear}</div>
+                    <div className="flex items-center gap-2"><window.Icon name="fuel" size={16} /> {car.fuel}</div>
+                    {car.hp && <div className="flex items-center gap-2"><window.Icon name="zap" size={16} /> {car.hp} hk</div>}
+                    {car.passengers && <div className="flex items-center gap-2"><window.Icon name="users" size={16} /> {car.passengers} sits</div>}
+                </div>
+
+                {/* NYTT: FÄLL UT BESKRIVNING */}
+                {car.description && (
+                    <div className="mb-4">
+                        <button 
+                            onClick={() => setShowDesc(!showDesc)} 
+                            className="text-xs text-brand-500 hover:text-brand-400 flex items-center gap-1 font-semibold transition-colors"
+                        >
+                            <window.Icon name={showDesc ? "chevron-up" : "chevron-down"} size={14} />
+                            {showDesc ? "Dölj annonstext" : "Läs annonstext"}
+                        </button>
+                        <div className={`overflow-hidden transition-all duration-300 ${showDesc ? 'max-h-96 mt-2 opacity-100 overflow-y-auto pr-2 no-scrollbar' : 'max-h-0 opacity-0'}`}>
+                            <p className="text-xs text-slate-400 whitespace-pre-wrap leading-relaxed border-l-2 border-brand-500/30 pl-3">
+                                {car.description}
+                            </p>
+                        </div>
+                    </div>
+                )}
+                
+                <div className="border-t border-white/10 pt-4 mt-auto">
+                    <div className="flex justify-between items-end mb-4">
+                        <div>
+                            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                Kontantpris
+                                {car.showVat && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded border border-green-500/30">MOMS</span>}
+                            </div>
+                            {car.discountAmount > 0 && (
+                                <div className="text-xs text-red-400 line-through mb-0.5 decoration-red-400/50">
+                                    {(car.priceValue + car.discountAmount).toLocaleString('sv-SE')} kr
+                                </div>
+                            )}
+                            <div className="text-2xl font-black text-white flex items-center gap-2">
+                                {car.price}
+                                {car.discountAmount > 0 && (
+                                    <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full animate-pulse">
+                                        -{car.discountAmount.toLocaleString('sv-SE')} kr
+                                    </span>
+                                )}
+                            </div>
+                            {car.exVatPrice && <div className="text-[10px] text-slate-400 mt-1">{car.exVatPrice}</div>}
+                        </div>
+                        <button onClick={(e) => { e.preventDefault(); setFinanceCar(car); }} className="text-right hover:opacity-80 transition-opacity">
+                            <div className="text-[11px] font-bold text-brand-500 uppercase tracking-widest mb-1 flex items-center justify-end gap-1">
+                                Finansiering <window.Icon name="calculator" size={10} />
+                            </div>
+                            <div className="text-base font-bold text-white">Från {calculateMonthlyCost(car.price)} kr/mån</div>
+                        </button>
+                    </div>
+                    <a href={car.link} target="_blank" rel="noopener noreferrer" className="w-full bg-white/5 hover:bg-brand-500 text-white py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2">
+                        Se annons på Blocket <window.Icon name="external-link" size={18} />
+                    </a>
+                </div>
+            </div>
+        </article>
+    );
+};
+
 const App = () => {
     const [scrolled, setScrolled] = useState(false);
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -97,25 +250,47 @@ const App = () => {
     
     // MODAL STATE
     const [showOptimizationModal, setShowOptimizationModal] = useState(false);
-    
+
     const [cars, setCars] = useState([]);
     const [loadingCars, setLoadingCars] = useState(true);
     const [apiError, setApiError] = useState(false);
-
-    // Filter & Slider States
+    
+    // Filter States
     const [filterBrand, setFilterBrand] = useState("Alla");
     const [filterFuel, setFilterFuel] = useState("Alla");
-    const [maxPrice, setMaxPrice] = useState(1000000); 
-    const [maxMil, setMaxMil] = useState(30000);
+    const [filterGear, setFilterGear] = useState("Alla");
+    const [filterDrive, setFilterDrive] = useState("Alla"); // Alla, 2WD, 4WD
+    
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
+    const [minMil, setMinMil] = useState("");
+    const [maxMil, setMaxMil] = useState("");
+    const [minYear, setMinYear] = useState("");
+    const [maxYear, setMaxYear] = useState("");
+
+    const [equipmentFilters, setEquipmentFilters] = useState({
+        dragkrok: false,
+        backkamera: false,
+        farthallare: false,
+        motorvarmare: false,
+        panoramatak: false,
+        gps: false
+    });
+
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     
     const [searchTerm, setSearchTerm] = useState("");
-    const [financeCar, setFinanceCar] = useState(null); // Sparar vilken bil som räknas på
-    const [calcDownPayment, setCalcDownPayment] = useState(20); // %
+    const [financeCar, setFinanceCar] = useState(null);
+    const [calcDownPayment, setCalcDownPayment] = useState(20);
     const [calcMonths, setCalcMonths] = useState(72);
 
-    // Räkna ut det absolut lägsta miltalet och priset som finns i ditt lager just nu
-    const minMilInStock = cars.length > 0 ? Math.min(...cars.map(c => parseNumber(c.mil))) : 0;
-    const minPriceInStock = cars.length > 0 ? Math.min(...cars.map(c => parseNumber(c.price))) : 50000;
+    // Återställ-funktion för att nollställa allt snabbt
+    const resetFilters = () => {
+        setSearchTerm(""); setFilterBrand("Alla"); setFilterFuel("Alla"); 
+        setFilterGear("Alla"); setFilterDrive("Alla");
+        setMinPrice(""); setMaxPrice(""); setMinMil(""); setMaxMil(""); setMinYear(""); setMaxYear("");
+        setEquipmentFilters({ dragkrok: false, backkamera: false, farthallare: false, motorvarmare: false, panoramatak: false, gps: false });
+    };
 
     useEffect(() => {
         const consent = localStorage.getItem('bmg_cookie_consent');
@@ -151,61 +326,85 @@ const App = () => {
         return () => document.body.removeChild(script);
     }, []);
 
+    // HÄMTA BILAR VIA API (Felsäker version)
     useEffect(() => {
-        const loadBytbilCars = async () => {
-    setLoadingCars(true);
-    // VIKTIGT: Kontrollera att token är 100% korrekt. 
-    // Om den börjar med "eyJ..." är det en JWT och den ska fungera.
-    const API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5ieXRiaWwuY29tIiwic3ViIjoiYXBpLmJ5dGJpbC5jb20vdXNlcnMvYm1nbW90b3JncnVwcCIsImF1ZCI6WyJodHRwczovL2FkbWluLmJ5dGJpbC5jb20iXSwibmJmIjoxNzcyNDY1NDI0LCJpYXQiOjE3NzI0NjU0MjQsImV4cCI6bnVsbCwianRpIjoiMjdmZjk4YzUtNjFiMi00NTA4LWJhODUtNTJkZmI5ODJkNGJhIiwibGltaXQiOi0xLCJzY29wZXMiOnsiZ2V0LnZlaGljbGVzIjoiYm1nbW90b3JncnVwcCJ9fQ.h5khWExjXjaTMUKN9zQnqr0sNkyOEW_uVRbhv5f7630"; 
-    const targetUrl = "https://api.bytbil.com/v1/vehicles/bmgmotorgrupp";
-    
-    // Vi använder en proxy som är känd för att hantera Authorization-headers bättre
-    const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(targetUrl);
+        const fetchCars = async () => {
+            setLoadingCars(true);
+            setApiError(false);
+            
+            try {
+                let data; // Skapa en tom variabel för datan
+                
+                try {
+                    // PLAN A: Försök hämta live-data via Netlify (Fungerar när den är uppladdad)
+                    const response = await fetch("https://bmgmotorgrupp.netlify.app/.netlify/functions/getCars");
+                    if (!response.ok) throw new Error("Netlify-funktionen hittades inte");
+                    data = await response.json();
+                    console.log("Hämtade LIVE-data via Netlify!");
+                    
+                } catch (netlifyError) {
+                    // PLAN B: Netlify misslyckades (vi är antagligen på localhost eller GitHub). 
+                    // Faller tillbaka på din sparade fil bilar.json!
+                    console.log("Netlify-funktion ej tillgänglig. Hämtar från bilar.json istället...");
+                    
+                    const fallbackResponse = await fetch("./bilar.json");
+                    if (!fallbackResponse.ok) throw new Error("Hittade ingen bilar.json heller");
+                    data = await fallbackResponse.json();
+                }
 
-    try {
-        const response = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: {
-                // Vissa proxys kräver att vi skickar med dessa för att de ska skicka vidare din token
-                'Authorization': `Bearer ${API_TOKEN}`,
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                // --- HÄR FORTSÄTTER DIN VANLIGA KOD ---
+                const formattedCars = data.map(car => {
+                    // Hämta ALLA bilder istället för bara en
+                    let imageUrls = ["https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80"];
+                    if (car.images && car.images.length > 0) {
+                        imageUrls = car.images.map(img => {
+                            if (img.imageFormats && img.imageFormats.length > 0) {
+                                return img.imageFormats[0].url; 
+                            }
+                            return null;
+                        }).filter(url => url !== null);
+                    }
+
+                    let fuelName = "Okänd";
+                    if (car.fuels && car.fuels.length > 0) {
+                        fuelName = car.fuels[0].name;
+                    } else if (car.fuel) {
+                        fuelName = car.fuel;
+                    }
+
+                    return {
+                        id: car.id || Math.random(),
+                        brand: car.make || "Okänt märke",
+                        model: car.modelRaw || car.model || "Modell saknas",
+                        year: car.modelYear || "-",
+                        mil: car.milage ? `${car.milage.toLocaleString('sv-SE')} mil` : "0 mil",
+                        gear: car.gearBox || "Okänd",
+                        price: (car.price && car.price.value) ? `${car.price.value.toLocaleString('sv-SE')} kr` : "Ring för pris",
+                        fuel: fuelName,
+                        images: imageUrls, // <-- HÄR SPARAR VI ARRAYEN
+                        regNo: car.regNoHidden ? "*** ***" : (car.regNo || ""),
+                        equipment: car.equipment || [],
+                        hp: (car.additionalVehicleData && car.additionalVehicleData.engineEffectHp) ? car.additionalVehicleData.engineEffectHp : null,
+                        isAWD: (car.additionalVehicleData && car.additionalVehicleData.fourWheelDrive) ? true : false,
+                        carfaxUrl: (car.carfaxReport && car.carfaxReport.clickUrl) ? car.carfaxReport.clickUrl : null,
+                        description: car.description || "",
+                        isEco: car.isEco || false,
+                        hasWarranty: car.inWarrantyProgram || false,
+                        passengers: car.noPassangers || null,
+                        link: "https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" 
+                    };
+                });
+
+                setCars(formattedCars);
+            } catch (error) {
+                console.error("API-fel:", error);
+                setApiError(true);
+            } finally {
+                setLoadingCars(false);
             }
-        });
+        };
 
-        if (!response.ok) {
-            // Om vi får 404 här betyder det att Bytbil inte känner igen din token eller slutpunkt
-            throw new Error(`Status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // Bytbil returnerar ofta objektet under 'items' eller 'vehicles'
-        const rawVehicles = data.items || data.vehicles || (Array.isArray(data) ? data : []);
-
-        const formattedCars = rawVehicles.map(veh => ({
-            id: veh.id || veh.vehicleId || Math.random(),
-            brand: veh.make || 'Okänt märke',
-            model: veh.modelText || veh.model || 'Okänd modell',
-            year: veh.modelYear || '-',
-            mil: veh.mileage ? `${veh.mileage.toLocaleString('sv-SE')} mil` : '0 mil',
-            gear: veh.gearbox || '-',
-            price: veh.price ? `${veh.price.toLocaleString('sv-SE')} kr` : 'Ring för pris',
-            fuel: veh.fuelType || '-',
-            img: veh.images?.[0]?.url || 'https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80'
-        }));
-
-        setCars(formattedCars);
-        setApiError(false);
-    } catch (error) {
-        console.error("Bytbil API-fel:", error);
-        setApiError(true);
-    } finally {
-        setLoadingCars(false);
-    }
-};
-
-        loadBytbilCars();
+        fetchCars();
     }, []);
 
     // Dela-funktion (Web Share API)
@@ -225,37 +424,57 @@ const App = () => {
     };
 
     // KRASCHSÄKER FILTER LOGIK
+    // Unika listor för dropdowns
+    const uniqueBrands = ["Alla", ...new Set(cars.map(c => c.brand).filter(Boolean))].sort();
+    const uniqueFuels = ["Alla", ...new Set(cars.map(c => c.fuel).filter(Boolean))].sort();
+    const uniqueGears = ["Alla", ...new Set(cars.map(c => c.gear).filter(Boolean))].sort();
+
+    // KRASCHSÄKER FILTER LOGIK
     const filteredCars = useMemo(() => {
         try {
             let result = [...cars];
             
-            // Fritextsökning på märke och modell
+            // Fritextsökning
             if (searchTerm) {
+                const term = searchTerm.toLowerCase();
                 result = result.filter(c => 
-                    c.brand.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    c.model.toLowerCase().includes(searchTerm.toLowerCase())
+                    c.brand.toLowerCase().includes(term) || 
+                    c.model.toLowerCase().includes(term) ||
+                    c.regNo.toLowerCase().includes(term) // Lade till sökning på regnr!
                 );
             }
 
+            // Dropdowns
             if (filterBrand !== "Alla") result = result.filter(c => c.brand === filterBrand);
             if (filterFuel !== "Alla") result = result.filter(c => c.fuel === filterFuel);
+            if (filterGear !== "Alla") result = result.filter(c => c.gear === filterGear);
             
-            const safeMaxPrice = Number(maxPrice) || 0;
-            const safeMaxMil = Number(maxMil) || 0;
+            // Drivning
+            if (filterDrive === "4WD") result = result.filter(c => c.isAWD);
+            if (filterDrive === "2WD") result = result.filter(c => !c.isAWD);
 
-            result = result.filter(c => parseNumber(c.price) <= safeMaxPrice);
-            result = result.filter(c => parseNumber(c.mil) <= safeMaxMil);
+            // Spann: Pris, Mil, År
+            if (minPrice) result = result.filter(c => parseNumber(c.price) >= parseInt(minPrice));
+            if (maxPrice) result = result.filter(c => parseNumber(c.price) <= parseInt(maxPrice));
+            if (minMil) result = result.filter(c => parseNumber(c.mil) >= parseInt(minMil));
+            if (maxMil) result = result.filter(c => parseNumber(c.mil) <= parseInt(maxMil));
+            if (minYear) result = result.filter(c => parseNumber(c.year) >= parseInt(minYear));
+            if (maxYear) result = result.filter(c => parseNumber(c.year) <= parseInt(maxYear));
+
+            // Utrustning (Söker automatiskt inuti Bytbils equipment-lista)
+            if (equipmentFilters.dragkrok) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("dragkrok")));
+            if (equipmentFilters.backkamera) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("backkamera") || e.toLowerCase().includes("360")));
+            if (equipmentFilters.farthallare) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("farthållare")));
+            if (equipmentFilters.motorvarmare) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("värmare")));
+            if (equipmentFilters.panoramatak) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("panorama") || e.toLowerCase().includes("glastak")));
+            if (equipmentFilters.gps) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("gps") || e.toLowerCase().includes("navigation")));
             
             return result;
         } catch (error) {
             console.error("Filtreringsfel:", error);
             return [];
         }
-    }, [cars, searchTerm, filterBrand, filterFuel, maxPrice, maxMil]);
-
-    // Extrahera unika val säkert
-    const uniqueBrands = ["Alla", ...new Set(cars.map(c => c.brand).filter(Boolean))];
-    const uniqueFuels = ["Alla", ...new Set(cars.map(c => c.fuel).filter(Boolean))];
+    }, [cars, searchTerm, filterBrand, filterFuel, filterGear, filterDrive, minPrice, maxPrice, minMil, maxMil, minYear, maxYear, equipmentFilters]);
 
     const acceptCookies = () => {
         localStorage.setItem('bmg_cookie_consent', 'true');
@@ -378,90 +597,220 @@ const App = () => {
 
                         {/* FILTER PANEL */}
                         {cars.length > 0 && !loadingCars && !apiError && (
-                            <div className="bg-brand-900 border border-white/5 rounded-2xl p-6 mb-10 shadow-xl relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 blur-[80px] rounded-full pointer-events-none"></div>
-                                <div className="flex items-center gap-2 text-white font-bold mb-6 relative z-10">
-                                    <window.Icon name="sliders-horizontal" className="text-brand-500" size={20} />
-                                    Avancerad filtrering
+                            <div className="bg-brand-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 mb-12 shadow-2xl relative overflow-hidden transition-all">
+                                {/* Mjuk bakgrundsglöd */}
+                                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/10 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+                                
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 relative z-10 gap-4">
+                                    <div className="flex items-center gap-3 text-white font-black text-2xl tracking-tight">
+                                        <div className="w-10 h-10 bg-brand-500/20 rounded-xl flex items-center justify-center border border-brand-500/30">
+                                            <window.Icon name="sliders-horizontal" className="text-brand-500" size={20} />
+                                        </div>
+                                        Hitta din bil
+                                    </div>
+                                    <button 
+                                        onClick={resetFilters} 
+                                        className="text-sm font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg border border-white/5"
+                                    >
+                                        <window.Icon name="rotate-ccw" size={16} /> Nollställ allt
+                                    </button>
                                 </div>
 
-                                {/* SÖKFÄLT */}
-                                <div className="relative mb-6">
-                                    <window.Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+                                {/* SÖKFÄLT (Hero-fokus) */}
+                                <div className="relative mb-8 z-10 group">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                        <window.Icon name="search" className="text-slate-400 group-focus-within:text-brand-500 transition-colors" size={24} />
+                                    </div>
                                     <input 
                                         type="text" 
-                                        placeholder="Sök modell, märke eller t.ex. 'TDI'..." 
-                                        className="w-full bg-brand-950 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                                        placeholder="Sök på modell, märke, regnr eller utrustning..." 
+                                        className="w-full bg-brand-950/80 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white text-lg placeholder:text-slate-500 focus:bg-brand-950 focus:outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 transition-all shadow-inner"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </div>
                                 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                                {/* PRIMÄRA FILTER (Alltid synliga) */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10 mb-6">
+                                    
                                     {/* Märke */}
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Bilmärke</label>
-                                        <div className="relative">
-                                            <select 
-                                                value={filterBrand} 
-                                                onChange={(e) => setFilterBrand(e.target.value)}
-                                                className="w-full bg-brand-950 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none cursor-pointer"
-                                            >
-                                                {uniqueBrands.map(brand => <option key={brand} value={brand}>{brand}</option>)}
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Märke</label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <window.Icon name="car" className="text-slate-500 group-focus-within:text-brand-500 transition-colors" size={18} />
+                                            </div>
+                                            <select value={filterBrand} onChange={(e) => setFilterBrand(e.target.value)} className="w-full bg-brand-950 border border-white/10 text-white rounded-xl pl-12 pr-10 py-3.5 text-sm md:text-base focus:outline-none focus:border-brand-500 appearance-none font-semibold cursor-pointer transition-colors hover:border-white/20">
+                                                <option value="Alla" className="bg-brand-900 text-white">Alla märken</option>
+                                                {uniqueBrands.filter(b => b !== "Alla").map(brand => (
+                                                    <option key={brand} value={brand} className="bg-brand-900 text-white">{brand}</option>
+                                                ))}
                                             </select>
-                                            <window.Icon name="chevron-down" size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                            <window.Icon name="chevron-down" size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                                         </div>
                                     </div>
 
-                                    {/* Bränsle */}
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Bränsle</label>
-                                        <div className="relative">
-                                            <select 
-                                                value={filterFuel} 
-                                                onChange={(e) => setFilterFuel(e.target.value)}
-                                                className="w-full bg-brand-950 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none cursor-pointer"
-                                            >
-                                                {uniqueFuels.map(fuel => <option key={fuel} value={fuel}>{fuel}</option>)}
-                                            </select>
-                                            <window.Icon name="chevron-down" size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                    {/* Pris */}
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Pris</label>
+                                        <div className="flex bg-brand-950 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-colors focus-within:border-brand-500">
+                                            <div className="relative flex-1 border-r border-white/10">
+                                                <select value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full bg-transparent text-white pl-4 pr-8 py-3.5 text-sm md:text-base focus:outline-none appearance-none font-semibold cursor-pointer">
+                                                    <option value="" className="bg-brand-900 text-white">Från</option>
+                                                    <option value="50000" className="bg-brand-900 text-white">50 000 kr</option>
+                                                    <option value="100000" className="bg-brand-900 text-white">100 000 kr</option>
+                                                    <option value="200000" className="bg-brand-900 text-white">200 000 kr</option>
+                                                    <option value="300000" className="bg-brand-900 text-white">300 000 kr</option>
+                                                    <option value="500000" className="bg-brand-900 text-white">500 000 kr</option>
+                                                </select>
+                                                <window.Icon name="chevron-down" size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                            </div>
+                                            <div className="relative flex-1">
+                                                <select value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full bg-transparent text-white pl-4 pr-8 py-3.5 text-sm md:text-base focus:outline-none appearance-none font-semibold cursor-pointer">
+                                                    <option value="" className="bg-brand-900 text-white">Till</option>
+                                                    <option value="100000" className="bg-brand-900 text-white">100 000 kr</option>
+                                                    <option value="200000" className="bg-brand-900 text-white">200 000 kr</option>
+                                                    <option value="300000" className="bg-brand-900 text-white">300 000 kr</option>
+                                                    <option value="500000" className="bg-brand-900 text-white">500 000 kr</option>
+                                                    <option value="750000" className="bg-brand-900 text-white">750 000 kr</option>
+                                                    <option value="1000000" className="bg-brand-900 text-white">1 000 000 kr</option>
+                                                </select>
+                                                <window.Icon name="chevron-down" size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Maxpris */}
-                                    <div className="flex flex-col gap-2 justify-center">
-                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                            <label>Maxpris</label>
-                                            <span className="text-brand-500 font-bold bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">{maxPrice === 1000000 ? "Inget max" : `${maxPrice.toLocaleString('sv-SE')} kr`}</span>
+                                    {/* Miltal */}
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Miltal</label>
+                                        <div className="flex bg-brand-950 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-colors focus-within:border-brand-500">
+                                            <div className="relative flex-1 border-r border-white/10">
+                                                <select value={minMil} onChange={(e) => setMinMil(e.target.value)} className="w-full bg-transparent text-white pl-4 pr-8 py-3.5 text-sm md:text-base focus:outline-none appearance-none font-semibold cursor-pointer">
+                                                    <option value="" className="bg-brand-900 text-white">Från</option>
+                                                    <option value="0" className="bg-brand-900 text-white">0 mil</option>
+                                                    <option value="5000" className="bg-brand-900 text-white">5 000 mil</option>
+                                                    <option value="10000" className="bg-brand-900 text-white">10 000 mil</option>
+                                                    <option value="15000" className="bg-brand-900 text-white">15 000 mil</option>
+                                                </select>
+                                                <window.Icon name="chevron-down" size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                            </div>
+                                            <div className="relative flex-1">
+                                                <select value={maxMil} onChange={(e) => setMaxMil(e.target.value)} className="w-full bg-transparent text-white pl-4 pr-8 py-3.5 text-sm md:text-base focus:outline-none appearance-none font-semibold cursor-pointer">
+                                                    <option value="" className="bg-brand-900 text-white">Till</option>
+                                                    <option value="5000" className="bg-brand-900 text-white">5 000 mil</option>
+                                                    <option value="10000" className="bg-brand-900 text-white">10 000 mil</option>
+                                                    <option value="15000" className="bg-brand-900 text-white">15 000 mil</option>
+                                                    <option value="20000" className="bg-brand-900 text-white">20 000 mil</option>
+                                                    <option value="30000" className="bg-brand-900 text-white">30 000 mil</option>
+                                                </select>
+                                                <window.Icon name="chevron-down" size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                            </div>
                                         </div>
-                                        <input 
-                                            type="range" 
-                                            min={minPriceInStock} 
-                                            max="1000000" 
-                                            step="10000" 
-                                            value={maxPrice} 
-                                            onChange={(e) => setMaxPrice(parseInt(e.target.value, 10) || 0)}
-                                            className="w-full h-2 bg-brand-950 rounded-lg appearance-none cursor-pointer mt-2"
-                                            style={{ accentColor: '#f97316' }}
-                                        />
                                     </div>
+                                </div>
 
-                                    {/* Max Miltal */}
-                                    <div className="flex flex-col gap-2 justify-center">
-                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                            <label>Max Miltal</label>
-                                            <span className="text-brand-500 font-bold bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">{maxMil === 30000 ? "Inget max" : `${maxMil.toLocaleString('sv-SE')} mil`}</span>
+                                {/* TOGGLE-KNAPP AVANCERAT */}
+                                <div className="flex justify-center relative z-10">
+                                    <button 
+                                        onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                        className="text-sm font-bold text-white transition-all flex items-center gap-2 bg-brand-950 hover:bg-brand-950/80 px-6 py-2.5 rounded-full border border-white/10 hover:border-brand-500/50 group"
+                                    >
+                                        <window.Icon name="settings-2" size={16} className="text-brand-500 group-hover:rotate-90 transition-transform duration-300" />
+                                        {showAdvancedFilters ? "Dölj avancerade val" : "Fler inställningar & Utrustning"}
+                                        <window.Icon name={showAdvancedFilters ? "chevron-up" : "chevron-down"} size={16} className="text-slate-500" />
+                                    </button>
+                                </div>
+
+                                {/* AVANCERADE FILTER (Utfällbara) */}
+                                <div className={`transition-all duration-500 ease-in-out relative z-10 overflow-hidden ${showAdvancedFilters ? 'max-h-[1000px] opacity-100 mt-8' : 'max-h-0 opacity-0'}`}>
+                                    
+                                    <div className="p-6 bg-brand-950/50 rounded-2xl border border-white/5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                                            
+                                            {/* Årsmodell */}
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Årsmodell</label>
+                                                <div className="flex bg-brand-900 border border-white/10 rounded-xl overflow-hidden focus-within:border-brand-500">
+                                                    <div className="relative flex-1 border-r border-white/10">
+                                                        <select value={minYear} onChange={(e) => setMinYear(e.target.value)} className="w-full bg-transparent text-slate-300 pl-4 pr-8 py-3 text-sm focus:outline-none appearance-none font-semibold">
+                                                            <option value="" className="bg-brand-900 text-white">Från</option>
+                                                            {[2010, 2012, 2015, 2018, 2020, 2022, 2024].map(y => <option key={y} value={y} className="bg-brand-900 text-white">{y}</option>)}
+                                                        </select>
+                                                        <window.Icon name="chevron-down" size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                                    </div>
+                                                    <div className="relative flex-1">
+                                                        <select value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="w-full bg-transparent text-slate-300 pl-4 pr-8 py-3 text-sm focus:outline-none appearance-none font-semibold">
+                                                            <option value="" className="bg-brand-900 text-white">Till</option>
+                                                            {[2015, 2018, 2020, 2022, 2024, 2025].map(y => <option key={y} value={y} className="bg-brand-900 text-white">{y}</option>)}
+                                                        </select>
+                                                        <window.Icon name="chevron-down" size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Bränsle */}
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Bränsle</label>
+                                                <div className="relative">
+                                                    <select value={filterFuel} onChange={(e) => setFilterFuel(e.target.value)} className="w-full bg-brand-900 border border-white/10 text-slate-300 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:border-brand-500 appearance-none font-semibold">
+                                                        {uniqueFuels.map(f => <option key={f} value={f} className="bg-brand-900 text-white">{f === "Alla" ? "Alla drivmedel" : f}</option>)}
+                                                    </select>
+                                                    <window.Icon name="chevron-down" size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                                </div>
+                                            </div>
+
+                                            {/* Växellåda */}
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Växellåda</label>
+                                                <div className="relative">
+                                                    <select value={filterGear} onChange={(e) => setFilterGear(e.target.value)} className="w-full bg-brand-900 border border-white/10 text-slate-300 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:border-brand-500 appearance-none font-semibold">
+                                                        <option value="Alla" className="bg-brand-900 text-white">Alla växellådor</option>
+                                                        {uniqueGears.filter(g => g !== "Alla").map(g => <option key={g} value={g} className="bg-brand-900 text-white">{g}</option>)}
+                                                    </select>
+                                                    <window.Icon name="chevron-down" size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                                </div>
+                                            </div>
+
+                                            {/* Drivhjul */}
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block pl-1">Drivhjul</label>
+                                                <div className="relative">
+                                                    <select value={filterDrive} onChange={(e) => setFilterDrive(e.target.value)} className="w-full bg-brand-900 border border-white/10 text-slate-300 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:border-brand-500 appearance-none font-semibold">
+                                                        <option value="Alla" className="bg-brand-900 text-white">All drivning</option>
+                                                        <option value="4WD" className="bg-brand-900 text-white">Fyrhjulsdrift (AWD)</option>
+                                                        <option value="2WD" className="bg-brand-900 text-white">Tvåhjulsdrift (2WD)</option>
+                                                    </select>
+                                                    <window.Icon name="chevron-down" size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <input 
-                                            type="range" 
-                                            min={minMilInStock} 
-                                            max="30000" 
-                                            step="500" 
-                                            value={maxMil} 
-                                            onChange={(e) => setMaxMil(parseInt(e.target.value, 10) || 0)}
-                                            className="w-full h-2 bg-brand-950 rounded-lg appearance-none cursor-pointer mt-2"
-                                            style={{ accentColor: '#f97316' }}
-                                        />
+
+                                        {/* UTRUSTNINGS-TAGGAR */}
+                                        <div>
+                                            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2 pl-1">
+                                                <window.Icon name="check-square" size={14} /> Viktig utrustning
+                                            </div>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {Object.keys(equipmentFilters).map(key => {
+                                                    const labels = { dragkrok: "Dragkrok", backkamera: "Backkamera / 360", farthallare: "Farthållare", motorvarmare: "Motor/Kupévärmare", panoramatak: "Panoramatak", gps: "Navigation / GPS" };
+                                                    const isActive = equipmentFilters[key];
+                                                    return (
+                                                        <button 
+                                                            key={key}
+                                                            onClick={() => setEquipmentFilters(prev => ({ ...prev, [key]: !prev[key] }))}
+                                                            className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
+                                                                isActive 
+                                                                ? 'bg-brand-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)] ring-1 ring-brand-500 scale-[1.02]' 
+                                                                : 'bg-brand-900 text-slate-400 border border-white/5 hover:border-white/20 hover:text-white hover:bg-brand-800'
+                                                            }`}
+                                                        >
+                                                            {isActive && <window.Icon name="check" size={14} />}
+                                                            {labels[key]}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -496,64 +845,13 @@ const App = () => {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {filteredCars.map(car => (
-                                    <article key={car.id} className="bg-brand-900 rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/50 transition-all group shadow-xl flex flex-col relative">
-                                        
-                                        <div className="h-56 overflow-hidden relative bg-brand-950 flex items-center justify-center shrink-0">
-                                            <img src={car.img} alt={`Begagnad ${car.brand} ${car.model} till salu`} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => {e.target.src = "https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80"}} />
-                                            
-                                            {/* DELA-KNAPPEN */}
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleShare(car);
-                                                }}
-                                                className="absolute top-4 right-4 z-10 w-10 h-10 bg-brand-950/80 backdrop-blur hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg group/share border border-white/10"
-                                                aria-label="Tipsa en vän"
-                                                title="Tipsa en vän"
-                                            >
-                                                <window.Icon name="share-2" size={18} className="group-hover/share:scale-110 transition-transform" />
-                                            </button>
-                                        </div>
-
-                                        <div className="p-6 flex flex-col flex-grow">
-                                            <div className="text-brand-500 text-sm font-bold uppercase tracking-wider mb-1">{car.brand}</div>
-                                            <h3 className="text-xl font-bold text-white mb-4 line-clamp-1" title={car.model}>{car.model}</h3>
-                                            
-                                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-6 text-sm text-slate-400 flex-grow">
-                                                <div className="flex items-center gap-2"><window.Icon name="calendar" size={16} /> {car.year}</div>
-                                                <div className="flex items-center gap-2"><window.Icon name="gauge" size={16} /> {car.mil || "0 mil"}</div>
-                                                <div className="flex items-center gap-2"><window.Icon name="settings-2" size={16} /> {car.gear}</div>
-                                                <div className="flex items-center gap-2"><window.Icon name="fuel" size={16} /> {car.fuel}</div>
-                                            </div>
-                                            
-                                            <div className="border-t border-white/10 pt-4 mt-auto">
-                                                <div className="flex justify-between items-end mb-4">
-                                                    <div>
-                                                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Kontantpris</div>
-                                                        <div className="text-2xl font-black text-white">{car.price}</div>
-                                                    </div>
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setFinanceCar(car);
-                                                        }}
-                                                        className="text-right hover:opacity-80 transition-opacity group/calc"
-                                                    >
-                                                        <div className="text-[11px] font-bold text-brand-500 uppercase tracking-widest mb-1 flex items-center justify-end gap-1">
-                                                            Finansiering <window.Icon name="calculator" size={10} />
-                                                        </div>
-                                                        <div className="text-base font-bold text-white">
-                                                            Från {calculateMonthlyCost(car.price)} kr/mån
-                                                        </div>
-                                                    </button>
-                                                </div>
-                                                <a href="https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" target="_blank" rel="noopener noreferrer" aria-label={`Se mer om ${car.brand} ${car.model}`} className="w-full bg-white/5 hover:bg-brand-500 text-white py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-                                                    Läs mer på Blocket <window.Icon name="arrow-right" size={18} />
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </article>
+                                    <CarCard 
+                                        key={car.id} 
+                                        car={car} 
+                                        handleShare={handleShare} 
+                                        setFinanceCar={setFinanceCar} 
+                                        calculateMonthlyCost={calculateMonthlyCost} 
+                                    />
                                 ))}
                             </div>
                         )}
