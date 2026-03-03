@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html lang="sv" className="scroll-smooth">
+<html lang="sv" dir="ltr" className="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMG Motorgrupp | Premium Bilhandel & Optimering</title>
+    
+    <title>BMG Motorgrupp | Premium Bilhandel & Optimering i Eslöv</title>
+    <meta name="description" content="Din bilhandlare i Eslöv, Skåne. Vi köper, säljer och förmedlar begagnade bilar i toppskick. Vi erbjuder även professionell motoroptimering. Boka tid idag!">
+    <meta name="keywords" content="bilhandlare eslöv, begagnade bilar skåne, köpa bil eslöv, motoroptimering skåne, sälja bil">
+    <meta name="author" content="BMG Motorgrupp">
+    <meta name="theme-color" content="#020617"> <link rel="canonical" href="https://www.bmgmotorgrupp.se/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.bmgmotorgrupp.se/">
+    <meta property="og:title" content="BMG Motorgrupp | Premium Bilhandel i Eslöv">
+    <meta property="og:description" content="Köp och sälj premium begagnade bilar hos BMG Motorgrupp i Eslöv. Transparens och kvalitet i varje affär.">
+    <meta property="og:image" content="https://www.bmgmotorgrupp.se/bmglogo.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BMG Motorgrupp | Premium Bilhandel">
+    <meta name="twitter:description" content="Din bilhandlare i Eslöv. Vi köper, säljer och förmedlar begagnade bilar i toppskick.">
+    <meta name="twitter:image" content="https://www.bmgmotorgrupp.se/bmglogo.png">
     
     <link rel="icon" type="image/png" href="bmglogo.png">
+    <link rel="preload" href="bmglogo.png" as="image">
+    <link rel="preload" href="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2069&auto=format&fit=crop" as="image" crossorigin="anonymous">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -20,9 +44,9 @@
                     colors: {
                         brand: {
                             50: '#fff7ed',
-                            500: '#f97316', // En premium orange/koppar som accent
+                            500: '#f97316',
                             600: '#ea580c',
-                            900: '#0f172a', // Mörk, elegant skiffer/svart för bakgrunder
+                            900: '#0f172a',
                             950: '#020617',
                         }
                     },
@@ -34,17 +58,36 @@
         }
     </script>
     <style>
-        /* Lite anpassad CSS för extra wow-känsla på Hero-bilden */
         .hero-bg {
             background-image: linear-gradient(to right, rgba(2, 6, 23, 0.95) 20%, rgba(2, 6, 23, 0.4) 100%), 
                               url('https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2069&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
         }
+        /* Styling för att dölja scrollbar men behålla funktionalitet */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="bg-brand-950 text-slate-200 antialiased selection:bg-brand-500 selection:text-white">
     <div id="root"></div>
-    <script src="app.js" type="text/babel"></script>
+
+    <script src="data.js"></script>
+    <script type="text/babel" src="Navbar.js"></script>
+    <script type="text/babel" src="HeroSection.js"></script>
+    <script type="text/babel" src="LagerSection.js"></script>
+    <script type="text/babel" src="AboutSection.js"></script>
+    <script type="text/babel" src="ServicesSection.js"></script>
+    <script type="text/babel" src="ReviewsSection.js"></script>
+    <script type="text/babel" src="ContactSection.js"></script>
+    <script type="text/babel" src="OptimizationModal.js"></script>
+    <script type="text/babel" src="FinanceModal.js"></script>
+    <script type="text/babel" src="Footer.js"></script>
+    <script type="text/babel" src="app.js"></script>
 </body>
 </html>
