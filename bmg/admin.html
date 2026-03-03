@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="sv">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
         .glass-panel {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(16px);
@@ -19,13 +27,18 @@
         }
     </style>
 </head>
+
 <body class="bg-[#0b1120] text-slate-300 min-h-screen relative overflow-x-hidden">
 
-    <div class="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div
+        class="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 rounded-full blur-[120px] pointer-events-none">
+    </div>
+    <div
+        class="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none">
+    </div>
 
     <div class="flex relative z-10 max-w-[1600px] mx-auto">
-        
+
         <main class="flex-1 p-4 md:p-8 lg:p-10">
             <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
                 <div>
@@ -37,31 +50,40 @@
                 </div>
                 <div class="glass-panel px-4 py-2 rounded-lg flex items-center gap-2">
                     <div id="statusDot" class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                    <span id="lastUpdated" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Laddar live-data...</span>
+                    <span id="lastUpdated" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Laddar
+                        live-data...</span>
                 </div>
             </header>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                 <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="banknote" class="w-16 h-16 text-orange-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Totalt Lagervärde</div>
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
+                            data-lucide="banknote" class="w-16 h-16 text-orange-500"></i></div>
+                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Totalt
+                        Lagervärde</div>
                     <div id="kpiValue" class="text-2xl md:text-4xl font-black text-white">0 kr</div>
                 </div>
                 <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="car-front" class="w-16 h-16 text-blue-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Aktiva Annonser</div>
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
+                            data-lucide="car-front" class="w-16 h-16 text-blue-500"></i></div>
+                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Aktiva
+                        Annonser</div>
                     <div id="kpiCount" class="text-2xl md:text-4xl font-black text-white">0</div>
                     <div id="kpiEco" class="text-xs text-green-400 font-bold mt-2">0 st Miljöbilar</div>
                 </div>
                 <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="tags" class="w-16 h-16 text-emerald-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Snittpris i Hallen</div>
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
+                            data-lucide="tags" class="w-16 h-16 text-emerald-500"></i></div>
+                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">
+                        Snittpris i Hallen</div>
                     <div id="kpiAvgPrice" class="text-2xl md:text-4xl font-black text-white">0 kr</div>
                     <div id="kpiAvgMilage" class="text-xs text-slate-500 font-bold mt-2">Snittmiltal: 0 mil</div>
                 </div>
                 <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="clock" class="w-16 h-16 text-red-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Snitt Lagertid</div>
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
+                            data-lucide="clock" class="w-16 h-16 text-red-500"></i></div>
+                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Snitt
+                        Lagertid</div>
                     <div id="kpiAvgTime" class="text-2xl md:text-4xl font-black text-orange-500">0 dgr</div>
                     <div id="kpiCold" class="text-xs text-red-400 font-bold mt-2">0 bilar över 60 dagar</div>
                 </div>
@@ -69,7 +91,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="glass-panel p-6 rounded-2xl col-span-1 md:col-span-2">
-                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Lagerfördelning: Märken</h3>
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Lagerfördelning: Märken
+                    </h3>
                     <div class="h-64 relative w-full">
                         <canvas id="brandChart"></canvas>
                     </div>
@@ -93,12 +116,14 @@
             <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl">
                 <div class="p-6 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/30">
                     <h3 class="font-bold text-lg text-white">Lagerlista & Prisanalys</h3>
-                    <div class="text-xs text-slate-500 font-bold bg-slate-800/50 px-3 py-1 rounded">Sorterad på lagertid (äldst först)</div>
+                    <div class="text-xs text-slate-500 font-bold bg-slate-800/50 px-3 py-1 rounded">Sorterad på lagertid
+                        (äldst först)</div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
-                            <tr class="bg-slate-900/50 text-slate-400 text-[10px] uppercase tracking-widest border-b border-slate-800">
+                            <tr
+                                class="bg-slate-900/50 text-slate-400 text-[10px] uppercase tracking-widest border-b border-slate-800">
                                 <th class="p-4 font-bold">Fordon</th>
                                 <th class="p-4 font-bold">Info</th>
                                 <th class="p-4 font-bold">Dagar</th>
@@ -108,7 +133,7 @@
                             </tr>
                         </thead>
                         <tbody id="inventoryTable">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -121,25 +146,27 @@
         // Konfigurera globala Chart.js-inställningar för mörkt tema
         Chart.defaults.color = '#64748b';
         Chart.defaults.font.family = 'Inter';
-        
+
         async function initAdmin() {
             try {
-                // Hämta via Netlify, fall back till lokal bilar.json om det kraschar (lokalt test)
                 let cars = [];
                 try {
-                    const response = await fetch('/.netlify/functions/getCars');
-                    if (!response.ok) throw new Error();
+                    // FELET LÅG HÄR: Vi byter till den absoluta (fullständiga) Netlify-länken
+                    const response = await fetch('https://bmgmotorgrupp.netlify.app/.netlify/functions/getCars');
+                    if (!response.ok) throw new Error("Kunde inte hämta från Netlify");
                     cars = await response.json();
-                } catch(e) {
+                } catch (e) {
+                    console.warn("Netlify misslyckades, försöker med lokal fil...", e);
                     const localResp = await fetch('./bilar.json');
                     cars = await localResp.json();
                 }
-                
+
                 document.getElementById('lastUpdated').textContent = "DATA UPPDATERAD JUST NU";
                 document.getElementById('statusDot').classList.replace('bg-orange-500', 'bg-green-500');
-                
+
                 processData(cars);
             } catch (err) {
+                console.error("Kunde varken hämta från API eller JSON:", err);
                 document.getElementById('lastUpdated').textContent = "KUNDE INTE HÄMTA DATA";
                 document.getElementById('statusDot').classList.replace('bg-orange-500', 'bg-red-500');
             }
@@ -156,9 +183,7 @@
             const fuelCounts = {};
             const ageZones = { '0-30 dgr': 0, '31-60 dgr': 0, '60+ dgr': 0 };
 
-            // Skapa array med processad data för tabellen
             const tableData = cars.map(car => {
-                // 1. Fånga rådata säkert för att undvika "undefined"
                 const make = car.make || 'Okänt märke';
                 const model = car.model || '';
                 const regNo = car.regNo || 'SAKNAS';
@@ -168,27 +193,24 @@
                 const year = car.modelYear || '-';
                 const fuel = car.fuel || 'Okänt';
                 const isEco = car.isEco || false;
-                
-                // Räkna dagar
-                const pubDate = new Date(car.publishedDate);
-                const diffDays = Math.max(0, Math.ceil((new Date() - pubDate) / (1000 * 60 * 60 * 24)));
-                const pubDateStr = new Date(car.publishedDate).toLocaleDateString('sv-SE'); // Ger formatet 2023-10-15
 
-                // Uppdatera Totalsumma variabler
+                // FELSÄKERT DATUM: Om bilen saknar publiceringsdatum slipper vi att grafen kraschar (blir NaN)
+                const pubDate = car.publishedDate ? new Date(car.publishedDate) : new Date();
+                const diffDays = car.publishedDate ? Math.max(0, Math.ceil((new Date() - pubDate) / (1000 * 60 * 60 * 24))) : 0;
+                const pubDateStr = car.publishedDate ? pubDate.toLocaleDateString('sv-SE') : 'Okänt';
+
                 totalValue += price;
                 totalMilage += milage;
                 totalDays += diffDays;
-                if(isEco) ecoCount++;
+                if (isEco) ecoCount++;
 
-                // Uppdatera Diagram-variabler
                 brandCounts[make] = (brandCounts[make] || 0) + 1;
                 fuelCounts[fuel] = (fuelCounts[fuel] || 0) + 1;
-                
-                if(diffDays <= 30) ageZones['0-30 dgr']++;
-                else if(diffDays <= 60) ageZones['31-60 dgr']++;
+
+                if (diffDays <= 30) ageZones['0-30 dgr']++;
+                else if (diffDays <= 60) ageZones['31-60 dgr']++;
                 else { ageZones['60+ dgr']++; coldCarsCount++; }
 
-                // Prisjusterings-logik
                 let discount = 0;
                 if (prevPrice && prevPrice > price) {
                     discount = prevPrice - price;
@@ -197,19 +219,16 @@
                 return { make, model, regNo, price, discount, milage, year, diffDays, pubDateStr };
             });
 
-            // Sortera tabellen: Längst tid på lager överst
             tableData.sort((a, b) => b.diffDays - a.diffDays);
 
-            // ================= RITA UT KPI:ER =================
             document.getElementById('kpiCount').textContent = cars.length;
             document.getElementById('kpiValue').textContent = totalValue.toLocaleString('sv-SE') + " kr";
             document.getElementById('kpiAvgPrice').textContent = cars.length ? Math.round(totalValue / cars.length).toLocaleString('sv-SE') + " kr" : "0 kr";
             document.getElementById('kpiAvgMilage').textContent = cars.length ? `Snittmiltal: ${Math.round(totalMilage / cars.length).toLocaleString('sv-SE')} mil` : "0 mil";
             document.getElementById('kpiAvgTime').textContent = cars.length ? Math.round(totalDays / cars.length) + " dgr" : "0 dgr";
-            document.getElementById('kpiEco').textContent = `${ecoCount} st Miljöbilar (${Math.round((ecoCount/cars.length)*100)}%)`;
+            document.getElementById('kpiEco').textContent = `${ecoCount} st Miljöbilar (${Math.round((ecoCount / cars.length) * 100)}%)`;
             document.getElementById('kpiCold').textContent = `${coldCarsCount} bilar har stått över 60 dagar`;
 
-            // ================= RITA UT TABELL =================
             const tbody = document.getElementById('inventoryTable');
             tbody.innerHTML = '';
             tableData.forEach(car => {
@@ -218,36 +237,34 @@
                 else if (car.diffDays <= 7) statusBadge = '<span class="bg-orange-500/20 border border-orange-500/30 text-orange-400 px-2 py-1 rounded text-[10px] font-bold uppercase shadow-[0_0_10px_rgba(249,115,22,0.2)]">🔥 Ny</span>';
                 else statusBadge = '<span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-2 py-1 rounded text-[10px] font-bold uppercase">✅ Aktiv</span>';
 
-                const discountHtml = car.discount > 0 
-                    ? `<span class="text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded border border-red-500/20">-${car.discount.toLocaleString('sv-SE')} kr</span>` 
+                const discountHtml = car.discount > 0
+                    ? `<span class="text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded border border-red-500/20">-${car.discount.toLocaleString('sv-SE')} kr</span>`
                     : '<span class="text-slate-700">-</span>';
 
                 tbody.innerHTML += `
-                    <tr class="border-b border-slate-800/50 hover:bg-white/5 transition-colors group">
-                        <td class="p-4">
-                            <div class="font-bold text-white">${car.make}</div>
-                            <div class="text-xs text-slate-400 truncate max-w-[200px]" title="${car.model}">${car.model}</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="text-xs font-mono font-bold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded inline-block border border-slate-700">${car.regNo}</div>
-                            <div class="text-[10px] text-slate-500 mt-1">${car.year} | ${car.milage.toLocaleString('sv-SE')} mil</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="font-mono text-lg ${car.diffDays > 60 ? 'text-red-400 font-bold' : 'text-slate-300'}">${car.diffDays} dgr</div>
-                            <div class="text-[10px] text-slate-500 font-bold mt-1">Inkom: ${car.pubDateStr}</div>
-                        </td>
-                        <td class="p-4">${statusBadge}</td>
-                        <td class="p-4 text-right">
-                            <div class="font-bold text-white">${car.price.toLocaleString('sv-SE')} kr</div>
-                        </td>
-                        <td class="p-4 text-right">${discountHtml}</td>
-                    </tr>
-                `;
+                <tr class="border-b border-slate-800/50 hover:bg-white/5 transition-colors group">
+                    <td class="p-4">
+                        <div class="font-bold text-white">${car.make}</div>
+                        <div class="text-xs text-slate-400 truncate max-w-[200px]" title="${car.model}">${car.model}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-xs font-mono font-bold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded inline-block border border-slate-700">${car.regNo}</div>
+                        <div class="text-[10px] text-slate-500 mt-1">${car.year} | ${car.milage.toLocaleString('sv-SE')} mil</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="font-mono text-lg ${car.diffDays > 60 ? 'text-red-400 font-bold' : 'text-slate-300'}">${car.diffDays} dgr</div>
+                        <div class="text-[10px] text-slate-500 font-bold mt-1">Inkom: ${car.pubDateStr}</div>
+                    </td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4 text-right">
+                        <div class="font-bold text-white">${car.price.toLocaleString('sv-SE')} kr</div>
+                    </td>
+                    <td class="p-4 text-right">${discountHtml}</td>
+                </tr>
+            `;
             });
 
-            // ================= DIAGRAM (CHART.JS) =================
-            // Sortera märken storleksordning
-            const sortedBrands = Object.entries(brandCounts).sort((a,b) => b[1] - a[1]);
+            const sortedBrands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]);
 
             new Chart(document.getElementById('brandChart'), {
                 type: 'bar',
@@ -260,10 +277,10 @@
                         borderSkipped: false
                     }]
                 },
-                options: { 
+                options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { 
+                    scales: {
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
                         x: { grid: { display: false } }
                     }
@@ -280,7 +297,7 @@
                         borderWidth: 0, hoverOffset: 4
                     }]
                 },
-                options: { 
+                options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } },
                     cutout: '70%'
@@ -293,11 +310,11 @@
                     labels: Object.keys(ageZones),
                     datasets: [{
                         data: Object.values(ageZones),
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], // Grön, Gul, Röd
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                         borderWidth: 0
                     }]
                 },
-                options: { 
+                options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }
                 }
@@ -307,4 +324,5 @@
         initAdmin();
     </script>
 </body>
+
 </html>
