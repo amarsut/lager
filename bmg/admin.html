@@ -1,328 +1,695 @@
 <!DOCTYPE html>
 <html lang="sv">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMG Intelligence - Dashboard</title>
+    <title>BMG Intelligence - CRM & Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
-
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-panel { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Smooth drag & drop effekter */
+        .drag-over { background-color: rgba(249, 115, 22, 0.1) !important; border-color: rgba(249, 115, 22, 0.5) !important; }
     </style>
 </head>
+<body class="text-slate-300 min-h-screen relative overflow-x-hidden selection:bg-brand-500 selection:text-white">
 
-<body class="bg-[#0b1120] text-slate-300 min-h-screen relative overflow-x-hidden">
+    <div class="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-    <div
-        class="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 rounded-full blur-[120px] pointer-events-none">
-    </div>
-    <div
-        class="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none">
-    </div>
+    <div id="adminPanel" class="relative z-10 flex flex-col md:flex-row min-h-screen">
+        
+        <aside class="w-full md:w-64 bg-slate-900/80 border-r border-white/5 backdrop-blur-xl shrink-0 p-6 flex flex-col h-auto md:h-screen md:sticky md:top-0">
+            <div class="flex items-center gap-3 mb-10">
+                <i data-lucide="activity" class="text-orange-500 w-8 h-8"></i>
+                <div class="font-black text-white text-xl tracking-tight leading-none">BMG<br><span class="text-slate-400 font-semibold text-xs uppercase tracking-widest">Intelligence</span></div>
+            </div>
 
-    <div class="flex relative z-10 max-w-[1600px] mx-auto">
+            <nav class="space-y-1 flex-1">
+                <div class="pb-2 text-[10px] uppercase tracking-widest text-slate-500 font-bold px-4">Affärssystem</div>
+                <button onclick="switchTab('crm')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all bg-white/10 text-white" data-target="crm">
+                    <i data-lucide="users" class="w-4 h-4"></i> Leads & CRM
+                </button>
+                <button onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all" data-target="dashboard">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Lageranalys
+                </button>
 
-        <main class="flex-1 p-4 md:p-8 lg:p-10">
-            <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
-                        <i data-lucide="activity" class="text-orange-500 w-10 h-10"></i>
-                        BMG Intelligence
-                    </h1>
-                    <p class="text-slate-500 font-semibold mt-1">Avancerad Lageranalys & Uppföljning</p>
-                </div>
-                <div class="glass-panel px-4 py-2 rounded-lg flex items-center gap-2">
-                    <div id="statusDot" class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                    <span id="lastUpdated" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Laddar
-                        live-data...</span>
-                </div>
-            </header>
+                <div class="pt-6 pb-2 text-[10px] uppercase tracking-widest text-slate-500 font-bold px-4">Webbplats (CMS)</div>
+                <button onclick="switchTab('content')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all" data-target="content">
+                    <i data-lucide="layout-template" class="w-4 h-4"></i> Hemsida & Hero
+                </button>
+                <button onclick="switchTab('seo')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all" data-target="seo">
+                    <i data-lucide="search" class="w-4 h-4"></i> SEO & Sök
+                </button>
+                <button onclick="switchTab('settings')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all" data-target="settings">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Kontakt & Företag
+                </button>
+                <button onclick="switchTab('faq')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all" data-target="faq">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i> Vanliga Frågor
+                </button>
+            </nav>
+        </aside>
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-                <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
-                            data-lucide="banknote" class="w-16 h-16 text-orange-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Totalt
-                        Lagervärde</div>
-                    <div id="kpiValue" class="text-2xl md:text-4xl font-black text-white">0 kr</div>
-                </div>
-                <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
-                            data-lucide="car-front" class="w-16 h-16 text-blue-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Aktiva
-                        Annonser</div>
-                    <div id="kpiCount" class="text-2xl md:text-4xl font-black text-white">0</div>
-                    <div id="kpiEco" class="text-xs text-green-400 font-bold mt-2">0 st Miljöbilar</div>
-                </div>
-                <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
-                            data-lucide="tags" class="w-16 h-16 text-emerald-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">
-                        Snittpris i Hallen</div>
-                    <div id="kpiAvgPrice" class="text-2xl md:text-4xl font-black text-white">0 kr</div>
-                    <div id="kpiAvgMilage" class="text-xs text-slate-500 font-bold mt-2">Snittmiltal: 0 mil</div>
-                </div>
-                <div class="glass-panel p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i
-                            data-lucide="clock" class="w-16 h-16 text-red-500"></i></div>
-                    <div class="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">Snitt
-                        Lagertid</div>
-                    <div id="kpiAvgTime" class="text-2xl md:text-4xl font-black text-orange-500">0 dgr</div>
-                    <div id="kpiCold" class="text-xs text-red-400 font-bold mt-2">0 bilar över 60 dagar</div>
+        <main class="flex-1 p-6 md:p-10 w-full overflow-x-hidden relative">
+            
+            <div id="tab-crm" class="tab-content active h-full">
+                <div class="flex flex-col h-full">
+                    <header class="flex justify-between items-center mb-8 shrink-0">
+                        <div>
+                            <h2 class="text-3xl font-black text-white tracking-tight">Kanban & Leads</h2>
+                            <p class="text-slate-400 font-semibold mt-1">Dra och släpp kunder genom säljprocessen</p>
+                        </div>
+                    </header>
+
+                    <div class="flex-1 flex gap-4 overflow-x-auto pb-4 no-scrollbar items-start min-h-[600px]">
+                        <div class="w-80 shrink-0 bg-slate-900/40 rounded-xl flex flex-col max-h-full border border-slate-800/80 transition-colors" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'new')">
+                            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-blue-500/10 rounded-t-xl pointer-events-none">
+                                <h3 class="font-bold text-blue-400 uppercase tracking-widest text-xs flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div> Nya Leads</h3>
+                                <span id="count-new" class="text-slate-400 text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded border border-slate-700">0</span>
+                            </div>
+                            <div id="col-new" class="p-3 flex-1 overflow-y-auto space-y-3 min-h-[150px] pointer-events-none"></div>
+                        </div>
+                        
+                        <div class="w-80 shrink-0 bg-slate-900/40 rounded-xl flex flex-col max-h-full border border-slate-800/80 transition-colors" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'contacted')">
+                            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-yellow-500/10 rounded-t-xl pointer-events-none">
+                                <h3 class="font-bold text-yellow-400 uppercase tracking-widest text-xs flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></div> Kontaktade</h3>
+                                <span id="count-contacted" class="text-slate-400 text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded border border-slate-700">0</span>
+                            </div>
+                            <div id="col-contacted" class="p-3 flex-1 overflow-y-auto space-y-3 min-h-[150px] pointer-events-none"></div>
+                        </div>
+
+                        <div class="w-80 shrink-0 bg-slate-900/40 rounded-xl flex flex-col max-h-full border border-slate-800/80 transition-colors" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'viewing')">
+                            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-purple-500/10 rounded-t-xl pointer-events-none">
+                                <h3 class="font-bold text-purple-400 uppercase tracking-widest text-xs flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_#a855f7]"></div> Visning / Förhandling</h3>
+                                <span id="count-viewing" class="text-slate-400 text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded border border-slate-700">0</span>
+                            </div>
+                            <div id="col-viewing" class="p-3 flex-1 overflow-y-auto space-y-3 min-h-[150px] pointer-events-none"></div>
+                        </div>
+
+                        <div class="w-80 shrink-0 bg-slate-900/40 rounded-xl flex flex-col max-h-full border border-slate-800/80 border-t-2 border-t-emerald-500 transition-colors" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'won')">
+                            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-emerald-500/5 rounded-t-xl pointer-events-none">
+                                <h3 class="font-bold text-emerald-400 uppercase tracking-widest text-xs flex items-center gap-2"><i data-lucide="check-circle" class="w-3 h-3"></i> Vunna Affärer</h3>
+                                <span id="count-won" class="text-slate-400 text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded border border-slate-700">0</span>
+                            </div>
+                            <div id="col-won" class="p-3 flex-1 overflow-y-auto space-y-3 min-h-[150px] pointer-events-none"></div>
+                        </div>
+
+                        <div class="w-80 shrink-0 bg-slate-900/40 rounded-xl flex flex-col max-h-full border border-slate-800/80 border-t-2 border-t-red-500 transition-colors" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'lost')">
+                            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-red-500/5 rounded-t-xl pointer-events-none">
+                                <h3 class="font-bold text-red-400 uppercase tracking-widest text-xs flex items-center gap-2"><i data-lucide="x-circle" class="w-3 h-3"></i> Avslutade (Ej köp)</h3>
+                                <span id="count-lost" class="text-slate-400 text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded border border-slate-700">0</span>
+                            </div>
+                            <div id="col-lost" class="p-3 flex-1 overflow-y-auto space-y-3 min-h-[150px] pointer-events-none"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="glass-panel p-6 rounded-2xl col-span-1 md:col-span-2">
-                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Lagerfördelning: Märken
-                    </h3>
-                    <div class="h-64 relative w-full">
-                        <canvas id="brandChart"></canvas>
+            <div id="tab-dashboard" class="tab-content">
+                <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                    <div><h2 class="text-3xl font-black text-white tracking-tight">Lageranalys</h2><p class="text-slate-400 font-semibold mt-1">Överblick av operativ status</p></div>
+                    <div class="glass-panel px-4 py-2 rounded-md flex items-center gap-2 border border-orange-500/20 bg-orange-500/5">
+                        <div id="statusDot" class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                        <span id="lastUpdated" class="text-xs font-bold text-orange-100 uppercase tracking-widest">Hämtar data...</span>
                     </div>
+                </header>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div class="glass-panel p-6 rounded-md relative overflow-hidden border-b-4 border-b-blue-500"><div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Totalt Lagervärde</div><div id="kpiValue" class="text-2xl md:text-3xl font-black text-white">0 kr</div></div>
+                    <div class="glass-panel p-6 rounded-md relative overflow-hidden border-b-4 border-b-emerald-500"><div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Fordon i Lager</div><div id="kpiCount" class="text-2xl md:text-3xl font-black text-white">0</div></div>
+                    <div class="glass-panel p-6 rounded-md relative overflow-hidden border-b-4 border-b-red-500"><div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Bundet Riskkapital (>60d)</div><div id="kpiRisk" class="text-2xl md:text-3xl font-black text-white">0 kr</div></div>
+                    <div class="glass-panel p-6 rounded-md relative overflow-hidden border-b-4 border-b-orange-500"><div class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Totala Prissänkningar</div><div id="kpiDiscount" class="text-2xl md:text-3xl font-black text-white">0 kr</div></div>
                 </div>
-                <div class="glass-panel p-6 rounded-2xl flex flex-col gap-6">
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Drivmedel</h3>
-                        <div class="h-32 relative w-full">
-                            <canvas id="fuelChart"></canvas>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-panel p-6 rounded-md"><h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="bar-chart" class="w-4 h-4"></i> Omsättningshastighet per märke</h3><div class="h-64 relative w-full"><canvas id="turnoverChart"></canvas></div></div>
+                    <div class="glass-panel p-6 rounded-md"><h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="w-4 h-4"></i> Lagertids-zoner</h3><div class="h-64 relative w-full"><canvas id="ageChart"></canvas></div></div>
+                </div>
+
+                <div class="glass-panel rounded-md overflow-hidden shadow-2xl mt-8">
+                    <div class="p-6 border-b border-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/30">
+                        <h3 class="font-bold text-lg text-white">Lagerlista & Operativ Status</h3>
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sortera på:</label>
+                            <div class="relative">
+                                <select id="tableSorter" class="bg-slate-800 border border-slate-700 text-white rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:border-orange-500 appearance-none cursor-pointer">
+                                    <option value="oldest">Äldst i lager</option>
+                                    <option value="newest">Nyast inkomna</option>
+                                    <option value="price-desc">Dyrast först</option>
+                                    <option value="price-asc">Billigast först</option>
+                                    <option value="discount">Störst prissänkning</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="border-t border-slate-800 pt-6">
-                        <h3 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Lagertids-zoner</h3>
-                        <div class="h-32 relative w-full">
-                            <canvas id="ageChart"></canvas>
+                    <div class="overflow-x-auto"><table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]"><thead><tr class="bg-slate-900/50 text-slate-400 text-[10px] uppercase tracking-widest border-b border-slate-800"><th class="p-4 font-bold w-16">Bild</th><th class="p-4 font-bold">Fordon & Reg</th><th class="p-4 font-bold">Dagar i lager</th><th class="p-4 font-bold">Status</th><th class="p-4 font-bold text-right">Nuvarande Pris</th><th class="p-4 font-bold text-right">Prisjustering</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="tab-content" class="tab-content max-w-4xl">
+                <header class="flex justify-between items-center mb-8">
+                    <div><h2 class="text-3xl font-black text-white tracking-tight">Hemsida & Hero</h2><p class="text-slate-400 font-semibold mt-1">Ändra det som syns på hemsidan</p></div>
+                    <button class="saveSettingsBtn flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"><i data-lucide="save" class="w-4 h-4"></i> Spara ändringar</button>
+                </header>
+
+                <div class="space-y-6">
+                    <div class="glass-panel p-6 rounded-md">
+                        <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2"><i data-lucide="image" class="text-orange-500 w-5 h-5"></i> Hero-sektionen (Högst upp)</h3>
+                        
+                        <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Bakgrundsbild (URL)</label>
+                                <input type="url" id="cms_heroBg" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none mb-2" placeholder="https://...">
+                                
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Senast använda bilder</label>
+                                <div id="heroHistoryContainer" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Live Preview</label>
+                                <div id="heroPreviewBox" class="w-full h-32 md:h-40 bg-slate-800 rounded-md border border-slate-700 bg-cover bg-center flex items-center justify-center relative overflow-hidden shadow-inner">
+                                    <div class="absolute inset-0 bg-black/40"></div>
+                                    <span class="relative z-10 text-white font-bold tracking-widest text-sm opacity-50">DIN BILD HÄR</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 border-t border-slate-800 pt-6">
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Liten etikett (Ovanför rubrik)</label><input type="text" id="cms_heroBadge" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none" placeholder="T.ex: Kvalitet & Transparens"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Huvudrubrik (Del 1)</label><input type="text" id="cms_heroTitle1" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none" placeholder="T.ex: Din partner för"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Huvudrubrik (Del 2 - Färgad)</label><input type="text" id="cms_heroTitle2" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-orange-400 font-bold focus:border-orange-500 focus:outline-none" placeholder="T.ex: Rätt Fordon"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Beskrivande text under rubrik</label><textarea id="cms_heroSubtitle" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none resize-y"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-md">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="book-open" class="text-orange-500 w-5 h-5"></i> Sektionen "Om oss"</h3>
+                        <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Vår affärsidé / Om oss text</label><textarea id="cms_aboutText" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none resize-y"></textarea></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-seo" class="tab-content max-w-4xl">
+                <header class="flex justify-between items-center mb-8">
+                    <div><h2 class="text-3xl font-black text-white tracking-tight">SEO & Sökoptimering</h2><p class="text-slate-400 font-semibold mt-1">Så här syns ni på Google</p></div>
+                    <button class="saveSettingsBtn flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"><i data-lucide="save" class="w-4 h-4"></i> Spara ändringar</button>
+                </header>
+                
+                <div class="glass-panel p-6 rounded-md border border-orange-500/20">
+                    <div class="mb-8">
+                        <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="search" class="text-orange-500 w-4 h-4"></i> Förhandsgranskning (Google)</h3>
+                        <div class="bg-white p-4 rounded-md font-sans">
+                            <div class="text-[12px] text-[#202124] mb-1">bmotorgrupp.se <span class="text-[#5f6368] ml-2">https://bmotorgrupp.se</span></div>
+                            <div id="seoPreviewTitle" class="text-[20px] text-[#1a0dab] hover:underline cursor-pointer truncate">BMG Motorgrupp - Kvalitet & Transparens</div>
+                            <div id="seoPreviewDesc" class="text-[14px] text-[#4d5156] mt-1 line-clamp-2">Specialister på begagnade personbilar, lätta motorfordon och fordonsoptimering. Hög kvalitet till konkurrenskraftiga priser i Eslöv.</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 border-t border-slate-800 pt-6">
+                        <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Meta Titel (Max 60 tecken)</label><input type="text" id="cms_metaTitle" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none" placeholder="T.ex: BMG Motorgrupp - Begagnade bilar i Eslöv"></div>
+                        <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Meta Beskrivning (Max 160 tecken)</label><textarea id="cms_metaDesc" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none resize-none" placeholder="Skriv en säljande text om ert företag här..."></textarea></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="tab-content max-w-4xl">
+                <header class="flex justify-between items-center mb-8">
+                    <div><h2 class="text-3xl font-black text-white tracking-tight">Företag & Kontakt</h2><p class="text-slate-400 font-semibold mt-1">Telefon, e-post och länkar</p></div>
+                    <button class="saveSettingsBtn flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"><i data-lucide="save" class="w-4 h-4"></i> Spara ändringar</button>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-md">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="phone-call" class="text-orange-500 w-5 h-5"></i> Kontaktuppgifter</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Telefonnummer</label><input type="text" id="cms_phone" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">E-postadress</label><input type="email" id="cms_email" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Besöksadress</label><textarea id="cms_address" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="glass-panel p-6 rounded-md">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="clock" class="text-orange-500 w-5 h-5"></i> Öppettider</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Måndag - Fredag</label><input type="text" id="cms_hoursWeek" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></div>
+                                <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Lördag - Söndag</label><input type="text" id="cms_hoursWeekend" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-6 rounded-md">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="share-2" class="text-orange-500 w-5 h-5"></i> Sociala Medier</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Instagram (URL)</label><input type="url" id="cms_instagram" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></div>
+                                <div><label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Facebook (URL)</label><input type="url" id="cms_facebook" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl">
-                <div class="p-6 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/30">
-                    <h3 class="font-bold text-lg text-white">Lagerlista & Prisanalys</h3>
-                    <div class="text-xs text-slate-500 font-bold bg-slate-800/50 px-3 py-1 rounded">Sorterad på lagertid
-                        (äldst först)</div>
+            <div id="tab-faq" class="tab-content max-w-4xl">
+                <header class="flex justify-between items-center mb-8">
+                    <div><h2 class="text-3xl font-black text-white tracking-tight">Vanliga Frågor (FAQ)</h2><p class="text-slate-400 font-semibold mt-1">Hantera frågorna längst ner på hemsidan</p></div>
+                    <button class="saveSettingsBtn flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"><i data-lucide="save" class="w-4 h-4"></i> Spara listan</button>
+                </header>
+
+                <div class="glass-panel p-6 rounded-md mb-8 border border-orange-500/30">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="plus-circle" class="text-orange-500 w-5 h-5"></i> Lägg till ny fråga</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="newFaqQ" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none font-bold" placeholder="Frågan (T.ex. Tar ni bilar i inbyte?)">
+                        <textarea id="newFaqA" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-3 text-white focus:border-orange-500 focus:outline-none resize-y" placeholder="Svaret..."></textarea>
+                        <button id="addFaqBtn" class="bg-white/10 hover:bg-orange-500 text-white px-6 py-2 rounded-md font-bold transition-all text-sm">Lägg till i listan</button>
+                    </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap">
-                        <thead>
-                            <tr
-                                class="bg-slate-900/50 text-slate-400 text-[10px] uppercase tracking-widest border-b border-slate-800">
-                                <th class="p-4 font-bold">Fordon</th>
-                                <th class="p-4 font-bold">Info</th>
-                                <th class="p-4 font-bold">Dagar</th>
-                                <th class="p-4 font-bold">Status</th>
-                                <th class="p-4 font-bold text-right">Nuvarande Pris</th>
-                                <th class="p-4 font-bold text-right">Prisjustering</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTable">
-                        </tbody>
-                    </table>
-                </div>
+                <div id="faqListContainer" class="space-y-3"></div>
             </div>
         </main>
     </div>
 
-    <script>
-        lucide.createIcons();
+    <div id="leadModal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] relative transform scale-95 transition-transform duration-300" id="leadModalInner">
+            <button onclick="closeLeadModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <div class="p-8 border-b border-slate-800">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div><h3 id="modalLeadName" class="text-2xl font-black text-white mb-1">Laddar...</h3><div id="modalLeadSubject" class="inline-flex items-center gap-1.5 text-orange-400 font-bold text-xs bg-orange-500/10 px-2.5 py-1 rounded border border-orange-500/20">Gäller: Okänt</div></div>
+                    <select id="modalLeadStatus" class="bg-slate-800 border border-slate-700 text-white font-bold rounded-lg text-sm px-4 py-2 outline-none focus:border-brand-500 cursor-pointer appearance-none shadow-inner">
+                        <option value="new">Nytt Lead</option><option value="contacted">Kontaktad</option><option value="viewing">Visning inbokad</option><option value="won">Vunnen affär</option><option value="lost">Förlorad / Inget köp</option>
+                    </select>
+                </div>
+            </div>
+            <div class="p-8 flex-1 overflow-y-auto space-y-8">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50"><div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> Telefon</div><a id="modalLeadPhone" href="#" class="text-white font-bold text-lg hover:text-brand-500 transition-colors">-</a></div>
+                    <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50"><div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1"><i data-lucide="mail" class="w-3 h-3"></i> E-post</div><a id="modalLeadEmail" href="#" class="text-white font-bold hover:text-brand-500 transition-colors break-all">-</a></div>
+                </div>
+                <div><div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Meddelande från kund</div><div id="modalLeadMessage" class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed shadow-inner font-medium"></div></div>
+                <div>
+                    <div class="flex items-center justify-between mb-2"><div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1"><i data-lucide="pen-tool" class="w-3 h-3"></i> Interna Anteckningar</div><div id="saveNotesStatus" class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 hidden opacity-0 transition-opacity duration-300"><i data-lucide="check" class="w-3 h-3 inline"></i> Sparat</div></div>
+                    <textarea id="modalLeadNotes" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-5 text-white text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none shadow-inner resize-y transition-all" placeholder="Skriv minnesanteckningar om kunden här. Det du skriver sparas automatiskt..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Konfigurera globala Chart.js-inställningar för mörkt tema
+    <div id="toast" class="fixed bottom-10 right-10 bg-emerald-500 text-white px-6 py-4 rounded-md font-bold shadow-[0_10px_30px_rgba(16,185,129,0.4)] flex items-center gap-3 transition-all transform translate-y-24 opacity-0 z-[10000]"><i data-lucide="check-circle" class="w-5 h-5"></i> <span id="toastMsg">Sparat!</span></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGMRpAkcWM48tNdmdYW73cl4WXAjCtMGw",
+            authDomain: "bmg-motorgrupp.firebaseapp.com",
+            projectId: "bmg-motorgrupp",
+            storageBucket: "bmg-motorgrupp.firebasestorage.app",
+            messagingSenderId: "76404952256",
+            appId: "1:76404952256:web:be47f7e752c4c79d62f125"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentFaqs = [];
+        let heroBgHistory = []; 
+        let globalTableData = []; 
+
+        lucide.createIcons();
         Chart.defaults.color = '#64748b';
         Chart.defaults.font.family = 'Inter';
 
-        async function initAdmin() {
+        initDashboard(); 
+        loadSettingsFromFirebase(); 
+
+        // -------------------------------------------------------------
+        // CRM & KANBAN TAVLA LOGIK (DRAG & DROP)
+        // -------------------------------------------------------------
+        let allLeads = [];
+        let currentLeadId = null;
+
+        const leadsRef = collection(db, "leads");
+        onSnapshot(leadsRef, (snapshot) => {
+            allLeads = [];
+            snapshot.forEach((doc) => {
+                allLeads.push({ id: doc.id, ...doc.data() });
+            });
+            renderKanban();
+        });
+
+        function renderKanban() {
+            const cols = { new: [], contacted: [], viewing: [], won: [], lost: [] };
+            
+            allLeads.sort((a,b) => {
+                const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+                const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+                return timeB - timeA;
+            });
+
+            allLeads.forEach(lead => {
+                if(cols[lead.status]) cols[lead.status].push(lead);
+                else cols['new'].push(lead);
+            });
+
+            ['new', 'contacted', 'viewing', 'won', 'lost'].forEach(status => {
+                const colEl = document.getElementById(`col-${status}`);
+                const countEl = document.getElementById(`count-${status}`);
+                if(!colEl) return;
+                
+                colEl.innerHTML = '';
+                countEl.innerText = cols[status].length;
+
+                cols[status].forEach(lead => {
+                    let dateStr = "Nyss";
+                    if(lead.createdAt && lead.createdAt.toDate) {
+                        const date = lead.createdAt.toDate();
+                        dateStr = date.toLocaleDateString('sv-SE', {day: 'numeric', month: 'short'});
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-800/80 p-4 rounded-xl border border-slate-700 shadow-lg cursor-grab hover:border-brand-500 hover:shadow-[0_5px_15px_rgba(249,115,22,0.15)] transition-all group pointer-events-auto active:cursor-grabbing";
+                    card.draggable = true;
+                    card.id = `lead-${lead.id}`;
+                    
+                    card.ondragstart = (e) => { 
+                        e.dataTransfer.setData("leadId", lead.id); 
+                        setTimeout(() => card.classList.add('opacity-50'), 0);
+                    };
+                    card.ondragend = () => card.classList.remove('opacity-50');
+                    card.onclick = () => openLeadModal(lead.id);
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-2 pointer-events-none">
+                            <div class="font-bold text-white text-sm group-hover:text-brand-400 transition-colors">${lead.name || 'Okänd'}</div>
+                            <div class="text-[10px] text-slate-500 font-bold bg-slate-900 px-1.5 py-0.5 rounded">${dateStr}</div>
+                        </div>
+                        <div class="text-[11px] font-semibold text-slate-400 mb-3 truncate pointer-events-none" title="${lead.subject || ''}">${lead.subject || 'Generell fråga'}</div>
+                        <div class="flex gap-2 relative z-10">
+                            ${lead.phone ? `<a href="tel:${lead.phone.replace(/\s/g, '')}" onclick="event.stopPropagation()" class="bg-slate-900 border border-slate-700 text-slate-300 p-2 rounded-lg hover:text-white hover:border-brand-500 transition-all" title="Ring"><i data-lucide="phone" class="w-3.5 h-3.5"></i></a>` : ''}
+                            ${lead.email ? `<a href="mailto:${lead.email}" onclick="event.stopPropagation()" class="bg-slate-900 border border-slate-700 text-slate-300 p-2 rounded-lg hover:text-white hover:border-brand-500 transition-all" title="Maila"><i data-lucide="mail" class="w-3.5 h-3.5"></i></a>` : ''}
+                        </div>
+                    `;
+                    colEl.appendChild(card);
+                });
+            });
+            lucide.createIcons();
+        }
+
+        window.allowDrop = (ev) => { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); };
+        window.dragLeave = (ev) => { ev.currentTarget.classList.remove('drag-over'); };
+        
+        window.drop = async (ev, newStatus) => {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            
+            const leadId = ev.dataTransfer.getData("leadId");
+            if(!leadId) return;
+
+            const lead = allLeads.find(l => l.id === leadId);
+            if(lead && lead.status !== newStatus) {
+                lead.status = newStatus;
+                renderKanban();
+                try { await updateDoc(doc(db, "leads", leadId), { status: newStatus }); } 
+                catch(e) { console.error("Fel vid flytt av lead:", e); alert("Kunde inte flytta kortet!"); }
+            }
+        }
+
+        window.openLeadModal = function(id) {
+            const lead = allLeads.find(l => l.id === id);
+            if(!lead) return;
+            currentLeadId = id;
+            
+            document.getElementById('modalLeadName').innerText = lead.name || 'Okänd Kund';
+            document.getElementById('modalLeadSubject').innerHTML = `Gäller: ${lead.subject || 'Generell Fråga'}`;
+            
+            const phoneEl = document.getElementById('modalLeadPhone');
+            phoneEl.innerText = lead.phone || '-';
+            phoneEl.href = lead.phone ? `tel:${lead.phone.replace(/\s/g, '')}` : '#';
+
+            const emailEl = document.getElementById('modalLeadEmail');
+            emailEl.innerText = lead.email || '-';
+            emailEl.href = lead.email ? `mailto:${lead.email}` : '#';
+
+            document.getElementById('modalLeadMessage').innerText = lead.message || 'Inget meddelande angivet.';
+            document.getElementById('modalLeadNotes').value = lead.notes || '';
+            document.getElementById('modalLeadStatus').value = lead.status || 'new';
+
+            const modal = document.getElementById('leadModal');
+            const modalInner = document.getElementById('leadModalInner');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modalInner.classList.remove('scale-95'); }, 10);
+        }
+
+        window.closeLeadModal = function() {
+            const modal = document.getElementById('leadModal');
+            const modalInner = document.getElementById('leadModalInner');
+            modal.classList.add('opacity-0');
+            modalInner.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); currentLeadId = null; }, 300);
+        }
+
+        let noteTimeout;
+        document.getElementById('modalLeadNotes').addEventListener('input', (e) => {
+            if(!currentLeadId) return;
+            clearTimeout(noteTimeout);
+            
+            const statusEl = document.getElementById('saveNotesStatus');
+            statusEl.classList.remove('hidden', 'opacity-0');
+            statusEl.innerHTML = '<div class="w-3 h-3 border-2 border-brand-500 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Sparar...';
+            statusEl.className = "text-[10px] font-bold uppercase tracking-widest text-brand-500 transition-opacity duration-300";
+            
+            noteTimeout = setTimeout(async () => {
+                try {
+                    await updateDoc(doc(db, "leads", currentLeadId), { notes: e.target.value });
+                    statusEl.innerHTML = '<i data-lucide="check" class="w-3 h-3 inline"></i> Sparat!';
+                    statusEl.className = "text-[10px] font-bold uppercase tracking-widest text-emerald-500 transition-opacity duration-1000";
+                    lucide.createIcons();
+                    setTimeout(() => { statusEl.classList.add('opacity-0'); }, 2000);
+                } catch(err) {
+                     statusEl.innerText = "Fel vid sparning!";
+                     statusEl.className = "text-[10px] font-bold uppercase tracking-widest text-red-500";
+                }
+            }, 1000); 
+        });
+
+        document.getElementById('modalLeadStatus').addEventListener('change', async (e) => {
+            if(!currentLeadId) return;
+            try { await updateDoc(doc(db, "leads", currentLeadId), { status: e.target.value }); showToast("Säljstatus uppdaterad!"); } catch(err) {}
+        });
+
+        // -------------------------------------------------------------
+        // ÖVRIG ADMIN LOGIK (FLIKAR, CMS, DASHBOARD)
+        // -------------------------------------------------------------
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-white/10', 'text-white');
+                el.classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.querySelector(`.tab-btn[data-target="${tabId}"]`).classList.add('bg-white/10', 'text-white');
+            document.querySelector(`.tab-btn[data-target="${tabId}"]`).classList.remove('text-slate-400');
+        };
+
+        const heroBgInput = document.getElementById('cms_heroBg');
+        const heroPreviewBox = document.getElementById('heroPreviewBox');
+        heroBgInput.addEventListener('input', (e) => { heroPreviewBox.style.backgroundImage = `url('${e.target.value}')`; });
+        document.getElementById('cms_metaTitle').addEventListener('input', e => { document.getElementById('seoPreviewTitle').innerText = e.target.value || 'BMG Motorgrupp - Kvalitet & Transparens'; });
+        document.getElementById('cms_metaDesc').addEventListener('input', e => { document.getElementById('seoPreviewDesc').innerText = e.target.value || 'Specialister på begagnade personbilar...'; });
+
+        function renderHistoryThumbnails() {
+            const container = document.getElementById('heroHistoryContainer');
+            container.innerHTML = '';
+            heroBgHistory.forEach(url => {
+                if(!url) return;
+                const thumb = document.createElement('div');
+                thumb.className = "w-16 h-12 bg-cover bg-center rounded border border-slate-700 cursor-pointer hover:border-orange-500 transition-colors shrink-0";
+                thumb.style.backgroundImage = `url('${url}')`;
+                thumb.onclick = () => { heroBgInput.value = url; heroPreviewBox.style.backgroundImage = `url('${url}')`; };
+                container.appendChild(thumb);
+            });
+        }
+
+        async function loadSettingsFromFirebase() {
+            try {
+                const docSnap = await getDoc(doc(db, "site_settings", "main"));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('cms_heroBg').value = data.heroBg || "";
+                    document.getElementById('cms_heroBadge').value = data.heroBadge || "";
+                    document.getElementById('cms_heroTitle1').value = data.heroTitle1 || "";
+                    document.getElementById('cms_heroTitle2').value = data.heroTitle2 || "";
+                    document.getElementById('cms_heroSubtitle').value = data.heroSubtitle || "";
+                    document.getElementById('cms_aboutText').value = data.aboutText || "";
+                    document.getElementById('cms_metaTitle').value = data.metaTitle || "";
+                    document.getElementById('cms_metaDesc').value = data.metaDesc || "";
+                    document.getElementById('seoPreviewTitle').innerText = data.metaTitle || 'BMG Motorgrupp - Kvalitet & Transparens';
+                    document.getElementById('seoPreviewDesc').innerText = data.metaDesc || 'Specialister på begagnade personbilar...';
+                    document.getElementById('cms_phone').value = data.phone || "";
+                    document.getElementById('cms_email').value = data.email || "";
+                    document.getElementById('cms_address').value = data.address || "";
+                    document.getElementById('cms_hoursWeek').value = data.hoursWeek || "";
+                    document.getElementById('cms_hoursWeekend').value = data.hoursWeekend || "";
+                    document.getElementById('cms_instagram').value = data.instagram || "";
+                    document.getElementById('cms_facebook').value = data.facebook || "";
+
+                    if(data.heroBg) heroPreviewBox.style.backgroundImage = `url('${data.heroBg}')`;
+                    if(data.heroBgHistory) { heroBgHistory = data.heroBgHistory; renderHistoryThumbnails(); }
+                    if(data.faqs) { currentFaqs = data.faqs; renderFaqs(); }
+                }
+            } catch (error) { console.error("Kunde inte hämta data:", error); }
+        }
+
+        async function saveSettingsToFirebase() {
+            const saveBtns = document.querySelectorAll('.saveSettingsBtn');
+            saveBtns.forEach(btn => btn.innerHTML = '<div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Sparar...');
+
+            const newBg = document.getElementById('cms_heroBg').value;
+            if (newBg && !heroBgHistory.includes(newBg)) {
+                heroBgHistory.unshift(newBg);
+                if (heroBgHistory.length > 5) heroBgHistory.pop(); 
+                renderHistoryThumbnails();
+            }
+
+            const dataToSave = {
+                heroBg: newBg, heroBgHistory: heroBgHistory,
+                heroBadge: document.getElementById('cms_heroBadge').value,
+                heroTitle1: document.getElementById('cms_heroTitle1').value,
+                heroTitle2: document.getElementById('cms_heroTitle2').value,
+                heroSubtitle: document.getElementById('cms_heroSubtitle').value,
+                aboutText: document.getElementById('cms_aboutText').value,
+                metaTitle: document.getElementById('cms_metaTitle').value,
+                metaDesc: document.getElementById('cms_metaDesc').value,
+                phone: document.getElementById('cms_phone').value,
+                email: document.getElementById('cms_email').value,
+                address: document.getElementById('cms_address').value,
+                hoursWeek: document.getElementById('cms_hoursWeek').value,
+                hoursWeekend: document.getElementById('cms_hoursWeekend').value,
+                instagram: document.getElementById('cms_instagram').value,
+                facebook: document.getElementById('cms_facebook').value,
+                faqs: currentFaqs
+            };
+
+            try { await setDoc(doc(db, "site_settings", "main"), dataToSave, { merge: true }); showToast("Ändringarna publicerades!"); } 
+            catch (error) { alert("Något gick fel vid sparning."); } 
+            finally { saveBtns.forEach(btn => btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Spara ändringar'); lucide.createIcons(); }
+        }
+
+        document.querySelectorAll('.saveSettingsBtn').forEach(btn => btn.addEventListener('click', saveSettingsToFirebase));
+
+        function renderFaqs() {
+            const container = document.getElementById('faqListContainer');
+            container.innerHTML = '';
+            currentFaqs.forEach((faq, index) => {
+                container.innerHTML += `<div class="glass-panel p-4 rounded-md flex justify-between items-start gap-4"><div><div class="font-bold text-white mb-1">Q: ${faq.q}</div><div class="text-sm text-slate-400">A: ${faq.a}</div></div><button onclick="removeFaq(${index})" class="text-slate-500 hover:text-red-500 transition-colors p-2"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`;
+            });
+            lucide.createIcons();
+        }
+        window.removeFaq = function(index) { currentFaqs.splice(index, 1); renderFaqs(); };
+        document.getElementById('addFaqBtn').addEventListener('click', () => {
+            const q = document.getElementById('newFaqQ').value, a = document.getElementById('newFaqA').value;
+            if(q && a) { currentFaqs.push({ q, a }); renderFaqs(); document.getElementById('newFaqQ').value = ''; document.getElementById('newFaqA').value = ''; }
+        });
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        }
+
+        async function initDashboard() {
             try {
                 let cars = [];
                 try {
-                    // FELET LÅG HÄR: Vi byter till den absoluta (fullständiga) Netlify-länken
                     const response = await fetch('https://bmgmotorgrupp.netlify.app/.netlify/functions/getCars');
-                    if (!response.ok) throw new Error("Kunde inte hämta från Netlify");
+                    if (!response.ok) throw new Error("Kunde inte hämta");
                     cars = await response.json();
                 } catch (e) {
-                    console.warn("Netlify misslyckades, försöker med lokal fil...", e);
                     const localResp = await fetch('./bilar.json');
                     cars = await localResp.json();
                 }
-
-                document.getElementById('lastUpdated').textContent = "DATA UPPDATERAD JUST NU";
+                document.getElementById('lastUpdated').textContent = "DATA UPPDATERAD";
                 document.getElementById('statusDot').classList.replace('bg-orange-500', 'bg-green-500');
-
-                processData(cars);
+                processDashboardData(cars);
             } catch (err) {
-                console.error("Kunde varken hämta från API eller JSON:", err);
                 document.getElementById('lastUpdated').textContent = "KUNDE INTE HÄMTA DATA";
                 document.getElementById('statusDot').classList.replace('bg-orange-500', 'bg-red-500');
             }
         }
 
-        function processData(cars) {
-            let totalValue = 0;
-            let totalMilage = 0;
-            let totalDays = 0;
-            let ecoCount = 0;
-            let coldCarsCount = 0;
+        window.renderTable = function(sortMethod = 'oldest') {
+            let sortedData = [...globalTableData];
+            if (sortMethod === 'oldest') sortedData.sort((a, b) => b.diffDays - a.diffDays);
+            if (sortMethod === 'newest') sortedData.sort((a, b) => a.diffDays - b.diffDays);
+            if (sortMethod === 'price-desc') sortedData.sort((a, b) => b.price - a.price);
+            if (sortMethod === 'price-asc') sortedData.sort((a, b) => a.price - b.price);
+            if (sortMethod === 'discount') sortedData.sort((a, b) => b.discount - a.discount);
 
-            const brandCounts = {};
-            const fuelCounts = {};
+            const tbody = document.getElementById('inventoryTable');
+            tbody.innerHTML = '';
+            sortedData.forEach(car => {
+                let statusBadge = car.diffDays > 60 ? '<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase flex items-center gap-1 w-fit"><i data-lucide="alert-octagon" class="w-3 h-3"></i> Långliggare</span>' : car.diffDays <= 14 ? '<span class="bg-orange-500/20 text-orange-400 px-2 py-1 rounded text-[10px] font-bold uppercase flex items-center gap-1 w-fit"><i data-lucide="flame" class="w-3 h-3"></i> Nyinkommen</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-bold uppercase flex items-center gap-1 w-fit"><i data-lucide="check-circle" class="w-3 h-3"></i> Aktiv</span>';
+                const discountHtml = car.discount > 0 ? `<span class="text-orange-400 font-bold bg-orange-500/10 px-2 py-1 rounded">-${car.discount.toLocaleString('sv-SE')} kr</span>` : '<span class="text-slate-700">-</span>';
+
+                tbody.innerHTML += `<tr class="border-b border-slate-800/50 hover:bg-white/5 transition-colors group"><td class="p-4"><img src="${car.imageUrl}" class="w-14 h-10 object-cover rounded shadow-sm border border-white/10" alt="Bil"></td><td class="p-4"><div class="font-bold text-white truncate max-w-[250px] mb-1.5"><span class="text-orange-500 uppercase tracking-wider text-xs">${car.make}</span> <span class="text-sm">${car.model}</span></div><div class="flex items-center gap-2"><div class="text-[10px] font-mono font-bold text-slate-300 bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">${car.regNo} <a href="https://biluppgifter.se/fordon/${car.regNo}" target="_blank" class="text-slate-400 hover:text-blue-400 transition-colors" title="Slå upp"><i data-lucide="external-link" class="w-3 h-3"></i></a></div><span class="text-slate-600 text-[10px]">•</span><div class="text-[10px] text-slate-400">${car.year}</div><span class="text-slate-600 text-[10px]">•</span><div class="text-[10px] text-slate-400">${car.milage.toLocaleString('sv-SE')} mil</div></div></td><td class="p-4"><div class="font-mono text-lg ${car.diffDays > 60 ? 'text-red-400 font-bold' : 'text-slate-300'}">${car.diffDays} dgr</div><div class="text-[10px] text-slate-500 font-bold mt-1">Inkom: ${car.pubDateStr}</div></td><td class="p-4">${statusBadge}</td><td class="p-4 text-right"><div class="font-bold text-white">${car.price.toLocaleString('sv-SE')} kr</div></td><td class="p-4 text-right">${discountHtml}</td></tr>`;
+            });
+            lucide.createIcons();
+        }
+
+        function processDashboardData(cars) {
+            let totalValue = 0, coldCarsCount = 0, riskCapital = 0, totalDiscount = 0;
             const ageZones = { '0-30 dgr': 0, '31-60 dgr': 0, '60+ dgr': 0 };
+            const brandDays = {}; const brandCounts = {};
 
-            const tableData = cars.map(car => {
-                const make = car.make || 'Okänt märke';
-                const model = car.model || '';
-                const regNo = car.regNo || 'SAKNAS';
-                const price = car.price?.value || 0;
-                const prevPrice = car.price?.previousValue || null;
-                const milage = car.milage || 0;
-                const year = car.modelYear || '-';
-                const fuel = car.fuel || 'Okänt';
-                const isEco = car.isEco || false;
-
-                // FELSÄKERT DATUM: Om bilen saknar publiceringsdatum slipper vi att grafen kraschar (blir NaN)
+            globalTableData = cars.map(car => {
+                const make = car.make || 'Okänt', model = car.model || '', regNo = car.regNo || 'SAKNAS', price = car.price?.value || 0, prevPrice = car.price?.previousValue || null, milage = car.milage || 0, year = car.modelYear || 0;
+                const imageUrl = car.images?.[0]?.imageFormats?.[0]?.url || "https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=200&q=80";
                 const pubDate = car.publishedDate ? new Date(car.publishedDate) : new Date();
                 const diffDays = car.publishedDate ? Math.max(0, Math.ceil((new Date() - pubDate) / (1000 * 60 * 60 * 24))) : 0;
                 const pubDateStr = car.publishedDate ? pubDate.toLocaleDateString('sv-SE') : 'Okänt';
 
                 totalValue += price;
-                totalMilage += milage;
-                totalDays += diffDays;
-                if (isEco) ecoCount++;
+                if(diffDays <= 30) ageZones['0-30 dgr']++;
+                else if(diffDays <= 60) ageZones['31-60 dgr']++;
+                else { ageZones['60+ dgr']++; coldCarsCount++; riskCapital += price; }
 
-                brandCounts[make] = (brandCounts[make] || 0) + 1;
-                fuelCounts[fuel] = (fuelCounts[fuel] || 0) + 1;
-
-                if (diffDays <= 30) ageZones['0-30 dgr']++;
-                else if (diffDays <= 60) ageZones['31-60 dgr']++;
-                else { ageZones['60+ dgr']++; coldCarsCount++; }
+                if (!brandDays[make]) { brandDays[make] = 0; brandCounts[make] = 0; }
+                brandDays[make] += diffDays; brandCounts[make]++;
 
                 let discount = 0;
-                if (prevPrice && prevPrice > price) {
-                    discount = prevPrice - price;
-                }
-
-                return { make, model, regNo, price, discount, milage, year, diffDays, pubDateStr };
+                if (prevPrice && prevPrice > price) { discount = prevPrice - price; totalDiscount += discount; }
+                return { make, model, regNo, price, discount, milage, year, diffDays, pubDateStr, imageUrl };
             });
-
-            tableData.sort((a, b) => b.diffDays - a.diffDays);
 
             document.getElementById('kpiCount').textContent = cars.length;
             document.getElementById('kpiValue').textContent = totalValue.toLocaleString('sv-SE') + " kr";
-            document.getElementById('kpiAvgPrice').textContent = cars.length ? Math.round(totalValue / cars.length).toLocaleString('sv-SE') + " kr" : "0 kr";
-            document.getElementById('kpiAvgMilage').textContent = cars.length ? `Snittmiltal: ${Math.round(totalMilage / cars.length).toLocaleString('sv-SE')} mil` : "0 mil";
-            document.getElementById('kpiAvgTime').textContent = cars.length ? Math.round(totalDays / cars.length) + " dgr" : "0 dgr";
-            document.getElementById('kpiEco').textContent = `${ecoCount} st Miljöbilar (${Math.round((ecoCount / cars.length) * 100)}%)`;
-            document.getElementById('kpiCold').textContent = `${coldCarsCount} bilar har stått över 60 dagar`;
+            document.getElementById('kpiRisk').textContent = riskCapital.toLocaleString('sv-SE') + " kr";
+            document.getElementById('kpiDiscount').textContent = "-" + totalDiscount.toLocaleString('sv-SE') + " kr";
+            
+            document.getElementById('tableSorter').addEventListener('change', (e) => window.renderTable(e.target.value));
+            window.renderTable('oldest');
 
-            const tbody = document.getElementById('inventoryTable');
-            tbody.innerHTML = '';
-            tableData.forEach(car => {
-                let statusBadge = '';
-                if (car.diffDays > 60) statusBadge = '<span class="bg-red-500/20 border border-red-500/30 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase shadow-[0_0_10px_rgba(239,68,68,0.2)]">🚨 Långliggare</span>';
-                else if (car.diffDays <= 7) statusBadge = '<span class="bg-orange-500/20 border border-orange-500/30 text-orange-400 px-2 py-1 rounded text-[10px] font-bold uppercase shadow-[0_0_10px_rgba(249,115,22,0.2)]">🔥 Ny</span>';
-                else statusBadge = '<span class="bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-2 py-1 rounded text-[10px] font-bold uppercase">✅ Aktiv</span>';
+            const turnoverData = Object.keys(brandDays).map(make => ({ make: make, avgDays: Math.round(brandDays[make] / brandCounts[make]) })).sort((a, b) => b.avgDays - a.avgDays);
 
-                const discountHtml = car.discount > 0
-                    ? `<span class="text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded border border-red-500/20">-${car.discount.toLocaleString('sv-SE')} kr</span>`
-                    : '<span class="text-slate-700">-</span>';
-
-                tbody.innerHTML += `
-                <tr class="border-b border-slate-800/50 hover:bg-white/5 transition-colors group">
-                    <td class="p-4">
-                        <div class="font-bold text-white">${car.make}</div>
-                        <div class="text-xs text-slate-400 truncate max-w-[200px]" title="${car.model}">${car.model}</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="text-xs font-mono font-bold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded inline-block border border-slate-700">${car.regNo}</div>
-                        <div class="text-[10px] text-slate-500 mt-1">${car.year} | ${car.milage.toLocaleString('sv-SE')} mil</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="font-mono text-lg ${car.diffDays > 60 ? 'text-red-400 font-bold' : 'text-slate-300'}">${car.diffDays} dgr</div>
-                        <div class="text-[10px] text-slate-500 font-bold mt-1">Inkom: ${car.pubDateStr}</div>
-                    </td>
-                    <td class="p-4">${statusBadge}</td>
-                    <td class="p-4 text-right">
-                        <div class="font-bold text-white">${car.price.toLocaleString('sv-SE')} kr</div>
-                    </td>
-                    <td class="p-4 text-right">${discountHtml}</td>
-                </tr>
-            `;
-            });
-
-            const sortedBrands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]);
-
-            new Chart(document.getElementById('brandChart'), {
+            new Chart(document.getElementById('turnoverChart'), {
                 type: 'bar',
-                data: {
-                    labels: sortedBrands.map(b => b[0]),
-                    datasets: [{
-                        data: sortedBrands.map(b => b[1]),
-                        backgroundColor: '#f97316',
-                        borderRadius: 4,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            new Chart(document.getElementById('fuelChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(fuelCounts),
-                    datasets: [{
-                        data: Object.values(fuelCounts),
-                        backgroundColor: ['#f97316', '#3b82f6', '#10b981', '#6366f1', '#8b5cf6'],
-                        borderWidth: 0, hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } },
-                    cutout: '70%'
-                }
+                data: { labels: turnoverData.map(d => d.make), datasets: [{ label: 'Snitt dagar i lager', data: turnoverData.map(d => d.avgDays), backgroundColor: '#f97316', borderRadius: 4 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }, y: { grid: { display: false } } } }
             });
 
             new Chart(document.getElementById('ageChart'), {
                 type: 'pie',
-                data: {
-                    labels: Object.keys(ageZones),
-                    datasets: [{
-                        data: Object.values(ageZones),
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }
-                }
+                data: { labels: Object.keys(ageZones), datasets: [{ data: Object.values(ageZones), backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } } }
             });
         }
-
-        initAdmin();
     </script>
 </body>
-
 </html>
