@@ -26,7 +26,7 @@ const FinanceModal = ({ financeCar, setFinanceCar }) => {
     const monthlyCost = Math.round((loanAmount * monthlyInterest) / (1 - Math.pow(1 + monthlyInterest, -calcMonths)));
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center px-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4 animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-brand-950/90 backdrop-blur-md" onClick={() => setFinanceCar(null)}></div>
             <div className="relative bg-brand-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95">
                 <div className="p-6 border-b border-white/5 flex justify-between items-center bg-brand-950">
