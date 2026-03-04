@@ -1,4 +1,4 @@
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect, useMemo, useRef } = React;
 
 // --- KRASCHSÄKRA HJÄLPFUNKTIONER ---
 const parseNumber = (val) => {
@@ -7,53 +7,57 @@ const parseNumber = (val) => {
         const match = String(val).replace(/\D/g, '');
         const num = parseInt(match, 10);
         return isNaN(num) ? 0 : num;
-    } catch (e) {
-        return 0;
-    }
+    } catch (e) { return 0; }
 };
 
 const calculateMonthlyCost = (priceStr, downPaymentPercent = 0.2, interest = 0.0795, years = 6) => {
     const price = parseNumber(priceStr);
     if (price <= 0) return "0";
-
     const loanAmount = price * (1 - downPaymentPercent);
     const monthlyInterest = interest / 12;
     const numberOfPayments = years * 12;
-
     const monthlyPayment = (loanAmount * monthlyInterest) / (1 - Math.pow(1 + monthlyInterest, -numberOfPayments));
-
     return Math.round(monthlyPayment).toLocaleString('sv-SE');
 };
 
+// --- UPPDATERAD: Skapar och delar nu direktlänkar till er egen sida! ---
 const handleShare = (car) => {
+    const carUrl = `${window.location.origin}${window.location.pathname}?bil=${car.id}`;
     const shareData = {
         title: `Kolla in denna ${car.brand} ${car.model}!`,
         text: `Jag hittade denna snygga ${car.brand} ${car.model} (${car.year}, ${car.mil}) för ${car.price} hos BMG Motorgrupp.`,
-        url: "https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp"
+        url: carUrl
     };
-
     if (navigator.share) {
         navigator.share(shareData).catch((error) => console.log('Delning avbruten', error));
     } else {
-        navigator.clipboard.writeText(`${shareData.text} Länk: ${shareData.url}`);
-        alert("Länk och info har kopierats till urklipp. Klistra in för att skicka till en vän!");
+        navigator.clipboard.writeText(`${shareData.text}\nLänk: ${shareData.url}`);
+        alert("Länk kopierad till urklipp!");
     }
 };
 
-// --- LIGHTBOX GALLERI (Lyfts ut ur sidan via Portal) ---
-const Lightbox = ({ images, initialIndex, onClose }) => {
-    const [currentIndex, setCurrentIndex] = useState(initialIndex);
+// ============================================================================
+// MEGA MODAL (DEDIKERAD BILSIDA)
+// ============================================================================
+const CarDetailsModal = ({ car, initialIndex = 0, onClose, setFinanceCar, calculateMonthlyCost }) => {
+    const [currentImg, setCurrentImg] = useState(initialIndex);
+    const [imgLoaded, setImgLoaded] = useState(false);
+    const [formSent, setFormSent] = useState(false);
+    const thumbnailsRef = useRef([]);
 
-    const nextImg = (e) => {
-        e?.stopPropagation();
-        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-    };
+    const nextImg = (e) => { e?.stopPropagation(); setCurrentImg((prev) => (prev === car.images.length - 1 ? 0 : prev + 1)); };
+    const prevImg = (e) => { e?.stopPropagation(); setCurrentImg((prev) => (prev === 0 ? car.images.length - 1 : prev - 1)); };
 
-    const prevImg = (e) => {
-        e?.stopPropagation();
-        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-    };
+    useEffect(() => { setImgLoaded(false); }, [currentImg]);
 
+    // Scrolla miniatyrer
+    useEffect(() => {
+        if (thumbnailsRef.current[currentImg]) {
+            thumbnailsRef.current[currentImg].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }, [currentImg]);
+
+    // Lyssna på Escape
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') onClose();
@@ -61,95 +65,274 @@ const Lightbox = ({ images, initialIndex, onClose }) => {
             if (e.key === 'ArrowLeft') prevImg();
         };
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [images]);
+        document.body.style.overflow = 'hidden'; 
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'unset';
+        };
+    }, [car.images]);
+
+    const handleInterestSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        
+        // HÄR LÄGGER DU IN DIN NYCKEL NÄR DU VILL AKTIVERA MAIL-FUNKTIONEN
+        // formData.append("access_key", "DIN_WEB3FORMS_NYCKEL_HÄR"); 
+
+        setFormSent(true);
+        setTimeout(() => { onClose(); }, 3000);
+        
+        /* Avkommentera detta när du har din nyckel
+        try {
+            const response = await fetch("https://api.web3forms.com/submit", { method: "POST", body: formData });
+            if (response.ok) { setFormSent(true); setTimeout(() => { onClose(); }, 3000); } 
+            else { alert("Något gick fel. Vänligen försök igen."); }
+        } catch (error) { alert("Något gick fel."); }
+        */
+    };
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-brand-950/95 backdrop-blur-xl flex flex-col animate-in fade-in duration-300" onClick={onClose}>
-            <div className="absolute top-4 left-4 z-[100] text-white/80 font-bold tracking-widest text-sm bg-black/50 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md">
-                {currentIndex + 1} / {images.length}
-            </div>
+        <div className="fixed inset-0 z-[9999] flex animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-brand-950/90 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
             
-            <button onClick={onClose} className="absolute top-4 right-4 z-[100] w-12 h-12 bg-white/10 hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-md border border-white/10">
-                <window.Icon name="x" size={24} />
-            </button>
-
-            <div className="flex-1 flex items-center justify-center relative px-4 md:px-16" onClick={(e) => e.stopPropagation()}>
-                <button onClick={prevImg} className="absolute left-4 md:left-8 w-12 h-12 md:w-14 md:h-14 bg-black/50 hover:bg-brand-500 border border-white/10 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-md z-[100]">
-                    <window.Icon name="chevron-left" size={32} />
-                </button>
+            <div className="relative w-full max-w-[1600px] mx-auto my-auto h-[100dvh] md:h-[95vh] md:rounded-[2rem] bg-brand-950 shadow-2xl flex flex-col lg:flex-row overflow-hidden border border-white/10 animate-in zoom-in-95 duration-300">
                 
-                <img 
-                    src={images[currentIndex]} 
-                    alt="Bilstudie" 
-                    className="max-h-[75vh] max-w-full object-contain drop-shadow-2xl rounded-lg animate-in zoom-in-95 duration-300"
-                    key={currentIndex} 
-                />
-
-                <button onClick={nextImg} className="absolute right-4 md:right-8 w-12 h-12 md:w-14 md:h-14 bg-black/50 hover:bg-brand-500 border border-white/10 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-md z-[100]">
-                    <window.Icon name="chevron-right" size={32} />
+                <button onClick={onClose} className="hidden lg:flex absolute top-6 right-6 z-50 w-12 h-12 bg-white/5 hover:bg-brand-500 border border-white/10 text-white rounded-full items-center justify-center transition-all backdrop-blur-md">
+                    <window.Icon name="x" size={24} />
                 </button>
-            </div>
 
-            <div className="h-24 md:h-32 bg-black/50 border-t border-white/10 flex items-center px-4 overflow-x-auto gap-2 no-scrollbar" onClick={(e) => e.stopPropagation()}>
-                <div className="flex gap-2 mx-auto">
-                    {images.map((img, idx) => (
-                        <button 
-                            key={idx} 
-                            onClick={() => setCurrentIndex(idx)}
-                            className={`h-16 w-24 md:h-20 md:w-32 rounded-lg overflow-hidden shrink-0 transition-all border border-white/10 ${currentIndex === idx ? 'ring-2 ring-brand-500 opacity-100 scale-105' : 'opacity-40 hover:opacity-100'}`}
-                        >
-                            <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
+                {/* VÄNSTER SPALT: BILDGALLERI */}
+                <div className="w-full lg:w-[55%] h-[40vh] lg:h-full bg-black relative flex flex-col shrink-0">
+                    <div className="absolute top-4 left-4 z-50 text-white/80 font-bold tracking-widest text-sm bg-black/50 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md">
+                        {currentImg + 1} / {car.images.length}
+                    </div>
+                    <button onClick={onClose} className="lg:hidden absolute top-4 right-4 z-50 w-10 h-10 bg-black/50 border border-white/10 text-white rounded-full flex items-center justify-center backdrop-blur-md">
+                        <window.Icon name="x" size={20} />
+                    </button>
+
+                    <div className="flex-1 relative flex items-center justify-center group overflow-hidden">
+                        <button onClick={prevImg} className="absolute left-4 z-10 w-12 h-12 bg-black/50 hover:bg-brand-500 border border-white/10 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-md lg:opacity-0 lg:group-hover:opacity-100">
+                            <window.Icon name="chevron-left" size={24} />
                         </button>
-                    ))}
+                        
+                        {!imgLoaded && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-10 h-10 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin"></div>
+                            </div>
+                        )}
+
+                        <img 
+                            src={car.images[currentImg]} 
+                            alt={`${car.brand} ${car.model}`} 
+                            onLoad={() => setImgLoaded(true)}
+                            className={`max-h-full max-w-full object-contain transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                            key={currentImg}
+                        />
+
+                        <button onClick={nextImg} className="absolute right-4 z-10 w-12 h-12 bg-black/50 hover:bg-brand-500 border border-white/10 text-white rounded-full flex items-center justify-center transition-all backdrop-blur-md lg:opacity-0 lg:group-hover:opacity-100">
+                            <window.Icon name="chevron-right" size={24} />
+                        </button>
+                    </div>
+
+                    {/* Thumbnails */}
+                    <div className="h-20 lg:h-28 bg-brand-950/50 border-t border-white/10 flex items-center px-4 overflow-x-auto gap-2 no-scrollbar shrink-0 scroll-smooth">
+                        {car.images.map((img, idx) => (
+                            <button 
+                                key={idx} 
+                                ref={el => thumbnailsRef.current[idx] = el}
+                                onClick={() => setCurrentImg(idx)} 
+                                className={`h-14 w-20 lg:h-20 lg:w-28 rounded-lg overflow-hidden shrink-0 transition-all border ${currentImg === idx ? 'border-brand-500 ring-2 ring-brand-500/50 opacity-100 scale-105' : 'border-white/5 opacity-40 hover:opacity-100'}`}
+                            >
+                                <img src={img} alt={`Bild ${idx+1}`} className="w-full h-full object-cover" />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* HÖGER SPALT: INFO & FORMULÄR */}
+                <div className="w-full lg:w-[45%] h-[60vh] lg:h-full overflow-y-auto no-scrollbar bg-brand-950 relative">
+                    <div className="p-6 lg:p-10 space-y-10">
+                        
+                        {/* Header & Pris */}
+                        <div>
+                            <div className="flex justify-between items-start mb-2 pr-12 lg:pr-16">
+                                <div className="text-brand-500 font-black tracking-[0.2em] text-xs uppercase">{car.brand}</div>
+                                {car.regNo && <div className="bg-white/5 text-white/80 font-mono text-[10px] px-2 py-1 rounded border border-white/10 uppercase tracking-widest">{car.regNo}</div>}
+                            </div>
+                            
+                            <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight mb-6 pr-8 lg:pr-16 break-words">{car.model}</h2>
+                            
+                            <div className="flex flex-wrap items-center gap-4 lg:gap-8 bg-brand-900 border border-white/5 p-6 rounded-2xl">
+                                <div>
+                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                        Kontantpris {car.showVat && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded border border-green-500/30">MOMS</span>}
+                                    </div>
+                                    <div className="text-4xl font-black text-white whitespace-nowrap">{car.price}</div>
+                                </div>
+                                <div className="hidden lg:block w-px h-12 bg-white/10"></div>
+                                <button onClick={() => setFinanceCar(car)} className="flex-1 bg-brand-500/10 hover:bg-brand-500 text-brand-500 hover:text-white border border-brand-500/20 transition-all rounded-xl p-3 flex flex-col justify-center group outline-none">
+                                    <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1.5 opacity-80 group-hover:opacity-100"><window.Icon name="calculator" size={12}/> Finansiering</div>
+                                    <div className="text-lg font-bold">Från {calculateMonthlyCost(car.price)} kr/mån</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Formulär - Intresseanmälan (Uppdaterat för Web3Forms) */}
+                        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 lg:p-8 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 blur-3xl rounded-full pointer-events-none"></div>
+                            <h3 className="text-xl font-black text-white mb-2 flex items-center gap-2">
+                                <window.Icon name="mail" className="text-brand-500" size={20} /> Är du intresserad?
+                            </h3>
+                            <p className="text-sm text-slate-400 mb-6">Skicka en förfrågan så återkommer vi till dig så fort som möjligt. Inget är bindande.</p>
+                            
+                            {formSent ? (
+                                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 text-center animate-in fade-in">
+                                    <window.Icon name="check-circle" className="text-green-500 mx-auto mb-2" size={32} />
+                                    <div className="text-green-400 font-bold text-lg mb-1">Förfrågan skickad!</div>
+                                    <div className="text-green-400/80 text-sm">Vi hör av oss inom kort angående denna {car.brand}.</div>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleInterestSubmit} className="space-y-4 relative z-10">
+                                    <input type="hidden" name="subject" value={`Intresseanmälan: ${car.brand} ${car.model} (${car.regNo})`} />
+
+                                    <div>
+                                        <label htmlFor="modal-name" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Namn</label>
+                                        <input type="text" id="modal-name" name="name" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Ditt namn" />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="modal-phone" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Telefon</label>
+                                            <input type="tel" id="modal-phone" name="phone" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Ditt telefonnummer" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="modal-email" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">E-post</label>
+                                            <input type="email" id="modal-email" name="email" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Din e-post" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label htmlFor="modal-message" className="block text-sm font-semibold text-slate-400 mb-2 cursor-pointer">Meddelande</label>
+                                        <textarea id="modal-message" name="message" rows="4" required className="w-full bg-brand-950 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-y" defaultValue={`Hej! Jag är intresserad av er ${car.brand} ${car.model} (${car.regNo}). Finns den kvar?`}></textarea>
+                                    </div>
+                                    
+                                    <button type="submit" className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-lg transition-all hover:scale-[1.02] flex justify-center items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-white mt-2 shadow-[0_0_20px_rgba(249,115,22,0.15)]">
+                                        <window.Icon name="send" size={18} /> Skicka intresseanmälan
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+
+                        {/* Snabbfakta */}
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Fordonsfakta</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-brand-900 border border-white/5 p-4 rounded-xl flex items-center gap-3"><window.Icon name="calendar" className="text-slate-500 shrink-0" size={20} /><div><div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">Årsmodell</div><div className="text-white font-semibold text-sm">{car.year}</div></div></div>
+                                <div className="bg-brand-900 border border-white/5 p-4 rounded-xl flex items-center gap-3"><window.Icon name="gauge" className="text-slate-500 shrink-0" size={20} /><div><div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">Miltal</div><div className="text-white font-semibold text-sm">{car.mil}</div></div></div>
+                                <div className="bg-brand-900 border border-white/5 p-4 rounded-xl flex items-center gap-3"><window.Icon name="settings-2" className="text-slate-500 shrink-0" size={20} /><div><div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">Växellåda</div><div className="text-white font-semibold text-sm">{car.gear}</div></div></div>
+                                <div className="bg-brand-900 border border-white/5 p-4 rounded-xl flex items-center gap-3"><window.Icon name="fuel" className="text-slate-500 shrink-0" size={20} /><div><div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">Drivmedel</div><div className="text-white font-semibold text-sm">{car.fuel}</div></div></div>
+                                {car.hp && <div className="bg-brand-900 border border-white/5 p-4 rounded-xl flex items-center gap-3"><window.Icon name="zap" className="text-slate-500 shrink-0" size={20} /><div><div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">Effekt</div><div className="text-white font-semibold text-sm">{car.hp} hk</div></div></div>}
+                                {car.passengers && <div className="bg-brand-900 border border-white/5 p-4 rounded-xl flex items-center gap-3"><window.Icon name="users" className="text-slate-500 shrink-0" size={20} /><div><div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5">Passagerare</div><div className="text-white font-semibold text-sm">{car.passengers} st</div></div></div>}
+                            </div>
+                        </div>
+
+                        {/* Beskrivning */}
+                        {car.description && (
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Beskrivning</h3>
+                                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                                    {car.description}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Utrustning */}
+                        {car.equipment.length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Utrustning ({car.equipment.length})</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {car.equipment.map((item, i) => (
+                                        <span key={i} className="text-xs bg-white/5 text-slate-300 border border-white/10 px-3 py-1.5 rounded-lg break-words">
+                                            {item}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="pt-8">
+                            <a href={car.link} target="_blank" rel="noopener noreferrer" className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                Se annons på Blocket <window.Icon name="external-link" size={18} />
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
+// --- FÖRBÄTTRAD SKELETON LOADER FÖR KORT ---
 const CarSkeleton = () => (
-    <div className="bg-brand-900/50 rounded-2xl overflow-hidden border border-white/5 shadow-xl animate-pulse">
-        <div className="h-64 bg-white/5"></div>
-        <div className="p-8">
-            <div className="h-4 bg-white/10 rounded w-1/4 mb-3"></div>
-            <div className="h-6 bg-white/10 rounded w-3/4 mb-8"></div>
-            <div className="grid grid-cols-2 gap-4 mb-8">
+    <div className="bg-brand-900/50 rounded-2xl overflow-hidden border border-white/5 shadow-xl animate-pulse flex flex-col h-full">
+        <div className="h-64 bg-white/5 relative flex items-center justify-center shrink-0">
+            <window.Icon name="image" className="text-white/10" size={48} />
+        </div>
+        <div className="p-8 flex flex-col flex-grow">
+            <div className="flex justify-between mb-2">
+                <div className="h-3 bg-white/10 rounded w-1/4"></div>
+                <div className="h-3 bg-white/10 rounded w-1/6"></div>
+            </div>
+            <div className="h-6 bg-white/10 rounded w-3/4 mb-5"></div>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-4 mb-6">
                 <div className="h-4 bg-white/10 rounded"></div>
                 <div className="h-4 bg-white/10 rounded"></div>
                 <div className="h-4 bg-white/10 rounded"></div>
                 <div className="h-4 bg-white/10 rounded"></div>
             </div>
-            <div className="h-12 bg-white/10 rounded w-full mt-4"></div>
+            <div className="mt-auto border-t border-white/10 pt-6">
+                <div className="flex justify-between items-end mb-6">
+                    <div className="h-8 bg-white/10 rounded w-1/3"></div>
+                    <div className="h-6 bg-white/10 rounded w-1/4"></div>
+                </div>
+                <div className="h-12 bg-white/10 rounded-lg w-full"></div>
+            </div>
         </div>
     </div>
 );
 
-const CarCard = ({ car, handleShare, setFinanceCar, calculateMonthlyCost, onOpenGallery }) => {
+const CarCard = ({ car, handleShare, setFinanceCar, calculateMonthlyCost, onSelectCar }) => {
     const [currentImg, setCurrentImg] = useState(0);
-    const [showDesc, setShowDesc] = useState(false);
+    const [imgLoaded, setImgLoaded] = useState(false);
+
+    useEffect(() => { setImgLoaded(false); }, [currentImg]);
 
     const nextImg = (e) => { e.preventDefault(); e.stopPropagation(); setCurrentImg((prev) => (prev === car.images.length - 1 ? 0 : prev + 1)); };
     const prevImg = (e) => { e.preventDefault(); e.stopPropagation(); setCurrentImg((prev) => (prev === 0 ? car.images.length - 1 : prev - 1)); };
 
     return (
-        <article className="bg-gradient-to-b from-brand-900 to-brand-950 rounded-2xl overflow-hidden border border-white/10 hover:border-brand-500/50 transition-all duration-500 group shadow-2xl hover:shadow-brand-500/10 flex flex-col relative translate-y-0 hover:-translate-y-2">
-            
-            <div 
-                className="h-64 overflow-hidden relative bg-black flex items-center justify-center shrink-0 group/slider cursor-pointer"
-                onClick={() => onOpenGallery(car.images, currentImg)}
-            >
+        <article 
+            onClick={() => onSelectCar(car, currentImg)} 
+            className="bg-gradient-to-b from-brand-900 to-brand-950 rounded-2xl overflow-hidden border border-white/10 hover:border-brand-500/50 transition-all duration-500 group shadow-2xl hover:shadow-brand-500/10 flex flex-col relative translate-y-0 hover:-translate-y-2 cursor-pointer"
+        >
+            <div className="h-64 overflow-hidden relative bg-black flex items-center justify-center shrink-0 group/slider">
+                {!imgLoaded && (
+                    <div className="absolute inset-0 bg-white/5 animate-pulse flex items-center justify-center">
+                        <window.Icon name="image" className="text-white/20" size={32} />
+                    </div>
+                )}
                 <img
                     src={car.images[currentImg]}
                     alt={`${car.brand} ${car.model}`}
                     loading="lazy"
-                    className="w-full h-full object-cover opacity-90 group-hover/slider:opacity-100 group-hover/slider:scale-105 transition-all duration-700 ease-out"
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80" }}
+                    onLoad={() => setImgLoaded(true)}
+                    className={`w-full h-full object-cover transition-all duration-700 ease-out ${imgLoaded ? 'opacity-90 group-hover/slider:opacity-100 group-hover/slider:scale-105' : 'opacity-0 scale-95'}`}
+                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1555353540-64fd8b01a757?w=800&q=80"; setImgLoaded(true); }}
                 />
-
+                
                 <div className="absolute inset-0 bg-brand-950/20 opacity-0 group-hover/slider:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
                     <div className="bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transform translate-y-4 group-hover/slider:translate-y-0 transition-all duration-300">
-                        <window.Icon name="maximize-2" size={16} /> Visa bilder
+                        <window.Icon name="maximize-2" size={16} /> Läs mer & Bilder
                     </div>
                 </div>
 
@@ -183,93 +366,37 @@ const CarCard = ({ car, handleShare, setFinanceCar, calculateMonthlyCost, onOpen
             </div>
 
             <div className="p-8 flex flex-col flex-grow">
-                <div className="flex justify-between items-center mb-2">
-                    <div className="text-brand-500 text-sm font-bold uppercase tracking-wider">
-                        {car.brand}
-                    </div>
-
+                <div className="flex justify-between items-center mb-2 pr-2">
+                    <div className="text-brand-500 text-sm font-bold uppercase tracking-wider">{car.brand}</div>
                     <div className="flex items-center gap-2">
-                        {car.regNo && (
-                            <div className="bg-white/10 text-white text-[10px] font-bold px-2 py-1 border border-white/10 rounded shadow-sm uppercase tracking-widest">
-                                {car.regNo}
-                            </div>
-                        )}
-                        {car.carfaxUrl && (
-                            <a href={car.carfaxUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">
-                                <window.Icon name="file-text" size={12} /> CARFAX
-                            </a>
-                        )}
+                        {car.regNo && <div className="bg-white/10 text-white text-[10px] font-bold px-2 py-1 border border-white/10 rounded shadow-sm uppercase tracking-widest">{car.regNo}</div>}
                     </div>
                 </div>
 
-                <h3 className="text-2xl font-bold text-white mb-5 line-clamp-2 leading-snug" title={car.model}>{car.model}</h3>
+                <h3 className="text-2xl font-bold text-white mb-5 line-clamp-2 leading-snug break-words pr-2" title={car.model}>{car.model}</h3>
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-4 mb-6 text-sm text-slate-300">
                     <div className="flex items-center gap-2.5"><window.Icon name="calendar" size={16} className="text-slate-500" /> {car.year}</div>
                     <div className="flex items-center gap-2.5"><window.Icon name="gauge" size={16} className="text-slate-500" /> {car.mil}</div>
                     <div className="flex items-center gap-2.5"><window.Icon name="settings-2" size={16} className="text-slate-500" /> {car.gear}</div>
                     <div className="flex items-center gap-2.5"><window.Icon name="fuel" size={16} className="text-slate-500" /> {car.fuel}</div>
-                    {car.hp && <div className="flex items-center gap-2.5"><window.Icon name="zap" size={16} className="text-slate-500" /> {car.hp} hk</div>}
-                    {car.passengers && <div className="flex items-center gap-2.5"><window.Icon name="users" size={16} className="text-slate-500" /> {car.passengers} sits</div>}
                 </div>
 
-                {car.equipment.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-6">
-                        {car.equipment.slice(0, 3).map((item, i) => (
-                            <span key={i} className="text-[10px] bg-white/5 text-slate-400 border border-white/10 px-2.5 py-1 rounded truncate max-w-[120px]" title={item}>{item}</span>
-                        ))}
-                    </div>
-                )}
-
-                {car.description && (
-                    <div className="mb-6">
-                        <button
-                            onClick={() => setShowDesc(!showDesc)}
-                            className="text-xs text-brand-500 hover:text-brand-400 flex items-center gap-1 font-semibold transition-colors"
-                        >
-                            <window.Icon name={showDesc ? "chevron-up" : "chevron-down"} size={14} />
-                            {showDesc ? "Dölj annonstext" : "Läs annonstext"}
-                        </button>
-                        <div className={`overflow-hidden transition-all duration-300 ${showDesc ? 'max-h-96 mt-3 opacity-100 overflow-y-auto pr-2 no-scrollbar' : 'max-h-0 opacity-0'}`}>
-                            <p className="text-xs text-slate-400 whitespace-pre-wrap leading-relaxed border-l-2 border-brand-500/30 pl-3">
-                                {car.description}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
                 <div className="border-t border-white/10 pt-6 mt-auto">
-                    <div className="flex flex-wrap sm:flex-nowrap justify-between items-end gap-4 mb-6">
+                    <div className="flex justify-between items-end">
                         <div>
                             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
-                                Kontantpris
-                                {car.showVat && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded border border-green-500/30">MOMS</span>}
+                                Pris {car.showVat && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded border border-green-500/30">MOMS</span>}
                             </div>
-                            {car.discountAmount > 0 && (
-                                <div className="text-xs text-red-400 line-through mb-0.5 decoration-red-400/50">
-                                    {(car.priceValue + car.discountAmount).toLocaleString('sv-SE')} kr
-                                </div>
-                            )}
-                            <div className="text-2xl font-black text-white flex items-center gap-2 whitespace-nowrap">
-                                {car.price}
-                                {car.discountAmount > 0 && (
-                                    <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full animate-pulse">
-                                        -{car.discountAmount.toLocaleString('sv-SE')} kr
-                                    </span>
-                                )}
-                            </div>
-                            {car.exVatPrice && <div className="text-[10px] text-slate-400 mt-1">{car.exVatPrice}</div>}
+                            <div className="text-2xl font-black text-white flex items-center gap-2 whitespace-nowrap">{car.price}</div>
                         </div>
-                        <button onClick={(e) => { e.preventDefault(); setFinanceCar(car); }} className="text-left sm:text-right hover:opacity-80 transition-opacity whitespace-nowrap">
-                            <div className="text-[11px] font-bold text-brand-500 uppercase tracking-widest mb-1 flex items-center sm:justify-end gap-1">
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFinanceCar(car); }} className="text-right hover:opacity-80 transition-opacity whitespace-nowrap z-10 relative">
+                            <div className="text-[11px] font-bold text-brand-500 uppercase tracking-widest mb-1 flex items-center justify-end gap-1">
                                 Finansiering <window.Icon name="calculator" size={10} />
                             </div>
                             <div className="text-base font-bold text-white whitespace-nowrap">Från {calculateMonthlyCost(car.price)} kr/mån</div>
                         </button>
                     </div>
-                    <a href={car.link} target="_blank" rel="noopener noreferrer" className="w-full bg-white/5 hover:bg-brand-500 text-white py-3.5 rounded-lg font-bold transition-colors flex items-center justify-center gap-2">
-                        Se annons på Blocket <window.Icon name="external-link" size={18} />
-                    </a>
                 </div>
             </div>
         </article>
@@ -277,16 +404,16 @@ const CarCard = ({ car, handleShare, setFinanceCar, calculateMonthlyCost, onOpen
 };
 
 const LagerSection = ({ setFinanceCar }) => {
-
-    const { useState, useMemo } = React;
+    const { useState, useEffect, useMemo } = React;
 
     const [cars, setCars] = useState([]);
     const [loadingCars, setLoadingCars] = useState(true);
     const [apiError, setApiError] = useState(false);
     
-    // NYTT STATE FÖR LIGHTBOX
-    const [lightboxData, setLightboxData] = useState(null); 
+    const [selectedCarData, setSelectedCarData] = useState(null); 
+    const [sortOrder, setSortOrder] = useState("newest");
 
+    // --- HÄMTA BILAR ---
     useEffect(() => {
         const fetchCars = async () => {
             setLoadingCars(true);
@@ -329,6 +456,7 @@ const LagerSection = ({ setFinanceCar }) => {
                         isEco: car.isEco || false,
                         hasWarranty: car.inWarrantyProgram || false,
                         passengers: car.noPassangers || null,
+                        rawDate: car.publishedDate ? new Date(car.publishedDate).getTime() : 0,
                         link: "https://www.blocket.se/mobility/dealer/5854854/bmg-motorgrupp" 
                     };
                 });
@@ -342,6 +470,38 @@ const LagerSection = ({ setFinanceCar }) => {
         };
         fetchCars();
     }, []);
+
+    // --- LYSSNA PÅ URL (?bil=...) & WEBBLÄSARENS BAKÅT-KNAPP ---
+    useEffect(() => {
+        if (cars.length === 0) return;
+
+        const checkUrlForCar = () => {
+            const params = new URLSearchParams(window.location.search);
+            const bilId = params.get('bil');
+            if (bilId) {
+                const targetCar = cars.find(c => String(c.id) === String(bilId));
+                if (targetCar) setSelectedCarData({ car: targetCar, index: 0 });
+            } else {
+                setSelectedCarData(null);
+            }
+        };
+
+        checkUrlForCar(); // Kör vid inladdning
+        window.addEventListener('popstate', checkUrlForCar); // Lyssna på bakåt/framåt knappar
+        return () => window.removeEventListener('popstate', checkUrlForCar);
+    }, [cars]);
+
+    // Funktion för att öppna modalen och uppdatera webbadressen
+    const openCarModal = (carData, index) => {
+        setSelectedCarData({ car: carData, index });
+        window.history.pushState({}, '', `?bil=${carData.id}`);
+    };
+
+    // Funktion för att stänga modalen och rensa webbadressen
+    const closeCarModal = () => {
+        setSelectedCarData(null);
+        window.history.pushState({}, '', window.location.pathname);
+    };
 
     const [filterBrand, setFilterBrand] = useState("Alla");
     const [filterFuel, setFilterFuel] = useState("Alla");
@@ -363,6 +523,7 @@ const LagerSection = ({ setFinanceCar }) => {
         setSearchTerm(""); setFilterBrand("Alla"); setFilterFuel("Alla"); setFilterGear("Alla"); setFilterDrive("Alla");
         setMinPrice(""); setMaxPrice(""); setMinMil(""); setMaxMil(""); setMinYear(""); setMaxYear("");
         setEquipmentFilters({ dragkrok: false, backkamera: false, farthallare: false, motorvarmare: false, panoramatak: false, gps: false });
+        setSortOrder("newest");
     };
 
     const uniqueBrands = ["Alla", ...new Set(cars.map(c => c.brand).filter(Boolean))].sort();
@@ -395,9 +556,16 @@ const LagerSection = ({ setFinanceCar }) => {
             if (equipmentFilters.panoramatak) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("panorama") || e.toLowerCase().includes("glastak")));
             if (equipmentFilters.gps) result = result.filter(c => c.equipment.some(e => e.toLowerCase().includes("gps") || e.toLowerCase().includes("navigation")));
 
+            result.sort((a, b) => {
+                if (sortOrder === "price-asc") return parseNumber(a.price) - parseNumber(b.price);
+                if (sortOrder === "price-desc") return parseNumber(b.price) - parseNumber(a.price);
+                if (sortOrder === "mil-asc") return parseNumber(a.mil) - parseNumber(b.mil);
+                return (b.rawDate || 0) - (a.rawDate || 0); 
+            });
+
             return result;
         } catch (error) { return []; }
-    }, [cars, searchTerm, filterBrand, filterFuel, filterGear, filterDrive, minPrice, maxPrice, minMil, maxMil, minYear, maxYear, equipmentFilters, parseNumber]);
+    }, [cars, searchTerm, filterBrand, filterFuel, filterGear, filterDrive, minPrice, maxPrice, minMil, maxMil, minYear, maxYear, equipmentFilters, sortOrder, parseNumber]);
 
     return (
         <section id="lager" className="py-24 bg-brand-950 relative z-10">
@@ -417,6 +585,7 @@ const LagerSection = ({ setFinanceCar }) => {
 
                 {cars.length > 0 && !loadingCars && !apiError && (
                     <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] p-6 md:p-8 mb-16 shadow-2xl relative overflow-hidden transition-all">
+                        
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 relative z-10 gap-4">
                             <div className="flex items-center gap-3 text-white font-black text-2xl tracking-tight">
                                 <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
@@ -424,9 +593,21 @@ const LagerSection = ({ setFinanceCar }) => {
                                 </div>
                                 Hitta din bil
                             </div>
-                            <button onClick={resetFilters} className="text-sm font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-2 bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-full border border-white/5">
-                                <window.Icon name="rotate-ccw" size={16} /> Nollställ filter
-                            </button>
+                            
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                <div className="relative group flex-1 sm:flex-none">
+                                    <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="w-full bg-black/40 border border-white/10 text-white rounded-full pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-brand-500 appearance-none font-semibold cursor-pointer transition-colors hover:border-white/20">
+                                        <option value="newest" className="bg-brand-900">Senast inkomna</option>
+                                        <option value="price-asc" className="bg-brand-900">Pris (Lägst först)</option>
+                                        <option value="price-desc" className="bg-brand-900">Pris (Högst först)</option>
+                                        <option value="mil-asc" className="bg-brand-900">Miltal (Lägst först)</option>
+                                    </select>
+                                    <window.Icon name="chevron-down" size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                </div>
+                                <button onClick={resetFilters} className="text-sm font-bold text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-full border border-white/5 flex-1 sm:flex-none">
+                                    <window.Icon name="rotate-ccw" size={16} /> Återställ
+                                </button>
+                            </div>
                         </div>
 
                         <div className="relative mb-8 z-10 group">
@@ -633,18 +814,20 @@ const LagerSection = ({ setFinanceCar }) => {
                                 handleShare={handleShare}
                                 setFinanceCar={setFinanceCar}
                                 calculateMonthlyCost={calculateMonthlyCost}
-                                onOpenGallery={(images, index) => setLightboxData({ images, index })}
+                                onSelectCar={openCarModal}
                             />
                         ))}
                     </div>
                 )}
             </div>
 
-            {lightboxData && ReactDOM.createPortal(
-                <Lightbox 
-                    images={lightboxData.images} 
-                    initialIndex={lightboxData.index} 
-                    onClose={() => setLightboxData(null)} 
+            {selectedCarData && ReactDOM.createPortal(
+                <CarDetailsModal 
+                    car={selectedCarData.car} 
+                    initialIndex={selectedCarData.index} 
+                    onClose={closeCarModal} 
+                    setFinanceCar={setFinanceCar}
+                    calculateMonthlyCost={calculateMonthlyCost}
                 />,
                 document.body
             )}
