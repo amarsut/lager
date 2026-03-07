@@ -178,9 +178,10 @@ const App = () => {
                 setView(event.state.view);
                 setViewParams(event.state.params);
                 
-                // FIX: Samma här - uppdatera även om jobbet är null
                 if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) {
                     setEditingJob(event.state.params.job);
+                } else {
+                    setEditingJob(null); // VIKTIGT: Nollställ om inget jobb skickas med!
                 }
             }
         };
@@ -406,6 +407,7 @@ const App = () => {
                     <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && (
                             <window.DashboardView 
+                                allJobs={allJobs}
                                 filteredJobs={filteredJobs} 
                                 setEditingJob={setEditingJob} 
                                 setView={navigateTo} 
