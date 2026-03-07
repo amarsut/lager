@@ -162,15 +162,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     const handleSave = async (e) => {
         e.preventDefault();
-        const data = { 
-            ...formData, 
-            regnr: formData.regnr.toUpperCase().trim(), 
-            datum: formData.datum ? `${formData.datum}T${formData.tid}` : '', 
-            utgifter: expenses.filter(ex => ex.desc && ex.amount).map(ex => ({ namn: ex.desc, kostnad: ex.amount })),
-            deleted: false 
-        };
-        await window.db.collection("jobs").doc(editingJob?.id || undefined).set(data, { merge: true });
-        setView('DASHBOARD', null);
+        try {
+            const data = { 
+                ...formData, 
+                regnr: formData.regnr.toUpperCase().trim(), 
+                datum: formData.datum ? `${formData.datum}T${formData.tid}` : '', 
+                utgifter: expenses.filter(ex => ex.desc && ex.amount).map(ex => ({ namn: ex.desc, kostnad: ex.amount })),
+                deleted: false 
+            };
+
+            if (editingJob && editingJob.id) {
+                // Uppdatera befintligt jobb
+                await window.db.collection("jobs").doc(editingJob.id).set(data, { merge: true });
+            } else {
+                // Skapa helt nytt jobb
+                await window.db.collection("jobs").add(data);
+            }
+            
+            // Gå tillbaka till dashboarden
+            setView('DASHBOARD', null);
+        } catch (error) {
+            console.error("Kunde inte spara jobbet:", error);
+            alert("Ett fel uppstod när jobbet skulle sparas. Kolla uppkopplingen!");
+        }
     };
 
     return (
