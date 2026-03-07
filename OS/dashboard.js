@@ -260,6 +260,7 @@ const dashboardPropsAreEqual = (prev, next) => {
 };
 
 window.DashboardView = React.memo(({ 
+    allJobs,
     filteredJobs, setEditingJob, setView, 
     activeFilter, setActiveFilter, statusCounts,
     globalSearch, setGlobalSearch 
@@ -267,9 +268,6 @@ window.DashboardView = React.memo(({
     const [searchOpen, setSearchOpen] = React.useState(!!globalSearch);
     const [historyRegnr, setHistoryRegnr] = React.useState(null);
     
-    // Globala jobb för statistik
-    const [statsJobs, setStatsJobs] = React.useState([]); 
-
     // Timer State
     const [timerActive, setTimerActive] = React.useState(false);
     const [timerSeconds, setTimerSeconds] = React.useState(0);
@@ -278,35 +276,26 @@ window.DashboardView = React.memo(({
     const tabsRef = React.useRef(null);
     const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR'];
 
-    // --- 1. HÄMTA ALL DATA FÖR STATISTIK ---
-    React.useEffect(() => {
-        const unsubscribe = window.db.collection("jobs").onSnapshot(snapshot => {
-            const allJobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setStatsJobs(allJobs);
-        });
-        return () => unsubscribe();
-    }, []);
-
     // --- 2. STATISTIK ---
     const stats30Days = React.useMemo(() => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        return statsJobs.filter(j => 
+        return allJobs.filter(j =>
             j.status === 'KLAR' && j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted
         ).length;
-    }, [statsJobs]);
+    }, [allJobs]);
 
     const statsNext7Days = React.useMemo(() => {
         const today = new Date();
         today.setHours(0,0,0,0);
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
-        return statsJobs.filter(j => {
+        return allJobs.filter(j => { 
             if(!j.datum || j.status === 'KLAR' || j.deleted) return false;
             const d = new Date(j.datum);
             return d >= today && d <= nextWeek;
         }).length;
-    }, [statsJobs]);
+    }, [allJobs]); 
 
     const urgentCount = React.useMemo(() => {
         return filteredJobs.filter(j => {
