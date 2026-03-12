@@ -171,10 +171,17 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             <div className="flex items-start gap-2">
                                 <window.Icon name="car" size={15} className="text-zinc-400 shrink-0 mt-0.5" />
                                 <div className="flex flex-col min-w-0">
-                                    <span className={`truncate leading-tight mt-0.5 ${isReg 
-                                        ? 'font-mono text-[11px] bg-white border border-zinc-300 px-1.5 py-0.5 rounded-[3px] text-black tracking-widest shadow-sm w-fit' 
-                                        : 'text-[13px] font-bold text-zinc-800'
-                                    }`}>
+                                    <span 
+                                        onClick={(e) => {
+                                            if (isReg && job.regnr && onOpenHistory) {
+                                                e.stopPropagation();
+                                                onOpenHistory(job.regnr);
+                                            }
+                                        }}
+                                        className={`truncate leading-tight mt-0.5 ${isReg 
+                                            ? 'font-mono text-[11px] bg-white border border-zinc-300 px-1.5 py-0.5 rounded-[3px] text-black tracking-widest shadow-sm w-fit cursor-pointer active:scale-95 transition-transform' 
+                                            : 'text-[13px] font-bold text-zinc-800'
+                                        }`}>
                                         {vehicleDisplay}
                                     </span>
                                     
@@ -330,17 +337,8 @@ window.DashboardView = React.memo(({
 
     // --- NAVIGERING ---
     const handleOpenHistory = React.useCallback((regnr) => {
-        window.history.pushState({ view: 'DASHBOARD', modal: 'HISTORY' }, "", window.location.href);
         setHistoryRegnr(regnr);
     }, []);
-
-    React.useEffect(() => {
-        const handlePopState = () => {
-            if (historyRegnr) setHistoryRegnr(null);
-        };
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [historyRegnr]);
 
     React.useEffect(() => {
         if (tabsRef.current) {
@@ -654,7 +652,7 @@ window.DashboardView = React.memo(({
             {historyRegnr && window.VehicleProfileLoader && (
                 <window.VehicleProfileLoader 
                     regnr={historyRegnr} 
-                    onClose={() => window.history.back()} 
+                    onClose={() => setHistoryRegnr(null)} 
                     setView={setView} 
                 />
             )}
