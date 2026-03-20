@@ -891,190 +891,145 @@
 
             </div>
 
-            <div id="tab-todo"
-                class="tab-content h-full p-0 flex-col overflow-hidden bg-[#FAFAFA] dark:bg-[#020617] text-slate-800 dark:text-slate-200 relative">
+            <div id="tab-todo" class="tab-content h-full p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full flex flex-col overflow-hidden relative">
 
-                <div id="docActionBar"
-                    class="absolute top-0 inset-x-0 h-16 bg-brand-500 text-white z-[60] flex items-center justify-between px-4 sm:px-6 shadow-lg transform -translate-y-full transition-transform duration-300">
-                    <div class="flex items-center gap-3 sm:gap-4">
-                        <button onclick="window.clearDocSelection()"
-                            class="text-white/80 hover:text-white outline-none p-2 hover:bg-[#FAFAFA]/10 rounded transition-colors"><i
-                                data-lucide="x" class="w-5 h-5"></i></button>
-                        <span id="docSelectionCount" class="font-bold text-sm sm:text-base tracking-tight">0
-                            valda</span>
+    <div id="docActionBar"
+        class="absolute top-0 inset-x-0 h-16 bg-brand-500 text-white z-[60] flex items-center justify-between px-4 sm:px-6 shadow-lg transform -translate-y-full transition-transform duration-300 rounded-t">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <button onclick="window.clearDocSelection()"
+                class="text-white/80 hover:text-white outline-none p-2 hover:bg-[#FAFAFA]/10 rounded transition-colors"><i
+                    data-lucide="x" class="w-5 h-5"></i></button>
+            <span id="docSelectionCount" class="font-bold text-sm sm:text-base tracking-tight">0 valda</span>
+        </div>
+        <div id="docActionButtons" class="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
+        </div>
+    </div>
+
+    <div id="contextMenu"
+        class="fixed z-[999999] bg-[#FAFAFA] dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 shadow-sm rounded py-2 w-56 hidden flex-col transform scale-95 opacity-0 transition-all origin-top-left">
+    </div>
+
+    <header class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 sm:mb-8 gap-4 shrink-0 border-b border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 w-full">
+        <div class="min-w-0 flex-1">
+            <h2 class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight truncate">
+                BMG Drive
+            </h2>
+            <p class="hidden sm:block text-slate-600 dark:text-slate-400 text-sm mt-1">Hantera avtal, bilder och viktiga dokument.</p>
+        </div>
+
+        <div class="flex-1 max-w-xl w-full hidden lg:block mx-4">
+            <div class="relative group">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+                <input type="search" id="docSearchInput" placeholder="Sök avtal, körkort, bilder..."
+                    class="w-full bg-[#FAFAFA] dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded pl-11 pr-4 py-2.5 sm:py-3 text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+            <button onclick="window.createNewFolder()"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 sm:px-6 sm:py-3 bg-[#FAFAFA] dark:bg-[#1e293b] text-slate-700 dark:text-slate-200 rounded font-bold text-sm sm:text-base hover:text-brand-500 border border-slate-200 dark:border-slate-700 transition-all outline-none shadow-sm">
+                <i data-lucide="folder-plus" class="w-5 h-5"></i> <span class="hidden sm:inline">Ny Mapp</span><span class="sm:hidden">Mapp</span>
+            </button>
+            <button id="triggerUploadBtn"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 sm:px-6 sm:py-3 bg-brand-500 hover:bg-brand-600 text-white rounded font-bold text-sm sm:text-base transition-all shadow-lg shadow-brand-500/25 active:scale-[0.98] outline-none">
+                <i data-lucide="upload-cloud" class="w-5 h-5"></i> <span>Ladda upp</span>
+            </button>
+            <input type="file" id="docUploadInput" class="hidden" multiple accept="*/*">
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative w-full min-w-0 bg-[#FAFAFA] dark:bg-[#0f172a] rounded-lg shadow-sm border border-slate-200 dark:border-slate-800">
+
+        <div class="w-64 hidden md:flex flex-col bg-[#FAFAFA] dark:bg-[#1e293b]/30 border-r border-slate-200 dark:border-slate-800 shrink-0">
+            <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
+                <nav class="space-y-1" id="desktopDocFilterNav">
+                    <button class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none" data-filter="all">
+                        <i data-lucide="hard-drive" class="w-4 h-4"></i> Min Drive
+                    </button>
+                    <button class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none" data-filter="starred">
+                        <i data-lucide="star" class="w-4 h-4"></i> Stjärnmarkerat
+                    </button>
+                    <button class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none" data-filter="trash">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Papperskorg
+                    </button>
+
+                    <div class="pt-6 pb-2">
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-4">Smarta Mappar</div>
                     </div>
-                    <div id="docActionButtons" class="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
+                    <button class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none" data-filter="avtal">
+                        <i data-lucide="file-signature" class="w-4 h-4 text-blue-500"></i> Avtal & Kontrakt
+                    </button>
+                    <button class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none" data-filter="bilder">
+                        <i data-lucide="image" class="w-4 h-4 text-purple-500"></i> Media & Bilder
+                    </button>
+                    <button class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none" data-filter="varudeklaration">
+                        <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-500"></i> Varudeklarationer
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2 mb-3 text-slate-700 dark:text-slate-300">
+                    <i data-lucide="cloud" class="w-4 h-4 text-slate-400"></i>
+                    <span class="text-xs font-bold">Lagringsutrymme</span>
+                </div>
+                <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-2">
+                    <div id="storageProgressBar" class="h-full bg-brand-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div id="storageText" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Räknar...</div>
+            </div>
+        </div>
+
+        <div id="dropZoneArea" class="flex-1 min-w-0 flex flex-col relative transition-colors duration-300 overflow-hidden w-full bg-transparent">
+
+            <div id="dragOverlay" class="absolute inset-4 z-50 border-2 border-dashed border-brand-500 rounded bg-brand-50/90 dark:bg-[#0f172a]/90 backdrop-blur-sm hidden flex-col items-center justify-center pointer-events-none transition-all shadow-lg">
+                <div class="w-24 h-24 bg-[#FAFAFA] dark:bg-[#1e293b] rounded-full shadow-2xl flex items-center justify-center mb-6 animate-bounce">
+                    <i data-lucide="upload-cloud" class="w-12 h-12 text-brand-500"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Släpp filerna här</h3>
+                <p class="text-sm font-bold text-slate-500 mt-2">Laddas upp till aktuell mapp</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 no-scrollbar min-w-0 w-full" id="docListScrollArea">
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div id="breadcrumbNav" class="flex items-center gap-2 overflow-x-auto no-scrollbar text-lg sm:text-2xl font-black min-w-0 flex-1 pr-4 whitespace-nowrap text-slate-800 dark:text-white tracking-tight">
+                    </div>
+
+                    <div class="flex items-center gap-3 shrink-0">
+                        <div class="relative group bg-[#FAFAFA] dark:bg-[#1e293b] rounded border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition-all">
+                            <select id="docSortSelect" class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 appearance-none outline-none py-2.5 pl-4 pr-9 cursor-pointer">
+                                <option value="name" class="dark:bg-[#1e293b]">Sortera: A - Ö</option>
+                                <option value="newest" class="dark:bg-[#1e293b]">Sortera: Nyast</option>
+                                <option value="size" class="dark:bg-[#1e293b]">Sortera: Storlek</option>
+                            </select>
+                            <i data-lucide="arrow-down-up" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+
+                        <button onclick="window.toggleDocView()" class="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors outline-none bg-[#FAFAFA] dark:bg-[#1e293b] rounded border border-slate-200 dark:border-slate-700 shadow-sm shrink-0" title="Växla vy">
+                            <i data-lucide="layout-grid" id="viewModeIcon" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div id="contextMenu"
-                    class="fixed z-[999999] bg-[#FAFAFA] dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 shadow-sm rounded py-2 w-56 hidden flex-col transform scale-95 opacity-0 transition-all origin-top-left">
+                <div id="quickAccessArea" class="mb-10 hidden w-full">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2"><i data-lucide="star" class="w-3.5 h-3.5 text-amber-500"></i> Snabbåtkomst</h3>
+                    <div id="quickAccessList" class="flex gap-4 overflow-x-auto no-scrollbar pb-4 snap-x pr-4"></div>
                 </div>
 
-                <header
-                    class="h-16 lg:h-20 px-4 sm:px-6 border-b border-slate-200 dark:border-slate-800/80 bg-[#FAFAFA] dark:bg-[#020617] flex items-center justify-between shrink-0 z-10 gap-4">
-                    <div class="flex items-center gap-3 shrink-0 w-56">
-                        <div
-                            class="w-10 h-10 rounded bg-brand-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-brand-500/20">
-                            <i data-lucide="hard-drive" class="w-5 h-5"></i>
-                        </div>
-                        <h2
-                            class="text-xl font-black tracking-tight hidden sm:block text-slate-800 dark:text-white uppercase">
-                            BMG Drive</h2>
-                    </div>
+                <div id="foldersArea" class="mb-10 hidden w-full">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-3.5 h-3.5 text-slate-400"></i> Mappar</h3>
+                    <div id="foldersList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full"></div>
+                </div>
 
-                    <div class="flex-1 max-w-2xl hidden sm:block">
-                        <div class="relative group">
-                            <i data-lucide="search"
-                                class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
-                            <input type="search" id="docSearchInput" placeholder="Sök avtal, körkort, bilder..."
-                                class="w-full bg-slate-100 dark:bg-[#1e293b] border-none rounded pl-11 pr-4 py-3 text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-[#FAFAFA] dark:focus:bg-[#0f172a] transition-all placeholder:text-slate-500 shadow-sm">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <button onclick="window.createNewFolder()"
-                            class="hidden sm:flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FAFAFA] dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 hover:border-brand-500 rounded font-bold text-sm text-slate-700 dark:text-slate-200 transition-all shadow-sm outline-none">
-                            <i data-lucide="folder-plus" class="w-4 h-4"></i> Ny Mapp
-                        </button>
-                        <button id="triggerUploadBtn"
-                            class="flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 rounded font-bold text-sm text-white transition-all shadow-lg shadow-brand-500/25 active:scale-95 outline-none">
-                            <i data-lucide="upload-cloud" class="w-4 h-4"></i> <span>Ladda upp</span>
-                        </button>
-                        <input type="file" id="docUploadInput" class="hidden" multiple accept="*/*">
-                    </div>
-                </header>
-
-                <div class="flex flex-1 overflow-hidden relative w-full min-w-0 bg-[#FAFAFA] dark:bg-[#0f172a]">
-
-                    <div
-                        class="w-64 hidden md:flex flex-col bg-transparent border-r border-slate-200 dark:border-slate-800 shrink-0">
-                        <div class="p-4 flex-1 overflow-y-auto no-scrollbar">
-                            <nav class="space-y-1" id="desktopDocFilterNav">
-                                <button
-                                    class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none"
-                                    data-filter="all">
-                                    <i data-lucide="hard-drive" class="w-4 h-4"></i> Min Drive
-                                </button>
-                                <button
-                                    class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none"
-                                    data-filter="starred">
-                                    <i data-lucide="star" class="w-4 h-4"></i> Stjärnmarkerat
-                                </button>
-                                <button
-                                    class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none"
-                                    data-filter="trash">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i> Papperskorg
-                                </button>
-
-                                <div class="pt-6 pb-2">
-                                    <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-4">
-                                        Smarta Mappar</div>
-                                </div>
-                                <button
-                                    class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none"
-                                    data-filter="avtal">
-                                    <i data-lucide="file-signature" class="w-4 h-4 text-blue-500"></i> Avtal & Kontrakt
-                                </button>
-                                <button
-                                    class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none"
-                                    data-filter="bilder">
-                                    <i data-lucide="image" class="w-4 h-4 text-purple-500"></i> Media & Bilder
-                                </button>
-                                <button
-                                    class="doc-filter-btn w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all outline-none"
-                                    data-filter="varudeklaration">
-                                    <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-500"></i>
-                                    Varudeklarationer
-                                </button>
-                            </nav>
-                        </div>
-
-                        <div class="p-6 border-t border-slate-200 dark:border-slate-800">
-                            <div class="flex items-center gap-2 mb-3 text-slate-700 dark:text-slate-300">
-                                <i data-lucide="cloud" class="w-4 h-4 text-slate-400"></i>
-                                <span class="text-xs font-bold">Lagringsutrymme</span>
-                            </div>
-                            <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-2">
-                                <div id="storageProgressBar"
-                                    class="h-full bg-brand-500 rounded-full transition-all duration-500"
-                                    style="width: 0%"></div>
-                            </div>
-                            <div id="storageText"
-                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Räknar...</div>
-                        </div>
-                    </div>
-
-                    <div id="dropZoneArea"
-                        class="flex-1 min-w-0 flex flex-col relative transition-colors duration-300 overflow-hidden w-full bg-transparent">
-
-                        <div id="dragOverlay"
-                            class="absolute inset-4 z-50 border-2 border-dashed border-brand-500 rounded bg-brand-50/90 dark:bg-[#0f172a]/90 backdrop-blur-sm hidden flex-col items-center justify-center pointer-events-none transition-all shadow-lg">
-                            <div
-                                class="w-24 h-24 bg-[#FAFAFA] dark:bg-[#1e293b] rounded-full shadow-2xl flex items-center justify-center mb-6 animate-bounce">
-                                <i data-lucide="upload-cloud" class="w-12 h-12 text-brand-500"></i>
-                            </div>
-                            <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Släpp filerna
-                                här</h3>
-                            <p class="text-sm font-bold text-slate-500 mt-2">Laddas upp till aktuell mapp</p>
-                        </div>
-
-                        <div class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 no-scrollbar min-w-0 w-full"
-                            id="docListScrollArea">
-
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                                <div id="breadcrumbNav"
-                                    class="flex items-center gap-2 overflow-x-auto no-scrollbar text-lg sm:text-2xl font-black min-w-0 flex-1 pr-4 whitespace-nowrap text-slate-800 dark:text-white tracking-tight">
-                                </div>
-
-                                <div class="flex items-center gap-3 shrink-0">
-                                    <div
-                                        class="relative group bg-[#FAFAFA] dark:bg-[#1e293b] rounded border border-slate-200 dark:border-slate-700 shadow-sm hover:border-brand-500 transition-all">
-                                        <select id="docSortSelect"
-                                            class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 appearance-none outline-none py-2.5 pl-4 pr-9 cursor-pointer">
-                                            <option value="name" class="dark:bg-[#1e293b]">Sortera: A - Ö</option>
-                                            <option value="newest" class="dark:bg-[#1e293b]">Sortera: Nyast</option>
-                                            <option value="size" class="dark:bg-[#1e293b]">Sortera: Storlek</option>
-                                        </select>
-                                        <i data-lucide="arrow-down-up"
-                                            class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                                    </div>
-
-                                    <button onclick="window.toggleDocView()"
-                                        class="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-brand-500 transition-colors outline-none bg-[#FAFAFA] dark:bg-[#1e293b] rounded border border-slate-200 dark:border-slate-700 shadow-sm shrink-0"
-                                        title="Växla vy">
-                                        <i data-lucide="layout-grid" id="viewModeIcon" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div id="quickAccessArea" class="mb-10 hidden w-full">
-                                <h3
-                                    class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2">
-                                    <i data-lucide="star" class="w-3.5 h-3.5 text-amber-500"></i> Snabbåtkomst</h3>
-                                <div id="quickAccessList"
-                                    class="flex gap-4 overflow-x-auto no-scrollbar pb-4 snap-x pr-4"></div>
-                            </div>
-
-                            <div id="foldersArea" class="mb-10 hidden w-full">
-                                <h3
-                                    class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2">
-                                    <i data-lucide="folder" class="w-3.5 h-3.5 text-slate-400"></i> Mappar</h3>
-                                <div id="foldersList"
-                                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-                                </div>
-                            </div>
-
-                            <div id="filesArea" class="w-full">
-                                <h3 id="filesTitle"
-                                    class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2 hidden">
-                                    <i data-lucide="file" class="w-3.5 h-3.5 text-slate-400"></i> Filer</h3>
-                                <div id="docList" class="space-y-1 min-w-0 w-full"></div>
-                            </div>
-                        </div>
-                    </div>
+                <div id="filesArea" class="w-full">
+                    <h3 id="filesTitle" class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2 hidden"><i data-lucide="file" class="w-3.5 h-3.5 text-slate-400"></i> Filer</h3>
+                    <div id="docList" class="space-y-1 min-w-0 w-full"></div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
             <div id="tab-calendar"
                 class="tab-content h-full p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full flex flex-col overflow-hidden">
@@ -2298,161 +2253,140 @@
                 </div>
             </div>
 
-            <div id="tab-inbox"
-                class="tab-content h-full p-0 flex-col overflow-hidden bg-white dark:bg-[#0f172a] text-slate-800 dark:text-slate-200 relative">
+            <div id="tab-inbox" class="tab-content h-full p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full flex flex-col overflow-hidden relative">
 
-                <div id="emailBulkActionBar"
-                    class="absolute top-4 left-1/2 -translate-x-1/2 h-14 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl sm:rounded-full px-4 sm:px-6 shadow-2xl z-[60] flex items-center justify-between w-[95%] sm:w-auto gap-4 sm:gap-8 transform -translate-y-32 transition-transform duration-300">
-                    <div class="flex items-center gap-3">
-                        <button onclick="window.clearEmailSelection()"
-                            class="hover:bg-white/20 dark:hover:bg-black/10 p-1.5 rounded-full transition-colors outline-none"><i data-lucide="x" class="w-5 h-5"></i></button>
-                        <span id="emailSelectedCount" class="font-bold text-sm tracking-wide">0 markerade</span>
+    <div id="emailBulkActionBar"
+        class="absolute top-4 left-1/2 -translate-x-1/2 h-14 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl sm:rounded-full px-4 sm:px-6 shadow-2xl z-[60] flex items-center justify-between w-[95%] sm:w-auto gap-4 sm:gap-8 transform -translate-y-32 transition-transform duration-300">
+        <div class="flex items-center gap-3">
+            <button onclick="window.clearEmailSelection()"
+                class="hover:bg-white/20 dark:hover:bg-black/10 p-1.5 rounded-full transition-colors outline-none"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <span id="emailSelectedCount" class="font-bold text-sm tracking-wide">0 markerade</span>
+        </div>
+        <div class="flex items-center gap-1 sm:gap-2">
+            <button onclick="window.bulkAction('read')" class="p-2 hover:bg-white/20 dark:hover:bg-black/10 rounded-full transition-colors tooltip outline-none" title="Markera lästa"><i data-lucide="mail-open" class="w-4 h-4"></i></button>
+            <button onclick="window.bulkAction('archive')" class="p-2 hover:bg-white/20 dark:hover:bg-black/10 rounded-full transition-colors tooltip outline-none" title="Arkivera"><i data-lucide="archive" class="w-4 h-4"></i></button>
+            <button onclick="window.bulkAction('trash')" class="p-2 hover:bg-red-500/80 hover:text-white rounded-full transition-colors tooltip outline-none text-red-400 dark:text-red-500" title="Radera"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+
+    <header class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 sm:mb-8 gap-4 shrink-0 border-b border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 w-full">
+        <div class="min-w-0 flex-1">
+            <h2 class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight truncate">
+                Mejl & Inkorg
+            </h2>
+            <p class="hidden sm:block text-slate-600 dark:text-slate-400 text-sm mt-1">Hantera inkommande leads och kundkonversationer.</p>
+        </div>
+
+        <div class="flex-1 max-w-xl w-full hidden lg:block mx-4">
+            <div class="relative group">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+                <input type="search" placeholder="Sök i inkorgen..."
+                    class="w-full bg-[#FAFAFA] dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded pl-11 pr-4 py-2.5 sm:py-3 text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+            <button onclick="window.initInbox()"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 sm:px-6 sm:py-3 bg-[#FAFAFA] dark:bg-[#1e293b] text-slate-700 dark:text-slate-200 rounded font-bold text-sm sm:text-base hover:text-brand-500 border border-slate-200 dark:border-slate-700 transition-all outline-none shadow-sm">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i> <span class="hidden sm:inline">Läs in</span><span class="sm:hidden">Läs in</span>
+            </button>
+            <button onclick="window.location.href='mailto:?subject=Nytt mejl'"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 sm:px-6 sm:py-3 bg-brand-500 hover:bg-brand-600 text-white rounded font-bold text-sm sm:text-base transition-all shadow-lg shadow-brand-500/25 active:scale-[0.98] outline-none">
+                <i data-lucide="pen-line" class="w-5 h-5"></i> <span>Skriv nytt</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 w-full bg-white dark:bg-[#020617] rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        
+        <div class="w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#1e293b]/30 flex flex-col shrink-0 hidden md:flex">
+            <div class="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 space-y-1">
+                <button onclick="window.switchFolder('inbox')" id="folder-inbox"
+                    class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 transition-colors">
+                    <div class="flex items-center gap-3"><i data-lucide="inbox" class="w-4 h-4"></i> Inkorg</div>
+                    <span id="folderUnreadCount" class="text-[10px] bg-brand-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <button onclick="window.switchFolder('starred')" id="folder-starred"
+                    class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center gap-3"><i data-lucide="star" class="w-4 h-4"></i> Stjärnmarkerat</div>
+                </button>
+                <button class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-slate-400 dark:text-slate-600 cursor-not-allowed">
+                    <div class="flex items-center gap-3"><i data-lucide="send" class="w-4 h-4"></i> Skickat</div>
+                </button>
+                <button onclick="window.switchFolder('archive')" id="folder-archive"
+                    class="folder-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="archive" class="w-4 h-4"></i> Arkiverat
+                </button>
+                <button onclick="window.switchFolder('trash')" id="folder-trash"
+                    class="folder-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Papperskorg
+                </button>
+                
+                <div class="pt-6 pb-1 flex justify-between items-center px-3">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Mina Mappar</div>
+                    <button onclick="window.addCustomFolder()" class="text-slate-400 hover:text-brand-500 outline-none"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+                </div>
+                <div id="customFoldersList" class="space-y-0.5"></div>
+
+                <div class="pt-6 pb-1 flex justify-between items-center px-3">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Taggar</div>
+                    <button onclick="window.addCustomTag()" class="text-slate-400 hover:text-brand-500 outline-none"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+                </div>
+                <div id="customTagsList" class="space-y-0.5"></div>
+            </div>
+
+            <div class="mt-auto px-4 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-transparent shrink-0">
+                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">System (Make.com)</div>
+                <div class="mb-4">
+                    <div class="flex justify-between items-end mb-1.5">
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Credits denna månad</span>
+                        <span id="creditCounter" class="text-[10px] font-bold text-slate-400">0 / 1000</span>
                     </div>
-                    <div class="flex items-center gap-1 sm:gap-2">
-                        <button onclick="window.bulkAction('read')"
-                            class="p-2 hover:bg-white/20 dark:hover:bg-black/10 rounded-full transition-colors tooltip outline-none" title="Markera lästa"><i data-lucide="mail-open" class="w-4 h-4"></i></button>
-                        <button onclick="window.bulkAction('archive')"
-                            class="p-2 hover:bg-white/20 dark:hover:bg-black/10 rounded-full transition-colors tooltip outline-none" title="Arkivera"><i data-lucide="archive" class="w-4 h-4"></i></button>
-                        <button onclick="window.bulkAction('trash')"
-                            class="p-2 hover:bg-red-500/80 hover:text-white rounded-full transition-colors tooltip outline-none text-red-400 dark:text-red-500" title="Radera"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div id="creditBar" class="h-full bg-emerald-500 transition-all duration-1000 w-0"></div>
                     </div>
                 </div>
-
-                <div class="flex h-full w-full">
-                    <div
-                        class="w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#020617] flex flex-col shrink-0 hidden md:flex">
-                        <div class="p-4 sm:p-5 border-b border-transparent shrink-0">
-                            <button onclick="window.location.href='mailto:?subject=Nytt mejl'"
-                                class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 w-full shadow-md shadow-brand-500/20 active:scale-95 outline-none transition-all">
-                                <i data-lucide="pen-line" class="w-4 h-4"></i> Skriv nytt
-                            </button>
-                        </div>
-
-                        <div class="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 space-y-1">
-                            <button onclick="window.switchFolder('inbox')" id="folder-inbox"
-                                class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 transition-colors">
-                                <div class="flex items-center gap-3"><i data-lucide="inbox" class="w-4 h-4"></i> Inkorg
-                                </div>
-                                <span id="folderUnreadCount"
-                                    class="text-[10px] bg-brand-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
-                            </button>
-                            <button onclick="window.switchFolder('starred')" id="folder-starred"
-                                class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                <div class="flex items-center gap-3"><i data-lucide="star" class="w-4 h-4"></i>
-                                    Stjärnmarkerat</div>
-                            </button>
-                            <button
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-slate-400 dark:text-slate-600 cursor-not-allowed">
-                                <div class="flex items-center gap-3"><i data-lucide="send" class="w-4 h-4"></i> Skickat
-                                </div>
-                            </button>
-                            <button onclick="window.switchFolder('archive')" id="folder-archive"
-                                class="folder-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                <i data-lucide="archive" class="w-4 h-4"></i> Arkiverat
-                            </button>
-                            <button onclick="window.switchFolder('trash')" id="folder-trash"
-                                class="folder-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i> Papperskorg
-                            </button>
-                            <div class="pt-6 pb-1 flex justify-between items-center px-3">
-                                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Mina Mappar
-                                </div>
-                                <button onclick="window.addCustomFolder()"
-                                    class="text-slate-400 hover:text-brand-500 outline-none"><i data-lucide="plus"
-                                        class="w-3.5 h-3.5"></i></button>
-                            </div>
-                            <div id="customFoldersList" class="space-y-0.5"></div>
-
-                            <div class="pt-6 pb-1 flex justify-between items-center px-3">
-                                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Taggar
-                                </div>
-                                <button onclick="window.addCustomTag()"
-                                    class="text-slate-400 hover:text-brand-500 outline-none"><i data-lucide="plus"
-                                        class="w-3.5 h-3.5"></i></button>
-                            </div>
-                            <div id="customTagsList" class="space-y-0.5"></div>
-                        </div>
-
-                        <div
-                            class="mt-auto px-4 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#020617] shrink-0">
-                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">System
-                                (Make.com)</div>
-                            <div class="mb-4">
-                                <div class="flex justify-between items-end mb-1.5">
-                                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Credits denna
-                                        månad</span>
-                                    <span id="creditCounter" class="text-[10px] font-bold text-slate-400">0 /
-                                        1000</span>
-                                </div>
-                                <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                    <div id="creditBar" class="h-full bg-emerald-500 transition-all duration-1000 w-0">
-                                    </div>
-                                </div>
-                            </div>
-                            <label class="flex items-center justify-between cursor-pointer group">
-                                <span
-                                    class="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Pausa
-                                    inkommande mejl</span>
-                                <div class="relative">
-                                    <input type="checkbox" id="pauseEmailsToggle" class="peer sr-only"
-                                        onchange="window.toggleEmailPause(this)">
-                                    <div
-                                        class="w-8 h-4 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-red-500">
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
+                <label class="flex items-center justify-between cursor-pointer group">
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Pausa inkommande mejl</span>
+                    <div class="relative">
+                        <input type="checkbox" id="pauseEmailsToggle" class="peer sr-only" onchange="window.toggleEmailPause(this)">
+                        <div class="w-8 h-4 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-red-500"></div>
                     </div>
+                </label>
+            </div>
+        </div>
 
-                    <div class="flex-1 flex flex-col relative w-full h-full bg-white dark:bg-[#020617]">
-
-                        <div id="emailListView"
-                            class="absolute inset-0 flex flex-col transition-transform duration-300">
-                            <div
-                                class="h-14 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between bg-white dark:bg-[#020617] shrink-0 shadow-sm z-10">
-                                <div class="flex items-center gap-3">
-                                    <label
-                                        class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-brand-500 transition-colors ml-1 tooltip"
-                                        title="Markera alla">
-                                        <input type="checkbox" id="selectAllMails"
-                                            class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500 cursor-pointer"
-                                            onchange="window.toggleAllMails(this)">
-                                    </label>
-                                    <button onclick="window.initInbox()"
-                                        class="text-slate-400 hover:text-slate-800 dark:hover:text-white outline-none"><i
-                                            data-lucide="refresh-cw" class="w-4 h-4"></i></button>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span id="currentFolderTitle"
-                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">Inkorg</span>
-                                    <button onclick="window.toggleListDensity()" class="p-1.5 text-slate-400 hover:text-brand-500 rounded outline-none tooltip" title="Ändra radavstånd"><i data-lucide="layout-list" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                            <div id="emailList"
-                                class="flex-1 overflow-y-auto no-scrollbar divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#020617]">
-                            </div>
-                        </div>
-
-                        <div id="emailReadView"
-                            class="absolute inset-0 bg-white dark:bg-[#020617] flex flex-col transform translate-x-full transition-transform duration-300 z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] dark:shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
-                            <div
-                                class="h-14 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between bg-white dark:bg-[#020617] shrink-0">
-                                <div class="flex items-center gap-4">
-                                    <button onclick="window.closeEmail()"
-                                        class="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors outline-none"
-                                        title="Tillbaka">
-                                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                                <div id="readViewToolbar" class="flex items-center gap-1 sm:gap-2"></div>
-                            </div>
-                            <div id="emailContentArea"
-                                class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full"></div>
-                        </div>
-
+        <div class="flex-1 flex flex-col relative w-full h-full bg-white dark:bg-[#020617]">
+            <div id="emailListView" class="absolute inset-0 flex flex-col transition-transform duration-300">
+                <div class="h-14 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between bg-white dark:bg-[#020617] shrink-0 z-10">
+                    <div class="flex items-center gap-3">
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-brand-500 transition-colors ml-1 tooltip" title="Markera alla">
+                            <input type="checkbox" id="selectAllMails" class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500 cursor-pointer" onchange="window.toggleAllMails(this)">
+                        </label>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <span id="currentFolderTitle" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">Inkorg</span>
+                        <button onclick="window.toggleListDensity()" class="p-1.5 text-slate-400 hover:text-brand-500 rounded outline-none tooltip" title="Ändra radavstånd"><i data-lucide="layout-list" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+                <div id="emailList" class="flex-1 overflow-y-auto no-scrollbar divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#020617]">
                 </div>
             </div>
+
+            <div id="emailReadView" class="absolute inset-0 bg-white dark:bg-[#020617] flex flex-col transform translate-x-full transition-transform duration-300 z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] dark:shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
+                <div class="h-14 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between bg-white dark:bg-[#020617] shrink-0">
+                    <div class="flex items-center gap-4">
+                        <button onclick="window.closeEmail()" class="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors outline-none" title="Tillbaka">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div id="readViewToolbar" class="flex items-center gap-1 sm:gap-2"></div>
+                </div>
+                <div id="emailContentArea" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
         </main>
     </div>
