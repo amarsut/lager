@@ -619,19 +619,27 @@ window.DashboardView = React.memo(({
                      )}
                      
                      {/* RAD 4: FILTER MENY */}
-                     <div ref={tabsRef} className="flex overflow-x-auto gap-2 px-4 pb-3" style={{scrollbarWidth:'none'}}>
-                         {filters.map(s => {
-                             const isActive = activeFilter === s;
-                             return (
-                                 <button key={s} data-tab={s} onClick={() => setActiveFilter(s)} 
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-[2px] border whitespace-nowrap flex items-center gap-2 transition-all
-                                    ${isActive ? 'bg-white text-black border-white' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
-                                    {s} 
-                                    {statusCounts[s] > 0 && <span className={`px-1 rounded-[2px] ${isActive ? 'bg-black text-white' : 'bg-zinc-700 text-zinc-400'}`}>{statusCounts[s]}</span>}
-                                 </button>
-                             )
-                         })}
-                     </div>
+                    <div 
+                        ref={tabsRef} 
+                        className="flex overflow-x-auto gap-2 px-4 pb-3" 
+                        style={{scrollbarWidth:'none'}}
+                        // LÄGG TILL DESSA TRE RADER FÖR ATT BLOCKERA SWIPE-BYTET HÄR
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                    >
+                        {filters.map(s => {
+                            const isActive = activeFilter === s;
+                            return (
+                                <button key={s} data-tab={s} onClick={() => setActiveFilter(s)} 
+                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-[2px] border whitespace-nowrap flex items-center gap-2 transition-all
+                                ${isActive ? 'bg-white text-black border-white' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
+                                {s} 
+                                {statusCounts[s] > 0 && <span className={`px-1 rounded-[2px] ${isActive ? 'bg-black text-white' : 'bg-zinc-700 text-zinc-400'}`}>{statusCounts[s]}</span>}
+                                </button>
+                            )
+                        })}
+                    </div>
                 </div>
 
                 <div className="px-3 py-2 pb-24 flex flex-col gap-2">
