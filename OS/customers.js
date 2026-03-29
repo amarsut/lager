@@ -1,4 +1,4 @@
-// customers.js - VERSION: TACTICAL_FIX_ICONS
+// customers.js
 
 const SafeIcon = ({ name, size = 14, className = "" }) => (
     <span className="inline-flex items-center justify-center shrink-0">
@@ -7,12 +7,11 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
 );
 
 window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
-    // --- 1. ALLA HOOKS HÖGST UPP ---
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCustomer, setSelectedCustomer] = React.useState(null);
     const [sortMode, setSortMode] = React.useState('revenue'); 
     const [logSearch, setLogSearch] = React.useState('');
-    // SYNKRONISERA MED HISTORIK (viktigt för swipe bakåt)
+
     React.useEffect(() => {
         if (viewParams && viewParams.selectedCustomer) {
             setSelectedCustomer(viewParams.selectedCustomer);
@@ -21,29 +20,19 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
         }
     }, [viewParams]);
 
-    // FIX: Skapar ikonerna varje gång vi byter vy inuti komponenten
     React.useEffect(() => {
         if (window.lucide) {
             window.lucide.createIcons();
         }
     }, [selectedCustomer, logSearch, searchQuery]);
 
-    // --- 2. DATABEREDNING ---
     const customerData = React.useMemo(() => {
         const groups = allJobs.reduce((acc, job) => {
             const name = job.kundnamn || 'Oidentifierad Enhet';
             if (!acc[name]) {
                 acc[name] = {
-                    name: name,
-                    totalSpent: 0,
-                    missionCount: 0,
-                    vehicles: new Set(),
-                    lastSeen: job.datum,
-                    jobs: [],
-                    avgValue: 0,
-                    rank: 'D',
-                    topVehicle: '',
-                    packageStats: {}
+                    name: name, totalSpent: 0, missionCount: 0, vehicles: new Set(),
+                    lastSeen: job.datum, jobs: [], avgValue: 0, rank: 'D', topVehicle: '', packageStats: {}
                 };
             }
             const price = parseInt(job.kundpris) || 0;
@@ -85,9 +74,9 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
     const RankBadge = ({ rank }) => {
         const colors = {
             'S-TIER': 'bg-orange-500 text-black shadow-[0_0_10px_rgba(249,115,22,0.5)]',
-            'A-TIER': 'bg-zinc-800 text-orange-400 border border-orange-500/30',
-            'B-TIER': 'bg-zinc-100 text-zinc-800',
-            'C-TIER': 'bg-zinc-50 text-zinc-400'
+            'A-TIER': 'bg-zinc-800 dark:bg-[#1a2235] text-orange-400 border border-orange-500/30',
+            'B-TIER': 'bg-zinc-100 dark:bg-[#252f48] text-zinc-800 dark:text-zinc-300',
+            'C-TIER': 'bg-zinc-50 dark:bg-[#1a2235] text-zinc-400 dark:text-zinc-500'
         };
         return (
             <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-sm tracking-tighter ${colors[rank] || colors['C-TIER']}`}>
@@ -96,7 +85,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
         );
     };
 
-    // --- 3. VY: PROFIL ---
     if (selectedCustomer) {
         const loyaltyScore = Math.min(100, (selectedCustomer.missionCount * 5));
         const daysSinceLast = Math.floor((new Date() - new Date(selectedCustomer.lastSeen)) / (1000 * 60 * 60 * 24));
@@ -110,17 +98,15 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
             .sort((a,b) => b.datum.localeCompare(a.datum));
 
         return (
-            <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
-                {/* HEADER: Nu responsiv (Flex-col på mobil) och utan orange linje */}
-                <div className="bg-zinc-950 shadow-2xl relative overflow-hidden mb-6">
+            <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20 transition-colors duration-300">
+                <div className="bg-zinc-950 dark:bg-[#121826] shadow-2xl relative overflow-hidden mb-6 border-b dark:border-[#1a2235]">
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                         <SafeIcon name="shield-check" size={100} />
                     </div>
 
                     <div className="relative z-10 p-4 lg:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        {/* TOPP: Tillbaka-knapp + Titel */}
                         <div className="flex items-start gap-4">
-                            <button onClick={() => window.history.back()} className="group bg-zinc-900 border border-zinc-800 text-zinc-400 p-3 hover:theme-bg hover:text-black transition-all shrink-0 rounded-sm">
+                            <button onClick={() => window.history.back()} className="group bg-zinc-900 dark:bg-[#1a2235] border border-zinc-800 dark:border-[#2a3441] text-zinc-400 p-3 hover:theme-bg hover:text-black transition-all shrink-0 rounded-sm">
                                 <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
                             </button>
                             <div className="flex-1 min-w-0">
@@ -129,7 +115,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                     <RankBadge rank={selectedCustomer.rank} />
                                 </div>
                                 <div className="flex flex-wrap items-center gap-4 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
-                                    <span className="bg-zinc-900 px-1.5 py-0.5 rounded-sm border border-zinc-800">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
+                                    <span className="bg-zinc-900 dark:bg-[#0a0f18] px-1.5 py-0.5 rounded-sm border border-zinc-800 dark:border-[#1a2235]">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
                                     <span className="flex items-center gap-2">
                                         <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`}></div>
                                         {daysSinceLast < 45 ? 'SIGNAL_ACTIVE' : 'SIGNAL_LOST'}
@@ -138,7 +124,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             </div>
                         </div>
                         
-                        {/* KNAPP: Ligger nu under på mobil (fullbredd), till höger på dator */}
                         <button 
                             onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
                             className="w-full lg:w-auto theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-all shadow-lg rounded-sm"
@@ -148,45 +133,44 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                     </div>
                 </div>
 
-                {/* GRID: Med px-4 för att ge luft på mobilen */}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 px-4 lg:px-0">
                     <div className="space-y-6">
-                        <div className="bg-zinc-900 p-6 rounded-sm relative overflow-hidden border border-zinc-800">
+                        <div className="bg-zinc-900 dark:bg-[#121826] p-6 rounded-sm relative overflow-hidden border border-zinc-800 dark:border-[#1a2235]">
                             <div className="relative z-10">
                                 <div className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Loyalty_Pulse_Score</div>
                                 <div className="text-3xl font-mono font-black text-white mb-4">{loyaltyScore}%</div>
-                                <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden shadow-inner">
+                                <div className="w-full bg-zinc-800 dark:bg-[#1a2235] h-1.5 rounded-full overflow-hidden shadow-inner">
                                     <div className="theme-bg h-full shadow-[0_0_10px_#f97316]" style={{ width: `${loyaltyScore}%` }}></div>
                                 </div>
                             </div>
                             <SafeIcon name="activity" size={80} className="absolute -right-4 -bottom-4 text-white opacity-5" />
                         </div>
 
-                        <div className="bg-white border border-zinc-200 p-6 shadow-sm relative">
-                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-zinc-100"></div>
+                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-6 shadow-sm relative">
+                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-zinc-100 dark:border-[#2a3441]"></div>
                             <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <SafeIcon name="rss" size={12} /> Communication_Status
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className={`w-3 h-3 rounded-full ${daysSinceLast < 30 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
                                 <div>
-                                    <div className="text-[11px] font-black uppercase text-zinc-900">{daysSinceLast < 30 ? 'Active_Node' : 'Latent_Node'}</div>
+                                    <div className="text-[11px] font-black uppercase text-zinc-900 dark:text-white">{daysSinceLast < 30 ? 'Active_Node' : 'Latent_Node'}</div>
                                     <div className="text-[9px] font-mono text-zinc-400 uppercase">Last Pulse: {daysSinceLast}d ago</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white border border-zinc-200 p-6 shadow-sm">
+                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-6 shadow-sm">
                             <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-6">Affinity_Analysis</div>
                             <div className="space-y-4">
                                 {Object.entries(selectedCustomer.packageStats).map(([pkg, count]) => (
                                     <div key={pkg} className="group">
-                                        <div className="flex justify-between text-[9px] font-black uppercase mb-1.5">
+                                        <div className="flex justify-between text-[9px] font-black uppercase mb-1.5 text-zinc-900 dark:text-white">
                                             <span className="group-hover:theme-text transition-colors">{pkg}</span>
-                                            <span className="opacity-30">{Math.round((count / selectedCustomer.missionCount) * 100)}%</span>
+                                            <span className="opacity-50">{Math.round((count / selectedCustomer.missionCount) * 100)}%</span>
                                         </div>
-                                        <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
-                                            <div className="bg-zinc-800 h-full transition-all duration-1000" style={{ width: `${(count / selectedCustomer.missionCount) * 100}%` }}></div>
+                                        <div className="w-full bg-zinc-100 dark:bg-[#1a2235] h-1 rounded-full overflow-hidden">
+                                            <div className="bg-zinc-800 dark:bg-zinc-500 h-full transition-all duration-1000" style={{ width: `${(count / selectedCustomer.missionCount) * 100}%` }}></div>
                                         </div>
                                     </div>
                                 ))}
@@ -197,12 +181,12 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                     <div className="lg:col-span-3 space-y-6">
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             {[
-                                { label: 'Net_Worth', val: selectedCustomer.totalSpent.toLocaleString(), unit: 'kr', icon: 'credit-card', color: 'text-emerald-600' },
+                                { label: 'Net_Worth', val: selectedCustomer.totalSpent.toLocaleString(), unit: 'kr', icon: 'credit-card', color: 'text-emerald-600 dark:text-emerald-500' },
                                 { label: 'Payload_Avg', val: Math.round(selectedCustomer.avgValue).toLocaleString(), unit: 'kr', icon: 'zap', color: 'theme-text' },
-                                { label: 'Deployments', val: selectedCustomer.missionCount, unit: 'Visits', icon: 'list', color: 'text-zinc-900' },
-                                { label: 'Managed_Assets', val: selectedCustomer.vehicles.size, unit: 'Vehicles', icon: 'truck', color: 'text-zinc-900' }
+                                { label: 'Deployments', val: selectedCustomer.missionCount, unit: 'Visits', icon: 'list', color: 'text-zinc-900 dark:text-white' },
+                                { label: 'Managed_Assets', val: selectedCustomer.vehicles.size, unit: 'Vehicles', icon: 'truck', color: 'text-zinc-900 dark:text-white' }
                             ].map((s, i) => (
-                                <div key={i} className="bg-white border border-zinc-200 p-5 group hover:border-zinc-950 transition-all shadow-sm">
+                                <div key={i} className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-5 group hover:border-zinc-950 dark:hover:border-zinc-600 transition-all shadow-sm">
                                     <div className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-2 flex items-center justify-between">
                                         {s.label} <SafeIcon name={s.icon} size={10} className="group-hover:theme-text transition-colors" />
                                     </div>
@@ -211,118 +195,108 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             ))}
                         </div>
 
-                        {/* MISSION_LOG_BUFFER - Ny kompakt lista */}
-                        <div className="bg-white border border-zinc-200 shadow-2xl rounded-sm overflow-hidden flex flex-col">
-                        <div className="bg-zinc-950 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800">
-                            <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                                <SafeIcon name="database" size={14} className="theme-text" /> 
-                                Mission_Log_Buffer <span className="text-zinc-600 font-mono text-[9px] tracking-normal">[{selectedCustomer.jobs.length}]</span>
+                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] shadow-2xl dark:shadow-none rounded-sm overflow-hidden flex flex-col">
+                            <div className="bg-zinc-950 dark:bg-[#1a2235] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 dark:border-[#2a3441]">
+                                <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                                    <SafeIcon name="database" size={14} className="theme-text" /> 
+                                    Mission_Log_Buffer <span className="text-zinc-600 dark:text-zinc-400 font-mono text-[9px] tracking-normal">[{selectedCustomer.jobs.length}]</span>
+                                </div>
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        placeholder="FILTER..." 
+                                        className="bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-[#2a3441] text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-48 uppercase tracking-widest rounded-sm"
+                                        value={logSearch}
+                                        onChange={(e) => setLogSearch(e.target.value)}
+                                    />
+                                </div>
                             </div>
-                            <div className="relative">
-                                <input 
-                                    type="text" 
-                                    placeholder="FILTER..." 
-                                    className="bg-zinc-900 border border-zinc-800 text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-48 uppercase tracking-widest rounded-sm"
-                                    value={logSearch}
-                                    onChange={(e) => setLogSearch(e.target.value)}
-                                />
-                            </div>
-                        </div>
 
-                        <div className="divide-y divide-zinc-100 max-h-[450px] overflow-x-hidden overflow-y-auto custom-scrollbar bg-white">
-                            {filteredLogs.length > 0 ? filteredLogs
-                                // SÄKER SORTERING: Nyast datum alltid högst upp
-                                .sort((a, b) => {
-                                    if (!a.datum) return 1;
-                                    if (!b.datum) return -1;
-                                    return b.datum.localeCompare(a.datum);
-                                })
-                                .map((j, i) => {
-                                    // LOGIK FÖR DATUMVISNING
-                                    const jobDate = new Date(j.datum);
-                                    const today = new Date();
-                                    const isCurrentYear = jobDate.getFullYear() === today.getFullYear();
-                                    
-                                    // Månadsnamn för innevarande år
-                                    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
-                                    
-                                    // Om det är i år: Visa Månad (t.ex. JAN). Om gammalt år: Visa Årtal (t.ex. 2025).
-                                    const subDateDisplay = isCurrentYear ? monthNames[jobDate.getMonth()] : jobDate.getFullYear();
+                            <div className="divide-y divide-zinc-100 dark:divide-[#1a2235] max-h-[450px] overflow-x-hidden overflow-y-auto custom-scrollbar bg-white dark:bg-[#121826]">
+                                {filteredLogs.length > 0 ? filteredLogs
+                                    .sort((a, b) => {
+                                        if (!a.datum) return 1;
+                                        if (!b.datum) return -1;
+                                        return b.datum.localeCompare(a.datum);
+                                    })
+                                    .map((j, i) => {
+                                        const jobDate = new Date(j.datum);
+                                        const today = new Date();
+                                        const isCurrentYear = jobDate.getFullYear() === today.getFullYear();
+                                        const monthNames = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+                                        const subDateDisplay = isCurrentYear ? monthNames[jobDate.getMonth()] : jobDate.getFullYear();
 
-                                    return (
-                                        <div 
-                                            key={i} 
-                                            onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
-                                            className="group p-4 hover:bg-zinc-50 transition-all cursor-pointer border-l-2 border-transparent hover:border-orange-500"
-                                        >
-                                            <div className="flex gap-3 md:gap-5 items-start">
-                                                
-                                                {/* 1. DATUM - Nu med Årtals-logik */}
-                                                <div className="flex flex-col items-center w-10 shrink-0 pt-0.5">
-                                                    <div className="text-[14px] font-black text-zinc-900 leading-none">{jobDate.getDate()}</div>
-                                                    <div className={`text-[8px] font-black uppercase tracking-wider ${!isCurrentYear ? 'text-orange-600' : 'text-zinc-400'}`}>
-                                                        {subDateDisplay}
-                                                    </div>
-                                                </div>
-
-                                                {/* 2. INNEHÅLL */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <div className="flex flex-col min-w-0 pr-2">
-                                                            <span className="text-[11px] font-black uppercase text-zinc-900 leading-tight group-hover:theme-text transition-colors truncate">
-                                                                {j.paket || 'Standard_Deployment'}
-                                                            </span>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <span className="text-[9px] font-mono font-bold bg-zinc-100 text-zinc-600 px-1.5 rounded-[2px] border border-zinc-200">
-                                                                    {j.regnr}
-                                                                </span>
-                                                                <span className={`text-[8px] font-black uppercase tracking-tight ${j.status === 'KLAR' ? 'text-emerald-600' : 'theme-text'}`}>
-                                                                    {j.status}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="text-right shrink-0">
-                                                                <div className="text-[13px] font-mono font-black text-zinc-900 leading-none">
-                                                                {(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[9px] text-zinc-400 font-sans">kr</span>
-                                                            </div>
+                                        return (
+                                            <div 
+                                                key={i} 
+                                                onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
+                                                className="group p-4 hover:bg-zinc-50 dark:hover:bg-[#1a2235] transition-all cursor-pointer border-l-2 border-transparent hover:border-orange-500"
+                                            >
+                                                <div className="flex gap-3 md:gap-5 items-start">
+                                                    <div className="flex flex-col items-center w-10 shrink-0 pt-0.5">
+                                                        <div className="text-[14px] font-black text-zinc-900 dark:text-white leading-none">{jobDate.getDate()}</div>
+                                                        <div className={`text-[8px] font-black uppercase tracking-wider ${!isCurrentYear ? 'text-orange-600' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                                                            {subDateDisplay}
                                                         </div>
                                                     </div>
 
-                                                    {j.kommentar && (
-                                                        <div className="mt-2 flex items-start gap-1.5 text-[10px] text-zinc-500 italic bg-zinc-50/50 p-2 rounded-sm border-l-2 border-zinc-200">
-                                                                <SafeIcon name="message-square" size={10} className="text-zinc-300 shrink-0 mt-[2px]" />
-                                                            <span className="line-clamp-2 leading-relaxed">{j.kommentar}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <div className="flex flex-col min-w-0 pr-2">
+                                                                <span className="text-[11px] font-black uppercase text-zinc-900 dark:text-white leading-tight group-hover:theme-text transition-colors truncate">
+                                                                    {j.paket || 'Standard_Deployment'}
+                                                                </span>
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="text-[9px] font-mono font-bold bg-zinc-100 dark:bg-[#252f48] text-zinc-600 dark:text-zinc-300 px-1.5 rounded-[2px] border border-zinc-200 dark:border-transparent">
+                                                                        {j.regnr}
+                                                                    </span>
+                                                                    <span className={`text-[8px] font-black uppercase tracking-tight ${j.status === 'KLAR' ? 'text-emerald-600 dark:text-emerald-500' : 'theme-text'}`}>
+                                                                        {j.status}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
 
-                                                <div className="self-center pl-1 opacity-20 group-hover:opacity-100 transition-opacity">
-                                                    <SafeIcon name="chevron-right" size={16} />
+                                                            <div className="text-right shrink-0">
+                                                                    <div className="text-[13px] font-mono font-black text-zinc-900 dark:text-white leading-none">
+                                                                    {(parseInt(j.kundpris) || 0).toLocaleString()} <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-sans">kr</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {j.kommentar && (
+                                                            <div className="mt-2 flex items-start gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400 italic bg-zinc-50/50 dark:bg-[#0a0f18]/50 p-2 rounded-sm border-l-2 border-zinc-200 dark:border-[#2a3441]">
+                                                                    <SafeIcon name="message-square" size={10} className="text-zinc-300 dark:text-zinc-600 shrink-0 mt-[2px]" />
+                                                                <span className="line-clamp-2 leading-relaxed">{j.kommentar}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="self-center pl-1 opacity-20 group-hover:opacity-100 transition-opacity text-zinc-900 dark:text-white">
+                                                        <SafeIcon name="chevron-right" size={16} />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                            }) : (
-                                <div className="p-12 text-center text-zinc-300 font-black uppercase tracking-[0.2em] text-[9px]">
-                                    <SafeIcon name="database-zap" size={24} className="mb-2 opacity-50 mx-auto" />
-                                    No_Logs_Found
-                                </div>
-                            )}
+                                        );
+                                }) : (
+                                    <div className="p-12 text-center text-zinc-300 dark:text-zinc-600 font-black uppercase tracking-[0.2em] text-[9px]">
+                                        <SafeIcon name="database-zap" size={24} className="mb-2 opacity-50 mx-auto" />
+                                        No_Logs_Found
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                        <div className="bg-white border border-zinc-200 p-6 shadow-xl relative overflow-hidden">
-                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-6 flex items-center justify-between relative z-10">
+                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-6 shadow-xl dark:shadow-none relative overflow-hidden">
+                            <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-6 flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-2"><SafeIcon name="cpu" size={14} /> Asset_Inventory_Registry</div>
-                                <span className="text-zinc-950 bg-zinc-100 px-3 py-1 rounded-full text-[10px] font-mono font-bold border border-zinc-200">{selectedCustomer.vehicles.size} NODES</span>
+                                <span className="text-zinc-950 dark:text-white bg-zinc-100 dark:bg-[#1a2235] px-3 py-1 rounded-full text-[10px] font-mono font-bold border border-zinc-200 dark:border-[#2a3441]">{selectedCustomer.vehicles.size} NODES</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 relative z-10">
                                 {Array.from(selectedCustomer.vehicles).map(v => (
-                                    <div key={v} className="bg-zinc-50 border border-zinc-200 p-4 hover:border-zinc-900 hover:bg-white transition-all group flex items-center justify-between cursor-default">
+                                    <div key={v} className="bg-zinc-50 dark:bg-[#0a0f18] border border-zinc-200 dark:border-[#2a3441] p-4 hover:border-zinc-900 dark:hover:border-zinc-500 hover:bg-white dark:hover:bg-[#1a2235] transition-all group flex items-center justify-between cursor-default">
                                         <div className="flex items-center gap-3">
-                                            <SafeIcon name="truck" size={16} className="text-zinc-300 group-hover:theme-text" />
-                                            <span className="text-sm font-mono font-black text-zinc-800 tracking-widest uppercase">{v}</span>
+                                            <SafeIcon name="truck" size={16} className="text-zinc-300 dark:text-zinc-600 group-hover:theme-text" />
+                                            <span className="text-sm font-mono font-black text-zinc-800 dark:text-zinc-200 tracking-widest uppercase">{v}</span>
                                         </div>
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
                                     </div>
@@ -330,13 +304,13 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             </div>
                         </div>
 
-                        <div className="bg-zinc-950 p-6 shadow-inner relative overflow-hidden group">
+                        <div className="bg-zinc-950 dark:bg-[#1a2235] p-6 shadow-inner relative overflow-hidden group">
                             <div className="absolute top-0 left-0 w-1.5 h-full theme-bg shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div>
                             <div className="relative z-10">
                                 <div className="text-[8px] font-black theme-text uppercase mb-4 tracking-[0.4em] flex items-center gap-2">
                                     <SafeIcon name="info" size={10} /> Customers_View
                                 </div>
-                                <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 pl-4">
+                                <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 dark:border-[#2a3441] pl-4">
                                     "Kunden uppvisar ett lojalt beteendemönster med fokus på {selectedCustomer.topVehicle}. {selectedCustomer.isChurned ? 'Varning: Signalstyrkan har minskat då enheten inte besökt basen på länge.' : 'Signalstyrkan är optimal.'} Rekommenderar riktad service-optimering."
                                 </p>
                             </div>
@@ -347,10 +321,9 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
         );
     }
 
-    // --- 4. VY: HUVUDGRID (MATRIX INTERFACE) ---
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-            <div className="bg-zinc-950 p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border shadow-2xl gap-4">
+        <div className="space-y-6 animate-in fade-in duration-500 pb-20 bg-transparent">
+            <div className="bg-zinc-950 dark:bg-[#121826] p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border dark:border-b-[#1a2235] shadow-2xl dark:shadow-none gap-4">
                 <div className="flex items-center gap-5">
                     <div className="w-12 h-12 theme-bg flex items-center justify-center rounded-sm shadow-lg rotate-3 group-hover:rotate-0 transition-transform shrink-0">
                         <SafeIcon name="users" size={24} className="text-black" />
@@ -360,13 +333,13 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             Entity_Database_Nexus
                         </span>
                         <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                            Customers_View <span className="text-[10px] bg-zinc-800 px-2 py-1 text-zinc-500 font-mono hidden sm:inline">COUNT:{customerData.length}</span>
+                            Customers_View <span className="text-[10px] bg-zinc-800 dark:bg-[#1a2235] px-2 py-1 text-zinc-500 font-mono hidden sm:inline">COUNT:{customerData.length}</span>
                         </h2>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-sm shadow-inner justify-between sm:justify-start">
+                    <div className="flex bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-[#2a3441] p-1 rounded-sm shadow-inner justify-between sm:justify-start">
                         {[
                             { id: 'revenue', icon: 'dollar-sign' },
                             { id: 'count', icon: 'hash' },
@@ -375,7 +348,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             <button 
                                 key={m.id}
                                 onClick={() => setSortMode(m.id)}
-                                className={`p-2 transition-all flex-1 sm:flex-none flex justify-center ${sortMode === m.id ? 'theme-bg text-black shadow-lg scale-[1.02]' : 'text-zinc-600 hover:text-white'}`}
+                                className={`p-2 transition-all flex-1 sm:flex-none flex justify-center ${sortMode === m.id ? 'theme-bg text-black shadow-lg scale-[1.02]' : 'text-zinc-600 dark:text-zinc-500 hover:text-white'}`}
                             >
                                 <SafeIcon name={m.icon} size={14} />
                             </button>
@@ -386,11 +359,11 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                         <input 
                             type="text" 
                             placeholder="SEARCH_ENTITY_OR_ASSET..." 
-                            className="bg-zinc-900 border border-zinc-800 focus:theme-border p-3 pl-10 text-[10px] font-bold text-white outline-none w-full md:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-700 shadow-2xl"
+                            className="bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-[#2a3441] focus:theme-border p-3 pl-10 text-[10px] font-bold text-white outline-none w-full md:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-700 dark:placeholder:text-zinc-600 shadow-2xl dark:shadow-none"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <SafeIcon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:theme-text transition-colors" />
+                        <SafeIcon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 dark:text-zinc-500 group-focus-within:theme-text transition-colors" />
                     </div>
                 </div>
             </div>
@@ -400,36 +373,36 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                     <div 
                         key={i} 
                         onClick={() => setView('CUSTOMERS', { selectedCustomer: customer })}
-                        className="group bg-white border border-zinc-200 hover:border-zinc-950 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm"
+                        className="group bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] hover:border-zinc-950 dark:hover:border-zinc-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-none transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm"
                     >
-                        <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 group-hover:theme-text/5 transition-colors pointer-events-none italic select-none">
+                        <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 dark:text-[#1a2235]/40 group-hover:theme-text/5 transition-colors pointer-events-none italic select-none">
                             {customer.rank[0]}
                         </div>
 
                         <div className="p-5 flex-1 relative z-10">
                             <div className="flex justify-between items-start mb-3">
                                 <RankBadge rank={customer.rank} />
-                                <div className="text-[10px] font-mono font-black text-zinc-300">#{i + 1}</div>
+                                <div className="text-[10px] font-mono font-black text-zinc-300 dark:text-zinc-600">#{i + 1}</div>
                             </div>
-                            <h3 className="text-[14px] font-black uppercase leading-tight mb-4 group-hover:theme-text transition-colors truncate">{customer.name}</h3>
-                            <div className="grid grid-cols-2 border-t border-zinc-50 pt-3 gap-2">
+                            <h3 className="text-[14px] font-black text-zinc-900 dark:text-white uppercase leading-tight mb-4 group-hover:theme-text transition-colors truncate">{customer.name}</h3>
+                            <div className="grid grid-cols-2 border-t border-zinc-50 dark:border-[#1a2235] pt-3 gap-2">
                                 <div>
-                                    <div className="text-[7px] font-black text-zinc-400 uppercase">Revenue_Sum</div>
-                                    <div className="text-xs font-mono font-black italic">{(customer.totalSpent / 1000).toFixed(1)}k</div>
+                                    <div className="text-[7px] font-black text-zinc-400 dark:text-zinc-500 uppercase">Revenue_Sum</div>
+                                    <div className="text-xs font-mono font-black text-zinc-900 dark:text-zinc-300 italic">{(customer.totalSpent / 1000).toFixed(1)}k</div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[7px] font-black text-zinc-400 uppercase">Ops_Count</div>
-                                    <div className="text-xs font-mono font-black">{customer.missionCount}x</div>
+                                    <div className="text-[7px] font-black text-zinc-400 dark:text-zinc-500 uppercase">Ops_Count</div>
+                                    <div className="text-xs font-mono font-black text-zinc-900 dark:text-zinc-300">{customer.missionCount}x</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mt-auto bg-zinc-950 p-3 flex items-center justify-between border-t border-zinc-900 group-hover:bg-zinc-900 transition-colors">
+                        <div className="mt-auto bg-zinc-950 dark:bg-[#0a0f18] p-3 flex items-center justify-between border-t border-zinc-900 dark:border-[#1a2235] group-hover:bg-zinc-900 dark:group-hover:bg-[#1a2235] transition-colors">
                             <div className="flex items-center gap-2">
                                 <div className={`w-1.5 h-1.5 rounded-full ${Math.floor((new Date() - new Date(customer.lastSeen)) / (1000 * 60 * 60 * 24)) < 45 ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`}></div>
                                 <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase truncate max-w-[80px]">{customer.topVehicle}</span>
                             </div>
-                            <SafeIcon name="arrow-right" size={12} className="text-zinc-600 group-hover:theme-text transition-all group-hover:translate-x-1" />
+                            <SafeIcon name="arrow-right" size={12} className="text-zinc-600 dark:text-zinc-500 group-hover:theme-text transition-all group-hover:translate-x-1" />
                         </div>
                     </div>
                 ))}
