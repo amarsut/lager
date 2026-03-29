@@ -1,16 +1,8 @@
-// app.js - Full uppdaterad version med Native Navigation (History API)
+// app.js - Full uppdaterad version med Native Navigation & Dark Mode
 
 const { useState, useEffect, useMemo, memo } = React;
 
-// --- 1. THEMES ---
-const THEMES = {
-    MATRIX: { primary: '#f97316', secondary: '#000000', accent: '#fb923c', text: '#ffffff', label: 'Matrix Orange' },
-    CYBER: { primary: '#00ff41', secondary: '#0d0208', accent: '#008f11', text: '#ffffff', label: 'Cyber Green' },
-    CLEAN_LIGHT: { primary: '#3b82f6', secondary: '#ffffff', accent: '#60a5fa', text: '#1e293b', label: 'Clean Light' },
-    SAND: { primary: '#d97706', secondary: '#fef3c7', accent: '#f59e0b', text: '#451a03', label: 'Workshop Sand' }
-};
-
-// --- 2. FIREBASE ---
+// --- 1. FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
     authDomain: "planerare-f6006.firebaseapp.com",
@@ -23,7 +15,7 @@ const firebaseConfig = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// AKTIVERA OFFLINE-STÖD HÄR (Utanför komponenten är korrekt)
+// AKTIVERA OFFLINE-STÖD
 db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
 db.enablePersistence({ synchronizeTabs: true }).catch(err => {
     console.warn("Offline persistence failed:", err.code);
@@ -33,7 +25,7 @@ const auth = firebase.auth();
 window.db = db;
 window.firebase = firebase;
 
-// --- 3. GLOBALA KOMPONENTER ---
+// --- 2. GLOBALA KOMPONENTER ---
 window.Icon = ({ name, size = 18, className = "" }) => (
     <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>
 );
@@ -41,203 +33,67 @@ window.Icon = ({ name, size = 18, className = "" }) => (
 const SplashScreen = () => (
     <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out duration-500 delay-1000 fill-mode-forwards pointer-events-none">
         <div className="flex flex-col items-center">
-            <div className="w-16 h-16 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg text-3xl animate-pulse">P</div>
+            <div className="w-16 h-16 bg-[#f97316] flex items-center justify-center font-black rounded-sm text-black shadow-lg text-3xl animate-pulse">P</div>
             <h1 className="mt-4 text-white font-black uppercase tracking-[0.3em] text-sm">Planerare // OS</h1>
             <div className="mt-6 w-32 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full theme-bg animate-[loading_1s_ease-in-out_infinite]"></div>
+                <div className="h-full bg-[#f97316] animate-[loading_1s_ease-in-out_infinite]"></div>
             </div>
             <p className="mt-2 text-[8px] font-black text-zinc-500 uppercase tracking-widest">Initializing_Core_Systems...</p>
         </div>
     </div>
 );
 
-// --- 5. HUVUDAPPLIKATION ---
+// --- 3. HUVUDAPPLIKATION ---
 const App = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [appReady, setAppReady] = useState(false);
     const [view, setView] = useState('DASHBOARD');
-    const [viewParams, setViewParams] = useState(null); // För sub-vyer (t.ex. kundprofiler)
+    const [viewParams, setViewParams] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
     const [activeFilter, setActiveFilter] = useState('BOKAD');
     const [globalSearch, setGlobalSearch] = useState('');
     const [allJobs, setAllJobs] = useState([]);
     const [editingJob, setEditingJob] = useState(null);
-    const [theme, setTheme] = useState(localStorage.getItem('sys_theme') || 'MATRIX');
+    
+    // DARK MODE STATE (Minns via localStorage)
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') === 'dark');
+    
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const triggerHaptic = () => {
-        if (window.navigator && window.navigator.vibrate) {
-            window.navigator.vibrate(12);
-        }
+        if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
     };
 
-    // --- SYSTEM BAR & THEME COLOR (Gör mobil-listen sömlös) ---
+    // --- DARK MODE INJECTION ---
     useEffect(() => {
-        // Sätt body-bakgrunden till samma färg som bottenmenyn (zinc-950)
-        // Detta gör att "overscroll" och ytan bakom swipe-strecket blir mörk
-        document.body.style.backgroundColor = '#09090b';
+        const root = document.documentElement;
+        root.style.setProperty('--brand-primary', '#f97316');
+        root.style.setProperty('--sidebar-text', '#ffffff');
 
-        // Uppdatera eller skapa meta-taggen för theme-color
+        if (isDark) {
+            root.classList.add('dark');
+            localStorage.setItem('sys_theme', 'dark');
+            // Premium djup gradient för BMG Dark Mode
+            document.body.style.background = 'linear-gradient(to bottom right, #111826, #0a0f18, #05080f)'; 
+        } else {
+            root.classList.remove('dark');
+            localStorage.setItem('sys_theme', 'light');
+            // Fräsch ljus gradient för Light Mode
+            document.body.style.background = 'linear-gradient(to bottom right, #ffffff, #f4f4f5, #e4e4e7)'; 
+        }
+
         let meta = document.querySelector('meta[name="theme-color"]');
         if (!meta) {
             meta = document.createElement('meta');
             meta.name = 'theme-color';
             document.head.appendChild(meta);
         }
-        // Sätt färgen till #09090b (Zinc-950)
-        meta.content = '#09090b';
+        meta.content = isDark ? '#0a0f18' : '#ffffff';
 
-        // (Valfritt) Återställ vid unmount om du skulle lämna appen, 
-        // men för en SPA (Single Page App) behövs det sällan.
-    }, []);
-
-    useEffect(() => {
-        if (!user) return;
-
-        // Regex för alla klock-symboler (🕒, 🕓, ⏰, etc.)
-        const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
-
-        const unsubscribe = db.collection("notes")
-            .orderBy("timestamp", "desc")
-            .limit(30) 
-            .onSnapshot(snap => {
-                if (snap.empty) {
-                    setHasUnread(false);
-                    return;
-                }
-                
-                // Vi mappar dokumenten till objekt
-                const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // ROBUST SÖKNING: Vi letar i ALLA värden i hela dokumentet
-                const clockFound = allMsgs.some(msg => 
-                    Object.values(msg).some(val => 
-                        typeof val === 'string' && clockRegex.test(val)
-                    )
-                );
-
-                // Logik för visning:
-                // Om vi är i chatten = ingen prick.
-                // Annars = visa prick om klocka hittades.
-                if (view === 'CHAT') {
-                    setHasUnread(false);
-                } else {
-                    setHasUnread(clockFound);
-                }
-            });
-
-        return () => unsubscribe();
-    }, [user, view]);
-
-    // --- SMART NAVIGERING (History API) ---
-    const navigateTo = (newView, params = null) => {
-        triggerHaptic();
-        
-        const hashPath = `#${newView.toLowerCase()}`;
-
-        // FIX: Om vi redan är i samma vy (t.ex. byter från Redigera -> Nytt jobb), 
-        // ersätt historiken istället för att lägga på hög.
-        if (view === newView) {
-             window.history.replaceState({ view: newView, params: params }, "", hashPath);
-        } else {
-             window.history.pushState({ view: newView, params: params }, "", hashPath);
-        }
-        
-        setView(newView);
-        setViewParams(params);
-        
-        // Hantera editering/rensning
-        if (params && Object.prototype.hasOwnProperty.call(params, 'job')) {
-            setEditingJob(params.job);
-        }
-        
-        if (window.innerWidth < 1024) setSidebarOpen(false);
-    };
-
-    useEffect(() => {
-        const handleStatus = () => setIsOnline(navigator.onLine);
-        window.addEventListener('online', handleStatus);
-        window.addEventListener('offline', handleStatus);
-        return () => {
-            window.removeEventListener('online', handleStatus);
-            window.removeEventListener('offline', handleStatus);
-        };
-    }, []);
-
-    // Lyssna på bakåt-navigering (Swipe bakåt eller bakåtknapp)
-    useEffect(() => {
-        if (!window.history.state) {
-            window.history.replaceState({ view: 'DASHBOARD', params: null }, "");
-        }
-
-        const handlePopState = (event) => {
-            if (event.state) {
-                setView(event.state.view);
-                setViewParams(event.state.params);
-                
-                if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) {
-                    setEditingJob(event.state.params.job);
-                } else {
-                    setEditingJob(null); // VIKTIGT: Nollställ om inget jobb skickas med!
-                }
-            }
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, []);
-
-    // --- NY: SYNKRONISERA VY MED URL-HASH VID START & REFRESH ---
-    useEffect(() => {
-        const syncWithUrl = () => {
-            // Hämtar t.ex. "chat" från #chat
-            const hash = window.location.hash.replace('#', '').toUpperCase();
-            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT'];
-            
-            if (hash && validViews.includes(hash)) {
-                setView(hash);
-                // Stäng menyn om vi laddar om på mobil
-                if (window.innerWidth < 1024) setSidebarOpen(false);
-            }
-        };
-
-        // 1. Körs direkt vid sidladdning (F5)
-        syncWithUrl();
-
-        // 2. Lyssnar om användaren ändrar URL:en manuellt
-        window.addEventListener('hashchange', syncWithUrl);
-        return () => window.removeEventListener('hashchange', syncWithUrl);
-    }, []);
-
-    useEffect(() => {
-        window.openEditModal = (jobId) => {
-            const job = allJobs.find(j => j.id === jobId);
-            if (job) {
-                navigateTo('NEW_JOB', { job: job });
-            }
-        };
-    }, [allJobs]);
-
-    useEffect(() => {
-        const timer = setInterval(() => setTime(new Date()), 1000);
-        setAppReady(true); // Kör direkt!
-        return () => clearInterval(timer);
-    }, []);
-
-    useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [view, allJobs, sidebarOpen, activeFilter]);
-
-    useEffect(() => {
-        const active = THEMES[theme];
-        const root = document.documentElement;
-        root.style.setProperty('--brand-primary', active.primary);
-        root.style.setProperty('--brand-secondary', active.secondary);
-        root.style.setProperty('--sidebar-text', active.text);
-        localStorage.setItem('sys_theme', theme);
-        
         let styleTag = document.getElementById('dynamic-theme-style');
         if (!styleTag) {
             styleTag = document.createElement('style');
@@ -253,13 +109,77 @@ const App = () => {
             .theme-bg { background-color: var(--brand-primary) !important; }
             .theme-text { color: var(--brand-primary) !important; }
             .theme-border { border-color: var(--brand-primary) !important; }
-            .theme-sidebar { background-color: #0d0d0e !important; color: var(--sidebar-text) !important; }
             .theme-sidebar-active { background-color: rgba(249, 115, 22, 0.12) !important; color: var(--brand-primary) !important; border-right: 3px solid var(--brand-primary) !important; }
             .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; color: #52525b; border: none; background: transparent; }
             .mobile-nav-btn.active { color: var(--brand-primary); }
             .mobile-nav-label { font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
         `;
-    }, [theme]);
+    }, [isDark]);
+
+    useEffect(() => {
+        if (!user) return;
+        const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
+        const unsubscribe = db.collection("notes").orderBy("timestamp", "desc").limit(30).onSnapshot(snap => {
+            if (snap.empty) { setHasUnread(false); return; }
+            const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const clockFound = allMsgs.some(msg => Object.values(msg).some(val => typeof val === 'string' && clockRegex.test(val)));
+            if (view === 'CHAT') setHasUnread(false); else setHasUnread(clockFound);
+        });
+        return () => unsubscribe();
+    }, [user, view]);
+
+    const navigateTo = (newView, params = null) => {
+        triggerHaptic();
+        const hashPath = `#${newView.toLowerCase()}`;
+        if (view === newView) {
+             window.history.replaceState({ view: newView, params: params }, "", hashPath);
+        } else {
+             window.history.pushState({ view: newView, params: params }, "", hashPath);
+        }
+        setView(newView);
+        setViewParams(params);
+        if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
+        if (window.innerWidth < 1024) setSidebarOpen(false);
+    };
+
+    useEffect(() => {
+        const handleStatus = () => setIsOnline(navigator.onLine);
+        window.addEventListener('online', handleStatus);
+        window.addEventListener('offline', handleStatus);
+        return () => { window.removeEventListener('online', handleStatus); window.removeEventListener('offline', handleStatus); };
+    }, []);
+
+    useEffect(() => {
+        if (!window.history.state) window.history.replaceState({ view: 'DASHBOARD', params: null }, "");
+        const handlePopState = (event) => {
+            if (event.state) {
+                setView(event.state.view);
+                setViewParams(event.state.params);
+                if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) setEditingJob(event.state.params.job);
+                else setEditingJob(null);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    useEffect(() => {
+        const syncWithUrl = () => {
+            const hash = window.location.hash.replace('#', '').toUpperCase();
+            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT'];
+            if (hash && validViews.includes(hash)) {
+                setView(hash);
+                if (window.innerWidth < 1024) setSidebarOpen(false);
+            }
+        };
+        syncWithUrl();
+        window.addEventListener('hashchange', syncWithUrl);
+        return () => window.removeEventListener('hashchange', syncWithUrl);
+    }, []);
+
+    useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs]);
+    useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); setAppReady(true); return () => clearInterval(timer); }, []);
+    useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [view, allJobs, sidebarOpen, activeFilter, isDark]);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(u => { setUser(u); setLoading(false); });
@@ -291,7 +211,6 @@ const App = () => {
             const matchesStatus = activeFilter === 'ALLA' || (job.status || '').toUpperCase() === activeFilter;
             return matchesGlobal && matchesStatus;
         });
-
         result.sort((a, b) => {
             if (!a.datum) return 1; if (!b.datum) return -1;
             return activeFilter === 'BOKAD' ? a.datum.localeCompare(b.datum) : b.datum.localeCompare(a.datum);
@@ -305,11 +224,21 @@ const App = () => {
     return (
         <>
             {!appReady && <SplashScreen />}
-            <div className="flex h-screen overflow-hidden bg-[#f8f9fa] relative">
-                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} theme-sidebar border-r border-zinc-200/5 flex flex-col shadow-2xl lg:shadow-none`}>
-                    <div className="h-20 flex items-center px-6 gap-3 border-b border-zinc-200/5 overflow-hidden">
-                        <div className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg">P</div>
-                        {sidebarOpen && <span className="font-black tracking-widest text-[10px] uppercase whitespace-nowrap">Planerare // OS</span>}
+            {/* Huvudlayout med Dark Mode bakgrund */}
+            <div className="flex h-screen overflow-hidden bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-300 dark:from-[#1e2b40] dark:via-[#0a0f18] dark:to-black relative transition-colors duration-500">
+                
+                {/* Sidomeny (Sömlös i Dark Mode) */}
+                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-[#0d0d0e] dark:bg-[#121826] text-white border-r border-zinc-800 dark:border-[#1a2235] flex flex-col shadow-2xl lg:shadow-none`}>
+                    <div className="h-20 flex items-center justify-between px-6 border-b border-zinc-800 dark:border-[#1a2235] overflow-hidden shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg cursor-pointer hover:scale-105 transition-transform">P</div>
+                            {sidebarOpen && <span className="font-black tracking-widest text-[10px] uppercase whitespace-nowrap">Planerare // OS</span>}
+                        </div>
+                        {sidebarOpen && (
+                            <button onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="hidden lg:block text-zinc-500 hover:text-white transition-colors">
+                                <window.Icon name="chevron-left" size={18} />
+                            </button>
+                        )}
                     </div>
                     
                     <nav className="flex-1 py-6 space-y-1 overflow-y-auto">
@@ -325,28 +254,29 @@ const App = () => {
                         ].map(item => (
                             <div key={item.id} 
                                 onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
-                                className={`flex items-center px-6 py-4 cursor-pointer transition-all ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>                                
+                                className={`flex items-center px-6 py-4 cursor-pointer transition-all ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80 text-zinc-400 hover:text-white'}`}>                                
                                 <div className="relative flex items-center justify-center">
                                     <window.Icon name={item.icon} size={18} />
-                                    
-                                    {/* PULSERANDE PRICK FÖR DATORN */}
                                     {item.id === 'CHAT' && hasUnread && (
                                         <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
-                                            {/* Ringen som pulserar utåt */}
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                            {/* Den fasta pricken i mitten */}
                                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
                                         </span>
                                     )}
                                 </div>
-
                                 {sidebarOpen && <span className="ml-4 text-[10px] font-black uppercase tracking-widest">{item.label}</span>}
                             </div>
                         ))}
                     </nav>
 
-                    <div className="mt-auto border-t border-zinc-200/5 p-4 bg-zinc-950/40 pb-20 lg:pb-4">
-                        <div className={`flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'} px-2 gap-3`}>
+                    <div className="mt-auto border-t border-zinc-800 dark:border-[#1a2235] bg-black/20 pb-20 lg:pb-0">
+                        {/* DARK MODE TOGGLE (Ny placering i sidomenyn) */}
+                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-5 text-zinc-400 hover:text-white transition-colors border-b border-zinc-800 dark:border-[#1a2235] gap-4`}>
+                            <window.Icon name={isDark ? "sun" : "moon"} size={18} className={isDark ? "text-orange-500" : ""} />
+                            {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
+                        </button>
+
+                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-5 gap-3`}>
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg uppercase text-[10px]">
                                     {user.email ? user.email[0] : 'U'}
@@ -368,43 +298,14 @@ const App = () => {
                 </aside>
 
                 {sidebarOpen && window.innerWidth < 1024 && (
-                    <div 
-                        onClick={() => { triggerHaptic(); setSidebarOpen(false); }} 
-                        className="fixed inset-0 bg-black/40 backdrop-blur-md z-[190] lg:hidden animate-in fade-in duration-300"
-                    ></div>
+                    <div onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190] lg:hidden animate-in fade-in duration-300"></div>
                 )}
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                    <header className="hidden lg:flex h-16 bg-white border-b border-gray-200 items-center justify-between px-4 lg:px-8 z-50">
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className="hidden lg:block p-2 text-zinc-900 bg-zinc-100 rounded-sm hover:bg-zinc-200 transition-colors">
-                                <window.Icon name="menu" />
-                            </button>
-                            
-                            <div className="flex items-center gap-4 px-1 ml-0 border-zinc-200">
-                                <div className="flex flex-col">
-                                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">System_Time</span>
-                                    <span className="text-[9px] font-black font-mono uppercase italic theme-text">
-                                        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col border-l border-zinc-100 pl-4 hidden xs:flex">
-                                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Connection</span>
-                                    <span className={`text-[9px] font-black uppercase flex items-center gap-1.5 ${isOnline ? 'text-green-600' : 'text-orange-500'}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-orange-500 animate-ping'}`}></span> 
-                                        {isOnline ? 'Secure_Link' : 'Syncing_Offline'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <select value={theme} onChange={(e) => setTheme(e.target.value)} className="bg-zinc-100 text-[8px] font-black uppercase p-2 rounded-sm outline-none border border-transparent focus:border-zinc-300">
-                                {Object.keys(THEMES).map(t => <option key={t} value={t}>{THEMES[t].label}</option>)}
-                            </select>
-                        </div>
-                    </header>
+                    
+                    {/* DEN ÖVRE HEADERN ÄR NU HELT BORTTAGEN! */}
 
-                    {/* FLYTANDE CHATT-BUBBLA FÖR DATOR */}
+                    {/* Chattbubbla */}
                     <button 
                         onClick={() => setIsChatOpen(!isChatOpen)} 
                         className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-[0_10px_30px_rgba(249,115,22,0.4)] items-center justify-center transition-all z-[600] border border-black/20 ${isChatOpen ? 'bg-zinc-800 text-white hover:scale-105' : 'theme-bg text-black hover:scale-110 active:scale-95'}`}
@@ -418,95 +319,61 @@ const App = () => {
                         )}
                     </button>
 
-                    {/* HÄR LÄGGER VI IN SJÄLVA POPUP-FÖNSTRET */}
                     {isChatOpen && window.innerWidth >= 1024 && (
                         <>
-                            {/* Osynlig bakgrund som stänger chatten vid klick utanför */}
                             <div className="fixed inset-0 z-[490]" onClick={() => setIsChatOpen(false)}></div>
-                            
-                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 bg-white ring-1 ring-black/5 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-[#2a3441] bg-white dark:bg-[#121826] ring-1 ring-black/5 animate-in slide-in-from-bottom-4 fade-in duration-300">
                                 <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} isPopup={true} onClose={() => setIsChatOpen(false)} />
                             </div>
                         </>
                     )}
 
-                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
+                    {/* DYNAMISK VY-CONTAINER */}
+                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && (
                             <window.DashboardView 
-                                allJobs={allJobs}
-                                filteredJobs={filteredJobs} 
-                                setEditingJob={setEditingJob} 
-                                setView={navigateTo} 
-                                activeFilter={activeFilter}
-                                setActiveFilter={setActiveFilter}
-                                statusCounts={statusCounts}
-                                globalSearch={globalSearch}
-                                setGlobalSearch={setGlobalSearch}
+                                allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} 
+                                activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts}
+                                globalSearch={globalSearch} setGlobalSearch={setGlobalSearch}
                             />
                         )}
                         {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
-                        
                         {view === 'GARAGE' && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
-
-                        {view === 'CUSTOMERS' && (
-                            <window.CustomersView 
-                                allJobs={allJobs} 
-                                setView={navigateTo} 
-                                viewParams={viewParams} 
-                                setEditingJob={setEditingJob} 
-                            />
-                        )}
-                        
+                        {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={navigateTo} viewParams={viewParams} setEditingJob={setEditingJob} />}
                         {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'CHAT' && window.innerWidth < 1024 && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
                         {view === 'REFERENCE' && <window.ReferenceView setView={navigateTo} />}
                     </div>
 
-                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 border-t border-zinc-900 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
-                        {/* 1. STATUS */}
-                        <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : ''}`}>
-                            <div className="relative inline-flex items-center justify-center p-1">
-                                <window.Icon name="grid" size={20} />
-                            </div>
+                    {/* Mobila Bottenmenyn */}
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 dark:bg-[#121826] border-t border-zinc-900 dark:border-[#1a2235] flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
+                        <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="grid" size={20} /></div>
                             <span className="mobile-nav-label">Status</span>
                         </button>
-                        
-                        {/* 2. PLAN */}
-                        <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : ''}`}>
-                            <div className="relative inline-flex items-center justify-center p-1">
-                                <window.Icon name="calendar" size={20} />
-                            </div>
+                        <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="calendar" size={20} /></div>
                             <span className="mobile-nav-label">Plan</span>
                         </button>
-
-                        {/* 3. NYTT */}
-                        <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : ''}`}>
-                            <div className="relative inline-flex items-center justify-center p-1">
-                                <window.Icon name="plus-square" size={20} />
-                            </div>
+                        <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="plus-square" size={20} /></div>
                             <span className="mobile-nav-label">Nytt</span>
                         </button>
-
-                        {/* 4. CHATT (Med Badge-logik) */}
-                        <button onClick={() => navigateTo('CHAT')} className={`mobile-nav-btn ${view === 'CHAT' ? 'active' : ''}`}>
+                        <button onClick={() => navigateTo('CHAT')} className={`mobile-nav-btn ${view === 'CHAT' ? 'active' : 'dark:text-zinc-500'}`}>
                             <div className="relative inline-flex items-center justify-center p-1">
                                 <window.Icon name="message-square" size={20} />
                                 {hasUnread && (
                                     <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-black shadow-[0_0_10px_rgba(249,115,22,1)]"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-black dark:border-[#121826] shadow-[0_0_10px_rgba(249,115,22,1)]"></span>
                                     </span>
                                 )}
                             </div>
                             <span className="mobile-nav-label">Chatt</span>
                         </button>
-
-                        {/* 5. MER (Sidebaren) */}
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : ''}`}>
-                            <div className="relative inline-flex items-center justify-center p-1">
-                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} />
-                            </div>
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} /></div>
                             <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
                         </button>
                     </div>
@@ -522,11 +389,11 @@ const LoginScreen = () => {
     const handleLogin = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(email, password); };
     return (
         <div className="fixed inset-0 bg-black flex items-center justify-center font-mono z-[300]">
-            <form onSubmit={handleLogin} className="w-full max-w-sm p-8 bg-zinc-950 border border-zinc-900 space-y-6 text-white shadow-2xl">
+            <form onSubmit={handleLogin} className="w-full max-w-sm p-8 bg-[#0a0f18] border border-[#1a2235] space-y-6 text-white shadow-2xl">
                 <h2 className="text-white font-black uppercase tracking-widest border-b border-orange-600 pb-4 text-center text-xs">System_Core_Access</h2>
-                <input type="email" placeholder="EMAIL" className="w-full bg-zinc-900 border border-zinc-800 p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={email} onChange={e => setEmail(e.target.value)} />
-                <input type="password" placeholder="PASSWORD" className="w-full bg-zinc-900 border border-zinc-800 p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={password} onChange={e => setPassword(e.target.value)} />
-                <button type="submit" className="w-full theme-bg text-black font-black py-5 text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-colors active:scale-95 shadow-lg">Authenticate</button>
+                <input type="email" placeholder="EMAIL" className="w-full bg-[#121826] border border-[#1a2235] p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={email} onChange={e => setEmail(e.target.value)} />
+                <input type="password" placeholder="PASSWORD" className="w-full bg-[#121826] border border-[#1a2235] p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={password} onChange={e => setPassword(e.target.value)} />
+                <button type="submit" className="w-full bg-[#f97316] text-black font-black py-5 text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-colors active:scale-95 shadow-lg">Authenticate</button>
             </form>
         </div>
     );
