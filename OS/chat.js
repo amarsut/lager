@@ -74,7 +74,7 @@ const CloseIcon = () => <svg viewBox="0 0 24 24" width="18" height="18" stroke="
 
 // --- 3. HUVUDKOMPONENT ---
 
-const ChatView = ({ user, setView, viewParams }) => {
+const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     const Icon = window.Icon;
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
@@ -84,7 +84,9 @@ const ChatView = ({ user, setView, viewParams }) => {
     const [activeMenu, setActiveMenu] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('chat_theme_dark') !== 'false');
     
-    const filter = viewParams?.filter || 'all';
+    // NYTT: Filter styrs nu lokalt så popupen inte pajar global navigering
+    const [filter, setFilter] = useState(viewParams?.filter || 'all');
+    
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
@@ -92,6 +94,13 @@ const ChatView = ({ user, setView, viewParams }) => {
     // Används för att "minnas" state inuti event-lyssnare
     const stateRef = useRef({ activeImage, filter, viewParams });
     useEffect(() => { stateRef.current = { activeImage, filter, viewParams }; }, [activeImage, filter, viewParams]);
+
+    // FIX: Skapa/Uppdatera ikonerna varje gång fönstret laddas
+    useEffect(() => {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [isDarkMode, filter, isPopup, activeImage]); // EFTER
 
     let lastDateLabel = null;
 
@@ -102,25 +111,22 @@ const ChatView = ({ user, setView, viewParams }) => {
         }
     };
 
-    // --- FIX: Scrolla ner när vi byter tillbaka till 'all' ---
     useEffect(() => {
         if (filter === 'all') {
-            setTimeout(scrollToBottom, 50); // Liten delay för att säkerställa att renderingen är klar
+            setTimeout(scrollToBottom, 50);
         }
     }, [filter]);
 
-    // --- FIX: Hantera bakåt-knappen (Stabil version med ref) ---
+    // --- FIX: Hantera bakåt-knappen (Bara om det INTE är popup) ---
     useEffect(() => {
         const handlePopState = () => {
-            const { activeImage, filter, viewParams } = stateRef.current;
+            if (isPopup) return; // Rör inte historiken om det är en popup
             
-            // 1. Om en bild är öppen -> Stäng den
+            const { activeImage, filter, viewParams } = stateRef.current;
             if (activeImage) {
                 setActiveImage(null);
                 return;
             }
-            
-            // 2. Om vi är i galleriet och trycker bakåt -> Gå till chatten ('all')
             if (filter === 'image') {
                 setView('CHAT', { ...viewParams, filter: 'all' });
             }
@@ -128,7 +134,7 @@ const ChatView = ({ user, setView, viewParams }) => {
 
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
-    }, []); // Körs bara en gång, men läser via stateRef
+    }, [isPopup]);
 
     // --- STÄNG MENY VID KLICK UTANFÖR ---
     useEffect(() => {
@@ -148,11 +154,11 @@ const ChatView = ({ user, setView, viewParams }) => {
     // --- HÄMTA MEDDELANDEN ---
     useEffect(() => {
         const openImageId = viewParams?.openImage;
-        if (openImageId) {
+        if (openImageId && !isPopup) {
             const msg = messages.find(m => m.id === openImageId);
             if (msg) setActiveImage(msg);
         }
-    }, [viewParams, messages]);
+    }, [viewParams, messages, isPopup]);
 
     useEffect(() => {
         localStorage.setItem('chat_theme_dark', isDarkMode);
@@ -162,32 +168,39 @@ const ChatView = ({ user, setView, viewParams }) => {
     const handleFilterChange = (newFilter) => {
         if (newFilter === filter) return;
         
-        // Till Galleriet: Lägg till historik
-        if (newFilter === 'image') {
-             window.history.pushState({ gallery: true }, "", window.location.href);
-             setView('CHAT', { filter: newFilter });
-        }
-        // Från Galleriet till Chatt: Backa historik (trigger popstate)
-        else if (newFilter === 'all' && filter === 'image') {
-            window.history.back();
-        } 
-        else {
-            setView('CHAT', { filter: newFilter });
+        setFilter(newFilter); // Sätt alltid lokalt!
+
+        if (!isPopup) {
+            if (newFilter === 'image') {
+                 window.history.pushState({ gallery: true }, "", window.location.href);
+                 setView('CHAT', { filter: newFilter });
+            } else if (newFilter === 'all' && filter === 'image') {
+                window.history.back();
+            } else {
+                setView('CHAT', { filter: newFilter });
+            }
         }
     };
 
     const handleBack = () => {
-        // Trigger history.back() som fångas av handlePopState
-        filter === 'image' ? handleFilterChange('all') : window.history.back();
+        if (isPopup) {
+            if (activeImage) setActiveImage(null);
+            else if (filter === 'image') setFilter('all');
+            else onClose();
+        } else {
+            filter === 'image' ? handleFilterChange('all') : window.history.back();
+        }
     };
 
     const handleOpenImage = (e, msg) => {
         e.stopPropagation();
         setActiveMenu(null);
-        // Lägg till historik för bildvisning
-        window.history.pushState({ imageOpen: true }, "", window.location.href);
-        setActiveImage(msg);
-        setView('CHAT', { ...viewParams, openImage: msg.id });
+        setActiveImage(msg); // Sätt lokalt
+        
+        if (!isPopup) {
+            window.history.pushState({ imageOpen: true }, "", window.location.href);
+            setView('CHAT', { ...viewParams, openImage: msg.id });
+        }
     };
 
     // --- FIREBASE SUBSCRIPTION ---
@@ -195,13 +208,12 @@ const ChatView = ({ user, setView, viewParams }) => {
         const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
             const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setMessages(docs);
-            // Scrolla bara ner om vi redan är längst ner eller vid första laddning (här förenklat till alltid vid nytt meddelande i 'all'-läget)
             if (filter === 'all') {
                 setTimeout(scrollToBottom, 100);
             }
         });
         return () => unsubscribe();
-    }, [filter]); // Uppdaterad dependency för att hantera scroll vid filterbyte korrekt
+    }, [filter]);
 
     const handleAction = async (e) => {
         if (e) e.preventDefault();
@@ -279,31 +291,46 @@ const ChatView = ({ user, setView, viewParams }) => {
 
     // --- RENDERING ---
     return (
-        <div className="fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 max-lg:bg-black animate-in fade-in duration-300 font-sans">
-            <div className={`w-full h-full flex flex-col ${isDarkMode ? 'bg-black border-zinc-800' : 'bg-white border-zinc-200'} lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-md lg:border lg:shadow-2xl overflow-hidden`}>
+        <div className={isPopup ? "w-full h-full flex flex-col bg-transparent" : "fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 max-lg:bg-black animate-in fade-in duration-300 font-sans"}>
+            <div className={`w-full h-full flex flex-col ${isDarkMode ? 'bg-[#0f0f11] border-zinc-800' : 'bg-zinc-50 border-zinc-200'} ${isPopup ? '' : 'lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-md lg:border lg:shadow-2xl'} overflow-hidden`}>
 
                 {/* HEADER */}
-                <div className="h-16 bg-zinc-950 flex items-center justify-between px-4 border-b border-zinc-900 shrink-0">
+                <div className={`h-[68px] ${isDarkMode ? 'bg-[#18181b] border-zinc-800' : 'bg-white border-zinc-200'} flex items-center justify-between px-5 border-b shrink-0 shadow-sm z-10`}>
                     <div className="flex items-center gap-4">
-                        <button onClick={handleBack} className="w-11 h-11 theme-bg flex items-center justify-center rounded-md shadow-lg active:scale-95 transition-transform">
-                            <Icon name={filter === 'image' ? "list" : "arrow-left"} size={24} className="text-black pointer-events-none" />
-                        </button>
+                        {/* Visa bara den orangea bakåt-knappen om det INTE är en popup. ANVÄND window.Icon */}
+                        {!isPopup && (
+                            <button onClick={handleBack} className="w-10 h-10 theme-bg flex items-center justify-center rounded-md shadow-sm active:scale-95 transition-transform">
+                                <window.Icon name={filter === 'image' ? "list" : "arrow-left"} size={20} className="text-black pointer-events-none" />
+                            </button>
+                        )}
                         <div>
-                            <span className="text-[8px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1">System_Log // OS</span>
-                            <h2 className="text-xs font-black uppercase tracking-widest text-white">Mission_Log</h2>
+                            <span className={`text-[9px] font-black ${isDarkMode ? 'theme-text' : 'text-orange-500'} uppercase tracking-[0.3em] block leading-none mb-1.5`}>System_Chat // OS</span>
+                            <h2 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-zinc-900'}`}>Mission_Log</h2>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-white transition-colors">
-                            <Icon name={isDarkMode ? "sun" : "moon"} size={22} className="pointer-events-none" />
+                    <div className="flex items-center gap-2">
+                        {/* Dark mode toggle. ANVÄND window.Icon */}
+                        <button onClick={() => setIsDarkMode(!isDarkMode)} className={`w-9 h-9 flex items-center justify-center rounded-full ${isDarkMode ? 'bg-zinc-800 text-zinc-400 hover:text-white' : 'bg-zinc-100 text-zinc-500 hover:text-zinc-900'} transition-colors`}>
+                            <window.Icon name={isDarkMode ? "sun" : "moon"} size={16} className="pointer-events-none" />
                         </button>
-                        <div className="flex bg-zinc-900/50 border-zinc-800 p-1 rounded-full border ml-1">
+                        
+                        {/* Filter (All/Image). ANVÄND window.Icon */}
+                        <div className={`flex ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-100 border-zinc-200'} p-1 rounded-full border`}>
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-zinc-700 text-white shadow-xl' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                    <Icon name={f === 'all' ? 'list' : 'image'} size={20} className="pointer-events-none" />
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${filter === f ? (isDarkMode ? 'bg-zinc-700 text-white' : 'bg-white text-black shadow-sm') : (isDarkMode ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-500 hover:text-zinc-700')}`}>
+                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={14} className="pointer-events-none" />
                                 </button>
                             ))}
                         </div>
+
+                        {/* Stäng-knapp (Bara för popup). ANVÄND window.Icon */}
+                        {isPopup && (
+                            <div className={`pl-2 border-l ml-1 ${isDarkMode ? 'border-zinc-800' : 'border-zinc-200'}`}>
+                                <button onClick={onClose} className={`w-9 h-9 flex items-center justify-center rounded-full ${isDarkMode ? 'hover:bg-red-500/20 text-zinc-400 hover:text-red-500' : 'hover:bg-red-50 text-zinc-500 hover:text-red-600'} transition-colors`}>
+                                    <window.Icon name="x" size={20} className="pointer-events-none" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -427,59 +454,103 @@ const ChatView = ({ user, setView, viewParams }) => {
             </div>
 
             {/* LIGHTBOX / BILDMODAL */}
-            {activeImage && (
-                <div className="fixed inset-0 z-[10001] bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200 overflow-hidden" 
-                    onClick={() => window.history.back()}>
+            {activeImage && activeImage.fileUrl && (
+                <div className="fixed inset-0 z-[1100] bg-black animate-in fade-in duration-300 font-sans" onClick={() => {
+                    if (isPopup) {
+                        setActiveImage(null);
+                    } else {
+                        window.history.back();
+                    }
+                }}>
                     
-                    {/* Header bar (Fast höjd i toppen) */}
-                    <div className="h-16 lg:h-20 flex items-center justify-between px-4 lg:px-12 shrink-0 relative z-[10002] bg-zinc-950/80 border-b border-white/5" 
-                        onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-4">
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); window.history.back(); }} 
-                                className="p-2 rounded-full hover:bg-white/10 transition-all active:scale-90 cursor-pointer">
-                                <ModalCloseIcon />
-                            </button>
-                            <div className="flex flex-col text-left">
-                                <span className="text-white font-bold text-sm lg:text-base tracking-tight">
-                                    {getSenderName(activeImage)}
-                                </span>
-                                <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-mono mt-0.5">
-                                    {getDateLabel(activeImage.timestamp)} <span className="mx-1 opacity-30">|</span> {formatTime(activeImage.timestamp)}
-                                </span>
-                            </div>
-                        </div>
+                    {/* NY KNAPPPLATTA (Sticky uppe till höger på datorn, mobil ser ut som förut) */}
+                    <div className={`fixed top-0 right-0 left-0 h-16 bg-gradient-to-b from-black/70 to-transparent flex items-center justify-between px-4 z-50 lg:bg-transparent lg:top-4 lg:right-4 lg:left-auto lg:h-auto lg:p-1.5 lg:bg-black/60 lg:backdrop-blur-sm lg:rounded-md lg:border lg:border-white/10 ${activeImage.sender === user.email ? 'w-auto' : 'w-auto'}`} onClick={e => e.stopPropagation()}>
                         
-                        <div className="flex items-center gap-2 lg:gap-4">
-                            <a 
-                                href={activeImage.fileUrl || activeImage.image} 
-                                download={`IMG_${activeImage.timestamp}.webp`} 
-                                className="p-3 rounded-full hover:bg-white/10 transition-all cursor-pointer" 
-                                onClick={(e) => e.stopPropagation()}>
-                                <DownloadIcon />
-                            </a>
-                            <button 
-                                onClick={(e) => { 
+                        {/* Back-knapp (Bara mobil) */}
+                        <button onClick={() => { isPopup ? setActiveImage(null) : window.history.back(); }} className="w-10 h-10 lg:hidden flex items-center justify-center rounded-md active:scale-95 transition-transform text-white">
+                            <window.Icon name="arrow-left" size={24} />
+                        </button>
+
+                        {/* Knappar till höger */}
+                        <div className="flex items-center gap-1.5 ml-auto">
+                            
+                            {/* NY KNAPP: Öppna i ny flik (Bara dator) */}
+                            <button onClick={(e) => {
+                                e.stopPropagation();
+                                // Om det är en lokal fil (base64), gör om den till en säker Blob-URL först
+                                if (activeImage.fileUrl.startsWith('data:')) {
+                                    fetch(activeImage.fileUrl)
+                                        .then(res => res.blob())
+                                        .then(blob => {
+                                            const url = URL.createObjectURL(blob);
+                                            window.open(url, '_blank');
+                                        }).catch(err => console.error("Kunde inte öppna bild", err));
+                                } else {
+                                    // Annars (vanlig länk), öppna direkt
+                                    window.open(activeImage.fileUrl, '_blank');
+                                }
+                            }} title="Öppna i ny flik" className="hidden lg:flex w-9 h-9 items-center justify-center rounded text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                                <window.Icon name="external-link" size={16} />
+                            </button>
+
+                            {/* Ladda ner (Används på alla enheter) */}
+                            {activeImage.fileUrl.startsWith('data:') ? (
+                                 <a href={activeImage.fileUrl} download={activeImage.text || 'bifogad_fil'} title="Ladda ner fil" className="flex w-9 h-9 items-center justify-center rounded text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                                    <window.Icon name="download" size={16} />
+                                </a>
+                            ) : (
+                                <button onClick={async () => {
+                                    try {
+                                        const response = await fetch(activeImage.fileUrl);
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = activeImage.text || 'bifogad_fil';
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                    } catch (e) { alert("Kunde inte ladda ner fil."); }
+                                }} title="Ladda ner fil" className="flex w-9 h-9 items-center justify-center rounded text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                                    <window.Icon name="download" size={16} />
+                                </button>
+                            )}
+
+                            {/* Papperskorg (Bara ägare) */}
+                            {activeImage.sender === user.email && (
+                                <button onClick={(e) => { 
                                     e.stopPropagation(); 
-                                    if(window.confirm("Radera bild permanent?")) { 
+                                    if(confirm("Ta bort?")) { 
                                         window.db.collection("notes").doc(activeImage.id).delete(); 
-                                        window.history.back(); 
-                                    }
-                                }} 
-                                className="p-3 rounded-full hover:bg-red-500/20 transition-all group cursor-pointer">
-                                <TrashLargeIcon />
+                                        isPopup ? setActiveImage(null) : window.history.back(); 
+                                    } 
+                                }} title="Ta bort fil" className="flex w-9 h-9 items-center justify-center rounded text-red-400 hover:text-red-300 hover:bg-white/10 active:scale-95 transition-all">
+                                    <window.Icon name="trash" size={16} />
+                                </button>
+                            )}
+
+                            {/* Stäng-knapp (Bara dator) */}
+                            <button onClick={() => { isPopup ? setActiveImage(null) : window.history.back(); }} title="Stäng bild" className="hidden lg:flex w-9 h-9 items-center justify-center rounded text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                                <window.Icon name="x" size={18} />
                             </button>
                         </div>
                     </div>
 
-                    {/* Själva bilden (Centrerad i återstående utrymme) */}
-                    <div className="flex-1 relative flex items-center justify-center p-4 lg:p-10 overflow-hidden">
-                        <img 
-                            src={activeImage.fileUrl || activeImage.image} 
-                            className="max-w-full max-h-full object-contain rounded-lg lg:rounded-2xl shadow-2xl border border-white/5 animate-in zoom-in duration-300 select-none" 
-                            alt="Full size"
-                            onClick={(e) => e.stopPropagation()} 
-                        />
+                    {/* BILDINNEHÅLL */}
+                    <div className="w-full h-full flex flex-col items-center justify-center p-4 lg:p-12 z-10" onClick={() => { isPopup ? setActiveImage(null) : window.history.back(); }}>
+                        {activeImage.type !== 'file' ? (
+                            <img src={activeImage.fileUrl} alt={activeImage.text} className="max-w-full max-h-full object-contain shadow-[0_30px_90px_rgba(0,0,0,0.7)] animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}/>
+                        ) : (
+                            <div className="flex flex-col items-center gap-6 p-12 bg-white/5 rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+                                <div className="w-24 h-24 flex items-center justify-center rounded-2xl bg-black border border-white/10 shadow-inner">
+                                    <window.Icon name="file-text" size={48} className="text-white/40" />
+                                </div>
+                                <div className="text-center">
+                                    <h3 className="text-lg font-black text-white uppercase tracking-wider mb-2">{activeImage.text}</h3>
+                                    <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">{activeImage.fileUrl.startsWith('data:') ? 'LOKAL FIL // BASE64' : 'LÄNKAD FIL // URL'}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
