@@ -66,6 +66,7 @@ const App = () => {
     const [theme, setTheme] = useState(localStorage.getItem('sys_theme') || 'MATRIX');
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const triggerHaptic = () => {
@@ -223,7 +224,7 @@ const App = () => {
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
-        setTimeout(() => setAppReady(true), 1500);
+        setAppReady(true); // Kör direkt!
         return () => clearInterval(timer);
     }, []);
 
@@ -324,8 +325,7 @@ const App = () => {
                         ].map(item => (
                             <div key={item.id} 
                                 onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
-                                className={`flex items-center px-6 py-4 cursor-pointer transition-all ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>
-                                
+                                className={`flex items-center px-6 py-4 cursor-pointer transition-all ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80'}`}>                                
                                 <div className="relative flex items-center justify-center">
                                     <window.Icon name={item.icon} size={18} />
                                     
@@ -404,6 +404,32 @@ const App = () => {
                         </div>
                     </header>
 
+                    {/* FLYTANDE CHATT-BUBBLA FÖR DATOR */}
+                    <button 
+                        onClick={() => setIsChatOpen(!isChatOpen)} 
+                        className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-[0_10px_30px_rgba(249,115,22,0.4)] items-center justify-center transition-all z-[600] border border-black/20 ${isChatOpen ? 'bg-zinc-800 text-white hover:scale-105' : 'theme-bg text-black hover:scale-110 active:scale-95'}`}
+                    >
+                        <window.Icon name={isChatOpen ? "x" : "message-square"} size={24} />
+                        {hasUnread && !isChatOpen && (
+                            <span className="absolute top-0 right-0 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-orange-500 shadow-sm"></span>
+                            </span>
+                        )}
+                    </button>
+
+                    {/* HÄR LÄGGER VI IN SJÄLVA POPUP-FÖNSTRET */}
+                    {isChatOpen && window.innerWidth >= 1024 && (
+                        <>
+                            {/* Osynlig bakgrund som stänger chatten vid klick utanför */}
+                            <div className="fixed inset-0 z-[490]" onClick={() => setIsChatOpen(false)}></div>
+                            
+                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 bg-white ring-1 ring-black/5 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                                <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} isPopup={true} onClose={() => setIsChatOpen(false)} />
+                            </div>
+                        </>
+                    )}
+
                     <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && (
                             <window.DashboardView 
@@ -433,7 +459,7 @@ const App = () => {
                         
                         {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
-                        {view === 'CHAT' && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
+                        {view === 'CHAT' && window.innerWidth < 1024 && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
                         {view === 'REFERENCE' && <window.ReferenceView setView={navigateTo} />}
                     </div>
 
