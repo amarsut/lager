@@ -154,28 +154,31 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     return (
         <div className="max-w-3xl ml-0 animate-in fade-in slide-in-from-left-4 duration-500 mb-6 transition-colors duration-300">
-            <div className="bg-white dark:bg-[#121826] lg:shadow-2xl lg:rounded-sm overflow-hidden border border-zinc-200 dark:border-[#1a2235]">
-                
-                {/* HEADER */}
-                <div className="bg-zinc-950 dark:bg-[#121826] p-6 flex items-center justify-between border-b-2 theme-border dark:border-b-[#1a2235]">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 theme-bg flex items-center justify-center rounded-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                            <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="text-black" />
-                        </div>
-                        <div>
-                            <span className="text-[8px] font-black theme-text uppercase tracking-[0.3em] block leading-none mb-1.5">System_Input</span>
-                            <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">
-                                {editingJob ? 'Update_Sequence' : 'Create_New_Mission'}
-                            </h2>
-                        </div>
+            
+            {/* PREMIUM HEADER - NU UTANFÖR KORTET */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-5 pt-5 lg:px-0 lg:pt-0 px-5 pt-6 lg:px-0 lg:pt-0">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-orange-500 rounded-[4px] flex items-center justify-center text-black font-bold shadow-[0_0_20px_rgba(249,115,22,0.3)] shrink-0">
+                        <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                        <h1 className="text-xl md:text-2xl font-black text-black dark:text-white uppercase tracking-[-0.03em] leading-none drop-shadow-sm dark:drop-shadow-none">
+                            {editingJob ? 'MISSION' : 'NEW'} <span className="text-zinc-500 dark:text-zinc-500">{editingJob ? 'UPDATE' : 'JOB'}</span>
+                        </h1>
+                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-1.5">
+                            {editingJob ? 'System_Input // Update_Sequence' : 'System_Input // Create_New_Mission'}
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-10 bg-[#f8f8f8] dark:bg-[#0a0f18] transition-colors duration-300">
+            {/* FORMULÄRETS KORT */}
+            <div className="bg-white dark:bg-[#182032] lg:shadow-md lg:rounded-xl overflow-hidden border border-zinc-200 dark:border-white/5">
+                <form onSubmit={handleSave} className="p-6 lg:p-8 space-y-10 bg-transparent transition-colors duration-300">
                     
                     {/* SEKTION 1: IDENTIFIERING */}
                     <div className="space-y-5">
-                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#1a2235] pb-2">
+                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/5 pb-2">
                             <SafeIcon name="fingerprint" size={12} className="theme-text" />
                             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-300 uppercase tracking-[0.2em]">Entity_Identifier</span>
                         </div>
@@ -184,13 +187,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <div className="relative">
                                     <input 
                                         type="text" value={formData.kundnamn} onChange={e => handleNameChange(e.target.value)} 
-                                        className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-3 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm" 
+                                        className="w-full bg-zinc-50 dark:bg-[#0f1522] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-3 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm" 
                                         placeholder="Sök eller skriv namn..." 
                                     />
                                     {suggestions.length > 0 && (
-                                        <div className="absolute z-10 w-full bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-[#2a3441] shadow-xl mt-1 rounded-sm overflow-hidden">
+                                        <div className="absolute z-10 w-full bg-white dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 shadow-xl mt-1 rounded-sm overflow-hidden">
                                             {suggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3 text-xs text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-[#252f48] cursor-pointer font-bold uppercase border-b border-zinc-50 dark:border-[#2a3441] last:border-0">{s}</div>
+                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3 text-xs text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-[#252f48] cursor-pointer font-bold uppercase border-b border-zinc-50 dark:border-white/5 last:border-0">{s}</div>
                                             ))}
                                         </div>
                                     )}
@@ -200,13 +203,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <div className="relative">
                                     <input 
                                         type="text" value={formData.regnr} onChange={e => handleRegnrChange(e.target.value)} onFocus={() => handleRegnrChange(formData.regnr)}
-                                        className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-3 text-sm font-black theme-text font-mono outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] uppercase tracking-widest transition-all rounded-sm" 
+                                        className="w-full bg-zinc-50 dark:bg-[#0f1522] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-3 text-sm font-black theme-text font-mono outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] uppercase tracking-widest transition-all rounded-sm" 
                                         placeholder="ABC123" autoComplete="off" 
                                     />
                                     {regnrSuggestions.length > 0 && (
-                                        <div className="absolute z-10 w-full bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-[#2a3441] shadow-xl mt-1 rounded-sm overflow-hidden">
+                                        <div className="absolute z-10 w-full bg-white dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 shadow-xl mt-1 rounded-sm overflow-hidden">
                                             {regnrSuggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-3 text-xs text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-[#252f48] cursor-pointer font-bold font-mono border-b border-zinc-50 dark:border-[#2a3441] last:border-0">{s}</div>
+                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-3 text-xs text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-[#252f48] cursor-pointer font-bold font-mono border-b border-zinc-50 dark:border-white/5 last:border-0">{s}</div>
                                             ))}
                                         </div>
                                     )}
@@ -217,17 +220,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                     {/* SEKTION 2: PARAMETRAR */}
                     <div className="space-y-5">
-                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#1a2235] pb-2">
+                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/5 pb-2">
                             <SafeIcon name="sliders" size={12} className="theme-text" />
                             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-300 uppercase tracking-[0.2em]">Mission_Parameters</span>
                         </div>
 
                         <InputWrapper label="Mission_Status" icon="activity">
-                            <div className="flex bg-zinc-200/50 dark:bg-[#1a2235] p-1 rounded-sm border border-zinc-200/80 dark:border-[#2a3441] w-full mb-4">
+                            <div className="flex bg-zinc-200/50 dark:bg-[#0f1522] p-1 rounded-sm border border-zinc-200/80 dark:border-white/5 w-full mb-4">
                                 {['BOKAD', 'OFFERERAD', 'KLAR', 'FAKTURERAS'].map(s => (
                                     <button
                                         key={s} type="button" onClick={() => setFormData(p => ({ ...p, status: s }))}
-                                        className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-wider rounded-[2px] transition-all ${formData.status === s ? 'bg-white dark:bg-[#252f48] shadow-sm text-black dark:text-white border border-zinc-200/80 dark:border-[#3a4556] scale-[1.02]' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
+                                        className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider rounded-[4px] transition-all ${formData.status === s ? 'bg-white dark:bg-[#1f2940] shadow-md text-black dark:text-white border border-zinc-200/80 dark:border-white/10 scale-[1.02]' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                                     >
                                         {s}
                                     </button>
@@ -238,7 +241,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         <FormRow>
                             <div>
                                 <InputWrapper label="Service_Type" icon="layers">
-                                    <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-zinc-50 dark:bg-[#1a2235] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-3 text-xs font-bold outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm cursor-pointer">
+                                    <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="w-full bg-zinc-50 dark:bg-[#0f1522] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-3 text-xs font-bold outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm cursor-pointer">
                                         <option value="Standard">Standard</option>
                                         <option value="Oljebyte">Oljebyte</option>
                                         <option value="Hjulskifte">Hjulskifte</option>
@@ -246,11 +249,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     </select>
                                 </InputWrapper>
                                 {formData.paket === "Oljebyte" && (
-                                    <div className="mt-3 p-4 bg-zinc-100 dark:bg-[#1a2235] border border-zinc-200 dark:border-[#2a3441] rounded-sm animate-in slide-in-from-top-2">
+                                    <div className="mt-3 p-4 bg-zinc-100 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 rounded-sm animate-in slide-in-from-top-2">
                                         <label className="text-[8px] font-black text-zinc-500 uppercase tracking-tighter mb-1.5 block">Antal liter motorolja</label>
                                         <input 
                                             type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} 
-                                            className="w-full bg-white dark:bg-[#0a0f18] text-zinc-900 dark:text-white border border-zinc-300 dark:border-[#2a3441] p-2 text-xs font-black font-mono outline-none focus:border-orange-500 rounded-sm" 
+                                            className="w-full bg-white dark:bg-[#0a0f18] text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/5 p-2 text-xs font-black font-mono outline-none focus:border-orange-500 rounded-sm" 
                                         />
                                     </div>
                                 )}
@@ -260,13 +263,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <InputWrapper label="Deploy_Date" icon="calendar">
                                     <input 
                                         type="date" value={formData.datum} onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                        className="w-full bg-zinc-50 dark:bg-[#1a2235] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-3 text-[11px] font-mono font-bold outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm cursor-pointer" 
+                                        className="w-full bg-zinc-50 dark:bg-[#0f1522] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-3 text-[11px] font-mono font-bold outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm cursor-pointer" 
                                     />
                                 </InputWrapper>
                                 <InputWrapper label="Time_Win" icon="clock">
                                     <input 
                                         type="time" min="06:00" max="21:00" value={formData.tid} onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                        className="w-full bg-zinc-50 dark:bg-[#1a2235] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-3 text-[11px] font-mono font-bold outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm cursor-pointer" 
+                                        className="w-full bg-zinc-50 dark:bg-[#0f1522] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-3 text-[11px] font-mono font-bold outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all rounded-sm cursor-pointer" 
                                     />
                                 </InputWrapper>
                             </div>
@@ -275,14 +278,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                     {/* SEKTION 3: EKONOMI */}
                     <div className="space-y-5">
-                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#1a2235] pb-2">
+                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/5 pb-2">
                             <SafeIcon name="credit-card" size={12} className="theme-text" />
                             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-300 uppercase tracking-[0.2em]">Financial_Data</span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-white dark:bg-[#121826] rounded-sm border border-zinc-200 dark:border-[#1a2235] shadow-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-white dark:bg-[#0f1522]/50 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">
                             <InputWrapper label="Final_Price" icon="dollar-sign">
-                                <div className="bg-zinc-50 dark:bg-[#1a2235] p-2 rounded-sm border border-zinc-300 dark:border-[#2a3441] flex items-center focus-within:bg-white dark:focus-within:bg-[#252f48] focus-within:theme-border focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all">
+                                <div className="bg-zinc-50 dark:bg-[#0f1522] p-2 rounded-sm border border-zinc-300 dark:border-white/5 flex items-center focus-within:bg-white dark:focus-within:bg-[#252f48] focus-within:theme-border focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] transition-all">
                                     <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 dark:text-white text-2xl font-black font-mono outline-none text-right" placeholder="0" />
                                     <span className="ml-3 text-[10px] font-black text-zinc-400 mr-2">SEK</span>
                                 </div>
@@ -297,8 +300,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
                                 {expenses.map((ex, i) => (
                                     <div key={i} className="flex gap-2 items-center">
-                                        <input placeholder="Del / Artikel" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-zinc-50 dark:bg-[#1a2235] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-2.5 text-[11px] font-bold outline-none rounded-sm transition-colors focus:border-zinc-400 dark:focus:border-zinc-500" />
-                                        <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 bg-zinc-50 dark:bg-[#1a2235] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#252f48] border border-zinc-200 dark:border-[#2a3441] p-2.5 text-[11px] font-bold font-mono outline-none text-right rounded-sm transition-colors focus:border-zinc-400 dark:focus:border-zinc-500" />
+                                        <input placeholder="Del / Artikel" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} className="flex-1 bg-zinc-50 dark:bg-[#0f1522] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-2.5 text-[11px] font-bold outline-none rounded-sm transition-colors focus:border-zinc-400 dark:focus:border-zinc-500" />
+                                        <input placeholder="Kr" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} className="w-20 bg-zinc-50 dark:bg-[#0f1522] text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200 dark:border-white/5 p-2.5 text-[11px] font-bold font-mono outline-none text-right rounded-sm transition-colors focus:border-zinc-400 dark:focus:border-zinc-500" />
                                         <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-400 hover:text-red-500 transition-colors p-2">
                                             <SafeIcon name="trash-2" size={14} />
                                         </button>
@@ -310,17 +313,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                     {/* SEKTION 4: LOGGAR */}
                     <div className="space-y-5">
-                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#1a2235] pb-2">
+                        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/5 pb-2">
                             <SafeIcon name="terminal" size={12} className="theme-text" />
                             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-300 uppercase tracking-[0.2em]">System_Logs</span>
                         </div>
                         <InputWrapper label="Internal_Mission_Logs" icon="file-text">
-                            <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 dark:border-[#2a3441] p-4 font-mono text-[11px] font-bold text-zinc-700 dark:text-zinc-300 min-h-[100px] outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#252f48] transition-all resize-y rounded-sm" placeholder=">_ Skriv terminal-anteckningar här..." />
+                            <textarea value={formData.kommentar} onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} className="w-full border border-zinc-200 dark:border-white/5 p-4 font-mono text-[11px] font-bold text-zinc-700 dark:text-zinc-300 min-h-[100px] outline-none focus:theme-border focus:shadow-[0_0_0_3px_rgba(249,115,22,0.1)] bg-zinc-50 dark:bg-[#0f1522] focus:bg-white dark:focus:bg-[#1f2940] transition-all resize-y rounded-sm" placeholder=">_ Skriv terminal-anteckningar här..." />
                         </InputWrapper>
                     </div>
 
                     {/* KNAPPAR */}
-                    <div className="pt-6 mt-8 border-t border-zinc-200 dark:border-[#1a2235] flex flex-col sm:flex-row gap-3">
+                    <div className="pt-6 mt-8 border-t border-zinc-200 dark:border-white/5 flex flex-col sm:flex-row gap-3">
                         <button type="submit" className="flex-1 theme-bg text-black font-black py-4 text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_20px_rgba(249,115,22,0.2)] hover:brightness-110 active:scale-95 transition-all text-center rounded-sm">
                             Confirm_Push
                         </button>
@@ -338,7 +341,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </button>
                         )}
 
-                        <button type="button" onClick={() => window.history.back()} className="w-full sm:w-auto px-10 border border-zinc-300 dark:border-[#2a3441] bg-white dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 font-black py-4 text-[12px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-[#252f48] hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-sm rounded-sm">
+                        <button type="button" onClick={() => window.history.back()} className="w-full sm:w-auto px-10 border border-zinc-300 dark:border-white/5 bg-white dark:bg-[#0f1522] text-zinc-500 dark:text-zinc-400 font-black py-4 text-[12px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-[#252f48] hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-sm rounded-sm">
                             Cancel
                         </button>
                     </div>
