@@ -78,7 +78,7 @@ const App = () => {
             root.classList.add('dark');
             localStorage.setItem('sys_theme', 'dark');
             // Premium djup gradient för BMG Dark Mode
-            document.body.style.background = 'linear-gradient(to bottom right, #111826, #0a0f18, #05080f)'; 
+            document.body.style.background = '#09090b';
         } else {
             root.classList.remove('dark');
             localStorage.setItem('sys_theme', 'light');
@@ -103,6 +103,12 @@ const App = () => {
 
         styleTag.innerHTML = `
             @keyframes loading { 0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; } }
+            @keyframes subtleGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+            .dark-premium-bg {
+                background: linear-gradient(-45deg, #020617, #0f172a, #1e293b, #020617);
+                background-size: 400% 400%;
+                animation: subtleGradient 20s ease infinite;
+            }
             input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
             input[type=number] { -moz-appearance: textfield; }
             input:focus, select:focus, textarea:focus { border-color: var(--brand-primary) !important; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important; outline: none !important; }
@@ -225,10 +231,10 @@ const App = () => {
         <>
             {!appReady && <SplashScreen />}
             {/* Huvudlayout med Dark Mode bakgrund */}
-            <div className="flex h-screen overflow-hidden bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-300 dark:from-[#1e2b40] dark:via-[#0a0f18] dark:to-black relative transition-colors duration-500">
+            <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
                 {/* Sidomeny (Sömlös i Dark Mode) */}
-                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-[#0d0d0e] dark:bg-[#121826] text-white border-r border-zinc-800 dark:border-[#1a2235] flex flex-col shadow-2xl lg:shadow-none`}>
+                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-zinc-950 dark:bg-[#0b0f19] text-white border-r border-zinc-800 dark:border-white/5 flex flex-col shadow-2xl lg:shadow-none`}>
                     <div className="h-20 flex items-center justify-between px-6 border-b border-zinc-800 dark:border-[#1a2235] overflow-hidden shrink-0">
                         <div className="flex items-center gap-3">
                             <div onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg cursor-pointer hover:scale-105 transition-transform">P</div>
@@ -246,7 +252,7 @@ const App = () => {
                             { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
-                            { id: 'GARAGE', icon: 'car', label: 'Garage' },
+                            //id: 'GARAGE', icon: 'car', label: 'Garage' },
                             { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
                             { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
                             { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
@@ -264,7 +270,7 @@ const App = () => {
                                         </span>
                                     )}
                                 </div>
-                                {sidebarOpen && <span className="ml-4 text-[10px] font-black uppercase tracking-widest">{item.label}</span>}
+                                {sidebarOpen && <span className="ml-4 text-[12px] font-medium">{item.label.replace('_', ' ')}</span>}
                             </div>
                         ))}
                     </nav>
