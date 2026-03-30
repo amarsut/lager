@@ -63,21 +63,21 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     return (
         <div
             onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id) : null}
-            className={`w-full relative active:bg-zinc-50 dark:active:bg-[#1a2235] transition-all border-b border-zinc-200 dark:border-[#1a2235] last:border-0 bg-white dark:bg-[#121826] group select-none 
-                ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
+            className={`w-full relative active:scale-[0.98] transition-all bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 rounded-xl shadow-sm group select-none overflow-hidden ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
         >
-            <div className="pl-4 pr-4 py-4">
-                <div className="flex justify-between items-start mb-3">
+            <div className="p-4">
+                {/* RAD 1: Header med Avatar, Namn och Meny */}
+                <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
-                        <div className={`w-10 h-10 rounded-[8px] flex items-center justify-center text-[13px] font-black tracking-widest shrink-0 border ${avatarTheme}`}>
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 border ${avatarTheme}`}>
                             {initials}
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <div className={`text-[15px] font-black uppercase tracking-tight truncate leading-none mb-1 ${isDone ? 'text-zinc-600 dark:text-zinc-500' : 'text-zinc-900 dark:text-white'}`}>
+                            <div className={`text-[15px] font-semibold truncate leading-none mb-1 ${isDone ? 'text-zinc-600 dark:text-zinc-500' : 'text-zinc-900 dark:text-white'}`}>
                                 {job.kundnamn}
                             </div>
-                            <div className="inline-flex items-center gap-2">
-                                <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">#{job.id.substring(0, 6)}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">#{job.id.substring(0, 6)}</span>
                             </div>
                         </div>
                     </div>
@@ -86,18 +86,19 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         <window.Badge status={job.status} />
                         <div className="relative">
                             <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 -mr-2 flex items-center justify-center text-zinc-400 hover:text-black dark:text-zinc-500 dark:hover:text-white transition-colors">
-                                <window.Icon name="more-horizontal" size={20} />
+                                <window.Icon name="more-horizontal" size={18} />
                             </button>
+                            {/* Menyn (Oförändrad) */}
                             {menuOpen && (
                                 <>
                                     <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
-                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#1a2235] rounded-lg shadow-xl dark:shadow-2xl border border-zinc-200 dark:border-[#2a3441] z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#1a2235] rounded-lg shadow-xl dark:shadow-2xl border border-zinc-200 dark:border-white/5 z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
                                         {job.status !== 'KLAR' && (
-                                            <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-[#252f48] hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-3 border-b border-zinc-50 dark:border-zinc-800">
+                                            <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-[#252f48] hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-3 border-b border-zinc-50 dark:border-white/5">
                                                 <window.Icon name="check" size={16} className="text-emerald-500" /> Markera klar
                                             </button>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-[#252f48] flex items-center gap-3 border-b border-zinc-50 dark:border-zinc-800">
+                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-[#252f48] flex items-center gap-3 border-b border-zinc-50 dark:border-white/5">
                                             <window.Icon name="edit-2" size={16} className="text-blue-500" /> Redigera order
                                         </button>
                                         <button onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) { window.db.collection("jobs").doc(job.id).update({ deleted: true }); } setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wide text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-[#252f48] flex items-center gap-3">
@@ -110,83 +111,70 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                <div className="border border-zinc-200 dark:border-[#1a2235] rounded-md bg-[#fafafa] dark:bg-[#0a0f18] py-2.5 px-3 mb-2">
-                    <div className="grid grid-cols-2 gap-4 divide-x divide-zinc-200 dark:divide-[#1a2235] relative">
-                        {/* FORDON - Dämpad registreringsskylt i dark mode */}
-                        <div className="flex flex-col pr-2">
-                            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1"><window.Icon name="truck" size={12}/> Fordon</span>
-                            <div 
-                                onClick={(e) => { if (isReg && job.regnr && onOpenHistory) { e.stopPropagation(); onOpenHistory(job.regnr); } }}
-                                className={`inline-flex items-stretch rounded-[4px] border overflow-hidden h-[26px] ${isReg ? 'bg-white dark:bg-[#1a2235] border-zinc-300 dark:border-[#2a3441]' : 'bg-white dark:bg-[#1a2235] border-zinc-200 dark:border-[#2a3441]'} ${isReg && onOpenHistory ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
-                            >
-                                {isReg ? (
-                                    <>
-                                        <div className="w-[14px] bg-[#003399] flex flex-col items-center justify-between py-[1.5px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
-                                            <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
-                                            <span className="text-[7.5px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
-                                        </div>
-                                        <div className="flex items-center justify-center px-2 min-w-[65px]"><span className="font-mono font-black text-[12px] text-zinc-900 dark:text-zinc-300 tracking-widest leading-none pt-[1px]">{vehicleDisplay}</span></div>
-                                    </>
-                                ) : (
-                                    <div className="flex items-center justify-center px-2.5 min-w-[79px]"><span className="font-mono font-black text-[11px] text-zinc-800 dark:text-zinc-400 tracking-widest uppercase truncate leading-none pt-[1px]">{vehicleDisplay}</span></div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* TID/DATUM */}
-                        <div className="flex flex-col pl-4">
-                            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                                <window.Icon name="clock" size={12}/> {showAsHistory ? 'Datum' : 'Tidpunkt'}
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                                {job.datum ? (
-                                    <div className="flex items-center gap-1.5">
-                                        {!isDone && isUrgentDate && (
-                                            <span className="relative flex h-2 w-2 shrink-0">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                            </span>
-                                        )}
-                                        <div className="flex flex-col">
-                                            <span className={`text-[12px] font-black uppercase leading-none mb-1 ${!isDone && isUrgentDate ? 'text-orange-600' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                                                {showAsHistory ? dateString : job.datum.split('T')[1]}
-                                            </span>
-                                            <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 leading-none">
-                                                {showAsHistory ? job.datum.split('T')[1] : dateString}
-                                            </span>
-                                        </div>
+                {/* RAD 2: Info (Utan stökig ruta) */}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider mb-1">Fordon</span>
+                        <div className={`inline-flex items-stretch rounded-[3px] border overflow-hidden h-[24px] ${isReg ? 'bg-white dark:bg-[#1a2235] border-zinc-300 dark:border-white/10' : 'bg-transparent border-transparent'}`}>
+                            {isReg ? (
+                                <>
+                                    <div className="w-[12px] bg-[#003399] flex flex-col items-center justify-between py-[1px] shrink-0 border-r border-zinc-200 dark:border-white/5">
+                                        <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
+                                        <span className="text-[6px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                     </div>
-                                ) : (
-                                    <span className="text-[11px] font-bold text-red-500">Inväntar</span>
-                                )}
-                            </div>
+                                    <div className="flex items-center justify-center px-2 min-w-[60px]"><span className="font-mono font-bold text-[12px] text-zinc-900 dark:text-zinc-200 tracking-wider leading-none">{vehicleDisplay}</span></div>
+                                </>
+                            ) : (
+                                <span className="font-mono font-semibold text-[13px] text-zinc-800 dark:text-zinc-400 uppercase leading-none">{vehicleDisplay}</span>
+                            )}
                         </div>
+                    </div>
+
+                    <div className="flex flex-col items-end text-right">
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider mb-1">
+                            {job.datum ? 'Datum & Tid' : 'Status'}
+                        </span>
+                        {job.datum ? (
+                            <div className="flex items-center gap-1.5">
+                                {!isDone && isUrgentDate && (
+                                    <span className="relative flex h-2 w-2 shrink-0">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                    </span>
+                                )}
+                                <div className="flex flex-col items-end">
+                                    <span className={`text-[12px] font-bold uppercase leading-none mb-1 ${!isDone && isUrgentDate ? 'text-orange-600' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                                        {dateString}
+                                    </span>
+                                    <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 leading-none">
+                                        {job.datum.split('T')[1]}
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="text-[12px] font-bold text-red-500 uppercase">Inväntar</span>
+                        )}
                     </div>
                 </div>
 
-                {/* --- RAD 3: KOMMENTAR & PRIS --- */}
-                <div className="flex items-end pt-1 min-h-[24px]">
-                    <div className="flex-1 min-w-0 mr-2">
-                        <span className="text-[11px] font-black uppercase text-zinc-800 dark:text-zinc-300 tracking-tight block mb-1">{job.paket || 'Standard'}</span>
+                {/* RAD 3: Tjänst & Pris */}
+                <div className="flex items-end justify-between pt-3 border-t border-zinc-100 dark:border-white/5">
+                    <div className="flex-1 min-w-0 mr-4">
+                        <span className="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 block truncate">{job.paket || 'Standard'}</span>
                         {job.kommentar && (
-                            <div className="flex items-start gap-1.5 text-zinc-500 dark:text-zinc-400">
-                                <window.Icon name="message-square" size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0 mt-[2px]" />
-                                <span className="text-[11px] italic font-medium leading-tight line-clamp-2">
-                                    {job.kommentar}
-                                </span>
-                            </div>
+                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 truncate block">
+                                {job.kommentar}
+                            </span>
                         )}
                     </div>
-                    <div className="ml-auto flex flex-col items-end shrink-0 text-right">
+                    
+                    <div className="shrink-0 text-right">
                         {price > 0 ? (
-                            <div className="flex items-baseline justify-end w-full">
-                                <div className={`text-[18px] font-mono font-black leading-none tracking-tight ${isDone ? 'text-zinc-700 dark:text-zinc-500' : 'text-zinc-900 dark:text-white'}`}>
-                                    {price.toLocaleString('sv-SE')}
-                                </div>
-                                <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-sans ml-1 translate-y-[-1px]">kr</span>
+                            <div className="text-[16px] font-mono font-bold text-zinc-900 dark:text-white leading-none">
+                                {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 font-sans font-normal ml-0.5">kr</span>
                             </div>
                         ) : (
-                            <span className="text-[10px] font-bold text-zinc-300 dark:text-zinc-600 uppercase tracking-wide">Ej prissatt</span>
+                            <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 uppercase">Ej prissatt</span>
                         )}
                     </div>
                 </div>
@@ -208,6 +196,18 @@ window.DashboardView = React.memo(({
 }) => {
     const [searchOpen, setSearchOpen] = React.useState(!!globalSearch);
     const [historyTarget, setHistoryTarget] = React.useState(null);
+
+    // --- PAGINERING (Load More) ---
+    const [visibleCount, setVisibleCount] = React.useState(20);
+    
+    // Återställ antalet visade jobb till 20 när vi byter flik eller söker
+    React.useEffect(() => {
+        setVisibleCount(20);
+    }, [activeFilter, globalSearch]);
+
+    // Skapa en ny lista som bara innehåller exakt så många vi ska visa
+    const visibleJobs = filteredJobs.slice(0, visibleCount);
+    const hasMore = visibleCount < filteredJobs.length;
 
     const [timerActive, setTimerActive] = React.useState(false);
     const [timerSeconds, setTimerSeconds] = React.useState(0);
@@ -303,7 +303,7 @@ window.DashboardView = React.memo(({
         const isActive = activeFilter === label;
         const count = statusCounts[label] || 0;
         return (
-            <button onClick={() => setActiveFilter(label)} className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all rounded-t-[4px] border-t-2 ${isActive ? 'bg-white dark:bg-[#121826] text-black dark:text-white border-orange-500 shadow-[0_-5px_10px_rgba(0,0,0,0.02)] dark:shadow-none' : 'bg-transparent text-zinc-400 dark:text-zinc-500 border-transparent hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-[#1a2235]/50'}`}>
+            <button onClick={() => setActiveFilter(label)} className={`px-4 py-2 text-[12px] font-semibold tracking-wide transition-all border-b-2 mb-[-1px] ${isActive ? 'text-orange-500 border-orange-500 bg-transparent' : 'text-zinc-500 border-transparent hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
                 {label}
                 {count > 0 && <span className={`ml-2 text-[9px] ${isActive ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-400 dark:text-zinc-600'}`}>({count})</span>}
             </button>
@@ -311,22 +311,22 @@ window.DashboardView = React.memo(({
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-transparent font-sans text-zinc-900 dark:text-white pb-20 lg:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transition-colors duration-300">
+        <div className="flex flex-col min-h-screen bg-transparent text-zinc-900 dark:text-white pb-20 lg:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transition-colors duration-300">
 
             {/* --- DESKTOP VY --- */}
-            <div className="hidden lg:flex flex-col h-full px-8 py-6">
-                
+            <div className="hidden lg:flex flex-col h-full">
+    
                 {/* REN BMG HEADER MED TYDLIG LINJE & ORGINAL-LOGGA */}
-                <div className="flex justify-between items-center mb-6 pb-6 border-b border-zinc-200 dark:border-[#1a2235]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4">
                     
                     {/* LOGGA OCH TITEL */}
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-orange-500 rounded-[4px] flex items-center justify-center text-black font-bold shadow-[0_0_20px_rgba(249,115,22,0.3)]">
-                            <window.Icon name="grid" size={24} />
+                        <div className="w-10 h-10 bg-orange-500 rounded-[4px] flex items-center justify-center text-black font-bold shadow-[0_0_20px_rgba(249,115,22,0.3)] shrink-0">
+                            <window.Icon name="grid" size={20} />
                         </div>
                         <div className="flex flex-col">
-                            <h1 className="text-4xl md:text-5xl font-black text-black dark:text-white uppercase tracking-tighter leading-none drop-shadow-sm dark:drop-shadow-none">
-                                Dash<span className="text-zinc-400 dark:text-zinc-600">board</span>
+                            <h1 className="text-xl md:text-2xl font-black text-black dark:text-white uppercase tracking-[-0.03em] leading-none drop-shadow-sm dark:drop-shadow-none">
+                                DASH<span className="text-zinc-500 dark:text-zinc-500">BOARD</span>
                             </h1>
                             <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-1.5">Översikt & Operationell Status</p>
                         </div>
@@ -335,7 +335,7 @@ window.DashboardView = React.memo(({
                     {/* SÖK OCH NYTT JOBB */}
                     <div className="flex items-center gap-4">
                         <div className="relative group shadow-sm dark:shadow-none">
-                            <input type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-64 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] text-black dark:text-white text-[12px] font-bold py-3 pl-4 pr-10 uppercase rounded-[4px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                            <input type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK..." className="w-64 bg-white dark:bg-[#121826] border border-zinc-300 dark:border-[#1a2235] text-zinc-900 dark:text-white text-[13px] font-medium py-3 pl-4 pr-10 rounded-[4px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors placeholder:text-zinc-500 dark:placeholder:text-zinc-500" />
                             <window.Icon name="search" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-300 dark:text-zinc-500" />
                         </div>
                         <button onClick={() => setView('NEW_JOB')} className="bg-black dark:bg-[#1a2235] hover:bg-zinc-800 dark:hover:bg-[#252f48] text-white h-[42px] px-6 rounded-[4px] flex items-center gap-3 shadow-lg dark:shadow-none border border-black dark:border-[#2a3441] transition-colors">
@@ -347,27 +347,27 @@ window.DashboardView = React.memo(({
 
                 {/* Desktop Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white dark:bg-[#121826] rounded-sm border border-zinc-200 dark:border-[#1a2235] p-5 shadow-sm dark:shadow-none relative overflow-hidden transition-colors">
+                    <div className="bg-white dark:bg-[#182032] rounded-xl border border-zinc-200 dark:border-white/5 p-5 shadow-sm dark:shadow-md relative overflow-hidden transition-colors">
                         <window.Icon name="check-circle" size={80} className="absolute -right-6 -bottom-6 text-zinc-100 dark:text-[#1a2235] transition-colors" />
                         <div className="relative z-10">
-                            <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Utförda (30d)</div>
-                            <div className="text-[28px] font-black tracking-tight text-zinc-900 dark:text-white leading-none">{stats30Days} <span className="text-[14px] text-zinc-400 dark:text-zinc-600 font-medium">st</span></div>
+                            <div className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Utförda (30d)</div>
+                            <div className="text-[26px] font-bold tracking-tight text-zinc-900 dark:text-white leading-none">{stats30Days} <span className="text-[14px] text-zinc-400 dark:text-zinc-600 font-medium">st</span></div>
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#121826] rounded-sm border border-zinc-200 dark:border-[#1a2235] p-5 shadow-sm dark:shadow-none relative overflow-hidden transition-colors">
+                    <div className="bg-white dark:bg-[#182032] rounded-xl border border-zinc-200 dark:border-white/5 p-5 shadow-sm dark:shadow-md relative overflow-hidden transition-colors">
                         <window.Icon name="calendar" size={80} className="absolute -right-6 -bottom-6 text-zinc-100 dark:text-[#1a2235] transition-colors" />
                         <div className="relative z-10">
                             <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Kommande (7d)</div>
-                            <div className="text-[28px] font-black tracking-tight text-zinc-900 dark:text-white leading-none">{statsNext7Days} <span className="text-[14px] text-zinc-400 dark:text-zinc-600 font-medium">st</span></div>
+                            <div className="text-[26px] font-bold tracking-tight text-zinc-900 dark:text-white leading-none">{statsNext7Days} <span className="text-[14px] text-zinc-400 dark:text-zinc-600 font-medium">st</span></div>
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#121826] rounded-sm border border-zinc-200 dark:border-[#1a2235] p-5 shadow-sm dark:shadow-none relative overflow-hidden transition-colors">
+                    <div className="bg-white dark:bg-[#182032] rounded-xl border border-zinc-200 dark:border-white/5 p-5 shadow-sm dark:shadow-md relative overflow-hidden transition-colors">
                         <window.Icon name="alert-triangle" size={80} className="absolute -right-6 -bottom-6 text-zinc-100 dark:text-[#1a2235] transition-colors" />
                         <div className="relative z-10">
                             <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Prioritet</div>
-                            <div className={`text-[28px] font-black tracking-tight leading-none ${urgentCount > 0 ? 'text-orange-500' : 'text-zinc-900 dark:text-white'}`}>
+                            <div className={`text-[26px] font-bold tracking-tight leading-none ${urgentCount > 0 ? 'text-orange-500' : 'text-zinc-900 dark:text-white'}`}>
                                 {urgentCount} <span className="text-[14px] text-zinc-400 dark:text-zinc-600 font-medium">st</span>
                             </div>
                         </div>
@@ -378,10 +378,10 @@ window.DashboardView = React.memo(({
                     <div className="flex px-2 space-x-1">{filters.map(f => <TabButton key={f} label={f} />)}</div>
 
                     {/* TABELLEN (Anpassad för Dark Mode) */}
-                    <div className="bg-white dark:bg-[#121826] rounded-sm shadow-sm dark:shadow-none border border-zinc-200 dark:border-[#1a2235] overflow-hidden flex flex-col flex-1 min-h-[500px] transition-colors">
+                    <div className="bg-white dark:bg-[#182032] rounded-xl shadow-sm dark:shadow-md border border-zinc-200 dark:border-white/5 overflow-hidden flex flex-col flex-1 min-h-[500px] transition-colors">
                         <div className="flex-1 overflow-auto">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-zinc-50 dark:bg-[#1a2235] border-b border-zinc-200 dark:border-[#2a3441] text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold sticky top-0 z-10">
+                                <thead className="bg-zinc-50 dark:bg-[#182032] border-b border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wider font-semibold sticky top-0 z-10">
                                     <tr>
                                         <th className="pl-6 pr-4 py-4 w-[25%]">Kund</th>
                                         <th className="px-4 py-4 w-[15%]">Uppdrag</th>
@@ -392,8 +392,8 @@ window.DashboardView = React.memo(({
                                         <th className="pl-4 pr-6 py-4 w-[10%] text-right"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-zinc-100 dark:divide-[#1a2235]">
-                                    {filteredJobs.map((job, index) => {
+                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                    {visibleJobs.map((job, index) => {
                                         const dateText = formatDate(job.datum);
                                         const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
                                         const regDisplay = job.regnr || job.bilmodell || '-';
@@ -404,25 +404,25 @@ window.DashboardView = React.memo(({
                                         const avatarTheme = 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-[#1a2235] dark:text-zinc-400 dark:border-[#2a3441]';
 
                                         return (
-                                            <tr key={job.id} onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id) : null} className={`group transition-all cursor-pointer relative ${index % 2 === 0 ? 'bg-white dark:bg-[#121826]' : 'bg-zinc-50/40 dark:bg-[#1a2235]/40'} hover:bg-orange-50/40 dark:hover:bg-[#1a2235] hover:shadow-[0_4px_15px_-4px_rgba(249,115,22,0.15)] dark:hover:shadow-none hover:z-10 hover:-translate-y-[1px] border-b border-zinc-100 dark:border-[#1a2235] last:border-0`}>
+                                            <tr key={job.id} onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id) : null} className={`group transition-colors cursor-pointer relative bg-white dark:bg-transparent hover:bg-zinc-50 dark:hover:bg-[#1f2940] border-b border-zinc-100 dark:border-white/5 last:border-0`}>
                                                 <td className="pl-6 pr-4 py-4 align-middle">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-[10px] font-black tracking-widest shrink-0 border ${avatarTheme}`}>
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 border ${avatarTheme}`}>
                                                             {initials}
                                                         </div>
                                                         <div>
-                                                            <div className="text-[13px] font-black text-zinc-900 dark:text-white leading-none mb-1 uppercase tracking-tight">{job.kundnamn}</div>
+                                                            <div className="text-[14px] font-medium text-zinc-900 dark:text-zinc-100 leading-none mb-1">{job.kundnamn}</div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500">#{job.id.substring(0,6)}</span>
+                                                                <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">#{job.id.substring(0,6)}</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 align-middle">
                                                     <div className="flex flex-col min-w-0">
-                                                        <span className="text-[11px] font-black uppercase text-zinc-800 dark:text-zinc-300 tracking-tight">{job.paket || 'Standard'}</span>
+                                                        <span className="text-[12px] font-medium text-zinc-800 dark:text-zinc-300">{job.paket || 'Standard'}</span>
                                                         {job.kommentar && (
-                                                            <div className="flex items-center gap-1 text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 italic truncate max-w-[120px]">
+                                                            <div className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 italic truncate max-w-[120px]">
                                                                 <window.Icon name="message-square" size={10} className="shrink-0" />
                                                                 <span className="truncate">{job.kommentar}</span>
                                                             </div>
@@ -458,7 +458,7 @@ window.DashboardView = React.memo(({
                                                                 </span>
                                                             )}
                                                             <div>
-                                                                <div className={`text-[11px] font-black uppercase ${isUrgent ? 'text-orange-600' : 'text-zinc-800 dark:text-zinc-300'}`}>{dateText}</div>
+                                                                <div className={`text-[12px] font-semibold ${isUrgent ? 'text-orange-600' : 'text-zinc-800 dark:text-zinc-300'}`}>{dateText}</div>
                                                                 <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{job.datum.split('T')[1]}</div>
                                                             </div>
                                                         </div>
@@ -469,7 +469,7 @@ window.DashboardView = React.memo(({
                                                 </td>
                                                 <td className="px-4 py-4 align-middle text-right">
                                                     <div className="flex flex-col items-end">
-                                                        <div className="font-mono font-black text-[14px] text-zinc-900 dark:text-white tracking-tight leading-none">
+                                                        <div className="font-mono font-bold text-[15px] text-zinc-900 dark:text-zinc-100 leading-none">
                                                             {(parseInt(job.kundpris) || 0).toLocaleString()} <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-sans tracking-normal">kr</span>
                                                         </div>
                                                     </div>
@@ -490,6 +490,16 @@ window.DashboardView = React.memo(({
                                     })}
                                 </tbody>
                             </table>
+                            
+                            {/* KNAPP FÖR ATT VISA FLER (DESKTOP) */}
+                            {hasMore && (
+                                <div className="flex justify-center p-6 border-t border-zinc-200 dark:border-white/5">
+                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-6 py-2.5 bg-zinc-100 dark:bg-[#1f2940] hover:bg-zinc-200 dark:hover:bg-[#25324d] text-zinc-700 dark:text-zinc-300 text-[11px] font-bold uppercase tracking-widest rounded-md transition-colors">
+                                        Visa fler ({filteredJobs.length - visibleCount} kvar)
+                                    </button>
+                                </div>
+                            )}
+
                         </div>
                     </div>
                 </div>
@@ -509,8 +519,8 @@ window.DashboardView = React.memo(({
                                 <window.Icon name="grid" size={20} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xl font-black uppercase tracking-tighter leading-none mb-1 text-white">
-                                    Mission <span className="text-zinc-500">Control</span>
+                                <span className="text-lg font-black uppercase tracking-tighter leading-none mb-1 text-white">
+                                    DASHBOARD <span className="text-zinc-400 dark:text-zinc-500">OVERVIEW</span>
                                 </span>
                                 <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{getHeaderDate()}</span>
                             </div>
@@ -549,14 +559,45 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* KORTEN */}
+                {/* KORTEN MED DATUM-GRUPPERING */}
                 <div className="px-3 py-3 pb-24 flex flex-col gap-2">
                     {filteredJobs.length > 0 ? (
-                        filteredJobs.map((job) => (
-                            <MobileJobCard key={job.id} job={job} setView={setView} onOpenHistory={handleOpenHistory} />
-                        ))
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-20 text-zinc-400 dark:text-zinc-600">
+                        <>
+                            {(() => {
+                                let lastDate = null;
+                                return visibleJobs.map((job) => {
+                                // Kolla vilket datum jobbet har (eller om det väntar)
+                                const currentDate = job.datum ? formatDate(job.datum) : 'INVÄNTAR DATUM';
+                                const showHeader = currentDate !== lastDate;
+                                lastDate = currentDate;
+
+                                return (
+                                    <React.Fragment key={job.id}>
+                                        {showHeader && (
+                                            <div className="mt-5 mb-1 px-2 first:mt-1 flex items-center gap-2">
+                                                <window.Icon name={job.datum ? "calendar" : "clock"} size={12} className="text-orange-500" />
+                                                <h3 className="text-[11px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">
+                                                    {currentDate}
+                                                </h3>
+                                            </div>
+                                        )}
+                                        <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
+                                    </React.Fragment>
+                                );
+                            });
+                        })()}
+                        
+                        {/* KNAPP FÖR ATT VISA FLER (MOBIL) */}
+                        {hasMore && (
+                            <div className="mt-4 px-1">
+                                <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 text-zinc-700 dark:text-zinc-300 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm active:scale-95 transition-all">
+                                    Visa fler ({filteredJobs.length - visibleCount} kvar)
+                                </button>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-zinc-400 dark:text-zinc-600">
                             <window.Icon name="inbox" size={32} className="mb-2 opacity-50" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Inga jobb här</span>
                         </div>
