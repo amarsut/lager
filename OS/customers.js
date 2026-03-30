@@ -99,38 +99,36 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
         return (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 pb-20 transition-colors duration-300">
-                <div className="bg-zinc-950 dark:bg-[#121826] shadow-2xl relative overflow-hidden mb-6 border-b dark:border-[#1a2235]">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-                        <SafeIcon name="shield-check" size={100} />
-                    </div>
-
-                    <div className="relative z-10 p-4 lg:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div className="flex items-start gap-4">
-                            <button onClick={() => window.history.back()} className="group bg-zinc-900 dark:bg-[#1a2235] border border-zinc-800 dark:border-[#2a3441] text-zinc-400 p-3 hover:theme-bg hover:text-black transition-all shrink-0 rounded-sm">
-                                <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
-                            </button>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2">
-                                    <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-none truncate">{selectedCustomer.name}</h2>
-                                    <RankBadge rank={selectedCustomer.rank} />
-                                </div>
-                                <div className="flex flex-wrap items-center gap-4 text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest">
-                                    <span className="bg-zinc-900 dark:bg-[#0a0f18] px-1.5 py-0.5 rounded-sm border border-zinc-800 dark:border-[#1a2235]">UID: {selectedCustomer.name.substring(0,6).toUpperCase()}</span>
-                                    <span className="flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500'}`}></div>
-                                        {daysSinceLast < 45 ? 'SIGNAL_ACTIVE' : 'SIGNAL_LOST'}
-                                    </span>
-                                </div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-5 pt-5 lg:px-0 lg:pt-0">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => window.history.back()} className="group bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 p-2.5 hover:text-zinc-900 dark:hover:text-white transition-all shrink-0 rounded-md shadow-sm">
+                            <SafeIcon name="arrow-left" size={20} className="group-hover:-translate-x-1 transition-transform" />
+                        </button>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-xl md:text-2xl font-black text-black dark:text-white uppercase tracking-[-0.03em] leading-none drop-shadow-sm dark:drop-shadow-none truncate max-w-[200px] sm:max-w-md">
+                                    {selectedCustomer.name}
+                                </h1>
+                                <RankBadge rank={selectedCustomer.rank} />
+                            </div>
+                            <div className="flex items-center gap-3 mt-1.5">
+                                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+                                    UID: {selectedCustomer.name.substring(0,6).toUpperCase()}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${daysSinceLast < 45 ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                    {daysSinceLast < 45 ? 'Aktiv' : 'Passiv'}
+                                </span>
                             </div>
                         </div>
-                        
-                        <button 
-                            onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
-                            className="w-full lg:w-auto theme-bg text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-all shadow-lg rounded-sm"
-                        >
-                            <SafeIcon name="plus-circle" size={14} /> Start_New_Deployment
-                        </button>
                     </div>
+                    
+                    <button 
+                        onClick={() => { setEditingJob(null); window.prefillName = selectedCustomer.name; setView('NEW_JOB'); }}
+                        className="bg-orange-500 hover:bg-orange-600 text-white h-[40px] px-5 rounded-md flex items-center justify-center gap-2 shadow-sm dark:shadow-none transition-colors font-semibold text-[13px]"
+                    >
+                        <SafeIcon name="plus" size={18} /> Nytt Jobb
+                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 px-4 lg:px-0">
@@ -146,8 +144,8 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             <SafeIcon name="activity" size={80} className="absolute -right-4 -bottom-4 text-white opacity-5" />
                         </div>
 
-                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-6 shadow-sm relative">
-                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-zinc-100 dark:border-[#2a3441]"></div>
+                        <div className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 rounded-xl p-6 shadow-sm relative">
+                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-zinc-100 dark:border-white/10"></div>
                             <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <SafeIcon name="rss" size={12} /> Communication_Status
                             </div>
@@ -160,7 +158,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-6 shadow-sm">
+                        <div className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 rounded-xl p-6 shadow-sm">
                             <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-6">Affinity_Analysis</div>
                             <div className="space-y-4">
                                 {Object.entries(selectedCustomer.packageStats).map(([pkg, count]) => (
@@ -186,7 +184,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                 { label: 'Deployments', val: selectedCustomer.missionCount, unit: 'Visits', icon: 'list', color: 'text-zinc-900 dark:text-white' },
                                 { label: 'Managed_Assets', val: selectedCustomer.vehicles.size, unit: 'Vehicles', icon: 'truck', color: 'text-zinc-900 dark:text-white' }
                             ].map((s, i) => (
-                                <div key={i} className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-5 group hover:border-zinc-950 dark:hover:border-zinc-600 transition-all shadow-sm">
+                                <div key={i} className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 rounded-xl p-5 group hover:border-zinc-950 dark:hover:border-zinc-600 transition-all shadow-sm">
                                     <div className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-2 flex items-center justify-between">
                                         {s.label} <SafeIcon name={s.icon} size={10} className="group-hover:theme-text transition-colors" />
                                     </div>
@@ -195,8 +193,8 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             ))}
                         </div>
 
-                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] shadow-2xl dark:shadow-none rounded-sm overflow-hidden flex flex-col">
-                            <div className="bg-zinc-950 dark:bg-[#1a2235] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 dark:border-[#2a3441]">
+                        <div className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 rounded-xl shadow-2xl dark:shadow-none rounded-sm overflow-hidden flex flex-col">
+                            <div className="bg-zinc-50 dark:bg-[#0f1522]/50 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 dark:border-white/10">
                                 <div className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
                                     <SafeIcon name="database" size={14} className="theme-text" /> 
                                     Mission_Log_Buffer <span className="text-zinc-600 dark:text-zinc-400 font-mono text-[9px] tracking-normal">[{selectedCustomer.jobs.length}]</span>
@@ -205,7 +203,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                     <input 
                                         type="text" 
                                         placeholder="FILTER..." 
-                                        className="bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-[#2a3441] text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-48 uppercase tracking-widest rounded-sm"
+                                        className="bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-white/10 text-[9px] font-black text-white px-3 py-2 outline-none focus:theme-border w-full md:w-48 uppercase tracking-widest rounded-sm"
                                         value={logSearch}
                                         onChange={(e) => setLogSearch(e.target.value)}
                                     />
@@ -264,7 +262,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                                         </div>
 
                                                         {j.kommentar && (
-                                                            <div className="mt-2 flex items-start gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400 italic bg-zinc-50/50 dark:bg-[#0a0f18]/50 p-2 rounded-sm border-l-2 border-zinc-200 dark:border-[#2a3441]">
+                                                            <div className="mt-2 flex items-start gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400 italic bg-zinc-50/50 dark:bg-[#0a0f18]/50 p-2 rounded-sm border-l-2 border-zinc-200 dark:border-white/10">
                                                                     <SafeIcon name="message-square" size={10} className="text-zinc-300 dark:text-zinc-600 shrink-0 mt-[2px]" />
                                                                 <span className="line-clamp-2 leading-relaxed">{j.kommentar}</span>
                                                             </div>
@@ -286,14 +284,14 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] p-6 shadow-xl dark:shadow-none relative overflow-hidden">
+                        <div className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 rounded-xl p-6 shadow-xl dark:shadow-none relative overflow-hidden">
                             <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-6 flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-2"><SafeIcon name="cpu" size={14} /> Asset_Inventory_Registry</div>
-                                <span className="text-zinc-950 dark:text-white bg-zinc-100 dark:bg-[#1a2235] px-3 py-1 rounded-full text-[10px] font-mono font-bold border border-zinc-200 dark:border-[#2a3441]">{selectedCustomer.vehicles.size} NODES</span>
+                                <span className="text-zinc-950 dark:text-white bg-zinc-100 dark:bg-[#1a2235] px-3 py-1 rounded-full text-[10px] font-mono font-bold border border-zinc-200 dark:border-white/10">{selectedCustomer.vehicles.size} NODES</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 relative z-10">
                                 {Array.from(selectedCustomer.vehicles).map(v => (
-                                    <div key={v} className="bg-zinc-50 dark:bg-[#0a0f18] border border-zinc-200 dark:border-[#2a3441] p-4 hover:border-zinc-900 dark:hover:border-zinc-500 hover:bg-white dark:hover:bg-[#1a2235] transition-all group flex items-center justify-between cursor-default">
+                                    <div key={v} className="bg-zinc-50 dark:bg-[#0a0f18] border border-zinc-200 dark:border-white/10 p-4 hover:border-zinc-900 dark:hover:border-zinc-500 hover:bg-white dark:hover:bg-[#1a2235] transition-all group flex items-center justify-between cursor-default">
                                         <div className="flex items-center gap-3">
                                             <SafeIcon name="truck" size={16} className="text-zinc-300 dark:text-zinc-600 group-hover:theme-text" />
                                             <span className="text-sm font-mono font-black text-zinc-800 dark:text-zinc-200 tracking-widest uppercase">{v}</span>
@@ -304,13 +302,13 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             </div>
                         </div>
 
-                        <div className="bg-zinc-950 dark:bg-[#1a2235] p-6 shadow-inner relative overflow-hidden group">
+                        <div className="bg-zinc-50 dark:bg-[#0f1522]/50 p-6 shadow-inner relative overflow-hidden group">
                             <div className="absolute top-0 left-0 w-1.5 h-full theme-bg shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div>
                             <div className="relative z-10">
                                 <div className="text-[8px] font-black theme-text uppercase mb-4 tracking-[0.4em] flex items-center gap-2">
                                     <SafeIcon name="info" size={10} /> Customers_View
                                 </div>
-                                <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 dark:border-[#2a3441] pl-4">
+                                <p className="text-white text-[10px] font-medium leading-relaxed italic opacity-90 border-l border-zinc-800 dark:border-white/10 pl-4">
                                     "Kunden uppvisar ett lojalt beteendemönster med fokus på {selectedCustomer.topVehicle}. {selectedCustomer.isChurned ? 'Varning: Signalstyrkan har minskat då enheten inte besökt basen på länge.' : 'Signalstyrkan är optimal.'} Rekommenderar riktad service-optimering."
                                 </p>
                             </div>
@@ -323,23 +321,23 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-20 bg-transparent">
-            <div className="bg-zinc-950 dark:bg-[#121826] p-6 flex flex-col md:flex-row md:items-center justify-between border-b-2 theme-border dark:border-b-[#1a2235] shadow-2xl dark:shadow-none gap-4">
-                <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 theme-bg flex items-center justify-center rounded-sm shadow-lg rotate-3 group-hover:rotate-0 transition-transform shrink-0">
-                        <SafeIcon name="users" size={24} className="text-black" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-5 pt-5 lg:px-0 lg:pt-0">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-orange-500 rounded-[4px] flex items-center justify-center text-black font-bold shadow-[0_0_20px_rgba(249,115,22,0.3)] shrink-0">
+                        <SafeIcon name="users" size={20} />
                     </div>
-                    <div>
-                        <span className="text-[10px] font-black theme-text uppercase tracking-[0.4em] block leading-none mb-1.5">
-                            Entity_Database_Nexus
-                        </span>
-                        <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
-                            Customers_View <span className="text-[10px] bg-zinc-800 dark:bg-[#1a2235] px-2 py-1 text-zinc-500 font-mono hidden sm:inline">COUNT:{customerData.length}</span>
-                        </h2>
+                    <div className="flex flex-col">
+                        <h1 className="text-xl md:text-2xl font-black text-black dark:text-white uppercase tracking-[-0.03em] leading-none drop-shadow-sm dark:drop-shadow-none">
+                            CUSTOMER <span className="text-zinc-500 dark:text-zinc-500">DATABASE</span>
+                        </h1>
+                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-1.5">
+                            Översikt & Analys // Totalt: {customerData.length} st
+                        </p>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <div className="flex bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-[#2a3441] p-1 rounded-sm shadow-inner justify-between sm:justify-start">
+                    <div className="flex bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 p-1 rounded-md shadow-sm dark:shadow-md justify-between sm:justify-start">
                         {[
                             { id: 'revenue', icon: 'dollar-sign' },
                             { id: 'count', icon: 'hash' },
@@ -348,7 +346,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             <button 
                                 key={m.id}
                                 onClick={() => setSortMode(m.id)}
-                                className={`p-2 transition-all flex-1 sm:flex-none flex justify-center ${sortMode === m.id ? 'theme-bg text-black shadow-lg scale-[1.02]' : 'text-zinc-600 dark:text-zinc-500 hover:text-white'}`}
+                                className={`p-2 transition-all flex-1 sm:flex-none flex justify-center rounded-[4px] ${sortMode === m.id ? 'bg-zinc-100 dark:bg-[#25324d] text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
                             >
                                 <SafeIcon name={m.icon} size={14} />
                             </button>
@@ -358,12 +356,12 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                     <div className="relative group">
                         <input 
                             type="text" 
-                            placeholder="SEARCH_ENTITY_OR_ASSET..." 
-                            className="bg-zinc-900 dark:bg-[#0a0f18] border border-zinc-800 dark:border-[#2a3441] focus:theme-border p-3 pl-10 text-[10px] font-bold text-white outline-none w-full md:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-700 dark:placeholder:text-zinc-600 shadow-2xl dark:shadow-none"
+                            placeholder="SÖK KUND ELLER FORDON..." 
+                            className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 focus:border-orange-500 dark:focus:border-orange-500 p-2.5 pl-9 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full md:w-64 transition-all uppercase tracking-widest placeholder:text-zinc-400 dark:placeholder:text-zinc-500 shadow-sm dark:shadow-md rounded-md"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <SafeIcon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 dark:text-zinc-500 group-focus-within:theme-text transition-colors" />
+                        <SafeIcon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
                     </div>
                 </div>
             </div>
@@ -373,7 +371,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                     <div 
                         key={i} 
                         onClick={() => setView('CUSTOMERS', { selectedCustomer: customer })}
-                        className="group bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] hover:border-zinc-950 dark:hover:border-zinc-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-none transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm"
+                        className="group bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 transition-all cursor-pointer relative overflow-hidden flex flex-col h-[180px] hover:-translate-y-1 shadow-sm dark:shadow-md rounded-xl"
                     >
                         <div className="absolute -bottom-6 -right-4 text-[80px] font-black text-zinc-50 dark:text-[#1a2235]/40 group-hover:theme-text/5 transition-colors pointer-events-none italic select-none">
                             {customer.rank[0]}
@@ -397,7 +395,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                             </div>
                         </div>
 
-                        <div className="mt-auto bg-zinc-950 dark:bg-[#0a0f18] p-3 flex items-center justify-between border-t border-zinc-900 dark:border-[#1a2235] group-hover:bg-zinc-900 dark:group-hover:bg-[#1a2235] transition-colors">
+                        <div className="mt-auto bg-zinc-50 dark:bg-[#0f1522]/50 p-3 flex items-center justify-between border-t border-zinc-100 dark:border-white/5 transition-colors">
                             <div className="flex items-center gap-2">
                                 <div className={`w-1.5 h-1.5 rounded-full ${Math.floor((new Date() - new Date(customer.lastSeen)) / (1000 * 60 * 60 * 24)) < 45 ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`}></div>
                                 <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase truncate max-w-[80px]">{customer.topVehicle}</span>
