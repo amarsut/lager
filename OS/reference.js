@@ -1,282 +1,409 @@
-// reference.js
+// app.js - Full uppdaterad version med Native Navigation & Dark Mode
 
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo, memo } = React;
 
-const IconPlus = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
-const IconX = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-const IconImage = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>;
-const IconFileText = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
-const IconCheck = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
-const IconTrash = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
-const IconEdit = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
-const IconLoader = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>;
-const IconFolder = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
-const IconCloseLarge = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-const IconLink = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>;
-const IconExternalLink = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>;
-
-const compressReferenceImage = async (file, maxWidth = 1000, quality = 0.7) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width; let height = img.height;
-                if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/webp', quality));
-            };
-        };
-        reader.onerror = (error) => reject(error);
-    });
+// --- 1. FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDwCQkUl-je3L3kF7EuxRC6Dm6Gw2N0nJw",
+    authDomain: "planerare-f6006.firebaseapp.com",
+    projectId: "planerare-f6006",
+    storageBucket: "planerare-f6006.firebasestorage.app",
+    messagingSenderId: "360462069749",
+    appId: "1:360462069749:web:c754879f3f75d5ef3cbabc"
 };
 
-window.ReferenceView = ({ setView }) => {
-    const [docs, setDocs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
-    const [selectedDoc, setSelectedDoc] = useState(null);
-    const [filter, setFilter] = useState('ALLA');
-    const [showUpload, setShowUpload] = useState(false);
-    
-    const [editingId, setEditingId] = useState(null); 
-    const [newTitle, setNewTitle] = useState('');
-    const [newCategory, setNewCategory] = useState('OLJA');
-    const [newText, setNewText] = useState(''); 
-    const [newLink, setNewLink] = useState(''); 
-    const [file, setFile] = useState(null);
-    const [existingImage, setExistingImage] = useState(null); 
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    const categories = ['OLJA', 'DÄCK', 'MANUALER', 'ÖVRIGT'];
+// AKTIVERA OFFLINE-STÖD
+db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+    console.warn("Offline persistence failed:", err.code);
+});
+
+const auth = firebase.auth();
+window.db = db;
+window.firebase = firebase;
+
+// --- 2. GLOBALA KOMPONENTER ---
+window.Icon = ({ name, size = 18, className = "" }) => (
+    <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>
+);
+
+const SplashScreen = () => (
+    <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out duration-500 delay-1000 fill-mode-forwards pointer-events-none">
+        <div className="flex flex-col items-center">
+            <div className="w-16 h-16 bg-[#f97316] flex items-center justify-center font-black rounded-sm text-black shadow-lg text-3xl animate-pulse">P</div>
+            <h1 className="mt-4 text-white font-black uppercase tracking-[0.3em] text-sm">Planerare // OS</h1>
+            <div className="mt-6 w-32 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-full bg-[#f97316] animate-[loading_1s_ease-in-out_infinite]"></div>
+            </div>
+            <p className="mt-2 text-[8px] font-black text-zinc-500 uppercase tracking-widest">Initializing_Core_Systems...</p>
+        </div>
+    </div>
+);
+
+// --- 3. HUVUDAPPLIKATION ---
+const App = () => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [appReady, setAppReady] = useState(false);
+    const [view, setView] = useState('DASHBOARD');
+    const [viewParams, setViewParams] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
+    const [activeFilter, setActiveFilter] = useState('BOKAD');
+    const [globalSearch, setGlobalSearch] = useState('');
+    const [allJobs, setAllJobs] = useState([]);
+    const [editingJob, setEditingJob] = useState(null);
+    
+    // DARK MODE STATE (Minns via localStorage)
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') === 'dark');
+    
+    const [time, setTime] = useState(new Date());
+    const [hasUnread, setHasUnread] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+    const triggerHaptic = () => {
+        if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
+    };
+
+    // --- DARK MODE INJECTION ---
+    useEffect(() => {
+        const root = document.documentElement;
+        root.style.setProperty('--brand-primary', '#f97316');
+        root.style.setProperty('--sidebar-text', '#ffffff');
+
+        if (isDark) {
+            root.classList.add('dark');
+            localStorage.setItem('sys_theme', 'dark');
+            // Premium djup gradient för BMG Dark Mode
+            document.body.style.background = '#09090b';
+        } else {
+            root.classList.remove('dark');
+            localStorage.setItem('sys_theme', 'light');
+            // Fräsch ljus gradient för Light Mode
+            document.body.style.background = 'linear-gradient(to bottom right, #ffffff, #f4f4f5, #e4e4e7)'; 
+        }
+
+        let meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.name = 'theme-color';
+            document.head.appendChild(meta);
+        }
+        meta.content = isDark ? '#0a0f18' : '#ffffff';
+
+        let styleTag = document.getElementById('dynamic-theme-style');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'dynamic-theme-style';
+            document.head.appendChild(styleTag);
+        }
+
+        styleTag.innerHTML = `
+            @keyframes loading { 0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; } }
+            @keyframes subtleGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+            .dark-premium-bg {
+                background: linear-gradient(-45deg, #020617, #0f172a, #1e293b, #020617);
+                background-size: 400% 400%;
+                animation: subtleGradient 20s ease infinite;
+            }
+            input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+            input[type=number] { -moz-appearance: textfield; }
+            input:focus, select:focus, textarea:focus { border-color: var(--brand-primary) !important; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important; outline: none !important; }
+            .theme-bg { background-color: var(--brand-primary) !important; }
+            .theme-text { color: var(--brand-primary) !important; }
+            .theme-border { border-color: var(--brand-primary) !important; }
+            .theme-sidebar-active { background-color: rgba(249, 115, 22, 0.12) !important; color: var(--brand-primary) !important; border-right: 3px solid var(--brand-primary) !important; }
+            .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; color: #52525b; border: none; background: transparent; }
+            .mobile-nav-btn.active { color: var(--brand-primary); }
+            .mobile-nav-label { font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+        `;
+    }, [isDark]);
 
     useEffect(() => {
-        const unsubscribe = window.db.collection("reference_docs").orderBy("timestamp", "desc").limit(50).onSnapshot(snap => {
-            const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setDocs(data);
-            setLoading(false);
+        if (!user) return;
+        const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
+        const unsubscribe = db.collection("notes").orderBy("timestamp", "desc").limit(30).onSnapshot(snap => {
+            if (snap.empty) { setHasUnread(false); return; }
+            const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const clockFound = allMsgs.some(msg => Object.values(msg).some(val => typeof val === 'string' && clockRegex.test(val)));
+            if (view === 'CHAT') setHasUnread(false); else setHasUnread(clockFound);
         });
+        return () => unsubscribe();
+    }, [user, view]);
+
+    const navigateTo = (newView, params = null) => {
+        triggerHaptic();
+        const hashPath = `#${newView.toLowerCase()}`;
+        if (view === newView) {
+             window.history.replaceState({ view: newView, params: params }, "", hashPath);
+        } else {
+             window.history.pushState({ view: newView, params: params }, "", hashPath);
+        }
+        setView(newView);
+        setViewParams(params);
+        if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
+        if (window.innerWidth < 1024) setSidebarOpen(false);
+    };
+
+    useEffect(() => {
+        const handleStatus = () => setIsOnline(navigator.onLine);
+        window.addEventListener('online', handleStatus);
+        window.addEventListener('offline', handleStatus);
+        return () => { window.removeEventListener('online', handleStatus); window.removeEventListener('offline', handleStatus); };
+    }, []);
+
+    useEffect(() => {
+        if (!window.history.state) window.history.replaceState({ view: 'DASHBOARD', params: null }, "");
+        const handlePopState = (event) => {
+            if (event.state) {
+                setView(event.state.view);
+                setViewParams(event.state.params);
+                if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) setEditingJob(event.state.params.job);
+                else setEditingJob(null);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    useEffect(() => {
+        const syncWithUrl = () => {
+            const hash = window.location.hash.replace('#', '').toUpperCase();
+            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT'];
+            if (hash && validViews.includes(hash)) {
+                setView(hash);
+                if (window.innerWidth < 1024) setSidebarOpen(false);
+            }
+        };
+        syncWithUrl();
+        window.addEventListener('hashchange', syncWithUrl);
+        return () => window.removeEventListener('hashchange', syncWithUrl);
+    }, []);
+
+    useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs]);
+    useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); setAppReady(true); return () => clearInterval(timer); }, []);
+    useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [view, allJobs, sidebarOpen, activeFilter, isDark]);
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(u => { setUser(u); setLoading(false); });
         return () => unsubscribe();
     }, []);
 
-    const handleEdit = (doc) => {
-        setEditingId(doc.id); setNewTitle(doc.title); setNewCategory(doc.category);
-        setNewText(doc.text || ''); setNewLink(doc.link || ''); setExistingImage(doc.image || null);
-        setFile(null); setShowUpload(true); window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    useEffect(() => {
+        if (!user) return;
+        return db.collection("jobs").orderBy("datum", "desc").onSnapshot(snap => {
+            setAllJobs(snap.docs.map(doc => ({ ...doc.data(), id: doc.id })).filter(j => !j.deleted));
+        });
+    }, [user]);
 
-    const handleSave = async (e) => {
-        e.preventDefault();
-        const hasContent = file || newText.trim().length > 0 || existingImage || newLink.trim().length > 0;
-        if (!newTitle || !hasContent) return alert("Ange titel och minst en bild, text eller länk.");
-        setUploading(true);
-        try {
-            let imageBase64 = existingImage; 
-            if (file) {
-                imageBase64 = await compressReferenceImage(file);
-                if (imageBase64.length > 1048487) { alert("Bilden är för stor."); setUploading(false); return; }
-            }
-            const docData = { title: newTitle.toUpperCase(), category: newCategory, text: newText, link: newLink, image: imageBase64, timestamp: new Date().toISOString(), createdBy: window.firebase.auth().currentUser.email };
-            if (editingId) await window.db.collection("reference_docs").doc(editingId).update(docData);
-            else await window.db.collection("reference_docs").add(docData);
-            resetForm();
-        } catch (error) { console.error("Save error:", error); alert("Kunde inte spara dokumentet."); setUploading(false); }
-    };
+    const statusCounts = useMemo(() => {
+        const counts = { 'ALLA': allJobs.length, 'BOKAD': 0, 'OFFERERAD': 0, 'EJ BOKAD': 0, 'KLAR': 0, 'FAKTURERAS': 0 };
+        allJobs.forEach(job => {
+            const s = (job.status || '').toUpperCase();
+            if (!job.datum) counts['EJ BOKAD']++;
+            if (counts.hasOwnProperty(s)) counts[s]++;
+        });
+        return counts;
+    }, [allJobs]);
 
-    const resetForm = () => {
-        setUploading(false); setShowUpload(false); setEditingId(null); setFile(null);
-        setNewTitle(''); setNewText(''); setNewLink(''); setExistingImage(null);
-    };
+    const filteredJobs = useMemo(() => {
+        let result = allJobs.filter(job => {
+            const q = globalSearch.toLowerCase();
+            const matchesGlobal = (job.regnr || '').toLowerCase().includes(q) || (job.kundnamn || '').toLowerCase().includes(q);
+            if (activeFilter === 'EJ BOKAD') return matchesGlobal && !job.datum;
+            const matchesStatus = activeFilter === 'ALLA' || (job.status || '').toUpperCase() === activeFilter;
+            return matchesGlobal && matchesStatus;
+        });
+        result.sort((a, b) => {
+            if (!a.datum) return 1; if (!b.datum) return -1;
+            return activeFilter === 'BOKAD' ? a.datum.localeCompare(b.datum) : b.datum.localeCompare(a.datum);
+        });
+        return result;
+    }, [globalSearch, activeFilter, allJobs]);
 
-    const handleDelete = async (doc) => {
-        if (!confirm("Radera detta dokument permanent?")) return;
-        try { await window.db.collection("reference_docs").doc(doc.id).delete(); if (selectedDoc?.id === doc.id) setSelectedDoc(null); } 
-        catch (error) { console.error("Error deleting:", error); }
-    };
-
-    const filteredDocs = filter === 'ALLA' ? docs : docs.filter(d => d.category === filter);
+    if (loading) return <SplashScreen />;
+    if (!user) return <LoginScreen />;
 
     return (
-        <div className="bg-[#f4f4f5] dark:bg-[#0a0f18] font-sans min-h-full pb-20 transition-colors duration-300">
-            <div className="bg-white dark:bg-[#121826] border-b border-zinc-200 dark:border-[#1a2235] px-5 py-6 flex flex-col gap-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white leading-none mb-1">Referensbibliotek</h1>
-                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">Dokumentation & Specs</p>
-                    </div>
-                    <button 
-                        onClick={() => { if(showUpload) resetForm(); else setShowUpload(true); }} 
-                        className={`w-full sm:w-auto px-5 py-3 rounded-[2px] text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm
-                        ${showUpload ? 'bg-zinc-100 dark:bg-[#1a2235] text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-[#2a3441]' : 'bg-black dark:bg-[#1a2235] text-white hover:bg-zinc-800 dark:hover:bg-[#252f48]'}`}
-                    >
-                        {showUpload ? <IconX /> : <IconPlus />}
-                        {showUpload ? "Stäng panel" : "Nytt Dokument"}
-                    </button>
-                </div>
-
-                {showUpload && (
-                    <div className="bg-zinc-50 dark:bg-[#1a2235] border border-zinc-200 dark:border-[#2a3441] p-4 rounded-md shadow-inner dark:shadow-none animate-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                                {editingId ? "Redigera dokument" : "Nytt dokument"}
-                            </h3>
-                            {editingId && <button onClick={resetForm} className="text-[9px] font-bold text-red-500 uppercase hover:underline">Avbryt redigering</button>}
-                        </div>
-
-                        <form onSubmit={handleSave} className="flex flex-col gap-4">
-                            <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Titel</label>
-                                <input type="text" placeholder="T.EX. CASTROL 5W-30" value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full p-3 text-xs font-bold bg-white dark:bg-[#0a0f18] text-zinc-900 dark:text-white border border-zinc-300 dark:border-[#2a3441] rounded-[2px] uppercase focus:border-black dark:focus:border-zinc-500 focus:ring-0 outline-none transition-all" />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Anteckningar</label>
-                                <textarea placeholder="Specifikationer eller noteringar..." value={newText} onChange={e => setNewText(e.target.value)} rows={3} className="w-full p-3 text-xs bg-white dark:bg-[#0a0f18] text-zinc-900 dark:text-white border border-zinc-300 dark:border-[#2a3441] rounded-[2px] focus:border-black dark:focus:border-zinc-500 focus:ring-0 outline-none transition-all resize-none" />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Extern Länk / URL</label>
-                                <div className="flex items-center bg-white dark:bg-[#0a0f18] border border-zinc-300 dark:border-[#2a3441] rounded-[2px] px-3 transition-all focus-within:border-black dark:focus-within:border-zinc-500">
-                                    <span className="text-zinc-400 dark:text-zinc-600 shrink-0 mr-2"><IconLink /></span>
-                                    <input type="url" placeholder="https://..." value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full py-3 text-xs font-mono text-zinc-900 dark:text-white border-none outline-none bg-transparent" />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Kategori & Bild</label>
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                    <select value={newCategory} onChange={e => setNewCategory(e.target.value)} className="p-3 text-xs font-bold border border-zinc-300 dark:border-[#2a3441] text-zinc-900 dark:text-white rounded-[2px] uppercase sm:w-1/3 focus:border-black dark:focus:border-zinc-500 outline-none bg-white dark:bg-[#0a0f18] h-[42px]">
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                    <div className="flex-1">
-                                        <input type="file" id="ref-file-upload" accept="image/*" onChange={e => setFile(e.target.files[0])} className="hidden" />
-                                        <label htmlFor="ref-file-upload" className={`flex items-center justify-center gap-2 px-3 h-[42px] border rounded-[2px] cursor-pointer transition-all w-full ${(file || existingImage) ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/30 text-blue-700 dark:text-blue-400' : 'bg-white dark:bg-[#0a0f18] border-zinc-300 dark:border-[#2a3441] text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-[#1a2235]'}`}>
-                                            {(file || existingImage) ? <IconCheck /> : <IconImage />}
-                                            <span className="text-[10px] font-black uppercase tracking-wider truncate">
-                                                {file ? file.name : (existingImage ? "Bild finns (klicka för att byta)" : "Välj bild (valfritt)")}
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button disabled={uploading} className={`mt-2 font-black h-[46px] text-xs uppercase rounded-[2px] w-full transition-all flex items-center justify-center gap-2 ${uploading ? 'bg-zinc-300 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-600 cursor-not-allowed' : 'bg-orange-500 text-white hover:bg-orange-600 shadow-sm'}`}>
-                                {uploading && <IconLoader />}
-                                {uploading ? "Bearbetar..." : (editingId ? "Uppdatera Dokument" : "Spara Dokument")}
-                            </button>
-                        </form>
-                    </div>
-                )}
-
-                <div className="flex gap-2 overflow-x-auto pb-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/50" style={{scrollbarWidth: 'none'}}>
-                    <button onClick={() => setFilter('ALLA')} className={`shrink-0 px-4 py-2 text-[10px] font-black uppercase rounded-[2px] border transition-all ${filter === 'ALLA' ? 'bg-black dark:bg-[#252f48] text-white border-black dark:border-[#252f48]' : 'bg-white dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-transparent'}`}>Alla</button>
-                    {categories.map(c => (
-                        <button key={c} onClick={() => setFilter(c)} className={`shrink-0 px-4 py-2 text-[10px] font-black uppercase rounded-[2px] border transition-all ${filter === c ? 'bg-black dark:bg-[#252f48] text-white border-black dark:border-[#252f48]' : 'bg-white dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-transparent'}`}>{c}</button>
-                    ))}
-                </div>
-            </div>
-
-            <div className="p-4">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center h-40 gap-3 text-zinc-400 dark:text-zinc-600 animate-pulse mt-10">
-                         <IconLoader />
-                         <span className="text-[10px] font-bold uppercase tracking-widest">Laddar arkiv...</span>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {filteredDocs.map(doc => {
-                            const hasImage = !!doc.image; const hasText = !!doc.text; const hasLink = !!doc.link;
-                            return (
-                                <div key={doc.id} className="group bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] rounded-lg overflow-hidden shadow-sm dark:shadow-none hover:shadow-md dark:hover:border-zinc-500 transition-all relative flex flex-col h-full">
-                                    <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-all">
-                                        <button onClick={(e) => { e.stopPropagation(); handleEdit(doc); }} className="bg-black/60 hover:bg-blue-600 text-white w-7 h-7 flex items-center justify-center rounded-full backdrop-blur-sm"><IconEdit /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDelete(doc); }} className="bg-black/60 hover:bg-red-600 text-white w-7 h-7 flex items-center justify-center rounded-full backdrop-blur-sm"><IconTrash /></button>
-                                    </div>
-
-                                    <div onClick={() => setSelectedDoc(doc)} className="aspect-[3/4] overflow-hidden cursor-pointer relative bg-zinc-50 dark:bg-[#0a0f18]">
-                                        {hasImage ? (
-                                            <>
-                                                <img src={doc.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-12">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[8px] font-black text-white uppercase tracking-wider bg-orange-500 px-1.5 py-0.5 rounded-[2px] shadow-sm">{doc.category}</span>
-                                                        {hasText && <div className="bg-white/20 text-white p-1 rounded-sm"><IconFileText /></div>}
-                                                        {hasLink && <div className="bg-blue-500/80 text-white p-1 rounded-sm"><IconLink /></div>}
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="w-full h-full flex flex-col relative p-4">
-                                                <div className="absolute top-3 right-3">
-                                                    <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase bg-zinc-200/50 dark:bg-[#1a2235] px-2 py-1 rounded-[2px]">{doc.category}</span>
-                                                </div>
-                                                <div className="flex-1 flex items-center justify-center pt-6 pb-6 overflow-hidden">
-                                                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-400 text-center leading-relaxed break-words line-clamp-[8]">"{doc.text}"</p>
-                                                </div>
-                                                <div className="flex justify-center items-center gap-2 text-zinc-300 dark:text-zinc-600 pb-1">
-                                                    <IconFileText />
-                                                    {hasLink && <span className="text-blue-400 dark:text-blue-500"><IconLink /></span>}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="p-3 bg-white dark:bg-[#121826] mt-auto border-t border-zinc-100 dark:border-[#1a2235]">
-                                        <h3 className="text-[11px] font-black uppercase leading-tight text-zinc-900 dark:text-white truncate">{doc.title}</h3>
-                                        <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1 uppercase tracking-tight">{new Date(doc.timestamp).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+        <>
+            {!appReady && <SplashScreen />}
+            {/* Huvudlayout med Dark Mode bakgrund */}
+            <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
-                {!loading && filteredDocs.length === 0 && (
-                    <div className="flex flex-col items-center justify-center mt-20 text-zinc-300 dark:text-zinc-600">
-                        <IconFolder />
-                        <span className="text-[10px] font-black uppercase tracking-widest mt-2">Tomt i denna kategori</span>
+                {/* Sidomeny (Sömlös i Dark Mode) */}
+                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-zinc-950 dark:bg-[#0b0f19] text-white border-r border-zinc-800 dark:border-white/5 flex flex-col shadow-2xl lg:shadow-none`}>
+                    <div className="h-20 flex items-center justify-between px-6 border-b border-zinc-800 dark:border-[#1a2235] overflow-hidden shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg cursor-pointer hover:scale-105 transition-transform">P</div>
+                            {sidebarOpen && <span className="font-black tracking-widest text-[10px] uppercase whitespace-nowrap">Planerare // OS</span>}
+                        </div>
+                        {sidebarOpen && (
+                            <button onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="hidden lg:block text-zinc-500 hover:text-white transition-colors">
+                                <window.Icon name="chevron-left" size={18} />
+                            </button>
+                        )}
                     </div>
-                )}
-            </div>
-
-            {selectedDoc && (
-                <div className="fixed inset-0 z-[9999] bg-black/95 dark:bg-[#0a0f18]/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setSelectedDoc(null)}>
-                    <button className="absolute top-4 right-4 text-white p-3 hover:bg-white/10 rounded-full transition-colors active:scale-95 z-50">
-                        <IconCloseLarge />
-                    </button>
                     
-                    <div className="max-w-4xl w-full max-h-full flex flex-col items-center overflow-y-auto custom-scrollbar p-4" onClick={e => e.stopPropagation()}>
-                        {selectedDoc.image && <img src={selectedDoc.image} className="max-w-full max-h-[60vh] rounded-lg shadow-2xl border border-white/10 animate-in zoom-in duration-300 mb-6" />}
-
-                        <div className="bg-zinc-900 dark:bg-[#121826] border border-zinc-800 dark:border-[#1a2235] p-6 rounded-lg w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-300">
-                            <h2 className="text-white font-black uppercase tracking-widest text-lg mb-2">{selectedDoc.title}</h2>
-                            
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-orange-400 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-orange-400/10 rounded-[2px]">{selectedDoc.category}</span>
-                                <span className="text-zinc-500 dark:text-zinc-600 text-[10px] font-mono uppercase">| {new Date(selectedDoc.timestamp).toLocaleString()}</span>
+                    <nav className="flex-1 py-6 space-y-1 overflow-y-auto">
+                        {[
+                            { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
+                            { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
+                            { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
+                            //id: 'GARAGE', icon: 'car', label: 'Garage' },
+                            { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
+                            { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
+                            { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
+                            { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
+                        ].map(item => (
+                            <div key={item.id} 
+                                onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
+                                className={`flex items-center px-6 py-4 cursor-pointer transition-all ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80 text-zinc-400 hover:text-white'}`}>                                
+                                <div className="relative flex items-center justify-center">
+                                    <window.Icon name={item.icon} size={18} />
+                                    {item.id === 'CHAT' && hasUnread && (
+                                        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
+                                        </span>
+                                    )}
+                                </div>
+                                {sidebarOpen && <span className="ml-4 text-[12px] font-medium">{item.label.replace('_', ' ')}</span>}
                             </div>
+                        ))}
+                    </nav>
 
-                            {selectedDoc.link && (
-                                <div className="mb-4">
-                                    <a href={selectedDoc.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-[2px] text-xs font-black uppercase tracking-wider w-full justify-center transition-colors">
-                                        <IconExternalLink /> Öppna extern länk
-                                    </a>
-                                </div>
-                            )}
+                    <div className="mt-auto border-t border-zinc-800 dark:border-[#1a2235] bg-black/20 pb-20 lg:pb-0">
+                        {/* DARK MODE TOGGLE (Ny placering i sidomenyn) */}
+                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-5 text-zinc-400 hover:text-white transition-colors border-b border-zinc-800 dark:border-[#1a2235] gap-4`}>
+                            <window.Icon name={isDark ? "sun" : "moon"} size={18} className={isDark ? "text-orange-500" : ""} />
+                            {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
+                        </button>
 
-                            {selectedDoc.text && (
-                                <div className="text-zinc-300 dark:text-zinc-400 text-sm whitespace-pre-wrap leading-relaxed border-t border-zinc-800 dark:border-[#1a2235] pt-4 font-mono">
-                                    {selectedDoc.text}
+                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-5 gap-3`}>
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg uppercase text-[10px]">
+                                    {user.email ? user.email[0] : 'U'}
                                 </div>
+                                {sidebarOpen && (
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white truncate">{user.displayName || 'Operator'}</span>
+                                        <span className="text-[7px] text-zinc-500 truncate font-mono uppercase tracking-tighter">{user.email}</span>
+                                    </div>
+                                )}
+                            </div>
+                            {sidebarOpen && (
+                                <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-sm transition-all group shrink-0">
+                                    <window.Icon name="log-out" size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                                </button>
                             )}
                         </div>
                     </div>
-                </div>
-            )}
+                </aside>
+
+                {sidebarOpen && window.innerWidth < 1024 && (
+                    <div onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190] lg:hidden animate-in fade-in duration-300"></div>
+                )}
+
+                <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                    
+                    {/* DEN ÖVRE HEADERN ÄR NU HELT BORTTAGEN! */}
+
+                    {/* Chattbubbla */}
+                    <button 
+                        onClick={() => setIsChatOpen(!isChatOpen)} 
+                        className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-[0_10px_30px_rgba(249,115,22,0.4)] items-center justify-center transition-all z-[600] border border-black/20 ${isChatOpen ? 'bg-zinc-800 text-white hover:scale-105' : 'theme-bg text-black hover:scale-110 active:scale-95'}`}
+                    >
+                        <window.Icon name={isChatOpen ? "x" : "message-square"} size={24} />
+                        {hasUnread && !isChatOpen && (
+                            <span className="absolute top-0 right-0 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-orange-500 shadow-sm"></span>
+                            </span>
+                        )}
+                    </button>
+
+                    {isChatOpen && window.innerWidth >= 1024 && (
+                        <>
+                            <div className="fixed inset-0 z-[490]" onClick={() => setIsChatOpen(false)}></div>
+                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-[#2a3441] bg-white dark:bg-[#121826] ring-1 ring-black/5 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                                <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} isPopup={true} onClose={() => setIsChatOpen(false)} />
+                            </div>
+                        </>
+                    )}
+
+                    {/* DYNAMISK VY-CONTAINER */}
+                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
+                        {view === 'DASHBOARD' && (
+                            <window.DashboardView 
+                                allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} 
+                                activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts}
+                                globalSearch={globalSearch} setGlobalSearch={setGlobalSearch}
+                            />
+                        )}
+                        {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
+                        {view === 'GARAGE' && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
+                        {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={navigateTo} viewParams={viewParams} setEditingJob={setEditingJob} />}
+                        {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
+                        {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
+                        {view === 'CHAT' && window.innerWidth < 1024 && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
+                        {view === 'REFERENCE' && <window.ReferenceView setView={navigateTo} />}
+                    </div>
+
+                    {/* Mobila Bottenmenyn */}
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 dark:bg-[#121826] border-t border-zinc-900 dark:border-[#1a2235] flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
+                        <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="grid" size={20} /></div>
+                            <span className="mobile-nav-label">Status</span>
+                        </button>
+                        <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="calendar" size={20} /></div>
+                            <span className="mobile-nav-label">Plan</span>
+                        </button>
+                        <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="plus-square" size={20} /></div>
+                            <span className="mobile-nav-label">Nytt</span>
+                        </button>
+                        <button onClick={() => navigateTo('CHAT')} className={`mobile-nav-btn ${view === 'CHAT' ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1">
+                                <window.Icon name="message-square" size={20} />
+                                {hasUnread && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-black dark:border-[#121826] shadow-[0_0_10px_rgba(249,115,22,1)]"></span>
+                                    </span>
+                                )}
+                            </div>
+                            <span className="mobile-nav-label">Chatt</span>
+                        </button>
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} /></div>
+                            <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
+                        </button>
+                    </div>
+                </main>
+            </div>
+        </>
+    );
+};
+
+const LoginScreen = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const handleLogin = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(email, password); };
+    return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center font-mono z-[300]">
+            <form onSubmit={handleLogin} className="w-full max-w-sm p-8 bg-[#0a0f18] border border-[#1a2235] space-y-6 text-white shadow-2xl">
+                <h2 className="text-white font-black uppercase tracking-widest border-b border-orange-600 pb-4 text-center text-xs">System_Core_Access</h2>
+                <input type="email" placeholder="EMAIL" className="w-full bg-[#121826] border border-[#1a2235] p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={email} onChange={e => setEmail(e.target.value)} />
+                <input type="password" placeholder="PASSWORD" className="w-full bg-[#121826] border border-[#1a2235] p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={password} onChange={e => setPassword(e.target.value)} />
+                <button type="submit" className="w-full bg-[#f97316] text-black font-black py-5 text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-colors active:scale-95 shadow-lg">Authenticate</button>
+            </form>
         </div>
     );
 };
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
