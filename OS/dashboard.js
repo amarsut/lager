@@ -570,7 +570,8 @@ window.DashboardView = React.memo(({
                     {/* DINA FILTER-TABS */}
                     <div
                         ref={tabsRef}
-                        className="flex overflow-x-auto px-4 pt-2 space-x-4 custom-scrollbar"
+                        // Bytte ut "custom-scrollbar" mot klasser som döljer scrollbaren helt på alla enheter
+                        className="flex overflow-x-auto px-4 pt-2 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         onTouchStart={(e) => e.stopPropagation()}
                         onTouchMove={(e) => e.stopPropagation()}
                         onTouchEnd={(e) => e.stopPropagation()}
