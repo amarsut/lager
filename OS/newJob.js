@@ -165,31 +165,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     };
 
-    // Gemensam klass för alla input-fält för att hålla designen konsekvent och snygg
     const inputClasses = "w-full bg-zinc-50/50 dark:bg-black/20 focus:bg-white dark:focus:bg-[#18181b] border border-zinc-200/80 dark:border-white/10 p-3.5 text-[14px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all rounded-xl shadow-sm";
 
     return (
-        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-24 ml-0">
+        /* JUSTERING: Ändrade pb-10 till pb-0 här för att ta bort dött utrymme i botten */
+        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0">
             
             {/* Ambient Background Glow */}
             <div className="absolute top-0 left-[-10%] w-[80%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-5 pt-8 pb-8 lg:px-2">
-                <div className="flex items-center gap-5">
-                    {/* Glowing Icon Container */}
-                    <div className="relative group cursor-default">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-4 pt-2 lg:px-0 lg:pt-0">
+                <div className="flex items-center gap-4 md:gap-5">
+                    <div className="relative group cursor-default shrink-0">
                         <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                        <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
                             <SafeIcon name={editingJob ? "edit-3" : "plus"} size={24} />
                         </div>
                     </div>
-                    
                     <div className="flex flex-col">
                         <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
                             {editingJob ? 'Mission' : 'New'} <span className="text-zinc-400 dark:text-zinc-500 font-light">{editingJob ? 'Update' : 'Job'}</span>
                         </h1>
-                        <p className="text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                        <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                             {editingJob ? 'Update_Sequence_Active' : 'Initialization_Phase'}
                         </p>
@@ -199,7 +197,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
             {/* FORMULÄR */}
             <div className="px-4 lg:px-2">
-                <form onSubmit={handleSave} className="space-y-8">
+                <form onSubmit={handleSave} className="space-y-6 md:space-y-8">
                     
                     {/* SEKTION 1: IDENTIFIERING */}
                     <div className="bg-white/80 dark:bg-[#121214]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
@@ -385,10 +383,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </div>
 
-                    {/* KNAPPAR (Floating Action Bar style) */}
-                    <div className="pt-4 flex flex-col sm:flex-row gap-4 items-center justify-end sticky bottom-6 z-50">
+                    {/* KNAPPAR - JUSTERADE FÖR MOBIL (Tog bort felaktig padding) */}
+                    <div className="pt-2 pb-0 md:pb-0 flex flex-col sm:flex-row gap-3 items-center justify-end md:sticky md:bottom-6 md:z-50">
                         
-                        <button type="button" onClick={() => window.history.back()} className="w-full sm:w-auto px-8 py-4 bg-white/90 dark:bg-[#18181b]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-lg rounded-2xl">
+                        <button 
+                            type="button" 
+                            onClick={() => window.history.back()} 
+                            className="w-full sm:w-auto order-3 sm:order-1 px-8 py-4 bg-white/90 dark:bg-[#18181b]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-lg rounded-2xl"
+                        >
                             Cancel
                         </button>
 
@@ -399,13 +401,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     await window.db.collection("jobs").doc(editingJob.id).update({ status: 'KLAR' });
                                     setView('DASHBOARD');
                                 }} 
-                                className="w-full sm:w-auto px-8 py-4 bg-emerald-500/90 backdrop-blur-md border border-emerald-400/50 text-white font-bold text-[13px] uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)] active:scale-95 text-center rounded-2xl flex items-center justify-center gap-2"
+                                className="w-full sm:order-2 sm:w-auto px-8 py-4 bg-emerald-500/90 backdrop-blur-md border border-emerald-400/50 text-white font-bold text-[13px] uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)] active:scale-95 text-center rounded-2xl flex items-center justify-center gap-2"
                             >
                                 <SafeIcon name="check-circle" size={16} /> Markera Klar
                             </button>
                         )}
 
-                        <button type="submit" className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[13px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] hover:from-orange-400 hover:to-orange-500 border border-orange-400/50 active:scale-95 transition-all text-center rounded-2xl flex items-center justify-center gap-2">
+                        <button 
+                            type="submit" 
+                            className="w-full order-1 sm:order-3 sm:w-auto px-10 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[13px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] hover:from-orange-400 hover:to-orange-500 border border-orange-400/50 active:scale-95 transition-all text-center rounded-2xl flex items-center justify-center gap-2"
+                        >
                             <SafeIcon name="save" size={16} /> Confirm_Push
                         </button>
 
