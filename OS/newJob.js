@@ -165,11 +165,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     };
 
-    const inputClasses = "w-full bg-zinc-50/50 dark:bg-black/20 focus:bg-white dark:focus:bg-[#18181b] border border-zinc-200/80 dark:border-white/10 p-3.5 text-[14px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all rounded-xl shadow-sm";
+    // FIX: Justerad färg till mörkblå (#1a2235) och minskad padding p-3 istället för p-3.5 så det får plats på mobilen
+    const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 text-[13px] sm:text-[14px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-xl shadow-sm";
 
     return (
-        /* JUSTERING: Ändrade pb-10 till pb-0 här för att ta bort dött utrymme i botten */
-        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0">
+        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0 w-full">
             
             {/* Ambient Background Glow */}
             <div className="absolute top-0 left-[-10%] w-[80%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
@@ -200,7 +200,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 <form onSubmit={handleSave} className="space-y-6 md:space-y-8">
                     
                     {/* SEKTION 1: IDENTIFIERING */}
-                    <div className="bg-white/80 dark:bg-[#121214]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
+                    {/* FIX: dark:bg-[#182032] för hela rutorna */}
+                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
                         <SectionHeader title="Entity_Identifier" sub="Client and Vehicle Data" icon="fingerprint" />
                         
                         <FormRow>
@@ -212,9 +213,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         placeholder="Sök eller skriv namn..." 
                                     />
                                     {suggestions.length > 0 && (
-                                        <div className="absolute z-50 w-full bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
+                                        <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
                                             {suggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3.5 text-[13px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold uppercase border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
+                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3.5 text-[13px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold uppercase border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
                                                     {s}
                                                 </div>
                                             ))}
@@ -231,9 +232,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         placeholder="ABC 123" autoComplete="off" 
                                     />
                                     {regnrSuggestions.length > 0 && (
-                                        <div className="absolute z-50 w-full bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
+                                        <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
                                             {regnrSuggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-3.5 text-[13px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold font-mono tracking-widest border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
+                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-3.5 text-[13px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold font-mono tracking-widest border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
                                                     {s}
                                                 </div>
                                             ))}
@@ -245,17 +246,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 2: PARAMETRAR */}
-                    <div className="bg-white/80 dark:bg-[#121214]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
                         <SectionHeader title="Mission_Parameters" sub="Scheduling and Service Configuration" icon="sliders" />
 
                         <div className="mb-6">
                             <InputWrapper label="Mission_Status" icon="activity">
-                                {/* Modern Pill-Selector for Status */}
-                                <div className="flex bg-zinc-100 dark:bg-black/40 p-1.5 rounded-2xl border border-zinc-200/80 dark:border-white/5 w-full">
+                                {/* FIX: Dark theme färg och mindre text/padding för att förhindra trängsel */}
+                                <div className="flex bg-zinc-100 dark:bg-[#1a2235] p-1.5 rounded-xl border border-zinc-200/80 dark:border-white/5 w-full">
                                     {['BOKAD', 'OFFERERAD', 'KLAR', 'FAKTURERAS'].map(s => (
                                         <button
                                             key={s} type="button" onClick={() => setFormData(p => ({ ...p, status: s }))}
-                                            className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all duration-300 ${formData.status === s ? 'bg-white dark:bg-[#1f2940] shadow-[0_2px_10px_rgba(0,0,0,0.1)] text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                                            className={`flex-1 py-2.5 px-1 text-[9px] sm:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${formData.status === s ? 'bg-white dark:bg-[#25324d] shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
                                         >
                                             {s}
                                         </button>
@@ -288,7 +289,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </label>
                                         <input 
                                             type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} 
-                                            className="w-full bg-white dark:bg-[#09090b] text-zinc-900 dark:text-white border border-orange-200 dark:border-orange-500/30 p-3 text-[15px] font-black font-mono outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 rounded-lg shadow-sm transition-all" 
+                                            className="w-full bg-white dark:bg-[#0f1522] text-zinc-900 dark:text-white border border-orange-200 dark:border-orange-500/30 p-3 text-[15px] font-black font-mono outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 rounded-lg shadow-sm transition-all" 
                                         />
                                     </div>
                                 )}
@@ -297,14 +298,24 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             <div className="grid grid-cols-2 gap-4">
                                 <InputWrapper label="Deploy_Date" icon="calendar">
                                     <input 
-                                        type="date" value={formData.datum} onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                        className={`${inputClasses} font-mono cursor-pointer`} 
+                                        type="date" 
+                                        value={formData.datum} 
+                                        onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
+                                        onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                                        // FIX: La till 'text-[12px] sm:text-[14px]' och en specifik CSS-regel ([&::-webkit-calendar-picker-indicator]:hidden) för att dölja webbläsarens inbyggda kalenderikon och ge mer plats åt datumet.
+                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] sm:text-[14px] [&::-webkit-calendar-picker-indicator]:hidden`} 
                                     />
                                 </InputWrapper>
                                 <InputWrapper label="Time_Win" icon="clock">
                                     <input 
-                                        type="time" min="06:00" max="21:00" value={formData.tid} onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                        className={`${inputClasses} font-mono cursor-pointer`} 
+                                        type="time" 
+                                        min="06:00" 
+                                        max="21:00" 
+                                        value={formData.tid} 
+                                        onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
+                                        onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                                        // FIX: Samma sak här för tidsväljaren.
+                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] sm:text-[14px] [&::-webkit-calendar-picker-indicator]:hidden`} 
                                     />
                                 </InputWrapper>
                             </div>
@@ -312,13 +323,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 3: EKONOMI */}
-                    <div className="bg-white/80 dark:bg-[#121214]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
                         <SectionHeader title="Financial_Data" sub="Pricing and Expenses" icon="credit-card" />
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             
                             {/* Final Price Card */}
-                            <div className="bg-zinc-50 dark:bg-black/20 p-6 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col justify-center relative overflow-hidden group">
+                            <div className="bg-zinc-50 dark:bg-[#1a2235]/50 p-6 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col justify-center relative overflow-hidden group">
                                 <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all group-focus-within:bg-orange-500/10"></div>
                                 <InputWrapper label="Final_Price" icon="dollar-sign">
                                     <div className="mt-2 flex items-baseline">
@@ -348,16 +359,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         <div key={i} className="flex gap-3 items-center group/row">
                                             <input 
                                                 placeholder="Artikel/Delnamn" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
-                                                className="flex-1 bg-zinc-50 dark:bg-[#18181b] focus:bg-white dark:focus:bg-[#27272a] border border-zinc-200/80 dark:border-white/10 p-3 text-[13px] font-medium text-zinc-900 dark:text-white outline-none rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                className="flex-1 bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 text-[13px] font-medium text-zinc-900 dark:text-white outline-none rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
                                             />
                                             <div className="relative w-28">
                                                 <input 
                                                     placeholder="0" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} 
-                                                    className="w-full bg-zinc-50 dark:bg-[#18181b] focus:bg-white dark:focus:bg-[#27272a] border border-zinc-200/80 dark:border-white/10 p-3 pr-8 text-[13px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 pr-8 text-[13px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
                                                 />
                                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 font-bold">kr</span>
                                             </div>
-                                            <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 bg-zinc-50 hover:bg-red-50 dark:bg-[#18181b] dark:hover:bg-red-500/10 rounded-xl">
+                                            <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-xl">
                                                 <SafeIcon name="trash-2" size={16} />
                                             </button>
                                         </div>
@@ -368,7 +379,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 4: LOGGAR */}
-                    <div className="bg-white/80 dark:bg-[#121214]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
                         <SectionHeader title="System_Logs" sub="Internal Terminal Notes" icon="terminal" />
                         <InputWrapper label="Internal_Mission_Logs" icon="file-text">
                             <div className="relative">
@@ -376,20 +387,20 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <textarea 
                                     value={formData.kommentar} 
                                     onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} 
-                                    className="w-full bg-zinc-50 dark:bg-black/40 focus:bg-white dark:focus:bg-[#18181b] border border-zinc-200/80 dark:border-white/10 p-4 pl-10 font-mono text-[13px] leading-relaxed text-zinc-700 dark:text-zinc-300 min-h-[120px] outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all resize-y rounded-2xl shadow-sm" 
+                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-4 pl-10 font-mono text-[13px] leading-relaxed text-zinc-700 dark:text-zinc-300 min-h-[120px] outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all resize-y rounded-2xl shadow-sm" 
                                     placeholder="Skriv dina anteckningar här..." 
                                 />
                             </div>
                         </InputWrapper>
                     </div>
 
-                    {/* KNAPPAR - JUSTERADE FÖR MOBIL (Tog bort felaktig padding) */}
+                    {/* KNAPPAR */}
                     <div className="pt-2 pb-0 md:pb-0 flex flex-col sm:flex-row gap-3 items-center justify-end md:sticky md:bottom-6 md:z-50">
                         
                         <button 
                             type="button" 
                             onClick={() => window.history.back()} 
-                            className="w-full sm:w-auto order-3 sm:order-1 px-8 py-4 bg-white/90 dark:bg-[#18181b]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-lg rounded-2xl"
+                            className="w-full sm:w-auto order-3 sm:order-1 px-8 py-4 bg-white/90 dark:bg-[#1a2235]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-[#25324d] hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-lg rounded-2xl"
                         >
                             Cancel
                         </button>
