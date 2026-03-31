@@ -114,29 +114,27 @@ window.SupplyView = ({ allJobs, setView }) => {
     return (
         // ÄNDRING HÄR: Borttagen 'mx-auto', ändrad animation till 'slide-in-from-left-4', 
         // satt 'max-w-5xl' för att det ska få ta lite bredd om skärmen tillåter men ändå hålla sig till vänster.
-        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-24 ml-0">
+        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0">
             
             {/* Ambient Background Glow - Ändrad till att utgå från vänster (left-[-10%]) istället för mitten */}
             <div className="absolute top-0 left-[-10%] w-[80%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-5 pt-8 pb-8 lg:px-2">
-                <div className="flex items-center gap-5">
-                    {/* Glowing Icon Container */}
-                    <div className="relative group cursor-default">
-                        <div className={`absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 ${oilStatus.isLow ? 'animate-pulse bg-red-500/40' : 'group-hover:bg-orange-500/60'}`} />
-                        <div className={`relative w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors ${oilStatus.isLow ? 'bg-gradient-to-br from-red-500 to-red-700' : 'bg-gradient-to-br from-orange-400 to-orange-600'}`}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-4 pt-2 lg:px-0 lg:pt-0">
+                <div className="flex items-center gap-4 md:gap-5">
+                    <div className="relative group cursor-default shrink-0">
+                        <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
                             <SafeIcon name="droplet" size={24} />
                         </div>
                     </div>
-                    
                     <div className="flex flex-col">
                         <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                            Oil <span className="text-zinc-400 dark:text-zinc-500 font-light">Status</span>
+                            OIL <span className="text-zinc-400 dark:text-zinc-500 font-light">STATUS</span>
                         </h1>
-                        <p className="text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                        <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                            Resource_Nexus // Active
+                            Resource_Nexus // Oil_Control
                         </p>
                     </div>
                 </div>
