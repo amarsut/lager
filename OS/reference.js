@@ -112,35 +112,50 @@ window.ReferenceView = ({ setView }) => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-transparent text-zinc-900 dark:text-zinc-100 transition-colors duration-300 pb-20">
+        <div className="flex flex-col min-h-screen bg-transparent text-zinc-900 dark:text-zinc-100 transition-colors duration-300 pb-0">
             
             {/* DRIVE HEADER */}
-            <div className="px-5 pt-5 lg:px-2 lg:pt-0 mb-6 flex flex-row gap-3 items-center w-full">
-                
-                {/* Search Bar */}
-                <div className="relative flex-1 group">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors">
-                        <IconSearch />
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-4 pt-2 lg:px-0 lg:pt-0 w-full">
+                <div className="flex items-center gap-4 md:gap-5">
+                    <div className="relative group cursor-default shrink-0">
+                        <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                            <IconFolder size={24} />
+                        </div>
                     </div>
-                    <input 
-                        type="text" 
-                        placeholder="Sök i Drive..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white rounded-full py-3 pl-11 pr-4 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 shadow-sm transition-all text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-                    />
+                    <div className="flex flex-col">
+                        <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                            DRIVE <span className="text-zinc-400 dark:text-zinc-500 font-light">REFERENCE</span>
+                        </h1>
+                        <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                            Dokument & Filer
+                        </p>
+                    </div>
                 </div>
-
-                {/* New Button */}
-                <button 
-                    onClick={() => { resetForm(); setShowUploadModal(true); }}
-                    className="shrink-0 bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg rounded-full sm:rounded-2xl h-[46px] w-[46px] sm:w-auto sm:px-6 flex items-center justify-center gap-2 font-medium transition-all active:scale-95"
-                    aria-label="Skapa nytt"
-                >
-                    <IconPlus /> 
-                    {/* Texten "Nytt" är dold på små mobiler för att spara plats, men visas på sm-skärmar och uppåt */}
-                    <span className="hidden sm:block text-[13px] tracking-wide">Nytt</span>
-                </button>
+                
+                {/* Sökfältet och knappen hamnar till höger här... */}
+                <div className="flex flex-row items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors">
+                            <IconSearch />
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="Sök i Drive..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white rounded-full py-3 pl-11 pr-4 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 shadow-sm transition-all text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                        />
+                    </div>
+                    <button 
+                        onClick={() => { resetForm(); setShowUploadModal(true); }}
+                        className="shrink-0 bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg rounded-full sm:rounded-2xl h-[46px] w-[46px] sm:w-auto sm:px-6 flex items-center justify-center gap-2 font-medium transition-all active:scale-95"
+                    >
+                        <IconPlus /> 
+                        <span className="hidden sm:block text-[13px] tracking-wide">Nytt</span>
+                    </button>
+                </div>
             </div>
 
             {/* BREADCRUMBS */}
