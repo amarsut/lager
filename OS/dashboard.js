@@ -77,7 +77,8 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     return (
         <div
             onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id) : null}
-            className={`w-full relative active:scale-[0.98] transition-all bg-white hover:bg-orange-50 dark:bg-[#182032] dark:hover:bg-[#1f2940] border border-zinc-200 dark:border-white/5 rounded-xl shadow-sm group select-none overflow-hidden mb-3 ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
+            // Ändringar: border-2 (tjockare), border-zinc-300 (mörkare grå ljusläge), dark:border-zinc-700 (ljusare grå mörkläge), shadow-md (tydligare skugga)
+            className={`w-full relative active:scale-[0.98] transition-all bg-white hover:bg-orange-50 dark:bg-[#182032] dark:hover:bg-[#1f2940] border-2 border-zinc-200 dark:border-zinc-600 rounded-xl shadow-md group select-none overflow-hidden mb-3 ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
         >
             <div className="p-4">
                 {/* RAD 1: Header med Avatar, Namn, Status och Meny */}
@@ -215,7 +216,6 @@ window.DashboardView = React.memo(({
     activeFilter, setActiveFilter, statusCounts,
     globalSearch, setGlobalSearch
 }) => {
-    const [searchOpen, setSearchOpen] = React.useState(!!globalSearch);
     const [historyTarget, setHistoryTarget] = React.useState(null);
     const [visibleCount, setVisibleCount] = React.useState(20);
     
@@ -273,12 +273,6 @@ window.DashboardView = React.memo(({
         }
     }, [activeFilter]);
 
-    React.useEffect(() => {
-        if (globalSearch && !searchOpen && document.activeElement.tagName !== 'INPUT') {
-            setSearchOpen(true);
-        }
-    }, [globalSearch]);
-
     const touchStart = React.useRef(null);
     const touchStartY = React.useRef(null);
     const onTouchStart = React.useCallback((e) => {
@@ -309,7 +303,6 @@ window.DashboardView = React.memo(({
     };
 
     return (
-        // LAYOUT-FIX: ml-0 istället för mx-auto (Vänsterställd mot sidebaren) och en maxbredd på 1400px
         <div className="flex flex-col min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full">
 
             {/* Ambient Background Glow */}
@@ -342,12 +335,18 @@ window.DashboardView = React.memo(({
 
                     {/* SÖK OCH NYTT JOBB */}
                     <div className="flex items-center gap-4">
-                        <div className="relative group">
-                            <input type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK UPPDRAG..." className="w-64 bg-white/80 dark:bg-[#1a2235]/80 backdrop-blur-md border border-zinc-200/80 dark:border-white/10 text-zinc-900 dark:text-white text-[13px] font-bold py-3.5 pl-4 pr-12 rounded-2xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-zinc-300 dark:hover:border-white/20 transition-all placeholder:text-zinc-400 tracking-widest shadow-sm" />
-                            <window.Icon name="search" size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                        </div>
-                        <button onClick={() => setView('NEW_JOB')} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white h-[46px] px-8 rounded-2xl flex items-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] border border-orange-400/50 transition-all active:scale-95">
-                            <span className="text-[12px] font-bold uppercase tracking-widest">Nytt Uppdrag</span>
+                        <button 
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
+                            className="group w-64 bg-[#121826] border border-[#1a2235] text-zinc-500 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:border-orange-500/50 transition-all shadow-sm"
+                        >
+                            <div className="flex items-center gap-2">
+                                <window.Icon name="search" size={16} className="text-zinc-500 group-hover:text-orange-500 transition-colors" />
+                                <span className="text-[12px] font-bold tracking-widest uppercase">Sök i systemet...</span>
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-zinc-500 bg-black/50 border border-[#1a2235] px-1.5 py-0.5 rounded-md shadow-sm">⌘K</span>
+                        </button>
+                        <button onClick={() => setView('NEW_JOB')} className="bg-[#f97316] hover:bg-white text-black h-[46px] px-8 rounded-xl flex items-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] transition-all active:scale-95">
+                            <span className="text-[12px] font-black uppercase tracking-widest">Nytt Uppdrag</span>
                             <window.Icon name="plus" size={16} />
                         </button>
                     </div>
@@ -529,8 +528,9 @@ window.DashboardView = React.memo(({
                 className="lg:hidden flex flex-col min-h-screen bg-zinc-50 dark:bg-[#0f1522] touch-pan-y transition-colors duration-500"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
-                {/* VIKTIGT: pt-2 för minimal top-padding på mobil */}
-                <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm dark:border-b dark:border-white/5 transition-colors duration-300">
+                {/* ÄNDRING HÄR: Jag bytte ut 'dark:border-b dark:border-white/5' mot 'border-b border-zinc-200 dark:border-white/10' för en tydlig linje rakt över. */}
+                <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300">
+                    
                     <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/5">
                         
                         {/* LOGGA OCH TITEL */}
@@ -552,20 +552,11 @@ window.DashboardView = React.memo(({
                             </div>
                         </div>
 
-                        <button onClick={() => setSearchOpen(!searchOpen)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/5">
-                            <window.Icon name={searchOpen ? "x" : "search"} size={18} />
+                        {/* MOBIL SPOTLIGHT KNAPP */}
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/5">
+                            <window.Icon name="search" size={18} />
                         </button>
                     </div>
-
-                    {/* SÖKFÄLT */}
-                    {searchOpen && (
-                        <div className="px-4 py-3 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-black/20 animate-in slide-in-from-top-2">
-                            <div className="relative">
-                                <input autoFocus type="text" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="SÖK UPPDRAG, REGNR..." className="w-full h-12 bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-white rounded-xl px-11 text-[12px] font-bold uppercase tracking-widest focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 border border-zinc-200 dark:border-white/10 shadow-sm transition-all" />
-                                <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
-                            </div>
-                        </div>
-                    )}
 
                     {/* DINA FILTER-TABS */}
                     <div
