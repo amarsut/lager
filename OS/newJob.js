@@ -6,11 +6,12 @@ const SafeIcon = ({ name, size = 14, className = "" }) => (
     </span>
 );
 
-const FormRow = ({ children }) => <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">{children}</div>;
+// ÄNDRING: Mindre gap och margin-bottom för tajtare höjd
+const FormRow = ({ children }) => <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-3 lg:mb-4">{children}</div>;
 
 const InputWrapper = ({ label, icon, children }) => (
-    <div className="space-y-2 group">
-        <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1 group-focus-within:text-orange-500 transition-colors">
+    <div className="space-y-1.5 group">
+        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1 group-focus-within:text-orange-500 transition-colors">
             <SafeIcon name={icon} size={12} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
             {label}
         </label>
@@ -18,15 +19,16 @@ const InputWrapper = ({ label, icon, children }) => (
     </div>
 );
 
+// ÄNDRING: Mindre padding-bottom och margin-bottom i headers
 const SectionHeader = ({ title, sub, icon }) => (
-    <div className="flex items-start gap-3 mb-6 pb-4 border-b border-zinc-200/50 dark:border-white/5">
-        <div className="mt-1 h-5 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
+    <div className="flex items-start gap-2.5 mb-4 lg:mb-5 pb-2.5 lg:pb-3 border-b border-zinc-200/50 dark:border-white/5">
+        <div className="mt-1 h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
         <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
                 <SafeIcon name={icon} size={14} className="text-zinc-400 dark:text-zinc-500" />
-                <h3 className="text-[13px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
+                <h3 className="text-[12px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
             </div>
-            {sub && <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 mt-1">{sub}</p>}
+            {sub && <p className="text-[9px] font-medium uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 mt-0.5">{sub}</p>}
         </div>
     </div>
 );
@@ -38,10 +40,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         datum: today, tid: '16:00', kundpris: '100', kommentar: ''
     });
     
-    const [expenses, setExpenses] = React.useState([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
+    const emptyExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }, { desc: '', amount: '' }];
+    const [expenses, setExpenses] = React.useState(emptyExpenses);
+    
     const [suggestions, setSuggestions] = React.useState([]);
     const [regnrSuggestions, setRegnrSuggestions] = React.useState([]);
-    const [oilLiters, setOilLiters] = React.useState(5);
+    const [oilLiters, setOilLiters] = React.useState(4.3);
 
     React.useEffect(() => {
         if (editingJob) {
@@ -50,8 +54,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 datum: editingJob.datum?.split('T')[0] || today, 
                 tid: editingJob.datum?.split('T')[1] || '08:00' 
             });
-            if (editingJob.utgifter) {
-                setExpenses(editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad })));
+            if (editingJob.utgifter && editingJob.utgifter.length > 0) {
+                let loadedExpenses = editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad }));
+                while (loadedExpenses.length < 3) loadedExpenses.push({ desc: '', amount: '' });
+                setExpenses(loadedExpenses);
+            } else {
+                setExpenses(emptyExpenses);
             }
         } else {
             const prefill = window.prefillName || ''; 
@@ -62,8 +70,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 regnr: '', paket: 'Standard', status: 'BOKAD',
                 datum: today, tid: '16:30', kundpris: '100', kommentar: ''
             });
-            setExpenses([{ desc: '', amount: '' }, { desc: '', amount: '' }]);
-            setOilLiters(5);
+            setExpenses(emptyExpenses);
+            setOilLiters(4.3);
             setSuggestions([]);
             setRegnrSuggestions([]);
         }
@@ -79,7 +87,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             { desc: 'Oljefilter', amount: '200' },
             ...expenses.slice(2).filter(e => e.desc || e.amount)
         ];
-        while (newExpenses.length < 2) newExpenses.push({ desc: '', amount: '' });
+        while (newExpenses.length < 3) newExpenses.push({ desc: '', amount: '' });
 
         setFormData(p => ({ ...p, kundpris: customerPrice.toString() }));
         setExpenses(newExpenses);
@@ -87,7 +95,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     const handlePackageChange = (val) => {
         let price = "100";
-        let newExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }];
+        let newExpenses = [...emptyExpenses];
 
         if (val === "Hjulskifte") price = "200";
         if (val === "Felsökning") price = "500";
@@ -96,7 +104,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             price = (l * 200 + 700).toString();
             newExpenses = [
                 { desc: `Motorolja (${l}l á 65kr)`, amount: (l * 65).toString() },
-                { desc: 'Oljefilter', amount: '200' }
+                { desc: 'Oljefilter', amount: '200' },
+                { desc: '', amount: '' }
             ];
         }
         setFormData(p => ({ ...p, paket: val, kundpris: price }));
@@ -108,10 +117,33 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         updateOilLogic(val);
     };
 
+    const handleExpenseAmountChange = (index, newAmount) => {
+        const oldAmountNum = parseFloat(expenses[index].amount) || 0;
+        const newAmountNum = parseFloat(newAmount) || 0;
+        const diff = newAmountNum - oldAmountNum;
+
+        const n = [...expenses];
+        n[index].amount = newAmount;
+        setExpenses(n);
+
+        setFormData(p => ({
+            ...p,
+            kundpris: Math.max(0, (parseFloat(p.kundpris) || 0) + diff).toString()
+        }));
+    };
+
     const addExpenseRow = () => setExpenses([...expenses, { desc: '', amount: '' }]);
+    
     const removeExpenseRow = (index) => {
+        const amountToRemove = parseFloat(expenses[index].amount) || 0;
         const n = expenses.filter((_, i) => i !== index);
-        setExpenses(n.length ? n : [{ desc: '', amount: '' }]);
+        while (n.length < 3) n.push({ desc: '', amount: '' });
+        setExpenses(n);
+
+        setFormData(p => ({
+            ...p,
+            kundpris: Math.max(0, (parseFloat(p.kundpris) || 0) - amountToRemove).toString()
+        }));
     };
 
     const handleNameChange = (val) => {
@@ -165,29 +197,36 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     };
 
-    // FIX: Justerad färg till mörkblå (#1a2235) och minskad padding p-3 istället för p-3.5 så det får plats på mobilen
-    const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 text-[13px] sm:text-[14px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-xl shadow-sm";
+    const partsTotal = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const finalPriceNum = parseFloat(formData.kundpris) || 0;
+    const laborTotal = Math.max(0, finalPriceNum - partsTotal);
+
+    // ÄNDRING: Minskade inre paddingen i fälten (p-2.5) och textstorlek (text-[13px]) för tajtare känsla
+    const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-lg lg:rounded-xl shadow-sm";
+    
+    // ÄNDRING: Tajtare padding i korten (p-4 lg:p-5)
+    const sectionCardClasses = "bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow";
 
     return (
-        <div className="relative max-w-5xl animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0 w-full">
+        // ÄNDRING: max-w-4xl (Kompakt bredd), ml-0 (Vänsterställt), mindre botten-padding
+        <div className="relative max-w-4xl ml-0 animate-in fade-in slide-in-from-left-4 duration-700 w-full">
             
-            {/* Ambient Background Glow */}
             <div className="absolute top-0 left-[-10%] w-[80%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
-            {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-4 pt-2 lg:px-0 lg:pt-0">
-                <div className="flex items-center gap-4 md:gap-5">
+            {/* HEADER - Luftig men inte för hög */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-white/5 gap-3 px-4 pt-2 lg:px-0 lg:pt-4">
+                <div className="flex items-center gap-3 md:gap-4">
                     <div className="relative group cursor-default shrink-0">
                         <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                        <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                            <SafeIcon name={editingJob ? "edit-3" : "plus"} size={24} />
+                        <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                            <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} />
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
                             {editingJob ? 'Mission' : 'New'} <span className="text-zinc-400 dark:text-zinc-500 font-light">{editingJob ? 'Update' : 'Job'}</span>
                         </h1>
-                        <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                        <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                             {editingJob ? 'Update_Sequence_Active' : 'Initialization_Phase'}
                         </p>
@@ -196,17 +235,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             </div>
 
             {/* FORMULÄR */}
-            <div className="px-4 lg:px-2">
-                <form onSubmit={handleSave} className="space-y-6 md:space-y-8">
+            <div className="px-4 lg:px-0">
+                {/* ÄNDRING: space-y-4 för tajtare vertikalt avstånd mellan sektionerna */}
+                <form onSubmit={handleSave} className="space-y-4 flex flex-col">
                     
                     {/* SEKTION 1: IDENTIFIERING */}
-                    {/* FIX: dark:bg-[#182032] för hela rutorna */}
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
-                        <SectionHeader title="Entity_Identifier" sub="Client and Vehicle Data" icon="fingerprint" />
+                    <div className={`relative z-40 ${sectionCardClasses}`}>
+                        <SectionHeader title="Kund & Fordon" sub="Information om kund och fordon" icon="fingerprint" />
                         
                         <FormRow>
-                            <InputWrapper label="Client_Name" icon="user">
-                                <div className="relative">
+                            <InputWrapper label="Kundnamn" icon="user">
+                                <div className="relative z-20">
                                     <input 
                                         type="text" value={formData.kundnamn} onChange={e => handleNameChange(e.target.value)} 
                                         className={inputClasses} 
@@ -215,7 +254,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     {suggestions.length > 0 && (
                                         <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
                                             {suggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3.5 text-[13px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold uppercase border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
+                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3 text-[12px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold uppercase border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
                                                     {s}
                                                 </div>
                                             ))}
@@ -224,8 +263,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
                             </InputWrapper>
                             
-                            <InputWrapper label="Registry_Number" icon="truck">
-                                <div className="relative">
+                            <InputWrapper label="Reg.nr" icon="truck">
+                                <div className="relative z-10">
                                     <input 
                                         type="text" value={formData.regnr} onChange={e => handleRegnrChange(e.target.value)} onFocus={() => handleRegnrChange(formData.regnr)}
                                         className={`${inputClasses} font-mono uppercase tracking-[0.2em]`} 
@@ -234,7 +273,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     {regnrSuggestions.length > 0 && (
                                         <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
                                             {regnrSuggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-3.5 text-[13px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold font-mono tracking-widest border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
+                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, regnr: s })); setRegnrSuggestions([]); }} className="p-3 text-[12px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold font-mono tracking-widest border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
                                                     {s}
                                                 </div>
                                             ))}
@@ -246,17 +285,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 2: PARAMETRAR */}
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
-                        <SectionHeader title="Mission_Parameters" sub="Scheduling and Service Configuration" icon="sliders" />
+                    <div className={`relative z-30 ${sectionCardClasses}`}>
+                        <SectionHeader title="Uppdragsdetaljer" sub="Tidsbokning och arbetsomfattning" icon="sliders" />
 
-                        <div className="mb-6">
-                            <InputWrapper label="Mission_Status" icon="activity">
-                                {/* FIX: Dark theme färg och mindre text/padding för att förhindra trängsel */}
-                                <div className="flex bg-zinc-100 dark:bg-[#1a2235] p-1.5 rounded-xl border border-zinc-200/80 dark:border-white/5 w-full">
+                        <div className="mb-4">
+                            <InputWrapper label="Uppdragsstatus" icon="activity">
+                                <div className="flex bg-zinc-100 dark:bg-[#1a2235] p-1 rounded-xl border border-zinc-200/80 dark:border-white/5 w-full overflow-x-auto custom-scrollbar">
                                     {['BOKAD', 'OFFERERAD', 'KLAR', 'FAKTURERAS'].map(s => (
                                         <button
                                             key={s} type="button" onClick={() => setFormData(p => ({ ...p, status: s }))}
-                                            className={`flex-1 py-2.5 px-1 text-[9px] sm:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${formData.status === s ? 'bg-white dark:bg-[#25324d] shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                                            className={`flex-1 min-w-[80px] py-2 px-1 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${formData.status === s ? 'bg-white dark:bg-[#25324d] shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
                                         >
                                             {s}
                                         </button>
@@ -266,8 +304,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </div>
 
                         <FormRow>
-                            <div className="space-y-4">
-                                <InputWrapper label="Service_Type" icon="layers">
+                            <div className="space-y-3">
+                                <InputWrapper label="Servicepaket" icon="layers">
                                     <div className="relative">
                                         <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className={`${inputClasses} appearance-none cursor-pointer pr-10`}>
                                             <option value="Standard">Standard</option>
@@ -275,38 +313,37 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <option value="Hjulskifte">Hjulskifte</option>
                                             <option value="Felsökning">Felsökning</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                                            <SafeIcon name="chevron-down" size={16} />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
+                                            <SafeIcon name="chevron-down" size={14} />
                                         </div>
                                     </div>
                                 </InputWrapper>
                                 
                                 {formData.paket === "Oljebyte" && (
-                                    <div className="p-5 bg-orange-50/50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-xl animate-in slide-in-from-top-2 fade-in duration-300">
-                                        <label className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <div className="p-3 bg-orange-50/50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-xl animate-in slide-in-from-top-2 fade-in duration-300">
+                                        <label className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
                                             <SafeIcon name="droplet" size={12} />
                                             Required Oil Volume (Litres)
                                         </label>
                                         <input 
                                             type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} 
-                                            className="w-full bg-white dark:bg-[#0f1522] text-zinc-900 dark:text-white border border-orange-200 dark:border-orange-500/30 p-3 text-[15px] font-black font-mono outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 rounded-lg shadow-sm transition-all" 
+                                            className="w-full bg-white dark:bg-[#0f1522] text-zinc-900 dark:text-white border border-orange-200 dark:border-orange-500/30 p-2.5 text-[14px] font-black font-mono outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg shadow-sm transition-all" 
                                         />
                                     </div>
                                 )}
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputWrapper label="Deploy_Date" icon="calendar">
+                            <div className="grid grid-cols-2 gap-3">
+                                <InputWrapper label="Bokat Datum" icon="calendar">
                                     <input 
                                         type="date" 
                                         value={formData.datum} 
                                         onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
                                         onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                        // FIX: La till 'text-[12px] sm:text-[14px]' och en specifik CSS-regel ([&::-webkit-calendar-picker-indicator]:hidden) för att dölja webbläsarens inbyggda kalenderikon och ge mer plats åt datumet.
-                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] sm:text-[14px] [&::-webkit-calendar-picker-indicator]:hidden`} 
+                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] [&::-webkit-calendar-picker-indicator]:hidden`} 
                                     />
                                 </InputWrapper>
-                                <InputWrapper label="Time_Win" icon="clock">
+                                <InputWrapper label="Bokad Tid" icon="clock">
                                     <input 
                                         type="time" 
                                         min="06:00" 
@@ -314,8 +351,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         value={formData.tid} 
                                         onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
                                         onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                        // FIX: Samma sak här för tidsväljaren.
-                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] sm:text-[14px] [&::-webkit-calendar-picker-indicator]:hidden`} 
+                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] [&::-webkit-calendar-picker-indicator]:hidden`} 
                                     />
                                 </InputWrapper>
                             </div>
@@ -323,53 +359,94 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 3: EKONOMI */}
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
-                        <SectionHeader title="Financial_Data" sub="Pricing and Expenses" icon="credit-card" />
+                    <div className={`relative z-20 ${sectionCardClasses}`}>
+                        <SectionHeader title="Ekonomi & Pris" sub="Prissättning och reservdelar" icon="credit-card" />
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
                             
                             {/* Final Price Card */}
-                            <div className="bg-zinc-50 dark:bg-[#1a2235]/50 p-6 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col justify-center relative overflow-hidden group">
+                            <div className="bg-zinc-50 dark:bg-[#1a2235]/50 p-4 lg:p-5 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col justify-center relative overflow-hidden group">
                                 <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all group-focus-within:bg-orange-500/10"></div>
-                                <InputWrapper label="Final_Price" icon="dollar-sign">
-                                    <div className="mt-2 flex items-baseline">
+                                
+                                <InputWrapper label="Totalpris (inkl. moms)" icon="dollar-sign">
+                                    <div className="mt-1 flex items-baseline relative z-10">
                                         <input 
                                             type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} 
-                                            className="w-full bg-transparent text-zinc-900 dark:text-white text-5xl md:text-6xl font-light tracking-tighter outline-none focus:text-orange-500 transition-colors" 
+                                            className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl md:text-5xl font-light tracking-tighter outline-none focus:text-orange-500 transition-colors" 
                                             placeholder="0" 
                                         />
-                                        <span className="text-xl font-bold text-zinc-400 dark:text-zinc-500 ml-2">SEK</span>
+                                        <span className="text-lg font-bold text-zinc-400 dark:text-zinc-500 ml-2">SEK</span>
                                     </div>
                                 </InputWrapper>
+
+                                {/* DYNAMISK & INTERAKTIV SAMMANSTÄLLNING */}
+                                <div className="mt-4 pt-3 border-t border-zinc-200/80 dark:border-white/10 flex flex-col gap-2.5 relative z-10 animate-in fade-in duration-300">
+                                    
+                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                                        <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                            <SafeIcon name="box" size={10} /> Reservdelar
+                                        </span>
+                                        <span className="text-zinc-700 dark:text-zinc-300">{partsTotal.toLocaleString()} kr</span>
+                                    </div>
+                                    
+                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                                        <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                            <SafeIcon name="tool" size={10} /> Arbetskostnad
+                                        </span>
+                                        
+                                        {/* DET MAGISKA FÄLTET */}
+                                        <div 
+                                            className="flex items-center gap-1.5 bg-zinc-100/80 dark:bg-white/5 focus-within:bg-white dark:focus-within:bg-[#1f2940] px-2 py-1 rounded-md border border-transparent focus-within:border-orange-500/50 focus-within:shadow-[0_0_10px_rgba(249,115,22,0.2)] transition-all cursor-text group/input" 
+                                            onClick={(e) => e.currentTarget.querySelector('input').focus()}
+                                        >
+                                            <SafeIcon name="edit-2" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within/input:text-orange-500 transition-colors" />
+                                            
+                                            <input 
+                                                type="number" 
+                                                value={laborTotal === 0 && finalPriceNum === 0 ? '' : laborTotal} 
+                                                onChange={e => {
+                                                    const newLabor = parseFloat(e.target.value) || 0;
+                                                    setFormData(p => ({ ...p, kundpris: (newLabor + partsTotal).toString() }));
+                                                }}
+                                                className={`w-12 bg-transparent outline-none text-right font-mono text-[12px] ${laborTotal > 0 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-zinc-500 dark:text-zinc-400 font-bold'}`}
+                                                placeholder="0"
+                                            />
+                                            <span className={`text-[8px] ${laborTotal > 0 ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-zinc-400'}`}>kr</span>
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
 
                             {/* Expenses List */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-white/5">
-                                    <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                                        <SafeIcon name="shopping-cart" size={12} />Resource_Expenses
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between pb-1.5 border-b border-zinc-100 dark:border-white/5">
+                                    <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                                        <SafeIcon name="shopping-cart" size={10} />Reservdelar & Material
                                     </label>
-                                    <button type="button" onClick={addExpenseRow} className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                                        <SafeIcon name="plus" size={10} /> Add Item
+                                    <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1">
+                                        <SafeIcon name="plus" size={10} /> Lägg till
                                     </button>
                                 </div>
                                 
-                                <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
                                     {expenses.map((ex, i) => (
-                                        <div key={i} className="flex gap-3 items-center group/row">
+                                        <div key={i} className="flex gap-2 items-center group/row">
                                             <input 
                                                 placeholder="Artikel/Delnamn" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
-                                                className="flex-1 bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 text-[13px] font-medium text-zinc-900 dark:text-white outline-none rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                className="flex-1 bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
                                             />
-                                            <div className="relative w-28">
+                                            <div className="relative w-24">
                                                 <input 
-                                                    placeholder="0" type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} 
-                                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 pr-8 text-[13px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                    placeholder="0" type="number" 
+                                                    value={ex.amount} 
+                                                    onChange={e => handleExpenseAmountChange(i, e.target.value)} 
+                                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2 pr-6 text-[12px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
                                                 />
-                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 font-bold">kr</span>
+                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-zinc-400 font-bold">kr</span>
                                             </div>
-                                            <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-xl">
-                                                <SafeIcon name="trash-2" size={16} />
+                                            <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1.5 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-lg shrink-0">
+                                                <SafeIcon name="trash-2" size={14} />
                                             </button>
                                         </div>
                                     ))}
@@ -379,30 +456,30 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 4: LOGGAR */}
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
-                        <SectionHeader title="System_Logs" sub="Internal Terminal Notes" icon="terminal" />
-                        <InputWrapper label="Internal_Mission_Logs" icon="file-text">
+                    <div className={`relative z-10 ${sectionCardClasses}`}>
+                        <SectionHeader title="Arbetsanteckningar" sub="Mekanikerns anteckningar och felkoder" icon="terminal" />
+                        <InputWrapper label="Egna Noteringar" icon="file-text">
                             <div className="relative">
-                                <div className="absolute top-4 left-4 text-zinc-400 font-mono text-[12px] pointer-events-none">&gt;_</div>
+                                <div className="absolute top-3 left-3 text-zinc-400 font-mono text-[12px] pointer-events-none">&gt;_</div>
                                 <textarea 
                                     value={formData.kommentar} 
                                     onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} 
-                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-4 pl-10 font-mono text-[13px] leading-relaxed text-zinc-700 dark:text-zinc-300 min-h-[120px] outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all resize-y rounded-2xl shadow-sm" 
+                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 pl-8 font-mono text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300 min-h-[80px] lg:min-h-[100px] outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all resize-y rounded-xl shadow-sm" 
                                     placeholder="Skriv dina anteckningar här..." 
                                 />
                             </div>
                         </InputWrapper>
                     </div>
 
-                    {/* KNAPPAR */}
-                    <div className="pt-2 pb-0 md:pb-0 flex flex-col sm:flex-row gap-3 items-center justify-end md:sticky md:bottom-6 md:z-50">
+                    {/* KNAPPAR (Kompakta) */}
+                    <div className="pt-2 pb-0 flex flex-col sm:flex-row gap-2.5 items-center justify-end">
                         
                         <button 
                             type="button" 
                             onClick={() => window.history.back()} 
-                            className="w-full sm:w-auto order-3 sm:order-1 px-8 py-4 bg-white/90 dark:bg-[#1a2235]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-[#25324d] hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-95 text-center shadow-lg rounded-2xl"
+                            className="w-full sm:w-auto order-3 sm:order-1 px-6 py-2.5 bg-zinc-100 dark:bg-[#1a2235] border border-transparent text-zinc-600 dark:text-zinc-300 font-bold text-[11px] lg:text-[12px] uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-[#25324d] transition-all active:scale-95 text-center rounded-lg"
                         >
-                            Cancel
+                            Avbryt
                         </button>
 
                         {editingJob && editingJob.status !== 'KLAR' && (
@@ -412,17 +489,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     await window.db.collection("jobs").doc(editingJob.id).update({ status: 'KLAR' });
                                     setView('DASHBOARD');
                                 }} 
-                                className="w-full sm:order-2 sm:w-auto px-8 py-4 bg-emerald-500/90 backdrop-blur-md border border-emerald-400/50 text-white font-bold text-[13px] uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)] active:scale-95 text-center rounded-2xl flex items-center justify-center gap-2"
+                                className="w-full sm:order-2 sm:w-auto px-6 py-2.5 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 font-bold text-[11px] lg:text-[12px] uppercase tracking-widest hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all active:scale-95 text-center rounded-lg flex items-center justify-center gap-1.5 shadow-sm"
                             >
-                                <SafeIcon name="check-circle" size={16} /> Markera Klar
+                                <SafeIcon name="check" size={14} /> Snabbval: Klar
                             </button>
                         )}
 
                         <button 
                             type="submit" 
-                            className="w-full order-1 sm:order-3 sm:w-auto px-10 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[13px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] hover:from-orange-400 hover:to-orange-500 border border-orange-400/50 active:scale-95 transition-all text-center rounded-2xl flex items-center justify-center gap-2"
+                            className="w-full order-1 sm:order-3 sm:w-auto px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[11px] lg:text-[12px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] border border-orange-400/50 active:scale-95 transition-all text-center rounded-lg flex items-center justify-center gap-1.5"
                         >
-                            <SafeIcon name="save" size={16} /> Confirm_Push
+                            <SafeIcon name="save" size={14} /> Spara Jobb
                         </button>
 
                     </div>
