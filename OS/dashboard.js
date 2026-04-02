@@ -255,6 +255,26 @@ window.DashboardView = React.memo(({
         }).length;
     }, [filteredJobs]);
 
+    // NY UTRÄKNING FÖR FAKTURERAS WIDGET
+    const invoiceStats = React.useMemo(() => {
+        if (activeFilter !== 'FAKTURERAS') return { total: 0, topCustomers: [] };
+        
+        let total = 0;
+        const customers = {};
+        
+        filteredJobs.forEach(job => {
+            const price = parseInt(job.kundpris) || 0;
+            total += price;
+            const name = job.kundnamn || 'Okänd kund';
+            customers[name] = (customers[name] || 0) + price;
+        });
+
+        return {
+            total,
+            topCustomers: Object.entries(customers).sort((a, b) => b[1] - a[1])
+        };
+    }, [filteredJobs, activeFilter]);
+
     const getHeaderDate = () => {
         const d = new Date();
         const days = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
@@ -337,15 +357,15 @@ window.DashboardView = React.memo(({
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
-                            className="group w-64 bg-[#121826] border border-[#1a2235] text-zinc-500 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:border-orange-500/50 transition-all shadow-sm"
+                            className="group w-64 bg-zinc-50 dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white dark:hover:bg-[#182032] hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-sm"
                         >
                             <div className="flex items-center gap-2">
-                                <window.Icon name="search" size={16} className="text-zinc-500 group-hover:text-orange-500 transition-colors" />
+                                <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-500 group-hover:text-orange-500 transition-colors" />
                                 <span className="text-[12px] font-bold tracking-widest uppercase">Sök i systemet...</span>
                             </div>
-                            <span className="text-[10px] font-black uppercase text-zinc-500 bg-black/50 border border-[#1a2235] px-1.5 py-0.5 rounded-md shadow-sm">⌘K</span>
+                            <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-200/50 dark:bg-black/50 border border-zinc-200 dark:border-[#1a2235] px-1.5 py-0.5 rounded-md shadow-sm">⌘K</span>
                         </button>
-                        <button onClick={() => setView('NEW_JOB')} className="bg-[#f97316] hover:bg-white text-black h-[46px] px-8 rounded-xl flex items-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] transition-all active:scale-95">
+                        <button onClick={() => setView('NEW_JOB')} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white border border-orange-400/50 h-[46px] px-8 rounded-xl flex items-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] transition-all active:scale-95">
                             <span className="text-[12px] font-black uppercase tracking-widest">Nytt Uppdrag</span>
                             <window.Icon name="plus" size={16} />
                         </button>
@@ -361,33 +381,78 @@ window.DashboardView = React.memo(({
                             <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                                 <window.Icon name="bar-chart-2" size={12} /> Utförda (30d)
                             </div>
-                            <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">Op</span></div>
+                            <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span></div>
                         </div>
                     </div>
 
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all">
-                        <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none"></div>
-                        <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 transition-colors" />
-                        <div className="relative z-10">
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <window.Icon name="clock" size={12} /> Kommande (7d)
+                    {activeFilter === 'FAKTURERAS' ? (
+                        <div className="col-span-2 bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm hover:shadow-md relative overflow-hidden flex items-center justify-between group animate-in fade-in slide-in-from-right-4 duration-500 transition-all">
+                            <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                            <window.Icon name="file-text" size={120} className="absolute -right-4 -bottom-8 text-zinc-100 dark:text-white/[0.02] group-hover:text-orange-500/10 transition-colors duration-700" />
+                            
+                            <div className="relative z-10 flex flex-col justify-center">
+                                <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <window.Icon name="pie-chart" size={12} className="text-orange-500" /> Att Fakturera
+                                </div>
+                                <div className="text-5xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-xl font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest ml-1">kr</span>
+                                </div>
                             </div>
-                            <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">Op</span></div>
-                        </div>
-                    </div>
 
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-red-500/5 transition-all">
-                        <div className="absolute right-0 top-0 w-32 h-32 bg-red-500/5 blur-3xl rounded-full pointer-events-none"></div>
-                        <window.Icon name="alert-triangle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-red-500/10 transition-colors" />
-                        <div className="relative z-10">
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <window.Icon name="zap" size={12} /> Prioritet
-                            </div>
-                            <div className={`text-4xl font-light tracking-tighter leading-none ${urgentCount > 0 ? 'text-red-500' : 'text-zinc-900 dark:text-white'}`}>
-                                {urgentCount} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">Op</span>
+                            <div className="relative z-10 flex flex-col justify-center flex-1 max-w-sm pl-8 ml-8 border-l border-zinc-200 dark:border-white/5">
+                                <div className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+                                    <span>Berörda Kunder ({invoiceStats.topCustomers.length})</span>
+                                </div>
+                                <div className="space-y-2.5">
+                                    {invoiceStats.topCustomers.slice(0, 3).map(([name, amount], idx) => {
+                                        const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                        return (
+                                            <div key={idx} className="flex flex-col gap-1">
+                                                <div className="flex justify-between text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                                                    <span className="truncate pr-2">{name}</span>
+                                                    <span className="font-mono text-zinc-500 dark:text-zinc-400 shrink-0">{amount.toLocaleString('sv-SE')} kr</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full" style={{ width: `${percentage}%` }}></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {invoiceStats.topCustomers.length > 3 && (
+                                        <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 pt-1">
+                                            + {invoiceStats.topCustomers.length - 3} fler kunder
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <>
+                            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all">
+                                <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none"></div>
+                                <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 transition-colors" />
+                                <div className="relative z-10">
+                                    <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <window.Icon name="clock" size={12} /> Kommande (7d)
+                                    </div>
+                                    <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span></div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-red-500/5 transition-all">
+                                <div className="absolute right-0 top-0 w-32 h-32 bg-red-500/5 blur-3xl rounded-full pointer-events-none"></div>
+                                <window.Icon name="alert-triangle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-red-500/10 transition-colors" />
+                                <div className="relative z-10">
+                                    <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <window.Icon name="zap" size={12} /> Prioritet
+                                    </div>
+                                    <div className={`text-4xl font-light tracking-tighter leading-none ${urgentCount > 0 ? 'text-red-500' : 'text-zinc-900 dark:text-white'}`}>
+                                        {urgentCount} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="flex flex-col flex-1 pb-10">
@@ -399,12 +464,12 @@ window.DashboardView = React.memo(({
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-zinc-50/50 dark:bg-white/5 text-zinc-400 dark:text-zinc-500 text-[10px] uppercase tracking-widest font-bold sticky top-0 z-10 border-b border-zinc-200 dark:border-white/10">
                                     <tr>
-                                        <th className="pl-8 pr-4 py-5 w-[25%]">Kund_Data</th>
-                                        <th className="px-4 py-5 w-[15%]">Service_Type</th>
-                                        <th className="px-4 py-5 w-[15%]">Asset_ID</th>
-                                        <th className="px-4 py-5 w-[15%]">Deploy_Date</th>
+                                        <th className="pl-8 pr-4 py-5 w-[25%]">Kund</th>
+                                        <th className="px-4 py-5 w-[15%]">Service Typ</th>
+                                        <th className="px-4 py-5 w-[15%]">Reg.nr</th>
+                                        <th className="px-4 py-5 w-[15%]">Bokat datum</th>
                                         <th className="px-4 py-5 w-[15%]">Status</th>
-                                        <th className="px-4 py-5 w-[15%] text-right">Value</th>
+                                        <th className="px-4 py-5 w-[15%] text-right">Pris</th>
                                         <th className="pl-4 pr-8 py-5 w-[10%] text-right"></th>
                                     </tr>
                                 </thead>
@@ -418,9 +483,18 @@ window.DashboardView = React.memo(({
                                         const avatarTheme = getAvatarTheme(job.kundnamn);
 
                                         return (
-                                            <tr key={job.id} onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id) : null} className={`group transition-all duration-300 cursor-pointer relative bg-transparent hover:bg-zinc-50 dark:hover:bg-white/[0.02] border-b border-zinc-100 dark:border-white/5 last:border-0 border-l-4 border-l-transparent hover:border-l-orange-500`}>
-                                                <td className="pl-7 pr-4 py-4 align-middle">
-                                                    <div className="flex items-center gap-4">
+                                            <tr 
+                                                key={job.id} 
+                                                onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id) : null} 
+                                                className={`group transition-all duration-300 cursor-pointer relative bg-transparent hover:bg-orange-50 dark:hover:bg-orange-500/10 border-b border-zinc-100 dark:border-white/5 last:border-0`}
+                                            >
+                                                {/* relative på td behövs för att linjen ska kunna fästa på kanten */}
+                                                <td className="pl-7 pr-4 py-4 align-middle relative">
+                                                    
+                                                    {/* Rakt streck som är kant i kant (top-0 bottom-0) och lite smalare (w-[3px]) */}
+                                                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                    
+                                                    <div className="flex items-center gap-4 group-hover:translate-x-1 transition-transform duration-300">
                                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[12px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
                                                             {initials}
                                                         </div>
@@ -476,7 +550,7 @@ window.DashboardView = React.memo(({
                                                                 <div className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-0.5">{job.datum.split('T')[1]}</div>
                                                             </div>
                                                         </div>
-                                                    ) : <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-1 rounded-md uppercase tracking-widest">Inväntar data</span>}
+                                                    ) : <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-1 rounded-md uppercase tracking-widest">Inväntar</span>}
                                                 </td>
                                                 <td className="px-4 py-4 align-middle">
                                                     <window.Badge status={job.status} />
@@ -579,6 +653,28 @@ window.DashboardView = React.memo(({
                         })}
                     </div>
                 </div>
+
+                {/* INVOICE BANNER MOBIL - Visas bara under Faktureras */}
+                {activeFilter === 'FAKTURERAS' && invoiceStats.total > 0 && (
+                    <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                        <div className="flex items-center justify-between relative z-10">
+                            <div>
+                                <h3 className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                    <window.Icon name="pie-chart" size={10} className="text-orange-500" /> Att Fakturera
+                                </h3>
+                                <div className="text-2xl font-light text-zinc-900 dark:text-white tracking-tighter leading-none">
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest ml-0.5">kr</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-[10px] font-medium bg-zinc-50 dark:bg-black/30 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 dark:border-white/5 flex items-center gap-1.5">
+                                    <window.Icon name="users" size={10} /> {invoiceStats.topCustomers.length} Kunder
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* KORTEN MED DATUM-GRUPPERING */}
                 <div className="px-3 pt-4 pb-0 flex flex-col">
