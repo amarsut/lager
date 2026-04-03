@@ -53,13 +53,14 @@ const getAvatarTheme = (name) => {
     return themes[Math.abs(hash) % themes.length];
 };
 
-// 3. MOBILKORTET (Kompakt med tydliga linjer, men premium-look)
+// 3. MOBILKORTET
 const mobileCardPropsAreEqual = (prev, next) => {
     return prev.job === next.job && prev.job.status === next.job.status && prev.job.datum === next.job.datum;
 };
 
 const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
+    const [copied, setCopied] = React.useState(false); // LOKALT STATE FÖR KOPIERING
 
     const isWaiting = !job.datum;
     const dateString = formatDate(job.datum);
@@ -74,14 +75,22 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const initials = job.kundnamn ? job.kundnamn.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : '??';
     const avatarTheme = getAvatarTheme(job.kundnamn);
 
+    // FUNKTION FÖR SNABBKOPIERING (MOBIL)
+    const handleCopy = (e) => {
+        e.stopPropagation(); // Förhindrar att kortet öppnas
+        if (!job.regnr || job.regnr === '-') return;
+        navigator.clipboard.writeText(vehicleDisplay);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
         <div
             onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id) : null}
-            // Ändringar: border-2 (tjockare), border-zinc-300 (mörkare grå ljusläge), dark:border-zinc-700 (ljusare grå mörkläge), shadow-md (tydligare skugga)
             className={`w-full relative active:scale-[0.98] transition-all bg-white hover:bg-orange-50 dark:bg-[#182032] dark:hover:bg-[#1f2940] border-2 border-zinc-200 dark:border-zinc-600 rounded-xl shadow-md group select-none overflow-hidden mb-3 ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
         >
             <div className="p-4">
-                {/* RAD 1: Header med Avatar, Namn, Status och Meny */}
+                {/* RAD 1: Header */}
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 border ${avatarTheme}`}>
@@ -127,15 +136,27 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                {/* RAD 2: Den inre informations-boxen med tydliga borders */}
+                {/* RAD 2: Info-box */}
                 <div className="flex items-center p-3 mb-4 rounded-lg border border-zinc-200 dark:border-white/5 bg-zinc-50/80 dark:bg-[#0f1522]/50 divide-x divide-zinc-200 dark:divide-white/5">
                     
-                    {/* VÄNSTER: Fordon */}
+                    {/* VÄNSTER: Fordon med Kopieringsfunktion */}
                     <div className="flex flex-col flex-1 pr-3 min-w-0">
                         <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
                             <window.Icon name="truck" size={10} /> Fordon
                         </span>
-                        <div className={`inline-flex items-center rounded-[3px] border overflow-hidden h-[24px] ${isReg ? 'bg-white dark:bg-[#182032] border-zinc-300 dark:border-[#2a3441]' : 'bg-transparent border-transparent'}`}>
+                        
+                        <div 
+                            onClick={handleCopy}
+                            title="Kopiera Reg.nr"
+                            className={`inline-flex items-center rounded-[3px] border overflow-hidden h-[24px] relative transition-colors cursor-pointer hover:border-orange-400 dark:hover:border-orange-500/50 ${isReg ? 'bg-white dark:bg-[#182032] border-zinc-300 dark:border-[#2a3441]' : 'bg-transparent border-transparent'}`}
+                        >
+                            {/* Feedback Overlay när kopierad */}
+                            {copied && (
+                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in fade-in duration-200">
+                                    <window.Icon name="check" size={14} />
+                                </div>
+                            )}
+
                             {isReg ? (
                                 <>
                                     <div className="w-[12px] bg-[#003399] h-full flex flex-col items-center justify-between py-[1px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
@@ -218,13 +239,64 @@ window.DashboardView = React.memo(({
 }) => {
     const [historyTarget, setHistoryTarget] = React.useState(null);
     const [visibleCount, setVisibleCount] = React.useState(20);
+    const [copiedRegId, setCopiedRegId] = React.useState(null); // State för snabbkopiering desktop
+    
+    // STATE FÖR SNABBSORTERING
+    const [sortConfig, setSortConfig] = React.useState({ key: null, direction: 'asc' });
     
     React.useEffect(() => {
         setVisibleCount(20);
     }, [activeFilter, globalSearch]);
 
-    const visibleJobs = filteredJobs.slice(0, visibleCount);
-    const hasMore = visibleCount < filteredJobs.length;
+    // NY LOGIK FÖR SORTERING
+    const sortedAndFilteredJobs = React.useMemo(() => {
+        let result = [...filteredJobs];
+
+        result.sort((a, b) => {
+            if (!sortConfig.key) {
+                // Standard sortering (Efter datum)
+                if (!a.datum) return 1; if (!b.datum) return -1;
+                return activeFilter === 'BOKAD' ? a.datum.localeCompare(b.datum) : b.datum.localeCompare(a.datum);
+            }
+
+            let aVal = a[sortConfig.key];
+            let bVal = b[sortConfig.key];
+
+            // Hantera siffror vs text
+            if (sortConfig.key === 'kundpris') {
+                aVal = parseInt(aVal) || 0;
+                bVal = parseInt(bVal) || 0;
+            } else {
+                aVal = (aVal || '').toString().toLowerCase();
+                bVal = (bVal || '').toString().toLowerCase();
+            }
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        return result;
+    }, [filteredJobs, sortConfig, activeFilter]);
+
+    const visibleJobs = sortedAndFilteredJobs.slice(0, visibleCount);
+    const hasMore = visibleCount < sortedAndFilteredJobs.length;
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    // Funktion för Snabbkopiering Desktop
+    const handleCopyDesktop = (e, regnr, jobId) => {
+        e.stopPropagation();
+        if (!regnr || regnr === '-') return;
+        navigator.clipboard.writeText(regnr);
+        setCopiedRegId(jobId);
+        setTimeout(() => setCopiedRegId(null), 2000);
+    };
 
     const tabsRef = React.useRef(null);
     const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR'];
@@ -248,14 +320,13 @@ window.DashboardView = React.memo(({
     }, [allJobs]);
 
     const urgentCount = React.useMemo(() => {
-        return filteredJobs.filter(j => {
+        return allJobs.filter(j => { 
             if (!j.datum) return false;
             const d = formatDate(j.datum);
-            return ['IDAG', 'IMORGON'].includes(d) && j.status !== 'KLAR';
+            return ['IDAG', 'IMORGON'].includes(d) && j.status !== 'KLAR' && j.status !== 'FAKTURERAS';
         }).length;
-    }, [filteredJobs]);
+    }, [allJobs]);
 
-    // NY UTRÄKNING FÖR FAKTURERAS WIDGET
     const invoiceStats = React.useMemo(() => {
         if (activeFilter !== 'FAKTURERAS') return { total: 0, topCustomers: [] };
         
@@ -325,7 +396,6 @@ window.DashboardView = React.memo(({
     return (
         <div className="flex flex-col min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full">
 
-            {/* Ambient Background Glow */}
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
             {/* --- DESKTOP VY --- */}
@@ -334,7 +404,6 @@ window.DashboardView = React.memo(({
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 pt-2 lg:pt-0">
                     
-                    {/* LOGGA OCH TITEL */}
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="relative group cursor-default shrink-0">
                             <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
@@ -353,7 +422,6 @@ window.DashboardView = React.memo(({
                         </div>
                     </div>
 
-                    {/* SÖK OCH NYTT JOBB */}
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
@@ -372,7 +440,7 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* Desktop Stats (Premium cards with dark blue theme) */}
+                {/* DYNAMISK TOP-GRID (Desktop) */}
                 <div className="grid grid-cols-3 gap-6 mb-8">
                     <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-orange-500/5 transition-all">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none"></div>
@@ -456,20 +524,70 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="flex flex-col flex-1 pb-10">
-                    <div className="flex px-4 border-b border-zinc-200 dark:border-white/10 space-x-2">{filters.map(f => <TabButton key={f} label={f} />)}</div>
+                    <div className="flex px-4 border-b border-zinc-200 dark:border-white/10 space-x-2">
+                        {filters.map(f => (
+                            <button 
+                                key={f} 
+                                data-tab={f} 
+                                onClick={() => setActiveFilter(f)} 
+                                className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                            >
+                                {f}
+                                {(statusCounts[f] || 0) > 0 && (
+                                    <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>
+                                        {statusCounts[f]}
+                                    </span>
+                                )}
+                                {activeFilter === f && (
+                                    <span className="absolute bottom-[1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
 
-                    {/* TABELLEN (Mörkblå/Slate-temat) */}
+                    {/* TABELLEN MED SORTERING */}
                     <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-b-3xl shadow-sm border border-t-0 border-zinc-200/80 dark:border-white/5 overflow-hidden flex flex-col min-h-[500px]">
                         <div className="flex-1 overflow-auto custom-scrollbar">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-zinc-50/50 dark:bg-white/5 text-zinc-400 dark:text-zinc-500 text-[10px] uppercase tracking-widest font-bold sticky top-0 z-10 border-b border-zinc-200 dark:border-white/10">
                                     <tr>
-                                        <th className="pl-8 pr-4 py-5 w-[25%]">Kund</th>
-                                        <th className="px-4 py-5 w-[15%]">Service Typ</th>
-                                        <th className="px-4 py-5 w-[15%]">Reg.nr</th>
-                                        <th className="px-4 py-5 w-[15%]">Bokat datum</th>
-                                        <th className="px-4 py-5 w-[15%]">Status</th>
-                                        <th className="px-4 py-5 w-[15%] text-right">Pris</th>
+                                        {/* Klickbara headers för sortering */}
+                                        <th className="pl-8 pr-4 py-5 w-[25%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Kund
+                                                <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={sortConfig.key === 'kundnamn' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-5 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('paket')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Service Typ
+                                                <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={sortConfig.key === 'paket' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-5 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('regnr')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Reg.nr
+                                                <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={sortConfig.key === 'regnr' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-5 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('datum')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Bokat datum
+                                                <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={sortConfig.key === 'datum' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-5 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('status')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Status
+                                                <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={sortConfig.key === 'status' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-5 w-[15%] text-right cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundpris')}>
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                Pris
+                                                <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={sortConfig.key === 'kundpris' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"} />
+                                            </div>
+                                        </th>
                                         <th className="pl-4 pr-8 py-5 w-[10%] text-right"></th>
                                     </tr>
                                 </thead>
@@ -488,10 +606,7 @@ window.DashboardView = React.memo(({
                                                 onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id) : null} 
                                                 className={`group transition-all duration-300 cursor-pointer relative bg-transparent hover:bg-orange-50 dark:hover:bg-orange-500/10 border-b border-zinc-100 dark:border-white/5 last:border-0`}
                                             >
-                                                {/* relative på td behövs för att linjen ska kunna fästa på kanten */}
                                                 <td className="pl-7 pr-4 py-4 align-middle relative">
-                                                    
-                                                    {/* Rakt streck som är kant i kant (top-0 bottom-0) och lite smalare (w-[3px]) */}
                                                     <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                                     
                                                     <div className="flex items-center gap-4 group-hover:translate-x-1 transition-transform duration-300">
@@ -518,7 +633,17 @@ window.DashboardView = React.memo(({
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 align-middle">
-                                                    <div onClick={(e) => { e.stopPropagation(); if(job.regnr) setHistoryTarget({ regnr: job.regnr, highlightId: job.id }); }} className={`inline-flex items-stretch rounded-lg border overflow-hidden w-[110px] h-[30px] ${isReg ? 'bg-white dark:bg-[#1a2235] border-zinc-200 dark:border-[#2a3441] shadow-sm' : 'bg-transparent border-transparent'} transition-colors`}>
+                                                    {/* NYTT: Snabbkopiering Desktop */}
+                                                    <div 
+                                                        onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
+                                                        title="Kopiera Reg.nr"
+                                                        className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-white dark:bg-[#1a2235] border-zinc-200 dark:border-[#2a3441] shadow-sm' : 'bg-transparent border-transparent'} transition-all`}
+                                                    >
+                                                        {copiedRegId === job.id && (
+                                                            <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in fade-in duration-200">
+                                                                <window.Icon name="check" size={14} />
+                                                            </div>
+                                                        )}
                                                         {isReg ? (
                                                             <>
                                                                 <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
@@ -526,12 +651,12 @@ window.DashboardView = React.memo(({
                                                                     <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                                                 </div>
                                                                 <div className="flex-1 flex items-center justify-center">
-                                                                    <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px]">{regDisplay}</span>
+                                                                    <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px] group-hover/copy:text-orange-600 dark:group-hover/copy:text-orange-400 transition-colors">{regDisplay}</span>
                                                                 </div>
                                                             </>
                                                         ) : (
                                                             <div className="flex-1 flex items-center justify-start px-1">
-                                                                <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px]">{regDisplay}</span>
+                                                                <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px] group-hover/copy:text-orange-500 transition-colors">{regDisplay}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -557,8 +682,8 @@ window.DashboardView = React.memo(({
                                                 </td>
                                                 <td className="px-4 py-4 align-middle text-right">
                                                     <div className="flex flex-col items-end">
-                                                        <div className="font-mono font-light tracking-tighter text-[18px] text-zinc-900 dark:text-white leading-none">
-                                                            {(parseInt(job.kundpris) || 0).toLocaleString()} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                        <div className="font-mono font-light tracking-tighter text-[18px] text-zinc-900 dark:text-white leading-none tabular-nums">
+                                                            {(parseInt(job.kundpris) || 0).toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -587,7 +712,7 @@ window.DashboardView = React.memo(({
                             {hasMore && (
                                 <div className="flex justify-center p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50/30 dark:bg-white/[0.01]">
                                     <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-300 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm transition-colors flex items-center gap-2">
-                                        Ladda in fler <span className="opacity-50">({filteredJobs.length - visibleCount} kvar)</span>
+                                        Ladda in fler <span className="opacity-50">({sortedAndFilteredJobs.length - visibleCount} kvar)</span>
                                     </button>
                                 </div>
                             )}
@@ -597,12 +722,11 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* --- MOBILE VY (Dark Blue/Slate tema) --- */}
+            {/* --- MOBILE VY --- */}
             <div
                 className="lg:hidden flex flex-col min-h-screen bg-zinc-50 dark:bg-[#0f1522] touch-pan-y transition-colors duration-500"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
-                {/* ÄNDRING HÄR: Jag bytte ut 'dark:border-b dark:border-white/5' mot 'border-b border-zinc-200 dark:border-white/10' för en tydlig linje rakt över. */}
                 <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300">
                     
                     <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/5">
@@ -635,8 +759,7 @@ window.DashboardView = React.memo(({
                     {/* DINA FILTER-TABS */}
                     <div
                         ref={tabsRef}
-                        // Bytte ut "custom-scrollbar" mot klasser som döljer scrollbaren helt på alla enheter
-                        className="flex overflow-x-auto px-4 pt-2 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        className="flex overflow-x-auto px-4 pt-2 pb-1 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         onTouchStart={(e) => e.stopPropagation()}
                         onTouchMove={(e) => e.stopPropagation()}
                         onTouchEnd={(e) => e.stopPropagation()}
@@ -654,7 +777,7 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                {/* INVOICE BANNER MOBIL - Visas bara under Faktureras */}
+                {/* INVOICE BANNER MOBIL */}
                 {activeFilter === 'FAKTURERAS' && invoiceStats.total > 0 && (
                     <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
@@ -678,7 +801,7 @@ window.DashboardView = React.memo(({
 
                 {/* KORTEN MED DATUM-GRUPPERING */}
                 <div className="px-3 pt-4 pb-0 flex flex-col">
-                    {filteredJobs.length > 0 ? (
+                    {sortedAndFilteredJobs.length > 0 ? (
                         <>
                             {(() => {
                                 let lastDate = null;
@@ -707,7 +830,7 @@ window.DashboardView = React.memo(({
                         {hasMore && (
                             <div className="mt-2 mb-6 px-1">
                                 <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 text-zinc-700 dark:text-zinc-300 text-[12px] font-bold uppercase tracking-widest rounded-2xl shadow-sm active:scale-95 transition-all">
-                                    Ladda in fler ({filteredJobs.length - visibleCount} kvar)
+                                    Ladda in fler ({sortedAndFilteredJobs.length - visibleCount} kvar)
                                 </button>
                             </div>
                         )}
