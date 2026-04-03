@@ -213,20 +213,22 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             
             <div className="absolute top-0 left-[-10%] w-[80%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
-            {/* HEADER - Luftig men inte för hög */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-white/5 gap-3 px-4 pt-2 lg:px-0 lg:pt-4">
-                <div className="flex items-center gap-3 md:gap-4">
+            {/* HEADER - Exakt matchning mot Dashboard (Responsiv för mobil/desktop) */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-3 md:pb-4 border-b border-zinc-200 dark:border-white/5 gap-3 md:gap-4 pt-2 lg:pt-0 px-4 lg:px-0">
+                <div className="flex items-center gap-3 md:gap-5">
                     <div className="relative group cursor-default shrink-0">
                         <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                        <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                            <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} />
+                        {/* Responsiv box: w-12/h-12 på mobil, w-14/h-14 på desktop */}
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-md md:shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                            <SafeIcon name={editingJob ? "edit-3" : "plus"} size={24} />
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                            {editingJob ? 'Mission' : 'New'} <span className="text-zinc-400 dark:text-zinc-500 font-light">{editingJob ? 'Update' : 'Job'}</span>
+                        {/* Responsiv rubrik: text-xl på mobil, text-3xl på desktop */}
+                        <h1 className="text-xl md:text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                            {editingJob ? 'MISSION' : 'NEW'} <span className="text-zinc-400 dark:text-zinc-500 font-light">{editingJob ? 'UPDATE' : 'JOB'}</span>
                         </h1>
-                        <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                        <p className="text-[9px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 md:mt-1.5 flex items-center gap-1.5 md:gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                             {editingJob ? 'Update_Sequence_Active' : 'Initialization_Phase'}
                         </p>
