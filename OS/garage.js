@@ -9,13 +9,14 @@ const getBrand = (t) => {
     return (l.includes('merc') || l.includes('benz')) ? 'mercedes' : null;
 };
 
+// ÅTERSTÄLLD: Din ursprungliga SafeIcon med rå SVG-kod!
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const s = size; const c = className;
     switch (name) {
-        case 'x': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        case 'x': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={c}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
         case 'db': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><path d="M3 5c0-1.1 4.5-2 10-2s10 .9 10 2a2 2 0 0 1 0 .6l-8.3 4.7a3.5 3.5 0 0 1-3.4 0L3 5.6A2 2 0 0 1 3 5zm0 6c0-1.1 4.5-2 10-2s10 .9 10 2a2 2 0 0 1 0 .6l-8.3 4.7a3.5 3.5 0 0 1-3.4 0L3 11.6A2 2 0 0 1 3 11zm0 6c0-1.1 4.5-2 10-2s10 .9 10 2a2 2 0 0 1 0 .6l-8.3 4.7a3.5 3.5 0 0 1-3.4 0L3 17.6A2 2 0 0 1 3 17z"/></svg>;
         case 'search': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-        case 'plus': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><path d="M5 12h14M12 5v14"/></svg>;
+        case 'plus': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={c}><path d="M5 12h14M12 5v14"/></svg>;
         case 'right': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><path d="m9 18 6-6-6-6"/></svg>;
         case 'chevron-right': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><polyline points="9 18 15 12 9 6"></polyline></svg>;
         case 'clock': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>;
@@ -28,7 +29,7 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
         case 'belt': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 1024 1024" fill="currentColor" stroke="none" className={c}><path d="M512 896a384 384 0 1 0 0-768 384 384 0 0 0 0 768zm0 64a448 448 0 1 1 0-896 448 448 0 0 1 0 896z"></path><path d="M192 512a320 320 0 1 1 640 0 32 32 0 1 1-64 0 256 256 0 1 0-512 0 32 32 0 0 1-64 0z"></path><path d="M570.432 627.84A96 96 0 1 1 509.568 608l60.992-187.776A32 32 0 1 1 631.424 440l-60.992 187.776zM502.08 734.464a32 32 0 1 0 19.84-60.928 32 32 0 0 0-19.84 60.928z"></path></svg>;
         case 'trq': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 1024 1024" fill="currentColor" stroke="none" className={c}><path d="M865.3 244.7c-.3-.3-61.1 59.8-182.1 180.6l-84.9-84.9 180.9-180.9c-95.2-57.3-217.5-42.6-296.8 36.7A244.42 244.42 0 0 0 419 432l1.8 6.7-283.5 283.4c-6.2 6.2-6.2 16.4 0 22.6l141.4 141.4c6.2 6.2 16.4 6.2 22.6 0l283.3-283.3 6.7 1.8c83.7 22.3 173.6-.9 236-63.3 79.4-79.3 94.1-201.6 38-296.6z"></path></svg>;
         case 'bat': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 512 512" fill="currentColor" stroke="none" className={c}><path d="M432,132V60h-96v72H176V60H80v72H0v320h512V132H432z M181.156,258.063H82.719V227.5h98.438V258.063z M436,258.063h-33.938V292H371.5v-33.938h-33.938V227.5H371.5v-33.938h30.563V227.5H436V258.063z"></path></svg>;
-        case 'wgt': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 512 512" fill="currentColor" stroke="none" className={c}><path d="M256 46c-45.074 0-82 36.926-82 82 0 25.812 12.123 48.936 30.938 64H128L32 480h448l-96-288h-76.938C325.877 176.936 338 153.812 338 128c0-45.074-36.926-82-82-82zm0 36c25.618 0 46 20.382 46 46s-20.382 46-46 46-46-20.382-46-46 20.382-46 46-46zm-82.215 202.95h23.5v33.263l33.873-33.264h27.283l-43.883 43.15 48.4 47.974H233.54l-36.255-35.888v35.888h-23.5V284.95zm119.934 21.24c4.76 0 8.952.934 12.573 2.806 3.62 1.872 6.938 4.82 9.95 8.85v-10.13h21.972v61.462c0 10.986-3.48 19.368-10.438 25.146-6.917 5.82-16.968 8.727-30.152 8.727-4.272 0-8.4-.325-12.39-.976-3.986-.65-7.996-1.647-12.024-2.99v-17.03c3.826 2.198 7.57 3.826 11.23 4.884 3.664 1.098 7.347 1.648 11.05 1.648 7.162 0 12.41-1.566 15.746-4.7 3.337-3.132 5.006-8.035 5.006-14.708v-4.7c-3.01 3.986-6.328 6.916-9.95 8.788-3.62 1.87-7.813 2.808-12.573 2.808-8.343 0-15.238-3.275-20.69-9.826-5.453-6.592-8.18-14.974-8.18-25.146 0-10.214 2.727-18.576 8.18-25.086 5.452-6.55 12.347-9.827 20.69-9.827zm8.118 15.746c-4.517 0-8.038 1.67-10.56 5.005-2.523 3.338-3.784 8.058-3.784 14.162 0 6.266 1.22 11.026 3.662 14.28 2.442 3.215 6.003 4.823 10.682 4.823 4.557 0 8.096-1.67 10.62-5.006 2.522-3.337 3.784-8.036 3.784-14.098 0-6.104-1.262-10.824-3.785-14.16-2.523-3.337-6.062-5.006-10.62-5.006z" /></svg>;
+        case 'wgt': return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 512 512" fill="currentColor" stroke="none" className={c}><path d="M256 46c-45.074 0-82 36.926-82 82 0 25.812 12.123 48.936 30.938 64H128L32 480h448l-96-288h-76.938C325.877 176.936 338 153.812 338 128c0-45.074-36.926-82-82-82zm0 36c25.618 0 46 20.382 46 46s-20.382 46-46 46-46-20.382-46-46 20.382-46 46-46zm-82.215 202.95h23.5v33.263l33.873-33.264h27.283l-43.883 43.15 48.4 47.974H233.54l-36.255-35.888v35.888h-23.5V284.95zm119.934 21.24c4.76 0 8.952.934 12.573 2.806 3.62 1.872 6.938 4.82 9.95 8.85v-10.13h21.972v61.462c0 10.986-3.48 19.368-10.438 25.146-6.917 5.82-16.968 8.727-30.152 8.727-4.272 0-8.4-.325-12.39-.976-3.986-.65-7.996-12.024-2.99v-17.03c3.826 2.198 7.57 3.826 11.23 4.884 3.664 1.098 7.347 1.648 11.05 1.648 7.162 0 12.41-1.566 15.746-4.7 3.337-3.132 5.006-8.035 5.006-14.708v-4.7c-3.01 3.986-6.328 6.916-9.95 8.788-3.62 1.87-7.813 2.808-12.573 2.808-8.343 0-15.238-3.275-20.69-9.826-5.453-6.592-8.18-14.974-8.18-25.146 0-10.214 2.727-18.576 8.18-25.086 5.452-6.55 12.347-9.827 20.69-9.827zm8.118 15.746c-4.517 0-8.038 1.67-10.56 5.005-2.523 3.338-3.784 8.058-3.784 14.162 0 6.266 1.22 11.026 3.662 14.28 2.442 3.215 6.003 4.823 10.682 4.823 4.557 0 8.096-1.67 10.62-5.006 2.522-3.337 3.784-8.036 3.784-14.098 0-6.104-1.262-10.824-3.785-14.16-2.523-3.337-6.062-5.006-10.62-5.006z" /></svg>;
         default: return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><circle cx="12" cy="12" r="2" /></svg>;
     }
 };
@@ -38,6 +39,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [brand, setBrand] = React.useState(v.brand_manual || getBrand(v.model));
     const [specs, setSpecs] = React.useState({});
     const [histQ, setHistQ] = React.useState("");
+    const [regCopied, setRegCopied] = React.useState(false);
     const tStart = React.useRef(null);
 
     React.useEffect(() => {
@@ -63,7 +65,13 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         window.db.collection('vehicleSpecs').doc(v.regnr).set({ [id]: val, updatedAt: new Date().toISOString() }, { merge: true });
     };
 
-    const copyReg = () => navigator.clipboard && navigator.clipboard.writeText(v.regnr);
+    const copyRegClick = () => {
+        if(navigator.clipboard) {
+            navigator.clipboard.writeText(v.regnr);
+            setRegCopied(true);
+            setTimeout(() => setRegCopied(false), 2000);
+        }
+    };
 
     const handleTouchStart = (e) => { tStart.current = e.targetTouches[0].clientX; };
     const handleTouchEnd = (e) => {
@@ -77,6 +85,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         tStart.current = null;
     };
 
+    // Återställd: Använder exakt dina icon-ids för att matcha din SVG Switch-sats!
     const fields = [
         { id: 'reg', label: 'Bil', icon: 'car', ph: v.regnr, readOnly: true, val: v.regnr },
         { id: 'belt', label: 'Kamrem', icon: 'belt', ph: '21 000 mil / 10 år' },
@@ -96,11 +105,12 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
     return (
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-200">
-            {/* FIX: Tätare overlay som funkar i både mörkt och ljust läge */}
             <div className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            
+            {/* ÅTERSTÄLLD BREDD: sm:w-[500px] */}
             <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="relative w-full sm:w-[500px] h-full bg-zinc-50 dark:bg-[#0f1522] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-white/10">
                 
-                {/* HEADER (Premium Mörkblå/Ljus) */}
+                {/* HEADER */}
                 <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl text-zinc-900 dark:text-white shrink-0 relative overflow-hidden shadow-sm z-20 border-b border-zinc-200 dark:border-white/5 transition-colors">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
                     <div className="flex justify-between items-start p-6 pb-4 relative z-10">
@@ -109,20 +119,26 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full text-black" onChange={changeBrand} value={brand||""}>
                                     <option value="">...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
                                 </select>
-                                {/* FIX: Tvingar ikonen att bli mörk i ljust läge (opacity-80) och ljus i mörkt läge (dark:invert) */}
                                 {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-7 h-7 object-contain z-10 opacity-80 dark:invert pointer-events-none"/> : <SafeIcon name="car" size={24} className="text-zinc-600 dark:text-zinc-400 z-10"/>}
                                 <div className="absolute inset-0 bg-white/80 dark:bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none"><SafeIcon name="edit" size={16} className="text-orange-500 dark:text-white"/></div>
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1"><SafeIcon name="db" size={12} className="text-orange-500"/><span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Fordonsakt</span></div>
-                                <h2 className="text-3xl sm:text-4xl font-black font-mono tracking-tighter uppercase leading-none text-zinc-900 dark:text-white">{v.regnr}</h2>
+                                <h2 onClick={copyRegClick} className="text-3xl sm:text-4xl font-black font-mono tracking-tighter uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors flex items-center gap-2">
+                                    {v.regnr}
+                                    {regCopied && <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-sans tracking-widest uppercase animate-in fade-in zoom-in">Kopierad!</span>}
+                                </h2>
                                 <div className="text-[12px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mt-1 truncate max-w-[200px]">{v.customer || v.model}</div>
                             </div>
                         </div>
-                        {/* FIX: Tvingar stäng-knappen att bli mörk/grå i ljust läge */}
-                        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] hover:text-orange-500 text-zinc-600 dark:text-zinc-400 transition-all z-50">
-                            <SafeIcon name="x" size={20} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-10 h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 transition-all z-50 group text-orange-600 dark:text-orange-400">
+                                <SafeIcon name="plus" size={20} className="transition-transform group-active:scale-90" />
+                            </button>
+                            <button onClick={onClose} title="Stäng" className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 transition-all z-50 text-zinc-800 dark:text-zinc-200">
+                                <SafeIcon name="x" size={20} className="text-zinc-800 dark:text-zinc-200" />
+                            </button>
+                        </div>
                     </div>
                     {/* STATS RAD */}
                     <div className="grid grid-cols-3 bg-zinc-50/50 dark:bg-black/20 border-t border-zinc-200 dark:border-white/5 py-3">
@@ -132,7 +148,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
                 </div>
 
-                {/* TABS (Döljer scrollbar) */}
+                {/* TABS */}
                 <div className="px-4 pt-3 bg-white dark:bg-[#182032] shrink-0 flex border-b border-zinc-200 dark:border-white/5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {[{id:'HISTORY',l:'Historik'},{id:'TECH',l:'Teknisk Data'}].map(t => (
                         <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`flex-1 pb-3 px-4 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${activeTab===t.id ? 'border-orange-500 text-orange-500':'border-transparent text-zinc-500 dark:text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}>{t.l}</button>
@@ -151,7 +167,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                     onChange={(e) => setHistQ(e.target.value)}
                                     className="w-full bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/5 rounded-xl p-3.5 pl-11 text-[12px] font-bold uppercase tracking-widest focus:outline-none focus:border-orange-500 shadow-sm transition-all"
                                 />
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"><SafeIcon name="search" size={16}/></span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"><SafeIcon name="search" size={16} className="text-zinc-400"/></span>
                             </div>
 
                             <div className="relative border-l-2 border-zinc-200 dark:border-white/10 ml-4 space-y-6">
@@ -201,21 +217,13 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                     ) : (
                         <div className="space-y-4 animate-in fade-in duration-300 pb-20">
-                            <div className="flex gap-3">
-                                <a href={`https://biluppgifter.se/fordon/${v.regnr}#fordonsdata`} target="_blank" className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 p-4 rounded-xl flex items-center justify-center gap-3 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all group no-underline shadow-sm">
-                                    <img src="https://biluppgifter.se/favicon.ico" alt="B" className="w-5 h-5 rounded shrink-0"/>
-                                    <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">Biluppgifter</span>
-                                </a>
-                                <a href="https://www.oljemagasinet.se/" target="_blank" onClick={copyReg} className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 p-4 rounded-xl flex items-center justify-center gap-3 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all group no-underline shadow-sm">
-                                    <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" className="w-5 h-5 rounded shrink-0"/>
-                                    <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300 group-hover:text-orange-600 dark:group-hover:text-orange-400">Oljemagasinet</span>
-                                </a>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                 {fields.map(f => (
                                     <div key={f.id} className="bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 p-3.5 flex items-center gap-4 shadow-sm rounded-xl hover:border-zinc-300 dark:hover:border-zinc-500 relative group-focus-within:border-orange-400 transition-all">
-                                        {/* FIX: Tvingar ikonerna till text-zinc-600 i ljust läge så de blir synliga */}
-                                        <div className="w-10 h-10 flex items-center justify-center bg-zinc-100 dark:bg-[#121826] rounded-lg text-zinc-600 dark:text-zinc-400 shrink-0"><SafeIcon name={f.icon} size={18}/></div>
+                                        <div className="w-10 h-10 flex items-center justify-center bg-zinc-100 dark:bg-[#121826] rounded-lg shrink-0">
+                                            {/* Säkerställer färg på Tech-ikonerna */}
+                                            <SafeIcon name={f.icon} size={18} className="text-zinc-800 dark:text-zinc-200" />
+                                        </div>
                                         <div className="flex-1 overflow-hidden relative">
                                             <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-none mb-1.5">{f.label}</div>
                                             {f.readOnly ? (
@@ -235,9 +243,9 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                                     href={`https://www.google.com/search?q=castrol+mobil1+oil+selector+${v.regnr}`} 
                                                     target="_blank" 
                                                     rel="noreferrer"
-                                                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-orange-100 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-500/20 active:scale-95 transition-all" 
+                                                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-orange-100 dark:bg-orange-500/10 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-500/20 active:scale-95 transition-all text-orange-600 dark:text-orange-400" 
                                                 >
-                                                    <SafeIcon name="search" size={14} />
+                                                    <SafeIcon name="search" size={14} className="text-orange-600 dark:text-orange-400" />
                                                 </a>
                                             )}
                                         </div>
@@ -249,10 +257,15 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
                 
                 {/* BOTTOM ACTION BAR */}
-                <div className="p-5 border-t border-zinc-200 dark:border-[#1a2235] bg-white dark:bg-[#121826] shrink-0 transition-colors shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-20">
-                    <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white text-[13px] font-bold uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg border border-orange-400/50">
-                        <SafeIcon name="plus" size={16}/> Nytt Arbete
-                    </button>
+                <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-[#1a2235] bg-zinc-50 dark:bg-[#121826] shrink-0 transition-colors z-20 flex gap-3">
+                    <a href={`https://biluppgifter.se/fordon/${v.regnr}#fordonsdata`} target="_blank" className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2.5 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all group no-underline shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300">
+                        <img src="https://biluppgifter.se/favicon.ico" alt="B" className="w-4 h-4 rounded shrink-0 grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100"/>
+                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-blue-600 dark:group-hover:text-blue-400">Biluppgifter</span>
+                    </a>
+                    <a href="https://www.oljemagasinet.se/" target="_blank" onClick={() => { if(navigator.clipboard) navigator.clipboard.writeText(v.regnr); }} className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2.5 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all group no-underline shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300">
+                        <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" className="w-4 h-4 rounded shrink-0 grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100"/>
+                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-orange-600 dark:group-hover:text-orange-400">Oljemagasinet</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -299,20 +312,17 @@ window.GarageView = ({ allJobs, setView }) => {
     const hasMore = visibleCount < dVs.length;
 
     return (
-        // FIX: En <div className="w-full"> runt allting ser till att 'fixed' i modalen inte bryts av transform-animationer i föräldern.
         <div className="w-full">
             <div className="relative max-w-5xl w-full animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0">
-                {/* Ambient Background Glow */}
                 <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-                {/* HEADER (Gemensam för Mobil & Dator) */}
+                {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 px-4 pt-5 lg:px-0 lg:pt-0">
                     <div className="flex items-center gap-4 md:gap-5">
-                        {/* Standardiserad, glödande Premium-ikon */}
                         <div className="relative group cursor-default shrink-0">
                             <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
                             <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <SafeIcon name="car" size={24} />
+                                <SafeIcon name="car" size={24} className="text-white" />
                             </div>
                         </div>
                         <div className="flex flex-col">
@@ -327,7 +337,6 @@ window.GarageView = ({ allJobs, setView }) => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 z-10">
-                        {/* Sort Controls */}
                         <div className="flex bg-white dark:bg-[#1a2235] p-1 border border-zinc-200 dark:border-white/5 rounded-xl shadow-sm">
                             {[{id:'ALL',l:'Alla',i:'car'},{id:'RECENT',l:'Senaste',i:'clock'},{id:'TOP',l:'Toppkunder',i:'trend'}].map(f => (
                                 <button 
@@ -335,7 +344,8 @@ window.GarageView = ({ allJobs, setView }) => {
                                     onClick={() => setFilter(f.id)}
                                     className={`py-2.5 px-4 transition-all flex-1 sm:flex-none flex justify-center items-center gap-2 rounded-lg text-[10px] font-bold uppercase tracking-widest ${filter === f.id ? 'bg-zinc-100 dark:bg-[#2a3441] text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                                 >
-                                    <SafeIcon name={f.i} size={14} /> <span className="hidden sm:inline">{f.l}</span>
+                                    <SafeIcon name={f.i} size={14} className={filter === f.id ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"} /> 
+                                    <span className="hidden sm:inline">{f.l}</span>
                                 </button>
                             ))}
                         </div>
@@ -353,10 +363,9 @@ window.GarageView = ({ allJobs, setView }) => {
                     </div>
                 </div>
 
-                {/* LISTAN (Mindre maxbredd, kompakt tabellvy) */}
+                {/* LISTAN */}
                 <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-2xl shadow-sm border border-zinc-200/80 dark:border-white/5 overflow-hidden flex flex-col mx-4 lg:mx-2 mb-0">
                     
-                    {/* Tabell-Header (Endast Desktop) */}
                     <div className="hidden md:flex items-center px-6 py-3 bg-zinc-50/50 dark:bg-black/20 border-b border-zinc-200 dark:border-white/10 text-[9px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400">
                         <div className="w-1/3 pl-1">Fordon</div>
                         <div className="w-1/4">Senaste Kund</div>
@@ -367,7 +376,7 @@ window.GarageView = ({ allJobs, setView }) => {
                     <div className="flex flex-col divide-y divide-zinc-100 dark:divide-white/5">
                         {dVs.length === 0 ? (
                             <div className="p-12 text-center text-zinc-400 uppercase tracking-widest text-[11px] font-bold">
-                                <SafeIcon name="car" size={32} className="mb-3 opacity-20 mx-auto" />
+                                <SafeIcon name="car" size={32} className="mb-3 opacity-20 mx-auto text-zinc-400" />
                                 Inga fordon hittades
                             </div>
                         ) : (
@@ -439,7 +448,7 @@ window.GarageView = ({ allJobs, setView }) => {
                 </div>
             </div>
 
-            {/* MODAL FÖR FORDONSAKT (Renderas utanför transform-wrapper) */}
+            {/* MODAL FÖR FORDONSAKT */}
             {sel && <VehicleProfile v={sel} onClose={close} setView={setView} />}
         </div>
     );
