@@ -8,7 +8,7 @@ const SafeIcon = ({ name, size = 16, className = "" }) => (
 );
 
 // --- Specialikoner för Lagret ---
-const LagerIcon = ({ category, name, size = 32 }) => {
+const LagerIcon = ({ category, name, size = 32, className = "" }) => {
     const cat = (category || "").toLowerCase();
     const itemName = (name || "").toLowerCase();
 
@@ -44,15 +44,14 @@ const LagerIcon = ({ category, name, size = 32 }) => {
         IconContent = <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10h10v6H7z" fill="currentColor" opacity="0.1" /><path d="M7 10l-2 2v2l2 2M17 10l2 2v2l-2 2" /><path d="M12 10v6" strokeWidth="1" opacity="0.5" /><path d="M5 11v-2h2M19 11v-2h-2" /></g>;
     }
 
-    return <svg viewBox="0 0 24 24" width={size} height={size} className="text-slate-600 dark:text-slate-300">{IconContent}</svg>;
+    return <svg viewBox="0 0 24 24" width={size} height={size} className={`text-zinc-600 dark:text-zinc-300 ${className}`}>{IconContent}</svg>;
 };
 
 // --- Hjälpfunktioner ---
 const generateTrodoLink = (f) => f ? `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
 const generateThansenLink = (f) => f ? `https://www.thansen.se/search/?query=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
-const generateAeroMLink = (f) => f ? `https://aeromotors.se/sok?s=${f.replace(/[\s-]/g, '')}&layered_id_feature_1586%5B%5D=3&sort_by=price.asc` : '#';
 
-// --- MODAL (Enterprise Style - Anpassad för mobil) ---
+// --- MODAL (Redigering) ---
 const LagerItemModal = ({ item, onClose }) => {
     const [formData, setFormData] = React.useState({
         name: item?.name || '',
@@ -92,39 +91,40 @@ const LagerItemModal = ({ item, onClose }) => {
         }
     };
 
-    const InputClass = "w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all placeholder:text-slate-400";
-    const LabelClass = "block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5";
+    const InputClass = "w-full bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] rounded-lg px-3 py-2.5 sm:py-3 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all placeholder:text-zinc-400";
+    const LabelClass = "block text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1 sm:mb-1.5";
 
     return (
         <div className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
             
-            <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-xl shadow-2xl overflow-hidden border-t sm:border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-[#09090b] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden border-t sm:border border-zinc-200 dark:border-[#1a2235] animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col max-h-[85vh] sm:max-h-[90vh]">
                 
-                {/* Drag Handle (Mobile only) */}
-                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
-                    <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden bg-zinc-50 dark:bg-[#09090b]">
+                    <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full"></div>
                 </div>
 
-                {/* Header */}
-                <div className="px-6 py-4 flex justify-between items-center bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700/50">
+                <div className="px-4 py-3.5 sm:px-6 sm:py-5 flex justify-between items-center bg-zinc-50 dark:bg-[#09090b] border-b border-zinc-200 dark:border-[#1a2235]">
                     <div>
-                        <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                            {isNew ? 'LÄGG TILL I LAGER' : 'REDIGERA ARTIKEL'}
+                        <h2 className="text-lg sm:text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                            {isNew ? 'LÄGG TILL ARTIKEL' : 'REDIGERA ARTIKEL'}
                         </h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Fyll i uppgifter för inventariesystemet.</p>
+                        <p className="text-[10px] sm:text-xs text-orange-500 font-bold tracking-widest uppercase mt-1">Produktdatabas</p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors bg-slate-50 dark:bg-slate-900">
-                        <SafeIcon name="x" size={18} />
+                    <button type="button" onClick={onClose} className="p-1.5 sm:p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] rounded-xl transition-colors shadow-sm">
+                        <SafeIcon name="x" size={16} className="sm:w-[18px] sm:h-[18px]" />
                     </button>
                 </div>
 
-                {/* Form (Scrollable area) */}
-                <form onSubmit={handleSave} className="p-6 overflow-y-auto">
-                    <div className="grid grid-cols-2 gap-5">
+                <form onSubmit={handleSave} className="p-4 sm:p-6 overflow-y-auto">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-5">
                         <div className="col-span-2">
-                            <label className={LabelClass}>Artikelnamn *</label>
-                            <input autoFocus required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={InputClass} placeholder="T.ex. Motorolja Castrol 5W-30" />
+                            <label className={LabelClass}>Artikelnamn / Beskrivning</label>
+                            <input autoFocus required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={InputClass} placeholder="T.ex. Bromsbeläggssats..." />
+                        </div>
+                        <div className="col-span-2 sm:col-span-1">
+                            <label className={LabelClass}>Art.Nummer / ID</label>
+                            <input type="text" value={formData.service_filter} onChange={e => setFormData({...formData, service_filter: e.target.value.toUpperCase()})} className={`${InputClass} font-mono`} placeholder="BOS-1234" />
                         </div>
                         <div className="col-span-2 sm:col-span-1">
                             <label className={LabelClass}>Kategori</label>
@@ -135,41 +135,37 @@ const LagerItemModal = ({ item, onClose }) => {
                                 <option value="Andra Märken">Andra Märken</option>
                             </select>
                         </div>
-                        <div className="col-span-2 sm:col-span-1">
-                            <label className={LabelClass}>Art.Nummer / Ref</label>
-                            <input type="text" value={formData.service_filter} onChange={e => setFormData({...formData, service_filter: e.target.value.toUpperCase()})} className={`${InputClass} font-mono`} placeholder="REF-123" />
-                        </div>
                         <div>
-                            <label className={LabelClass}>Inköpspris (kr) *</label>
+                            <label className={LabelClass}>Pris (kr)</label>
                             <div className="relative">
-                                <input type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className={`${InputClass} pl-8 font-mono`} placeholder="0" />
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">kr</span>
+                                <input type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className={`${InputClass} pr-10 font-mono font-bold sm:text-lg`} placeholder="0" />
+                                <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-zinc-400 text-[10px] sm:text-xs font-bold uppercase">SEK</span>
                             </div>
                         </div>
                         <div>
-                            <label className={LabelClass}>Lagersaldo (st) *</label>
-                            <input type="number" required value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} className={`${InputClass} font-mono`} placeholder="0" />
+                            <label className={LabelClass}>Lagersaldo (st)</label>
+                            <input type="number" required value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} className={`${InputClass} font-mono font-bold sm:text-lg`} placeholder="0" />
                         </div>
                         <div className="col-span-2">
-                            <label className={LabelClass}>Interna anteckningar</label>
-                            <textarea rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className={`${InputClass} resize-none`} placeholder="Passar VAG plattformen..." />
+                            <label className={LabelClass}>Egenskaper / Specifikation</label>
+                            <textarea rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className={`${InputClass} resize-none`} placeholder="Placering: Bakaxel..." />
                         </div>
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="flex flex-col-reverse sm:flex-row items-center justify-between mt-8 pt-5 border-t border-slate-100 dark:border-slate-700/50 gap-4">
+                    <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-zinc-200 dark:border-[#1a2235] gap-3 pb-1 sm:pb-0">
                         {!isNew ? (
-                            <button type="button" onClick={handleDelete} className="w-full sm:w-auto text-sm font-bold text-red-600 hover:text-red-700 dark:text-red-400 px-4 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wide">
-                                <SafeIcon name="trash-2" size={16} /> Radera
+                            <button type="button" onClick={handleDelete} className="h-12 sm:h-11 px-4 flex items-center justify-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors shadow-sm">
+                                <SafeIcon name="trash-2" size={16} className="mr-2" />
+                                <span className="text-xs font-bold uppercase tracking-widest">Radera Artikel</span>
                             </button>
                         ) : <div className="hidden sm:block"></div>}
                         
-                        <div className="flex gap-3 w-full sm:w-auto">
-                            <button type="button" onClick={onClose} className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-transparent rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors uppercase tracking-wide">
+                        <div className="flex gap-3">
+                            <button type="button" onClick={onClose} className="flex-1 sm:w-28 h-12 sm:h-11 text-xs font-bold text-zinc-600 dark:text-zinc-300 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] rounded-xl hover:bg-zinc-50 dark:hover:bg-[#182032] transition-colors uppercase tracking-widest shadow-sm">
                                 Avbryt
                             </button>
-                            <button type="submit" className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-white bg-[#f97316] hover:bg-orange-600 rounded-lg shadow-md shadow-orange-500/20 focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide">
-                                <SafeIcon name="check" size={16} /> Spara
+                            <button type="submit" className="flex-1 sm:w-36 h-12 sm:h-11 text-xs font-bold text-white bg-[#0066cc] hover:bg-[#0052a3] rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 uppercase tracking-widest">
+                                <SafeIcon name="check" size={16} className="hidden sm:block" /> Spara
                             </button>
                         </div>
                     </div>
@@ -179,16 +175,15 @@ const LagerItemModal = ({ item, onClose }) => {
     );
 };
 
-
 // --- HUVUDVY FÖR LAGER ---
 window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
     const [activeCat, setActiveCat] = React.useState("Service"); 
-    
-    // LOGISK ÄNDRING: I lager är nu standard istället för "Alla"
     const [stockFilter, setStockFilter] = React.useState("inStock"); 
     const [editingItem, setEditingItem] = React.useState(null); 
+    const [sortBy, setSortBy] = React.useState("name_asc");
+    const [copiedId, setCopiedId] = React.useState(null);
 
     React.useEffect(() => {
         if (!window.db) return;
@@ -198,7 +193,26 @@ window.LagerView = ({ allJobs = [] }) => {
         return () => unsub();
     }, []);
 
-    const keywords = ["OLJEFILTER", "LUFTFILTER", "KUPEFILTER", "BROMSBELÄGG", "TÄNDSTIFT"];
+    const quickAdjustStock = async (e, item, amount) => {
+        e.stopPropagation();
+        const currentQty = parseInt(item.quantity) || 0;
+        const newQty = Math.max(0, currentQty + amount);
+        try {
+            await window.db.collection("lager").doc(item.id).update({ quantity: newQty });
+        } catch (err) {
+            console.error("Fel vid uppdatering av saldo", err);
+        }
+    };
+
+    const handleCopyId = (e, text, id) => {
+        e.stopPropagation();
+        if (!text || text === 'SAKNAS') return;
+        navigator.clipboard.writeText(text);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    const keywords = ["OLJEFILTER", "LUFTFILTER", "KUPEFILTER", "BROMSBELÄGG", "TÄNDSTIFT", "BROMSSKIVOR"];
     const subFilters = React.useMemo(() => {
         const found = {};
         items.forEach(i => {
@@ -231,9 +245,16 @@ window.LagerView = ({ allJobs = [] }) => {
             );
         }
 
-        res.sort((a,b) => (a.name||"").localeCompare(b.name||""));
+        res.sort((a,b) => {
+            if(sortBy === "name_asc") return (a.name||"").localeCompare(b.name||"");
+            if(sortBy === "price_asc") return (parseInt(a.price)||0) - (parseInt(b.price)||0);
+            if(sortBy === "price_desc") return (parseInt(b.price)||0) - (parseInt(a.price)||0);
+            if(sortBy === "stock_desc") return (parseInt(b.quantity)||0) - (parseInt(a.quantity)||0);
+            return 0;
+        });
+
         return res;
-    }, [items, search, activeCat, stockFilter]);
+    }, [items, search, activeCat, stockFilter, sortBy]);
 
     const getLastSold = (itemId) => {
         if (!allJobs.length) return null;
@@ -244,283 +265,229 @@ window.LagerView = ({ allJobs = [] }) => {
     };
 
     const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra Märken'];
-    const totalValue = items.reduce((acc, item) => acc + ((parseInt(item.price)||0) * (parseInt(item.quantity)||0)), 0);
-    const lowStockCount = items.filter(i => (parseInt(i.quantity)||0) <= 0).length;
 
     return (
-        <div className="w-full min-h-screen bg-slate-50 dark:bg-[#0B1120] pb-4 font-sans overflow-x-hidden">
+        <div className="relative w-full min-h-screen font-sans"> 
             
-            {/* ENTERPRISE HEADER */}
-            <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm">
-                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#f97316] rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 shrink-0">
-                            <SafeIcon name="layers" size={24} />
-                        </div>
-                        <div className="flex flex-col justify-center">
-                            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-1">
-                                LAGER<span className="font-light text-slate-500 dark:text-slate-400">HANTERING</span>
-                            </h1>
-                            <p className="text-[10px] font-bold text-[#f97316] uppercase tracking-widest flex items-center gap-1.5 leading-none">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#f97316]"></span>
-                                ÖVERSIKT & INVENTARIE
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 w-full sm:w-auto">
-                        <div className="hidden md:flex items-center gap-6 mr-4 border-r border-slate-200 dark:border-slate-700 pr-6">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Totalt Värde</span>
-                                <span className="text-sm font-semibold text-slate-900 dark:text-white font-mono">{totalValue.toLocaleString()} kr</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Slut i lager</span>
-                                <span className={`text-sm font-semibold font-mono ${lowStockCount > 0 ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}>{lowStockCount} st</span>
-                            </div>
-                        </div>
-
-                        <button onClick={() => setEditingItem({})} className="w-full sm:w-auto bg-[#f97316] hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-md shadow-orange-500/20 transition-all active:scale-95">
-                            <SafeIcon name="plus" size={18} />
-                            Ny Artikel
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <div className="max-w-[1600px] mx-auto px-0 sm:px-6 lg:px-8 py-4 sm:py-8 flex flex-col lg:flex-row gap-6 sm:gap-8">
+            <div className="flex flex-col min-h-screen text-zinc-900 dark:text-white pb-6 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4 duration-700">
                 
-                {/* SIDEBAR NAVIGATION (Desktop) */}
-                <aside className="hidden lg:block w-64 shrink-0">
-                    <nav className="sticky top-32 space-y-8">
-                        <div>
-                            <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 pl-2">Kategorier</h3>
-                            <div className="space-y-1">
-                                {['Alla', ...mainCats].map(cat => {
-                                    const count = cat === 'Alla' ? items.length : items.filter(i => i.category === cat).length;
-                                    const active = activeCat === cat;
-                                    return (
-                                        <button key={cat} onClick={() => setActiveCat(cat)} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors ${active ? 'bg-orange-50 dark:bg-orange-500/10 text-[#f97316] font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'}`}>
-                                            <span>{cat}</span>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-lg font-bold ${active ? 'bg-orange-100 dark:bg-orange-500/20' : 'bg-slate-100 dark:bg-slate-800'}`}>{count}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-                        {subFilters.length > 0 && (
-                            <div>
-                                <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 pl-2">Smarta Filter</h3>
-                                <div className="space-y-1">
-                                    {subFilters.map(kw => {
-                                        const count = items.filter(i => (i.name||"").toUpperCase().includes(kw)).length;
-                                        const active = activeCat === kw;
-                                        const label = kw.charAt(0) + kw.slice(1).toLowerCase();
-                                        return (
-                                            <button key={kw} onClick={() => setActiveCat(kw)} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors ${active ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'}`}>
-                                                <span>{label}</span>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-lg font-bold ${active ? 'bg-blue-100 dark:bg-blue-500/20' : 'bg-slate-100 dark:bg-slate-800'}`}>{count}</span>
-                                            </button>
-                                        );
-                                    })}
+                {/* Container med dynamisk padding för att matcha Dashboard exakt */}
+                <div className="flex flex-col h-full lg:px-2">
+                    
+                    {/* --- HEADER --- (px-4 på mobil för att matcha dashboard-headern, px-0 på desktop) */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 pt-2 lg:pt-0 px-4 lg:px-0">
+                        <div className="flex items-center gap-4 md:gap-5">
+                            <div className="relative group cursor-default shrink-0">
+                                <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                                <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <window.Icon name="layers" size={24} />
                                 </div>
                             </div>
-                        )}
-                    </nav>
-                </aside>
-
-                {/* MAIN CONTENT AREA */}
-                <main className="flex-1 min-w-0">
-                    
-                    {/* TOOLBAR */}
-                    <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6 px-4 sm:px-0">
-                        <div className="relative flex-1">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <SafeIcon name="search" size={18} className="text-slate-400" />
+                            <div className="flex flex-col">
+                                <h1 className="text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                                    INVEN<span className="text-zinc-400 dark:text-zinc-500 font-light">TORY</span>
+                                </h1>
+                                <p className="text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                    Produktdatabas
+                                </p>
                             </div>
-                            <input 
-                                type="text" 
-                                placeholder="SÖK ARTIKEL, REFERENS ELLER ANTECKNING..." 
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="block w-full pl-10 pr-10 py-3 sm:py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 text-xs sm:text-sm font-bold tracking-wide uppercase transition-colors shadow-sm text-slate-900 dark:text-white"
-                            />
-                            {search && (
-                                <button onClick={() => setSearch('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                                    <SafeIcon name="x" size={16} />
-                                </button>
-                            )}
                         </div>
 
-                        {/* Desktop Segmented Control */}
-                        <div className="hidden sm:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
-                            {[
-                                {id: 'all', label: 'Alla artiklar'},
-                                {id: 'inStock', label: 'I lager'},
-                                {id: 'outOfStock', label: 'Slutsålda'}
-                            ].map(filter => (
-                                <button 
-                                    key={filter.id} 
-                                    onClick={() => setStockFilter(filter.id)}
-                                    className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${stockFilter === filter.id ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                                >
-                                    {filter.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Mobile Category Dropdown */}
-                        <div className="sm:hidden grid grid-cols-2 gap-3">
-                            <select 
-                                value={activeCat} onChange={(e) => setActiveCat(e.target.value)}
-                                className="block w-full py-3 pl-3 pr-8 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-orange-500 focus:border-orange-500 shadow-sm text-slate-900 dark:text-white appearance-none"
-                            >
-                                <option value="Alla">Alla Kategorier</option>
-                                {mainCats.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                            <select 
-                                value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}
-                                className="block w-full py-3 pl-3 pr-8 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-orange-500 focus:border-orange-500 shadow-sm text-slate-900 dark:text-white appearance-none"
-                            >
-                                <option value="inStock">I Lager</option>
-                                <option value="all">Alla Status</option>
-                                <option value="outOfStock">Slutsålda</option>
-                            </select>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                            <div className="relative w-full sm:w-64 group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
+                                </div>
+                                <input 
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Sök i systemet..."
+                                    className="w-full bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] text-zinc-900 dark:text-white py-3.5 pl-11 pr-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all shadow-sm text-[12px] font-bold tracking-widest uppercase placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                                />
+                            </div>
+                            <button onClick={() => setEditingItem({})} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white border border-orange-400/50 h-[46px] px-8 rounded-xl flex items-center justify-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] transition-all active:scale-95 shrink-0">
+                                <span className="text-[12px] font-black uppercase tracking-widest">Ny Artikel</span>
+                                <window.Icon name="plus" size={16} />
+                            </button>
                         </div>
                     </div>
 
-                    {/* DATA VIEW */}
-                    <div className="bg-transparent sm:bg-white dark:bg-transparent dark:sm:bg-slate-900 border-none sm:border sm:border-slate-200 dark:sm:border-slate-800 sm:rounded-2xl sm:shadow-sm sm:overflow-hidden">
+                    {/* --- HUVUDINNEHÅLL --- (px-3 på mobil för att matcha exakt dashboardens list-padding) */}
+                    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 mt-2 px-3 lg:px-0">
                         
-                        {filteredItems.length === 0 && search ? (
-                            <div className="p-8 sm:p-12 text-center flex flex-col items-center justify-center bg-white sm:bg-slate-50/50 dark:bg-slate-900 dark:sm:bg-slate-900/50 rounded-2xl border border-slate-200 sm:border-0 mx-4 sm:mx-0">
-                                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 mb-4 shadow-inner">
-                                    <SafeIcon name="search-x" size={32} />
+                        {/* VÄNSTER MENY (Desktop) */}
+                        <aside className="hidden lg:block w-64 shrink-0">
+                            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
+                                <div className="p-4 bg-zinc-50/50 dark:bg-white/5 border-b border-zinc-200/50 dark:border-white/5 flex items-center gap-2 font-bold text-sm text-zinc-900 dark:text-white">
+                                    <SafeIcon name="chevron-left" size={16} className="text-zinc-500" />
+                                    <span>Kategorier</span>
                                 </div>
-                                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 uppercase tracking-wide">Inga träffar för "{search}"</h3>
-                                <p className="text-sm text-slate-500 max-w-sm mb-8">Artikeln finns inte i det lokala registret. Sök externt eller lägg in den i systemet.</p>
-                                
-                                <div className="flex flex-wrap gap-3 justify-center mb-8">
-                                    <a href={generateTrodoLink(search)} target="_blank" className="px-5 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2">
-                                        Sök Trodo
-                                    </a>
-                                    <a href={generateThansenLink(search)} target="_blank" className="px-5 py-2.5 bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2">
-                                        Sök Thansen
-                                    </a>
-                                    <a href={generateAeroMLink(search)} target="_blank" className="px-5 py-2.5 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-500/10 dark:text-teal-400 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2">
-                                        Sök AeroM
-                                    </a>
+                                <nav className="p-2 flex flex-col">
+                                    {['Alla', ...mainCats].map(cat => (
+                                        <button key={cat} onClick={() => setActiveCat(cat)} className={`text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${activeCat === cat ? 'bg-zinc-100 dark:bg-white/10 font-bold text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}>
+                                            {cat}
+                                        </button>
+                                    ))}
+                                    {subFilters.length > 0 && (
+                                        <div className="mt-4 pt-4 border-t border-zinc-200/50 dark:border-white/5">
+                                            <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block">Populära Filter</span>
+                                            {subFilters.map(kw => (
+                                                <button key={kw} onClick={() => setActiveCat(kw)} className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${activeCat === kw ? 'bg-zinc-100 dark:bg-white/10 font-bold text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}>
+                                                    {kw.charAt(0) + kw.slice(1).toLowerCase()}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </nav>
+                            </div>
+                        </aside>
+
+                        {/* PRODUKTLISTA */}
+                        <main className="flex-1 min-w-0">
+                            
+                            <div className="flex flex-row items-center justify-between gap-2 sm:gap-3 mb-3 lg:mb-4">
+                                <div className="flex lg:hidden flex-1">
+                                    <select 
+                                        value={activeCat} onChange={(e) => setActiveCat(e.target.value)}
+                                        className="w-full bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] py-2.5 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-medium outline-none text-zinc-700 dark:text-zinc-300 shadow-sm"
+                                    >
+                                        <option value="Alla">Alla Kategorier</option>
+                                        {mainCats.map(c => <option key={c} value={c}>{c}</option>)}
+                                        {subFilters.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
                                 </div>
 
-                                <button onClick={() => setEditingItem({ service_filter: search })} className="bg-[#f97316] hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center gap-2 shadow-md transition-colors">
-                                    <SafeIcon name="plus" size={16} /> Skapa "{search}"
-                                </button>
-                            </div>
-                        ) : filteredItems.length === 0 ? (
-                            <div className="p-16 text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-white dark:bg-slate-900 rounded-2xl mx-4 sm:mx-0 border border-slate-200 dark:border-slate-800">
-                                <SafeIcon name="inbox" size={32} className="mx-auto mb-3 opacity-50" />
-                                Inga artiklar i denna vy.
-                            </div>
-                        ) : (
-                            // LOGISK ÄNDRING: Mobilvy har kort och mellanrum (gap-3), desktopvy har rader (divide-y)
-                            <div className="flex flex-col gap-3 sm:gap-0 sm:divide-y sm:divide-slate-100 dark:sm:divide-slate-800 px-4 sm:px-0">
-                                
-                                {/* Desktop Table Header */}
-                                <div className="hidden lg:grid grid-cols-12 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                    <div className="col-span-5 pl-2">Artikel & Referens</div>
-                                    <div className="col-span-2">Kategori</div>
-                                    <div className="col-span-2 text-right">Saldo</div>
-                                    <div className="col-span-2 text-right">Pris</div>
-                                    <div className="col-span-1 text-right">Åtgärd</div>
+                                <div className="flex flex-1 sm:flex-none justify-end">
+                                    <select 
+                                        value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+                                        className="w-full sm:w-auto bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] py-2.5 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-medium outline-none text-zinc-700 dark:text-zinc-300 shadow-sm"
+                                    >
+                                        <option value="name_asc">A-Ö</option>
+                                        <option value="price_asc">Lägst pris</option>
+                                        <option value="price_desc">Högst pris</option>
+                                        <option value="stock_desc">Mest i lager</option>
+                                    </select>
                                 </div>
 
-                                {/* List Items */}
-                                {filteredItems.map(item => {
-                                    const qty = parseInt(item.quantity) || 0;
-                                    const inStock = qty > 0;
-                                    const lastSold = !inStock ? getLastSold(item.id) : null;
-                                    
-                                    return (
-                                        // LOGISK ÄNDRING: På mobilen blir varje objekt ett rundat kort med skugga. 
-                                        <div key={item.id} className="group bg-white dark:bg-slate-900 sm:bg-transparent rounded-2xl sm:rounded-none border border-slate-200 dark:border-slate-800 sm:border-none shadow-sm sm:shadow-none p-4 sm:p-5 flex flex-col lg:grid lg:grid-cols-12 lg:items-center gap-3 sm:gap-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer" onClick={() => setEditingItem(item)}>
-                                            
-                                            {/* Name & Icon */}
-                                            <div className="col-span-5 flex items-start gap-4">
-                                                <div className="w-20 h-20 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
-                                                    <LagerIcon category={item.category} name={item.name} size={48} />
+                                <div className="hidden sm:flex items-center bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] rounded-lg p-1 shadow-sm shrink-0">
+                                    <button className="p-1.5 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-[#1a2235] rounded shadow-sm"><SafeIcon name="list" size={16} /></button>
+                                    <button className="p-1.5 text-zinc-400 hover:text-zinc-600"><SafeIcon name="grid" size={16} /></button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 sm:space-y-4">
+                                {filteredItems.length === 0 ? (
+                                    <div className="p-12 text-center bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-xl lg:rounded-3xl shadow-sm">
+                                        <SafeIcon name="search" size={32} className="text-zinc-300 mb-4 mx-auto" />
+                                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Inga artiklar hittades</h3>
+                                    </div>
+                                ) : (
+                                    filteredItems.map(item => {
+                                        const qty = parseInt(item.quantity) || 0;
+                                        const inStock = qty > 0;
+                                        const lastSold = !inStock ? getLastSold(item.id) : null;
+                                        
+                                        return (
+                                            <div key={item.id} className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-xl lg:rounded-3xl p-3.5 sm:p-5 flex flex-col sm:flex-row relative gap-4 sm:gap-6 shadow-sm hover:shadow-md transition-shadow">
+                                                
+                                                <div className="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 w-16 h-16 sm:w-32 sm:h-auto flex flex-col items-center justify-center bg-zinc-50 dark:bg-[#0f1522] border border-zinc-100 dark:border-white/5 rounded-xl shrink-0 p-2">
+                                                    <div className="hidden sm:flex self-start text-[#e3000f] font-black text-[10px] tracking-widest mb-2"><SafeIcon name="tool" size={12} className="mr-1"/> OEM</div>
+                                                    <LagerIcon category={item.category} name={item.name} size={48} className="sm:size-16" />
                                                 </div>
-                                                <div className="min-w-0 flex-1 pt-0.5">
-                                                    <h4 className="text-base font-normal text-slate-900 dark:text-white group-hover:text-[#f97316] transition-colors leading-tight mb-1 truncate">
+
+                                                <div className="flex-1 pr-16 sm:pr-0">
+                                                    <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-white leading-tight mb-2 hover:text-[#0066cc] cursor-pointer" onClick={() => setEditingItem(item)}>
                                                         {item.name}
-                                                    </h4>
-                                                    <div className="flex flex-col text-xs text-slate-500 gap-1.5 mt-1">
-                                                        <div>
-                                                            <span className="font-mono font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px]">
-                                                                {item.service_filter || 'SAKNAR REF'}
-                                                            </span>
+                                                    </h3>
+                                                    
+                                                    <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                                                        <span className="bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 text-[9px] px-2 py-1 rounded font-bold uppercase tracking-widest border border-zinc-200/50 dark:border-white/10">
+                                                            Art.nr
+                                                        </span>
+                                                        <button 
+                                                            onClick={(e) => handleCopyId(e, item.service_filter, item.id)}
+                                                            className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${copiedId === item.id ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-zinc-50 dark:bg-[#09090b] text-zinc-700 dark:text-zinc-300 border-zinc-200/50 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 hover:text-orange-600 dark:hover:text-orange-400 shadow-sm'}`}
+                                                        >
+                                                            <SafeIcon name={copiedId === item.id ? "check" : "copy"} size={10} />
+                                                            {item.service_filter || 'SAKNAS'}
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1.5 w-full sm:w-3/4 mb-3 sm:mb-0">
+                                                        <p className="flex items-center gap-1"><span className="text-zinc-400">Kategori:</span> <span className="font-medium text-zinc-900 dark:text-white">{item.category}</span></p>
+                                                        {item.notes && <p className="truncate sm:whitespace-normal"><span className="text-zinc-400">Egenskaper:</span> <span className="font-medium text-zinc-900 dark:text-white">{item.notes}</span></p>}
+                                                        {lastSold && !inStock && <p className="text-red-500 font-medium">Senast såld: {lastSold.date}</p>}
+                                                    </div>
+                                                    
+                                                    <div className="flex gap-3 mt-1.5 sm:mt-4">
+                                                        <a 
+                                                            href={generateTrodoLink(item.service_filter || item.name)} 
+                                                            target="_blank" rel="noopener noreferrer"
+                                                            onClick={e => e.stopPropagation()} 
+                                                            className="text-[11px] font-bold text-[#0066cc] dark:text-[#3399ff] hover:underline flex items-center gap-1"
+                                                        >
+                                                            Visa på Trodo
+                                                        </a>
+                                                        <a 
+                                                            href={generateThansenLink(item.service_filter || item.name)} 
+                                                            target="_blank" rel="noopener noreferrer"
+                                                            onClick={e => e.stopPropagation()} 
+                                                            className="text-[11px] font-bold text-[#0066cc] dark:text-[#3399ff] hover:underline flex items-center gap-1"
+                                                        >
+                                                            Visa på Thansen
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full sm:w-48 shrink-0 flex flex-col sm:items-end justify-between border-t border-zinc-100 dark:border-white/5 sm:border-0 pt-3 sm:pt-0">
+                                                    <div className="mb-3 sm:mb-0 flex flex-row sm:flex-col items-center sm:items-end justify-between">
+                                                        <div className="text-2xl font-bold text-zinc-900 dark:text-white leading-none">
+                                                            {(parseInt(item.price)||0).toLocaleString()} <span className="text-lg font-medium">kr</span>
                                                         </div>
-                                                        {item.notes && <span className="italic text-[11px] whitespace-normal block">{item.notes}</span>}
+                                                        <div className="text-[10px] text-zinc-500 mt-1 hidden sm:block text-right">inkl. moms 25% | exkl. montering</div>
+                                                        <div className="text-[10px] text-zinc-500 sm:hidden">inkl. moms</div>
+                                                    </div>
+
+                                                    <div className="flex sm:flex-col items-center gap-2 w-full mt-auto">
+                                                        <div className="flex flex-1 sm:w-full items-center bg-white dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-lg overflow-hidden h-12">
+                                                            <button onClick={(e) => quickAdjustStock(e, item, -1)} className="w-12 h-full flex items-center justify-center text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors border-r border-zinc-200/80 dark:border-white/10">
+                                                                <SafeIcon name="minus" size={16} />
+                                                            </button>
+                                                            <div className="flex-1 h-full flex flex-col items-center justify-center bg-zinc-50/30 dark:bg-transparent py-1">
+                                                                <span className="text-base font-black text-zinc-900 dark:text-white leading-none mb-1">{qty}</span>
+                                                            </div>
+                                                            <button onClick={(e) => quickAdjustStock(e, item, 1)} className="w-12 h-full flex items-center justify-center text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors border-l border-zinc-200/80 dark:border-white/10">
+                                                                <SafeIcon name="plus" size={16} />
+                                                            </button>
+                                                        </div>
+
+                                                        <button onClick={() => setEditingItem(item)} className="flex-[1.5] sm:w-full bg-[#0066cc] hover:bg-[#0052a3] text-white h-12 rounded-lg flex items-center justify-center font-bold text-[13px] transition-colors shadow-sm gap-2">
+                                                            <SafeIcon name="edit-2" size={14} className="sm:hidden" />
+                                                            <span>Redigera</span>
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="hidden sm:flex items-center gap-1.5 mt-3 text-[10px] font-bold">
+                                                        <SafeIcon name="box" size={12} className={inStock ? "text-emerald-500" : "text-red-500"} />
+                                                        <span className={inStock ? "text-zinc-700 dark:text-zinc-300" : "text-red-500"}>
+                                                            {inStock ? 'Finns på det lokala lagret' : 'Slutsåld'}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            {/* Category (Desktop) */}
-                                            <div className="hidden lg:block col-span-2 text-[12px] font-bold text-slate-500">
-                                                {item.category}
-                                            </div>
-
-                                            {/* Quantity & Status (Desktop) */}
-                                            <div className="hidden lg:flex col-span-2 justify-end flex-col items-end">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${inStock ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'}`}>
-                                                    {qty} st
-                                                </span>
-                                                {lastSold && (
-                                                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1.5">Senast: {lastSold.date}</span>
-                                                )}
-                                            </div>
-
-                                            {/* Price (Desktop) */}
-                                            <div className="hidden lg:block col-span-2 text-right">
-                                                <span className="text-[15px] font-black text-slate-900 dark:text-white font-mono">
-                                                    {(parseInt(item.price)||0).toLocaleString()} kr
-                                                </span>
-                                            </div>
-
-                                            {/* Actions (Desktop) */}
-                                            <div className="hidden lg:flex col-span-1 justify-end">
-                                                <button className="p-2 text-slate-400 hover:text-[#f97316] bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                                                    <SafeIcon name="edit-2" size={16} />
-                                                </button>
-                                            </div>
-
-                                            {/* LOGISK ÄNDRING: Komprimerad mobilvy. Borttagen övre linje för bättre gruppering */}
-                                            <div className="lg:hidden flex items-center justify-between pt-1">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${inStock ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'}`}>
-                                                    {qty} i lager
-                                                </span>
-                                                <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
-                                                    {(parseInt(item.price)||0).toLocaleString()} kr
-                                                </span>
-                                            </div>
-                                            {/* Mobile Last Sold Alert */}
-                                            {lastSold && !inStock && (
-                                                <div className="lg:hidden text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-50 dark:bg-red-500/10 px-2.5 py-1.5 rounded-md flex items-center gap-1.5 border border-red-100 dark:border-red-500/20">
-                                                    <SafeIcon name="alert-triangle" size={12} className="shrink-0" />
-                                                    <span className="truncate">Såldes {lastSold.date} ({lastSold.customer})</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                )}
                             </div>
-                        )}
+                        </main>
                     </div>
-                </main>
+                </div>
             </div>
 
-            {/* REDIGERINGS MODAL */}
             {editingItem && <LagerItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
         </div>
     );
