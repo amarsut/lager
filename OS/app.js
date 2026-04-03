@@ -59,7 +59,7 @@ const HighlightText = ({ text, highlight }) => {
 };
 
 // --- 3. BMG INTELLIGENCE SPOTLIGHT SEARCH ---
-const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, navigateTo }) => {
+const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, navigateTo }) => {
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
@@ -151,6 +151,7 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, navigateTo }) => 
         }));
 
         // --- 5. DATABAS: DOKUMENT/FILER ---
+        // --- 5. DATABAS: DOKUMENT/FILER ---
         const docs = (allNotes || []).filter(n => 
             (n.type === 'file' || n.type === 'image' || n.fileUrl) && 
             (n.text && n.text.toLowerCase().includes(q))
@@ -158,8 +159,24 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, navigateTo }) => 
             id: n.id, icon: 'file-text', title: n.text || 'Namnlös fil', subtitle: 'Dokument', type: 'link', url: n.fileUrl, category: 'Sökresultat: Dokument', copyText: n.text
         }));
 
-        return [...externalLinks, ...pages, ...jobs, ...docs];
-    }, [debouncedQuery, allJobs, allNotes]);
+        // --- 6. DATABAS: LAGER ---
+        const inv = (allLagerItems || []).filter(i => 
+            (i.name && String(i.name).toLowerCase().includes(q)) || 
+            (i.service_filter && String(i.service_filter).toLowerCase().includes(q)) ||
+            (i.id && String(i.id).toLowerCase().includes(q))
+        ).slice(0, 4).map(i => ({
+            id: `LAGER_ITEM_${i.id}`, 
+            targetPage: 'LAGER',
+            icon: 'package', 
+            title: String(i.name || 'Okänd Artikel'), 
+            subtitle: `${i.quantity || 0} i lager • ${i.price || 0} kr`, 
+            type: 'page', 
+            category: 'Sökresultat: Lager & Inventarie', 
+            copyText: String(i.service_filter || i.name || '')
+        }));
+
+        return [...externalLinks, ...pages, ...jobs, ...docs, ...inv];
+    }, [debouncedQuery, allJobs, allNotes, allLagerItems]); // <- Glöm inte lägga till allLagerItems i slutet här!
 
     useEffect(() => {
         setActiveIndex(0);
@@ -187,7 +204,9 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, navigateTo }) => 
         if (item.type === 'link') {
             window.open(item.url, '_blank');
         } else if (item.type === 'page') {
-            navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null);
+            // Läs av targetPage om den finns, annars item.id
+            const target = item.targetPage || item.id;
+            navigateTo(target, target === 'NEW_JOB' ? { job: null } : null);
         } else if (item.type === 'job') {
             navigateTo('NEW_JOB', { job: item.job });
         }
@@ -342,6 +361,7 @@ const App = () => {
     const [globalSearch, setGlobalSearch] = useState('');
     const [allJobs, setAllJobs] = useState([]);
     const [editingJob, setEditingJob] = useState(null);
+    const [allLagerItems, setAllLagerItems] = useState([]);
     
     // NYTT FÖR DOKUMENTSÖK: Sparar filerna från chatten/databasen globalt
     const [allNotes, setAllNotes] = useState([]);
@@ -481,7 +501,7 @@ const App = () => {
     useEffect(() => {
         const syncWithUrl = () => {
             const hash = window.location.hash.replace('#', '').toUpperCase();
-            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT'];
+            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER'];
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 1024) setSidebarOpen(false);
@@ -507,6 +527,13 @@ const App = () => {
         if (!user) return;
         return db.collection("jobs").orderBy("datum", "desc").onSnapshot(snap => {
             setAllJobs(snap.docs.map(doc => ({ ...doc.data(), id: doc.id })).filter(j => !j.deleted));
+        });
+    }, [user]);
+
+    useEffect(() => {
+        if (!user) return;
+        return db.collection("lager").onSnapshot(snap => {
+            setAllLagerItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
     }, [user]);
 
@@ -543,7 +570,7 @@ const App = () => {
             {!appReady && <SplashScreen />}
             
             {/* Global Spotlight Render */}
-            <SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} navigateTo={navigateTo} />
+            <SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} allLagerItems={allLagerItems} navigateTo={navigateTo} />
 
             {/* Huvudlayout med Dark Mode bakgrund */}
             <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
@@ -567,7 +594,8 @@ const App = () => {
                             { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
-                            { id: 'GARAGE', icon: 'car', label: 'Garage' },
+                            //{ id: 'GARAGE', icon: 'car', label: 'Garage' },
+                            { id: 'LAGER', icon: 'package', label: 'Lager' },
                             { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
                             { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
                             { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
@@ -657,6 +685,7 @@ const App = () => {
                         )}
                         {view === 'NEW_JOB' && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
                         {view === 'GARAGE' && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
+                        {view === 'LAGER' && <window.LagerView allJobs={allJobs} />} 
                         {view === 'CUSTOMERS' && <window.CustomersView allJobs={allJobs} setView={navigateTo} viewParams={viewParams} setEditingJob={setEditingJob} />}
                         {view === 'CALENDAR' && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'OIL_SUPPLY' && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
