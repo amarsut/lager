@@ -231,6 +231,65 @@ const dashboardPropsAreEqual = (prev, next) => {
     return prev.filteredJobs === next.filteredJobs && prev.activeFilter === next.activeFilter && prev.globalSearch === next.globalSearch && prev.statusCounts === next.statusCounts;
 };
 
+// --- SMART TEXTTOLK FÖR UPPGIFTER ---
+// --- SMART TEXTTOLK FÖR UPPGIFTER (Sömlös version) ---
+window.TaskFormatter = React.memo(({ text }) => {
+    const [copiedToken, setCopiedToken] = React.useState(null);
+    
+    // Letar efter antingen länkar ELLER regnr (tillåter mellanslag, t.ex. ABC 123)
+    const regex = /(https?:\/\/[^\s]+|[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9])/g;
+    const parts = text.split(regex);
+
+    const handleCopy = (e, token) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(token);
+        setCopiedToken(token);
+        setTimeout(() => setCopiedToken(null), 1500);
+    };
+
+    return (
+        <span className="text-[13px] font-medium leading-snug break-words select-text cursor-text text-zinc-700 dark:text-zinc-200">
+            {parts.map((part, i) => {
+                if (!part) return null;
+
+                // Är det en länk?
+                if (/^https?:\/\//.test(part)) {
+                    return (
+                        <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 border-b border-dashed border-blue-500/50 hover:text-orange-500 hover:border-orange-500 transition-colors">
+                            {part}
+                        </a>
+                    );
+                }
+                
+                // Är det ett Reg.nr?
+                if (/^[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9]$/.test(part)) {
+                    const cleanReg = part.replace(/\s+/g, '').toUpperCase();
+                    const isCopied = copiedToken === cleanReg;
+                    
+                    return (
+                        <span
+                            key={i}
+                            onClick={(e) => handleCopy(e, cleanReg)}
+                            title="Klicka för att kopiera"
+                            className={`inline-flex items-center cursor-pointer transition-colors border-b border-dashed ${
+                                isCopied 
+                                    ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' 
+                                    : 'border-zinc-400/60 dark:border-zinc-500/60 hover:text-orange-500 hover:border-orange-500 dark:hover:text-orange-400 dark:hover:border-orange-400'
+                            }`}
+                        >
+                            {isCopied && <window.Icon name="check" size={12} className="mr-0.5 relative top-[1px]" />}
+                            {cleanReg}
+                        </span>
+                    );
+                }
+                
+                // Vanlig text
+                return <span key={i}>{part}</span>;
+            })}
+        </span>
+    );
+});
+
 // --- DASHBOARD WIDGETS (Exceptionell Version) ---
 
 window.DashboardWidgets = React.memo(({ allJobs }) => {
@@ -395,23 +454,27 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                         </div>
                     )}
                     {tasks.map((task) => (
-                        <div 
-                            key={task.id} 
-                            onClick={() => toggleTask(task.id)}
-                            className="flex items-center justify-between gap-3 cursor-pointer group py-1.5 px-2 -mx-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all"
-                        >
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all duration-300 ${task.done ? 'bg-orange-500 border-orange-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-transparent text-transparent group-hover:border-orange-400'}`}>
-                                    <window.Icon name="check" size={12} className={task.done ? 'scale-100' : 'scale-50 opacity-0 group-hover:opacity-50'} />
+                        <div key={task.id} className="flex items-start justify-between gap-3 group py-1.5 px-2 -mx-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all">
+                            
+                            <div className="flex items-start gap-3 min-w-0 flex-1">
+                                {/* CHECKBOXEN (Det enda som triggar "Klar") */}
+                                <div 
+                                    onClick={() => toggleTask(task.id)}
+                                    className={`mt-[3px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-orange-500 border-orange-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-white/50 dark:bg-transparent text-transparent hover:border-orange-500 hover:shadow-sm'}`}
+                                >
+                                    <window.Icon name="check" size={12} className={task.done ? 'scale-100' : 'scale-0 opacity-0 transition-transform'} />
                                 </div>
-                                <span className={`text-[13px] font-medium transition-all truncate select-none ${task.done ? 'text-zinc-400 dark:text-zinc-500 line-through' : 'text-zinc-700 dark:text-zinc-200'}`}>
-                                    {task.text}
-                                </span>
+                                
+                                {/* TEXTEN (Nu markerbar & formaterad) */}
+                                <div className={`flex-1 min-w-0 select-text transition-opacity duration-300 ${task.done ? 'opacity-40 grayscale line-through' : ''}`}>
+                                    <window.TaskFormatter text={task.text} />
+                                </div>
                             </div>
                             
+                            {/* RADERA-KNAPPEN */}
                             <button 
                                 onClick={(e) => deleteTask(e, task.id)} 
-                                className="opacity-0 group-hover:opacity-100 w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all shrink-0"
+                                className="mt-0.5 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-all shrink-0 cursor-pointer"
                                 title="Radera uppgift"
                             >
                                 <window.Icon name="trash-2" size={12} />
