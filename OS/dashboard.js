@@ -231,6 +231,216 @@ const dashboardPropsAreEqual = (prev, next) => {
     return prev.filteredJobs === next.filteredJobs && prev.activeFilter === next.activeFilter && prev.globalSearch === next.globalSearch && prev.statusCounts === next.statusCounts;
 };
 
+// --- DASHBOARD WIDGETS (Exceptionell Version) ---
+
+window.DashboardWidgets = React.memo(({ allJobs }) => {
+    
+    // ==========================================
+    // 1. LOGIK: UPPGIFTER (Mina Uppgifter)
+    // ==========================================
+    const [tasks, setTasks] = React.useState(() => {
+        const saved = localStorage.getItem('planerare_tasks');
+        return saved ? JSON.parse(saved) : [
+            { id: 1, text: 'Välkommen! Lägg till en uppgift nedan.', done: false }
+        ];
+    });
+    const [newTask, setNewTask] = React.useState('');
+
+    React.useEffect(() => {
+        localStorage.setItem('planerare_tasks', JSON.stringify(tasks));
+    }, [tasks]);
+
+    React.useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+    }, [tasks, upcomingDays]);
+
+    const toggleTask = (id) => {
+        setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    };
+
+    const addTask = (e) => {
+        e.preventDefault();
+        if (!newTask.trim()) return;
+        setTasks([...tasks, { id: Date.now(), text: newTask.trim(), done: false }]);
+        setNewTask('');
+    };
+
+    const deleteTask = (e, id) => {
+        e.stopPropagation();
+        setTasks(tasks.filter(t => t.id !== id));
+    };
+
+    const completedTasks = tasks.filter(t => t.done).length;
+    const taskProgress = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
+
+    // ==========================================
+    // 2. LOGIK: BELÄGGNING (Kommande 5 dagar)
+    // ==========================================
+    const upcomingDays = React.useMemo(() => {
+        const days = [];
+        const today = new Date();
+        const dayNames = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
+        let maxJobs = 1; 
+
+        for (let i = 0; i < 5; i++) {
+            const d = new Date();
+            d.setDate(today.getDate() + i);
+            const targetIso = d.toISOString().split('T')[0];
+            const count = allJobs.filter(j => j.datum && j.datum.startsWith(targetIso)).length;
+            if (count > maxJobs) maxJobs = count;
+        }
+
+        for (let i = 0; i < 5; i++) {
+            const targetDate = new Date();
+            targetDate.setDate(today.getDate() + i);
+            const targetIso = targetDate.toISOString().split('T')[0];
+
+            const jobsThisDay = allJobs.filter(job => {
+                if (!job.datum) return false;
+                return job.datum.startsWith(targetIso);
+            }).length;
+
+            const heightPercent = jobsThisDay === 0 ? 5 : (jobsThisDay / maxJobs) * 100;
+            
+            let colorClass = 'from-orange-400 to-orange-300'; 
+            if (jobsThisDay > 4) colorClass = 'from-orange-500 to-orange-400'; 
+            if (jobsThisDay > 8) colorClass = 'from-red-500 to-orange-500'; 
+
+            days.push({
+                label: i === 0 ? 'Idag' : dayNames[targetDate.getDay()],
+                count: jobsThisDay,
+                isToday: i === 0,
+                height: `${heightPercent}%`,
+                colorClass: colorClass
+            });
+        }
+        return days;
+    }, [allJobs]);
+
+    return (
+        // Ändrade margins och gaps för att stödja mobil smidigare
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-2 lg:mb-8">
+            
+            {/* --- WIDGET 1: BELÄGGNING --- */}
+            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/widget relative overflow-hidden">
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none"></div>
+
+                <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div>
+                        <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white flex items-center gap-2 mb-1">
+                            Arbetsbelastning
+                        </h3>
+                        <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-widest flex items-center gap-1.5">
+                            <window.Icon name="calendar" size={10} /> Kommande 5 Dagar
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-emerald-200/50 dark:border-emerald-500/20">
+                        <window.Icon name="trending-up" size={10} /> Live
+                    </div>
+                </div>
+                
+                <div className="flex items-end justify-between h-32 gap-3 mt-auto pt-4 relative z-10">
+                    {upcomingDays.map((day, i) => (
+                        <div key={i} className="flex flex-col items-center flex-1 group h-full justify-end cursor-default">
+                            <div className="absolute -top-2 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 flex flex-col items-center pointer-events-none z-20">
+                                <span className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[11px] font-bold px-2.5 py-1 rounded-md shadow-xl whitespace-nowrap">
+                                    {day.count} Bilar
+                                </span>
+                                <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-l-transparent border-r-transparent border-t-zinc-900 dark:border-t-white"></div>
+                            </div>
+
+                            <div className="w-full max-w-[36px] h-full bg-zinc-100 dark:bg-white/5 rounded-xl flex items-end overflow-hidden p-1 relative shadow-inner">
+                                <div 
+                                    className={`w-full rounded-lg transition-all duration-1000 ease-out bg-gradient-to-t ${day.isToday || day.count > 0 ? day.colorClass : 'from-zinc-300 to-zinc-200 dark:from-zinc-600 dark:to-zinc-500'} group-hover:brightness-110`}
+                                    style={{ height: day.height }}
+                                ></div>
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest mt-3 transition-colors ${day.isToday ? 'text-orange-500' : 'text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300'}`}>
+                                {day.label}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* --- WIDGET 2: MINA UPPGIFTER --- */}
+            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col min-h-[220px]">
+                
+                <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-100 dark:bg-white/5">
+                    <div 
+                        className="h-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(249,115,22,0.4)]"
+                        style={{ width: `${taskProgress}%` }}
+                    ></div>
+                </div>
+                
+                <div className="flex justify-between items-end mb-4 relative z-10 pt-2">
+                    <div>
+                        <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+                            Mina Uppgifter
+                        </h3>
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">
+                            {completedTasks} av {tasks.length} Klara
+                        </span>
+                    </div>
+                    <div className="text-2xl font-light tracking-tighter text-zinc-900 dark:text-white">
+                        {taskProgress}<span className="text-[12px] font-bold text-zinc-400 ml-0.5">%</span>
+                    </div>
+                </div>
+
+                <div className="flex-1 space-y-2.5 overflow-y-auto custom-scrollbar relative z-10 pr-2 max-h-[140px] mt-2">
+                    {tasks.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-4 opacity-50">
+                            <window.Icon name="check-circle" size={24} className="mb-2 text-zinc-400" />
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Allt är klart!</p>
+                        </div>
+                    )}
+                    {tasks.map((task) => (
+                        <div 
+                            key={task.id} 
+                            onClick={() => toggleTask(task.id)}
+                            className="flex items-center justify-between gap-3 cursor-pointer group py-1.5 px-2 -mx-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all"
+                        >
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all duration-300 ${task.done ? 'bg-orange-500 border-orange-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-transparent text-transparent group-hover:border-orange-400'}`}>
+                                    <window.Icon name="check" size={12} className={task.done ? 'scale-100' : 'scale-50 opacity-0 group-hover:opacity-50'} />
+                                </div>
+                                <span className={`text-[13px] font-medium transition-all truncate select-none ${task.done ? 'text-zinc-400 dark:text-zinc-500 line-through' : 'text-zinc-700 dark:text-zinc-200'}`}>
+                                    {task.text}
+                                </span>
+                            </div>
+                            
+                            <button 
+                                onClick={(e) => deleteTask(e, task.id)} 
+                                className="opacity-0 group-hover:opacity-100 w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all shrink-0"
+                                title="Radera uppgift"
+                            >
+                                <window.Icon name="trash-2" size={12} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                
+                <form onSubmit={addTask} className="mt-4 relative z-10 flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-white/5">
+                    <input
+                        type="text"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        placeholder="Skriv ny uppgift..."
+                        className="flex-1 bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-[12px] text-zinc-900 dark:text-white outline-none focus:border-orange-500/50 dark:focus:border-orange-500/50 transition-all placeholder:text-zinc-400"
+                    />
+                    <button 
+                        type="submit" 
+                        disabled={!newTask.trim()}
+                        className="w-10 h-10 bg-zinc-900 dark:bg-white disabled:bg-zinc-100 dark:disabled:bg-white/5 disabled:text-zinc-400 hover:bg-orange-500 dark:hover:bg-orange-500 text-white dark:text-zinc-900 rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-sm"
+                    >
+                        <window.Icon name="plus" size={16} />
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+});
+
 window.DashboardView = React.memo(({
     allJobs,
     filteredJobs, setEditingJob, setView,
@@ -239,22 +449,21 @@ window.DashboardView = React.memo(({
 }) => {
     const [historyTarget, setHistoryTarget] = React.useState(null);
     const [visibleCount, setVisibleCount] = React.useState(20);
-    const [copiedRegId, setCopiedRegId] = React.useState(null); // State för snabbkopiering desktop
-    
-    // STATE FÖR SNABBSORTERING
+    const [copiedRegId, setCopiedRegId] = React.useState(null); 
     const [sortConfig, setSortConfig] = React.useState({ key: null, direction: 'asc' });
+    
+    // NYTT: State för att visa/dölja mobila widgets
+    const [showMobileWidgets, setShowMobileWidgets] = React.useState(false);
     
     React.useEffect(() => {
         setVisibleCount(20);
     }, [activeFilter, globalSearch]);
 
-    // NY LOGIK FÖR SORTERING
     const sortedAndFilteredJobs = React.useMemo(() => {
         let result = [...filteredJobs];
 
         result.sort((a, b) => {
             if (!sortConfig.key) {
-                // Standard sortering (Efter datum)
                 if (!a.datum) return 1; if (!b.datum) return -1;
                 return activeFilter === 'BOKAD' ? a.datum.localeCompare(b.datum) : b.datum.localeCompare(a.datum);
             }
@@ -262,7 +471,6 @@ window.DashboardView = React.memo(({
             let aVal = a[sortConfig.key];
             let bVal = b[sortConfig.key];
 
-            // Hantera siffror vs text
             if (sortConfig.key === 'kundpris') {
                 aVal = parseInt(aVal) || 0;
                 bVal = parseInt(bVal) || 0;
@@ -283,13 +491,10 @@ window.DashboardView = React.memo(({
 
     const requestSort = (key) => {
         let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
+        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
         setSortConfig({ key, direction });
     };
 
-    // Funktion för Snabbkopiering Desktop
     const handleCopyDesktop = (e, regnr, jobId) => {
         e.stopPropagation();
         if (!regnr || regnr === '-') return;
@@ -398,12 +603,10 @@ window.DashboardView = React.memo(({
 
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            {/* --- DESKTOP VY --- */}
+            {/* --- DESKTOP VY (Oförändrad) --- */}
             <div className="hidden lg:flex flex-col h-full px-4 lg:px-2">
-    
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 pt-2 lg:pt-0">
-                    
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="relative group cursor-default shrink-0">
                             <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
@@ -439,6 +642,8 @@ window.DashboardView = React.memo(({
                         </button>
                     </div>
                 </div>
+
+                <window.DashboardWidgets allJobs={allJobs} />
 
                 {/* DYNAMISK TOP-GRID (Desktop) */}
                 <div className="grid grid-cols-3 gap-6 mb-8">
@@ -633,7 +838,6 @@ window.DashboardView = React.memo(({
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 align-middle">
-                                                    {/* NYTT: Snabbkopiering Desktop */}
                                                     <div 
                                                         onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
                                                         title="Kopiera Reg.nr"
@@ -708,7 +912,6 @@ window.DashboardView = React.memo(({
                                 </tbody>
                             </table>
                             
-                            {/* KNAPP FÖR ATT VISA FLER (DESKTOP) */}
                             {hasMore && (
                                 <div className="flex justify-center p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50/30 dark:bg-white/[0.01]">
                                     <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-300 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm transition-colors flex items-center gap-2">
@@ -727,7 +930,8 @@ window.DashboardView = React.memo(({
                 className="lg:hidden flex flex-col min-h-screen bg-zinc-50 dark:bg-[#0f1522] touch-pan-y transition-colors duration-500"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
-                <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300">
+                {/* STICKY HEADER FÖR MOBIL - MED NYA OVERLAY-FUNKTIONEN */}
+                <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
                     
                     <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/5">
                         
@@ -750,10 +954,21 @@ window.DashboardView = React.memo(({
                             </div>
                         </div>
 
-                        {/* MOBIL SPOTLIGHT KNAPP */}
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/5">
-                            <window.Icon name="search" size={18} />
-                        </button>
+                        {/* NYTT: MOBILA KNAPPAR (WIDGETS + SPOTLIGHT) */}
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => setShowMobileWidgets(!showMobileWidgets)} 
+                                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${showMobileWidgets ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 dark:hover:text-white border-transparent dark:border-white/5'}`}
+                            >
+                                <window.Icon name={showMobileWidgets ? "chevron-up" : "layout-dashboard"} size={18} />
+                            </button>
+                            <button 
+                                onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
+                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/5"
+                            >
+                                <window.Icon name="search" size={18} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* DINA FILTER-TABS */}
@@ -768,13 +983,20 @@ window.DashboardView = React.memo(({
                             const isActive = activeFilter === f;
                             const count = statusCounts[f] || 0;
                             return (
-                                <button key={f} data-tab={f} onClick={() => setActiveFilter(f)} className={`py-3 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-500 border-transparent'}`}>
+                                <button key={f} data-tab={f} onClick={() => { setActiveFilter(f); setShowMobileWidgets(false); }} className={`py-3 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-500 border-transparent'}`}>
                                     {f}
                                     {count > 0 && <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>{count}</span>}
                                 </button>
                             );
                         })}
                     </div>
+
+                    {/* NYTT: FLYTANDE WIDGET-DROPDOWN FÖR MOBIL (Stör inte jobbkorten) */}
+                    {showMobileWidgets && (
+                        <div className="absolute top-full left-0 right-0 bg-zinc-50/95 dark:bg-[#0f1522]/95 backdrop-blur-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-b border-zinc-200 dark:border-white/10 p-4 pt-5 animate-in slide-in-from-top-2 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar z-50">
+                            <window.DashboardWidgets allJobs={allJobs} />
+                        </div>
+                    )}
                 </div>
 
                 {/* INVOICE BANNER MOBIL */}
@@ -800,12 +1022,13 @@ window.DashboardView = React.memo(({
                 )}
 
                 {/* KORTEN MED DATUM-GRUPPERING */}
-                <div className="px-3 pt-4 pb-0 flex flex-col">
+                <div className="px-3 pt-1 pb-0 flex flex-col"> {/* 1. Minskade padding-top (pt-4 -> pt-1) på containern */}
                     {sortedAndFilteredJobs.length > 0 ? (
                         <>
                             {(() => {
                                 let lastDate = null;
-                                return visibleJobs.map((job) => {
+                                // 2. Lade till 'index' i map-funktionen för att veta vad som är högst upp
+                                return visibleJobs.map((job, index) => { 
                                 const currentDate = job.datum ? formatDate(job.datum) : 'INVÄNTAR DATUM';
                                 const showHeader = currentDate !== lastDate;
                                 lastDate = currentDate;
@@ -813,7 +1036,8 @@ window.DashboardView = React.memo(({
                                 return (
                                     <React.Fragment key={job.id}>
                                         {showHeader && (
-                                            <div className="mt-4 mb-3 px-2 flex items-center gap-2">
+                                            // 3. Dynamisk margin: Mindre luft (mt-2) om det är första gruppen, mer luft (mt-6) mellan olika dagar
+                                            <div className={`${index === 0 ? 'mt-2' : 'mt-6'} mb-3 px-2 flex items-center gap-2`}>
                                                 <div className="h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
                                                 <h3 className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                                                     {currentDate}
