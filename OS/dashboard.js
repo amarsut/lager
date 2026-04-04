@@ -295,38 +295,52 @@ window.TaskFormatter = React.memo(({ text }) => {
 window.DashboardWidgets = React.memo(({ allJobs }) => {
     
     // ==========================================
-    // 1. LOGIK: UPPGIFTER (Mina Uppgifter)
+    // 1. LOGIK: UPPGIFTER (Mina Uppgifter - Firebase Live Sync)
     // ==========================================
-    const [tasks, setTasks] = React.useState(() => {
-        const saved = localStorage.getItem('planerare_tasks');
-        return saved ? JSON.parse(saved) : [
-            { id: 1, text: 'Välkommen! Lägg till en uppgift nedan.', done: false }
-        ];
-    });
+    const [tasks, setTasks] = React.useState([]);
     const [newTask, setNewTask] = React.useState('');
 
+    // Lyssna på uppgifter från Firebase i realtid
     React.useEffect(() => {
-        localStorage.setItem('planerare_tasks', JSON.stringify(tasks));
-    }, [tasks]);
+        if (!window.db) return;
+        
+        const unsubscribe = window.db.collection("tasks")
+            .orderBy("createdAt", "asc")
+            .onSnapshot(snap => {
+                const fetchedTasks = snap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setTasks(fetchedTasks);
+            }, error => {
+                console.error("Kunde inte hämta uppgifter:", error);
+            });
 
-    React.useEffect(() => {
-        if (window.lucide) window.lucide.createIcons();
-    }, [tasks, upcomingDays]);
+        return () => unsubscribe();
+    }, []);
 
-    const toggleTask = (id) => {
-        setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    const toggleTask = (id, currentStatus) => {
+        window.db.collection("tasks").doc(id).update({ 
+            done: !currentStatus 
+        });
     };
 
     const addTask = (e) => {
         e.preventDefault();
         if (!newTask.trim()) return;
-        setTasks([...tasks, { id: Date.now(), text: newTask.trim(), done: false }]);
+        
+        window.db.collection("tasks").add({ 
+            text: newTask.trim(), 
+            done: false,
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
         setNewTask('');
     };
 
     const deleteTask = (e, id) => {
         e.stopPropagation();
-        setTasks(tasks.filter(t => t.id !== id));
+        window.db.collection("tasks").doc(id).delete();
     };
 
     const completedTasks = tasks.filter(t => t.done).length;
@@ -376,8 +390,12 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
         return days;
     }, [allJobs]);
 
+    // Ladda in ikoner efter att datan renderats
+    React.useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+    }, [tasks, upcomingDays]);
+
     return (
-        // Ändrade margins och gaps för att stödja mobil smidigare
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-2 lg:mb-8">
             
             {/* --- WIDGET 1: BELÄGGNING --- */}
@@ -457,21 +475,18 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                         <div key={task.id} className="flex items-start justify-between gap-3 group py-1.5 px-2 -mx-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all">
                             
                             <div className="flex items-start gap-3 min-w-0 flex-1">
-                                {/* CHECKBOXEN (Det enda som triggar "Klar") */}
                                 <div 
-                                    onClick={() => toggleTask(task.id)}
+                                    onClick={() => toggleTask(task.id, task.done)}
                                     className={`mt-[3px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-orange-500 border-orange-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-white/50 dark:bg-transparent text-transparent hover:border-orange-500 hover:shadow-sm'}`}
                                 >
                                     <window.Icon name="check" size={12} className={task.done ? 'scale-100' : 'scale-0 opacity-0 transition-transform'} />
                                 </div>
                                 
-                                {/* TEXTEN (Nu markerbar & formaterad) */}
                                 <div className={`flex-1 min-w-0 select-text transition-opacity duration-300 ${task.done ? 'opacity-40 grayscale line-through' : ''}`}>
                                     <window.TaskFormatter text={task.text} />
                                 </div>
                             </div>
                             
-                            {/* RADERA-KNAPPEN */}
                             <button 
                                 onClick={(e) => deleteTask(e, task.id)} 
                                 className="mt-0.5 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-all shrink-0 cursor-pointer"
