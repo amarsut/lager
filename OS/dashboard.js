@@ -199,7 +199,11 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 {/* RAD 3: Tjänst & Pris */}
                 <div className="flex items-end justify-between mt-1">
                     <div className="flex-1 min-w-0 mr-4">
-                        <span className="text-[14px] font-black text-zinc-900 dark:text-white uppercase tracking-tight block truncate">{job.paket || 'Standard'}</span>
+                        {/* NYTT: Kollar om det är Oljebyte och lägger på volymen! */}
+                        <span className="text-[14px] font-black text-zinc-900 dark:text-white uppercase tracking-tight block truncate">
+                            {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
+                        </span>
+                        
                         {job.kommentar && (
                             <span className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-1 line-clamp-1 italic flex items-center gap-1.5 font-medium">
                                 <window.Icon name="message-square" size={10} className="shrink-0" />
@@ -231,62 +235,67 @@ const dashboardPropsAreEqual = (prev, next) => {
     return prev.filteredJobs === next.filteredJobs && prev.activeFilter === next.activeFilter && prev.globalSearch === next.globalSearch && prev.statusCounts === next.statusCounts;
 };
 
-// --- SMART TEXTTOLK FÖR UPPGIFTER ---
-// --- SMART TEXTTOLK FÖR UPPGIFTER (Sömlös version) ---
-window.TaskFormatter = React.memo(({ text }) => {
+// --- SMART TEXTTOLK FÖR UPPGIFTER (Perfekt linjering) ---
+window.TaskFormatter = React.memo(({ text, isDone }) => {
     const [copiedToken, setCopiedToken] = React.useState(null);
     
-    // Letar efter antingen länkar ELLER regnr (tillåter mellanslag, t.ex. ABC 123)
     const regex = /(https?:\/\/[^\s]+|[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9])/g;
     const parts = text.split(regex);
 
     const handleCopy = (e, token) => {
         e.stopPropagation();
+        if (isDone) return; // Inaktivera kopiering om uppgiften är avklarad
         navigator.clipboard.writeText(token);
         setCopiedToken(token);
         setTimeout(() => setCopiedToken(null), 1500);
     };
 
     return (
-        <span className="text-[13px] font-medium leading-snug break-words select-text cursor-text text-zinc-700 dark:text-zinc-200">
+        <>
             {parts.map((part, i) => {
                 if (!part) return null;
 
-                // Är det en länk?
+                // MAGIN: Är uppgiften klar? Rita ut som helt vanlig text så överstrykningen blir felfri!
+                if (isDone) {
+                    return <span key={i}>{part}</span>;
+                }
+
                 if (/^https?:\/\//.test(part)) {
                     return (
-                        <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 border-b border-dashed border-blue-500/50 hover:text-orange-500 hover:border-orange-500 transition-colors">
+                        <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 border-b border-dashed border-blue-500/50 hover:text-orange-500 hover:border-orange-500 transition-colors pb-[1px]">
                             {part}
                         </a>
                     );
                 }
                 
-                // Är det ett Reg.nr?
                 if (/^[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9]$/.test(part)) {
                     const cleanReg = part.replace(/\s+/g, '').toUpperCase();
                     const isCopied = copiedToken === cleanReg;
                     
+                    if (isCopied) {
+                        return (
+                            <span key={i} className="text-emerald-600 dark:text-emerald-400 border-b border-dashed border-emerald-500/30 pb-[1px]">
+                                <window.Icon name="check" size={12} className="inline mr-0.5 relative -top-[1px]" />
+                                {cleanReg}
+                            </span>
+                        );
+                    }
+
                     return (
                         <span
                             key={i}
                             onClick={(e) => handleCopy(e, cleanReg)}
                             title="Klicka för att kopiera"
-                            className={`inline-flex items-center cursor-pointer transition-colors border-b border-dashed ${
-                                isCopied 
-                                    ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' 
-                                    : 'border-zinc-400/60 dark:border-zinc-500/60 hover:text-orange-500 hover:border-orange-500 dark:hover:text-orange-400 dark:hover:border-orange-400'
-                            }`}
+                            className="cursor-pointer border-b border-dashed border-zinc-400/60 dark:border-zinc-500/60 hover:text-orange-500 hover:border-orange-500 dark:hover:text-orange-400 dark:hover:border-orange-400 transition-colors pb-[1px]"
                         >
-                            {isCopied && <window.Icon name="check" size={12} className="mr-0.5 relative top-[1px]" />}
                             {cleanReg}
                         </span>
                     );
                 }
                 
-                // Vanlig text
                 return <span key={i}>{part}</span>;
             })}
-        </span>
+        </>
     );
 });
 
@@ -345,6 +354,19 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
 
     const completedTasks = tasks.filter(t => t.done).length;
     const taskProgress = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
+
+    // FIX: Felsäker sortering! Aktiva överst, avklarade underst.
+    const sortedTasks = React.useMemo(() => {
+        return [...tasks].sort((a, b) => {
+            if (a.done !== b.done) {
+                return a.done ? 1 : -1;
+            }
+            // Sortera inbördes på när de skapades (Safeguard om Firebase inte hunnit synka)
+            const timeA = a.createdAt?.toMillis?.() || Number.MAX_SAFE_INTEGER;
+            const timeB = b.createdAt?.toMillis?.() || Number.MAX_SAFE_INTEGER;
+            return timeA - timeB;
+        });
+    }, [tasks]);
 
     // ==========================================
     // 2. LOGIK: BELÄGGNING (Kommande 5 dagar)
@@ -471,19 +493,20 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                             <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Allt är klart!</p>
                         </div>
                     )}
-                    {tasks.map((task) => (
-                        <div key={task.id} className="flex items-start justify-between gap-3 group py-1.5 px-2 -mx-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all">
+                    {sortedTasks.map((task) => (
+                        <div key={task.id} className={`flex items-start justify-between gap-3 group py-1.5 px-2 -mx-2 rounded-xl transition-all duration-500 ${task.done ? 'opacity-50' : 'hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
                             
                             <div className="flex items-start gap-3 min-w-0 flex-1">
                                 <div 
                                     onClick={() => toggleTask(task.id, task.done)}
-                                    className={`mt-[3px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-orange-500 border-orange-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-white/50 dark:bg-transparent text-transparent hover:border-orange-500 hover:shadow-sm'}`}
+                                    className={`mt-[2px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-orange-500 border-orange-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-white/50 dark:bg-transparent text-transparent hover:border-orange-500 hover:shadow-sm'}`}
                                 >
-                                    <window.Icon name="check" size={12} className={task.done ? 'scale-100' : 'scale-0 opacity-0 transition-transform'} />
+                                    <window.Icon name="check" size={12} className={`transition-transform duration-300 ${task.done ? 'scale-100' : 'scale-0 opacity-0'}`} />
                                 </div>
                                 
-                                <div className={`flex-1 min-w-0 select-text transition-opacity duration-300 ${task.done ? 'opacity-40 grayscale line-through' : ''}`}>
-                                    <window.TaskFormatter text={task.text} />
+                                {/* Wrappern sätter line-through på ALLT innehåll om den är done */}
+                                <div className={`flex-1 min-w-0 select-text text-[13px] font-medium leading-relaxed transition-all duration-500 ${task.done ? 'line-through text-zinc-500 dark:text-zinc-600' : 'text-zinc-700 dark:text-zinc-200'}`}>
+                                    <window.TaskFormatter text={task.text} isDone={task.done} />
                                 </div>
                             </div>
                             
@@ -906,7 +929,11 @@ window.DashboardView = React.memo(({
                                                 </td>
                                                 <td className="px-4 py-4 align-middle">
                                                     <div className="flex flex-col min-w-0">
-                                                        <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300">{job.paket || 'Standard_Deploy'}</span>
+                                                        {/* NYTT: Kollar om det är Oljebyte och lägger på volymen på desktop! */}
+                                                        <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300">
+                                                            {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard_Deploy')}
+                                                        </span>
+                                                        
                                                         {job.kommentar && (
                                                             <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-1 italic truncate max-w-[140px]">
                                                                 <window.Icon name="message-square" size={10} className="shrink-0" />
