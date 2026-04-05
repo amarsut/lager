@@ -113,7 +113,9 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
         if (isRegNr) {
             externalLinks = [
                 { id: 'biluppgifter', icon: 'external-link', title: `Sök på Biluppgifter`, subtitle: `biluppgifter.se/fordon/${cleanedQuery}`, type: 'link', url: `https://biluppgifter.se/fordon/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
-                { id: 'carinfo', icon: 'external-link', title: `Sök på Car.info`, subtitle: `car.info/sv-se/license-plate/S/${cleanedQuery}`, type: 'link', url: `https://www.car.info/sv-se/license-plate/S/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
+                { id: 'carinfo', icon: 'external-link', title: `Sök på Car.info`, subtitle: `car.info/sv-se/license-plate/S/${cleanedQuery}`, type: 'link', url: `https://www.car.info/sv-se/license-plate/S/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                // NYTT: Oljemagasinet med Walkie-Talkie trigger
+                { id: 'oljemagasinet', icon: 'droplet', title: `Hämta Oljevolym`, subtitle: `Kör Systemradar på Oljemagasinet`, type: 'radar', regnr: cleanedQuery, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
             ];
         }
 
@@ -201,10 +203,25 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
     const executeAction = (item) => {
         if (debouncedQuery) saveSearch(debouncedQuery);
         onClose();
-        if (item.type === 'link') {
+
+        if (item.type === 'radar') {
+            const radarWindow = window.open('https://www.oljemagasinet.se/', '_blank');
+            let pings = 0;
+            const pingInterval = setInterval(() => {
+                if (radarWindow && !radarWindow.closed) {
+                    // Vi skickar med readOnly: true som en flagga
+                    radarWindow.postMessage({ 
+                        action: 'START_OS_RADAR', 
+                        regnr: item.regnr,
+                        readOnly: true 
+                    }, '*');
+                }
+                pings++;
+                if (pings > 20) clearInterval(pingInterval);
+            }, 500);
+        } else if (item.type === 'link') {
             window.open(item.url, '_blank');
         } else if (item.type === 'page') {
-            // Läs av targetPage om den finns, annars item.id
             const target = item.targetPage || item.id;
             navigateTo(target, target === 'NEW_JOB' ? { job: null } : null);
         } else if (item.type === 'job') {
@@ -385,7 +402,7 @@ const App = () => {
     useEffect(() => {
         const handleOpenSpotlight = () => setIsSpotlightOpen(true);
         const handleCmdK = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
                 e.preventDefault();
                 setIsSpotlightOpen(true);
             }
