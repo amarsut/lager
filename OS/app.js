@@ -201,7 +201,7 @@ const GlobalSystemRadar = ({ isChatOpen }) => {
     };
 
     return (
-        <div className={`fixed bottom-[112px] z-[9999] flex flex-col gap-3 items-end pointer-events-none transition-all duration-500 ease-in-out ${isChatOpen ? 'lg:right-[490px] right-8' : 'right-8'}`}>
+        <div className={`fixed bottom-[112px] z-[9999] flex flex-col gap-3 items-end pointer-events-none transition-all duration-500 ease-in-out ${isChatOpen ? 'lg:right-[490px] right-4 sm:right-8' : 'right-4 sm:right-8'}`}>
             {radars.map(radar => {
                 
                 if (radar.isMinimized) {
@@ -239,7 +239,7 @@ const GlobalSystemRadar = ({ isChatOpen }) => {
 
                 return (
                     <div key={radar.regnr} className="pointer-events-auto animate-in slide-in-from-right-8 fade-in zoom-in-95 duration-300">
-                        <div className="bg-[#0f172a]/95 backdrop-blur-2xl border border-emerald-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5),_0_0_30px_rgba(16,185,129,0.15)] rounded-2xl w-[420px] relative overflow-hidden flex flex-col font-sans">
+                        <div className="bg-[#0f172a]/95 backdrop-blur-2xl border border-emerald-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5),_0_0_30px_rgba(16,185,129,0.15)] rounded-2xl w-[calc(100vw-2rem)] sm:w-[420px] relative overflow-hidden flex flex-col font-sans">
                             
                             <div className={`absolute top-0 left-0 w-full h-1 transition-colors ${radar.status === 'loading' ? 'bg-orange-500 animate-pulse' : radar.status === 'success' ? 'bg-emerald-500 shadow-[0_0_15px_#10b981]' : 'bg-red-500'}`}></div>
                             
@@ -260,7 +260,7 @@ const GlobalSystemRadar = ({ isChatOpen }) => {
                             </button>
 
                             <div className="p-6">
-                                <div className="flex items-center gap-5 mb-5">
+                                <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-5">
                                     <div className="shrink-0 relative flex items-center justify-center">
                                         {radar.status === 'loading' ? (
                                             <>
