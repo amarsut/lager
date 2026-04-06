@@ -45,7 +45,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [regnrSuggestions, setRegnrSuggestions] = React.useState([]);
     const [oilLiters, setOilLiters] = React.useState(4.3);
     
-    // Håller koll på datan vi precis hämtat (eller laddat från ett gammalt jobb)
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
 
     // --- DIREKTLÄNK MED CHROME-TILLÄGGET ---
@@ -53,7 +52,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         const handleMessage = (event) => {
             const fordonData = event.data;
 
-            // 1. DATA FRÅN CAR.INFO
             if (fordonData && fordonData.source === 'Car.info_Extension') {
                 setFetchedCarInfo({
                     regnr: fordonData.regnr || "",
@@ -62,6 +60,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     miltal: fordonData.miltal,
                     oljevolym: fordonData.oljevolym,
                     årsmodell: fordonData.årsmodell,
+                    vin: fordonData.vin,
                     isNewData: true 
                 });
 
@@ -77,18 +76,50 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
             }
 
-            // 2. DATA FRÅN OLJEMAGASINET
             if (fordonData && fordonData.source === 'Oljemagasinet_Extension') {
+                setFetchedCarInfo(prev => {
+                    const p = prev || { regnr: fordonData.regnr, isNewData: true };
+                    return {
+                        ...p,
+                        motorkod: fordonData.motorkod || p.motorkod,
+                        årsmodell: fordonData.årsmodell || p.årsmodell,
+                        oljevolym: fordonData.oljevolym ? `${fordonData.oljevolym.replace(/[^0-9.,]/g, '')} l` : p.oljevolym
+                    };
+                });
+
                 if (fordonData.oljevolym) {
                     let oljaNum = parseFloat(fordonData.oljevolym.replace(',', '.').replace(/[^0-9.]/g, ''));
                     if (!isNaN(oljaNum) && oljaNum > 0) {
                         setOilLiters(oljaNum);
-                        updateOilLogic(oljaNum); // Uppdaterar priskalkylatorn
-                        
-                        // NYTT: Uppdaterar den orangea rutan Bums!
-                        setFetchedCarInfo(prev => prev ? { ...prev, oljevolym: `${oljaNum} l` } : prev);
+                        updateOilLogic(oljaNum);
                     }
                 }
+                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
+            }
+
+            // 3. DATA FRÅN TRODO (RESERVDELSPRISER)
+            if (fordonData && fordonData.source === 'Trodo_Extension') {
+                const fetchedPrice = fordonData.price;
+                const partName = fordonData.part;
+
+                // 1. Skapar automatiskt en ny rad i utgiftslistan
+                setExpenses(prev => {
+                    const newExpenses = [...prev];
+                    const emptyIndex = newExpenses.findIndex(e => !e.desc && !e.amount);
+                    if (emptyIndex !== -1) {
+                        newExpenses[emptyIndex] = { desc: `${partName} (Trodo)`, amount: fetchedPrice.toString() };
+                    } else {
+                        newExpenses.push({ desc: `${partName} (Trodo)`, amount: fetchedPrice.toString() });
+                    }
+                    return newExpenses;
+                });
+
+                // 2. Lägger automatiskt till priset på kundens totala nota!
+                setFormData(p => ({
+                    ...p,
+                    kundpris: (parseFloat(p.kundpris || 0) + fetchedPrice).toString()
+                }));
+
                 if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
             }
         };
@@ -102,19 +133,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         if (fetchedCarInfo && fetchedCarInfo.regnr && fetchedCarInfo.isNewData && window.db) {
             const finalRegnr = fetchedCarInfo.regnr.toUpperCase().trim();
             
-            // 1. Sparar till Garagets "Teknisk Data"
             const specUpdates = {};
             if (fetchedCarInfo.motorkod) specUpdates.engine = fetchedCarInfo.motorkod;
             if (fetchedCarInfo.oljevolym) specUpdates.oil = `${fetchedCarInfo.oljevolym} l`;
             if (fetchedCarInfo.miltal) specUpdates.mileage = fetchedCarInfo.miltal;
-            if (fetchedCarInfo.årsmodell) specUpdates.year = fetchedCarInfo.årsmodell; // <--- Sparar!
+            if (fetchedCarInfo.årsmodell) specUpdates.year = fetchedCarInfo.årsmodell;
+            if (fetchedCarInfo.vin) specUpdates.vin = fetchedCarInfo.vin; 
             
             if (Object.keys(specUpdates).length > 0) {
                 specUpdates.updatedAt = new Date().toISOString();
                 window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true });
             }
 
-            // 2. Sparar in i själva Arbetsordern
             if (editingJob && editingJob.id) {
                 let oljaNum = 4.3;
                 if (fetchedCarInfo.oljevolym) {
@@ -125,71 +155,75 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     bilmodell: fetchedCarInfo.bilmodell || '',
                     motorkod: fetchedCarInfo.motorkod || '',
                     miltal: fetchedCarInfo.miltal || '',
-                    årsmodell: fetchedCarInfo.årsmodell || '', // <--- Sparar!
+                    årsmodell: fetchedCarInfo.årsmodell || '',
                     oljevolym: oljaNum
                 }, { merge: true });
             }
         }
     }, [fetchedCarInfo, editingJob]);
 
-    // Ladda in befintligt jobb eller starta tomt
+    // Ladda in befintligt jobb
     React.useEffect(() => {
-        if (editingJob) {
-            setFormData(prev => ({ 
-                ...prev,
-                ...editingJob, 
-                // MAGIN: Har jobbet ett datum sparar vi det, annars sätter vi det tomt!
-                datum: editingJob.datum ? editingJob.datum.split('T')[0] : '',
-                tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '08:00' 
-            }));
-            
-            // Laddar in utgifter exakt som förut
-            if (editingJob.utgifter && editingJob.utgifter.length > 0) {
-                let loadedExpenses = editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad }));
-                while (loadedExpenses.length < 3) loadedExpenses.push({ desc: '', amount: '' });
-                setExpenses(loadedExpenses);
+        const loadExistingJob = async () => {
+            if (editingJob) {
+                setFormData(prev => ({ 
+                    ...prev,
+                    ...editingJob, 
+                    datum: editingJob.datum ? editingJob.datum.split('T')[0] : '',
+                    tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '08:00' 
+                }));
+                
+                if (editingJob.utgifter && editingJob.utgifter.length > 0) {
+                    let loadedExpenses = editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad }));
+                    while (loadedExpenses.length < 3) loadedExpenses.push({ desc: '', amount: '' });
+                    setExpenses(loadedExpenses);
+                } else {
+                    setExpenses(emptyExpenses);
+                }
+                
+                setOilLiters(editingJob.oljevolym || 4.3);
+                
+                let specs = {};
+                if (window.db && editingJob.regnr) {
+                    const doc = await window.db.collection('vehicleSpecs').doc(editingJob.regnr).get();
+                    if (doc.exists) specs = doc.data();
+                }
+
+                if (editingJob.bilmodell || editingJob.motorkod || editingJob.miltal || Object.keys(specs).length > 0) {
+                    setFetchedCarInfo({
+                        bilmodell: specs.model || editingJob.bilmodell || "",
+                        motorkod: specs.engine || editingJob.motorkod || "",
+                        miltal: editingJob.miltal || specs.mileage || "",
+                        oljevolym: editingJob.oljevolym ? `${editingJob.oljevolym} l` : (specs.oil || ""),
+                        årsmodell: specs.year || editingJob.årsmodell || "",
+                        vin: specs.vin || "",
+                        isNewData: false
+                    });
+                }
+
             } else {
-                setExpenses(emptyExpenses);
-            }
-            
-            setOilLiters(editingJob.oljevolym || 4.3);
-            
-            // Laddar in hämtad data exakt som förut
-            if (editingJob.bilmodell || editingJob.motorkod || editingJob.miltal) {
-                setFetchedCarInfo({
-                    bilmodell: editingJob.bilmodell,
-                    motorkod: editingJob.motorkod,
-                    miltal: editingJob.miltal,
-                    oljevolym: editingJob.oljevolym
+                const prefill = window.prefillName || ''; 
+                window.prefillName = null;
+
+                setFormData({
+                    kundnamn: prefill, regnr: '', paket: 'Standard', status: 'BOKAD',
+                    datum: '', tid: '16:30', kundpris: '100', kommentar: ''
                 });
-            } else {
+                setExpenses(emptyExpenses);
+                setOilLiters(4.3);
+                setSuggestions([]);
+                setRegnrSuggestions([]);
                 setFetchedCarInfo(null);
             }
-
-        } else {
-            const prefill = window.prefillName || ''; 
-            window.prefillName = null;
-
-            setFormData({
-                kundnamn: prefill,
-                regnr: '', paket: 'Standard', status: 'BOKAD',
-                datum: '', tid: '16:30', kundpris: '100', kommentar: '' // <-- Även nya jobb startar tomt
-            });
-            setExpenses(emptyExpenses);
-            setOilLiters(4.3);
-            setSuggestions([]);
-            setRegnrSuggestions([]);
-            setFetchedCarInfo(null);
-        }
+        };
+        loadExistingJob();
     }, [editingJob]);
 
-    // Uppdatera oljekalkylatorn med säker state-uppdatering
     const updateOilLogic = React.useCallback((liters) => {
         const l = parseFloat(liters) || 0;
         const purchasePrice = l * 65;
         const customerPrice = (l * 200) + 200 + 500;
 
-        // Använder "prev" för att garantera att den inte raderar dina andra utgifter
         setExpenses(prev => {
             const newExpenses = [
                 { desc: `Motorolja (${l}l á 65kr)`, amount: purchasePrice.toString() },
@@ -285,20 +319,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             else setRegnrSuggestions([]);
         }
 
-        // --- NYTT: AUTOMATISK HÄMTNING FRÅN DIN EGEN DATABAS ---
         if (upperVal.length >= 5) {
-            // 1. Kolla om vi kan sno data från ett tidigare jobb kunden gjort hos oss
             const previousJobs = allJobs.filter(j => j.regnr === upperVal).sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
             const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
             
-            // 2. Kolla direkt i garagets tekniska databas
             let specs = {};
             if (window.db) {
                 const specDoc = await window.db.collection('vehicleSpecs').doc(upperVal).get();
                 if (specDoc.exists) specs = specDoc.data();
             }
 
-            // 3. Om vi hittade bilen i systemet, fyll i rutorna magiskt!
             if (lastJob || Object.keys(specs).length > 0) {
                 setFetchedCarInfo({
                     regnr: upperVal,
@@ -306,7 +336,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     motorkod: specs.engine || lastJob?.motorkod || "",
                     miltal: specs.mileage || lastJob?.miltal || "",
                     oljevolym: specs.oil ? specs.oil.replace(' l', '') : (lastJob?.oljevolym || ""),
-                    isNewData: false // Eftersom detta är historik, behöver vi inte auto-spara det igen
+                    årsmodell: specs.year || lastJob?.årsmodell || "",
+                    vin: specs.vin || "",
+                    isNewData: false
                 });
 
                 let rawOil = specs.oil || lastJob?.oljevolym;
@@ -318,8 +350,30 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 }
             }
         } else {
-            // Om du raderar ut reg-numret, göm informationsrutan
             setFetchedCarInfo(null);
+        }
+    };
+
+    // --- FUNKTIONER FÖR ATT REDIGERA DATA DIREKT I RUTAN ---
+    const handleSpecChange = (key, value) => {
+        setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
+    };
+
+    const saveSpec = async (key, value) => {
+        const finalRegnr = formData.regnr?.toUpperCase().trim();
+        if (!finalRegnr || !window.db) return;
+
+        const specUpdates = { updatedAt: new Date().toISOString() };
+        if (key === 'årsmodell') specUpdates.year = value;
+        if (key === 'motorkod') specUpdates.engine = value;
+        if (key === 'oljevolym') specUpdates.oil = value;
+        if (key === 'miltal') specUpdates.mileage = value;
+        if (key === 'vin') specUpdates.vin = value;
+
+        try {
+            await window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true });
+        } catch(e) {
+            console.error("Kunde inte spara specifikationen:", e);
         }
     };
 
@@ -328,7 +382,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         try {
             const finalRegnr = formData.regnr.toUpperCase().trim();
             
-            // 1. Spara all data (inklusive den vi hämtat) in i jobbet
             const data = { 
                 ...formData, 
                 regnr: finalRegnr, 
@@ -347,15 +400,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 await window.db.collection("jobs").add(data);
             }
 
-            // 2. MAGIN: Skjut in den tekniska datan direkt i Garagets databas!
             if (finalRegnr && fetchedCarInfo) {
                 const specUpdates = {};
                 if (fetchedCarInfo.motorkod) specUpdates.engine = fetchedCarInfo.motorkod;
-                if (fetchedCarInfo.oljevolym) specUpdates.oil = `${fetchedCarInfo.oljevolym} l`; // Sparas som "4.7 l"
-
+                if (fetchedCarInfo.oljevolym) specUpdates.oil = fetchedCarInfo.oljevolym.includes('l') ? fetchedCarInfo.oljevolym : `${fetchedCarInfo.oljevolym.replace(/[^0-9.,]/g, '')} l`;
+                if (fetchedCarInfo.årsmodell) specUpdates.year = fetchedCarInfo.årsmodell;
+                if (fetchedCarInfo.vin) specUpdates.vin = fetchedCarInfo.vin;
+                
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
-                    // Sätter data med 'merge: true' så vi inte raderar kamrems-noteringar etc.
                     await window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true });
                 }
             }
@@ -451,7 +504,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         type="button"
                                         onClick={() => {
                                             if(!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                            window.open(`https://www.car.info/sv-se/license-plate/S/${formData.regnr.trim()}#bmg_export`, '_blank');
+                                            const carWindow = window.open(`https://www.car.info/sv-se/license-plate/S/${formData.regnr.trim()}#bmg_export`, 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
+                                            window.focus();
                                         }}
                                         className="shrink-0 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 hover:border-orange-200 dark:hover:border-orange-500/30 text-zinc-500 px-3 rounded-lg flex items-center justify-center transition-all"
                                         title="Sök fordonsdata på Car.info"
@@ -463,28 +517,70 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </FormRow>
                     </div>
 
-                    {/* NYTT: SEPARERAD SMAL RUTA MELLAN SEKTIONERNA */}
+                    {/* REDIGERBAR FORDONS-GRID (2-VÄGS SYNK) */}
                     {fetchedCarInfo && (
-                        <div className="bg-orange-50/40 dark:bg-[#1f160e] border border-orange-200/80 dark:border-orange-500/30 rounded-2xl lg:rounded-3xl p-4 lg:px-5 lg:py-4 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300 relative z-30">
-                            <div className="text-[10px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-widest mb-3">
-                                Hämtad Fordonsdata
+                        <div className="bg-orange-50/30 dark:bg-[#1a2235]/40 border border-orange-200/50 dark:border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300 relative z-30">
+                            
+                            <div className="flex items-center justify-between mb-4 border-b border-orange-200/50 dark:border-orange-500/20 pb-2">
+                                <div className="text-[10px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-widest flex items-center gap-2">
+                                    <SafeIcon name="database" size={12} /> Teknisk Fordonsdata
+                                </div>
+                                {fetchedCarInfo.bilmodell && (
+                                    <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase truncate max-w-[200px]">
+                                        {fetchedCarInfo.bilmodell}
+                                    </div>
+                                )}
                             </div>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12px]">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-zinc-500 dark:text-zinc-400">Modell:</span>
-                                    <span className="font-medium text-zinc-900 dark:text-zinc-200 truncate">{fetchedCarInfo.bilmodell || '-'}</span>
+
+                            {/* Rad 1: 3 Kolumner */}
+                            <div className="grid grid-cols-3 gap-2 mb-2">
+                                {[
+                                    { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016' },
+                                    { id: 'motorkod', label: 'Motorkod', val: fetchedCarInfo.motorkod, ph: 'CFGB' },
+                                    { id: 'oljevolym', label: 'Oljevolym', val: fetchedCarInfo.oljevolym, ph: '4.7 l' }
+                                ].map((f, i) => (
+                                    <div key={i} className="bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center relative group focus-within:border-orange-500 transition-colors">
+                                        <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">{f.label}</div>
+                                        <input 
+                                            type="text" 
+                                            className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
+                                            placeholder={f.ph}
+                                            value={f.val || ''}
+                                            onChange={(e) => handleSpecChange(f.id, e.target.value)}
+                                            onBlur={(e) => saveSpec(f.id, e.target.value)}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {/* Rad 2: Chassinummer & Miltal */}
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="col-span-2 bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
+                                    <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">
+                                        Chassinummer (VIN)
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        className="w-full text-[12px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.15em] uppercase"
+                                        placeholder="WBA00000000000000"
+                                        value={fetchedCarInfo.vin || ''}
+                                        onChange={(e) => handleSpecChange('vin', e.target.value.toUpperCase())}
+                                        onBlur={(e) => saveSpec('vin', e.target.value)}
+                                    />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-zinc-500 dark:text-zinc-400">Motor:</span>
-                                    <span className="font-medium text-zinc-900 dark:text-zinc-200">{fetchedCarInfo.motorkod || '-'}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-zinc-500 dark:text-zinc-400">Miltal:</span>
-                                    <span className="font-medium text-zinc-900 dark:text-zinc-200">{fetchedCarInfo.miltal || '-'}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-zinc-500 dark:text-zinc-400">Olja:</span>
-                                    <span className="font-medium text-zinc-900 dark:text-zinc-200">{fetchedCarInfo.oljevolym ? `${fetchedCarInfo.oljevolym} l` : '-'}</span>
+                                
+                                <div className="col-span-1 bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
+                                    <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">
+                                        Miltal
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
+                                        placeholder="12 500 mil"
+                                        value={fetchedCarInfo.miltal || ''}
+                                        onChange={(e) => handleSpecChange('miltal', e.target.value)}
+                                        onBlur={(e) => saveSpec('miltal', e.target.value)}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -535,12 +631,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} 
                                                 className="w-full bg-white dark:bg-[#0f1522] text-zinc-900 dark:text-white border border-orange-200 dark:border-orange-500/30 p-2.5 text-[14px] font-black font-mono outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg shadow-sm transition-all" 
                                             />
-                                            {/* WALKIE-TALKIE KNAPPEN - FÖRENKLAD OCH KONSTANT ORANGE */}
                                             <button 
                                                 type="button" 
                                                 onClick={() => {
                                                     if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                    const radarWindow = window.open('https://www.oljemagasinet.se/', '_blank');
+                                                    const radarWindow = window.open('https://www.oljemagasinet.se/', 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
+                                                    window.focus();
+
                                                     let pings = 0;
                                                     const pingInterval = setInterval(() => {
                                                         if (radarWindow && !radarWindow.closed) {
@@ -553,7 +650,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 className="shrink-0 px-5 bg-orange-500 text-white rounded-lg flex items-center justify-center transition-all active:scale-95 shadow-sm group border border-transparent"
                                                 title="Skanna Oljemagasinet"
                                             >
-                                                {/* Här använder vi rå SVG istället för SafeIcon */}
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
                                                     <circle cx="11" cy="11" r="8"></circle>
                                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -597,7 +693,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
                             
-                            {/* Final Price Card */}
                             <div className="bg-zinc-50 dark:bg-[#1a2235]/50 p-4 lg:p-5 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col justify-center relative overflow-hidden group">
                                 <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all group-focus-within:bg-orange-500/10"></div>
                                 
@@ -612,7 +707,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     </div>
                                 </InputWrapper>
 
-                                {/* DYNAMISK & INTERAKTIV SAMMANSTÄLLNING */}
                                 <div className="mt-4 pt-3 border-t border-zinc-200/80 dark:border-white/10 flex flex-col gap-2.5 relative z-10 animate-in fade-in duration-300">
                                     
                                     <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
@@ -627,7 +721,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <SafeIcon name="tool" size={10} /> Arbetskostnad
                                         </span>
                                         
-                                        {/* DET MAGISKA FÄLTET */}
                                         <div 
                                             className="flex items-center gap-1.5 bg-zinc-100/80 dark:bg-white/5 focus-within:bg-white dark:focus-within:bg-[#1f2940] px-2 py-1 rounded-md border border-transparent focus-within:border-orange-500/50 focus-within:shadow-[0_0_10px_rgba(249,115,22,0.2)] transition-all cursor-text group/input" 
                                             onClick={(e) => e.currentTarget.querySelector('input').focus()}
@@ -651,15 +744,35 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
                             </div>
 
-                            {/* Expenses List */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between pb-1.5 border-b border-zinc-100 dark:border-white/5">
                                     <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                                         <SafeIcon name="shopping-cart" size={10} />Reservdelar & Material
                                     </label>
-                                    <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1">
-                                        <SafeIcon name="plus" size={10} /> Lägg till
-                                    </button>
+                                    <div className="flex gap-2">
+                                        
+                                        {/* --- MAGISK TRODO KNAPP --- */}
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
+                                                
+                                                // Skickar uppdraget till tillägget som sitter på DIN sida
+                                                window.postMessage({ action: 'START_TRODO_STORAGE_MISSION', regnr: formData.regnr.trim(), part: 'Oljefilter' }, '*');
+                                                
+                                                // Öppnar Trodo rent
+                                                window.open('https://www.trodo.se/', 'OS_Radar', 'width=450,height=600,left=9999,top=9999');
+                                                window.focus();
+                                            }} 
+                                            className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 border border-blue-200/50 dark:border-blue-500/20 shadow-sm"
+                                        >
+                                            <window.Icon name="search" size={10} className="text-blue-500" /> Trodo Pris
+                                        </button>
+
+                                        <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 shadow-sm">
+                                            <SafeIcon name="plus" size={10} /> Lägg till
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
@@ -704,9 +817,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </InputWrapper>
                     </div>
 
-                    {/* KNAPPAR (Kompakta) */}
+                    {/* KNAPPAR */}
                     <div className="pt-2 pb-0 flex flex-col sm:flex-row gap-2.5 items-center justify-end">
-                        
                         <button 
                             type="button" 
                             onClick={() => window.history.back()} 
@@ -734,7 +846,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         >
                             <SafeIcon name="save" size={14} /> Spara Jobb
                         </button>
-
                     </div>
 
                 </form>
