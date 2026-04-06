@@ -44,6 +44,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [suggestions, setSuggestions] = React.useState([]);
     const [regnrSuggestions, setRegnrSuggestions] = React.useState([]);
     const [oilLiters, setOilLiters] = React.useState(4.3);
+    const [isTrodoMenuOpen, setIsTrodoMenuOpen] = React.useState(false);
     
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
 
@@ -94,32 +95,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         updateOilLogic(oljaNum);
                     }
                 }
-                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
-            }
-
-            // 3. DATA FRÅN TRODO (RESERVDELSPRISER)
-            if (fordonData && fordonData.source === 'Trodo_Extension') {
-                const fetchedPrice = fordonData.price;
-                const partName = fordonData.part;
-
-                // 1. Skapar automatiskt en ny rad i utgiftslistan
-                setExpenses(prev => {
-                    const newExpenses = [...prev];
-                    const emptyIndex = newExpenses.findIndex(e => !e.desc && !e.amount);
-                    if (emptyIndex !== -1) {
-                        newExpenses[emptyIndex] = { desc: `${partName} (Trodo)`, amount: fetchedPrice.toString() };
-                    } else {
-                        newExpenses.push({ desc: `${partName} (Trodo)`, amount: fetchedPrice.toString() });
-                    }
-                    return newExpenses;
-                });
-
-                // 2. Lägger automatiskt till priset på kundens totala nota!
-                setFormData(p => ({
-                    ...p,
-                    kundpris: (parseFloat(p.kundpris || 0) + fetchedPrice).toString()
-                }));
-
                 if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
             }
         };
@@ -688,7 +663,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {/* SEKTION 3: EKONOMI */}
-                    <div className={`relative z-10 ${sectionCardClasses}`}>
+                    <div className={`relative z-30 ${sectionCardClasses}`}>
                         <SectionHeader title="Ekonomi & Pris" sub="Prissättning och reservdelar" icon="credit-card" />
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
@@ -751,23 +726,52 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     </label>
                                     <div className="flex gap-2">
                                         
-                                        {/* --- MAGISK TRODO KNAPP --- */}
-                                        <button 
-                                            type="button" 
-                                            onClick={() => {
-                                                if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                
-                                                // Skickar uppdraget till tillägget som sitter på DIN sida
-                                                window.postMessage({ action: 'START_TRODO_STORAGE_MISSION', regnr: formData.regnr.trim(), part: 'Oljefilter' }, '*');
-                                                
-                                                // Öppnar Trodo rent
-                                                window.open('https://www.trodo.se/', 'OS_Radar', 'width=450,height=600,left=9999,top=9999');
-                                                window.focus();
-                                            }} 
-                                            className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 border border-blue-200/50 dark:border-blue-500/20 shadow-sm"
-                                        >
-                                            <window.Icon name="search" size={10} className="text-blue-500" /> Trodo Pris
-                                        </button>
+                                        {/* --- DYNAMISK TRODO MENY (Kategori-länkar) --- */}
+                                        <div className="relative group/trodo">
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setIsTrodoMenuOpen(!isTrodoMenuOpen)}
+                                                className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 uppercase px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 border border-blue-200/50 dark:border-blue-500/20 shadow-sm"
+                                            >
+                                                <window.Icon name="search" size={10} className="text-blue-500" /> 
+                                                Trodo Sök
+                                                <window.Icon name={isTrodoMenuOpen ? "chevron-up" : "chevron-down"} size={10} className="opacity-70 ml-0.5" />
+                                            </button>
+
+                                            {isTrodoMenuOpen && (
+                                                <>
+                                                    <div className="fixed inset-0 z-40" onClick={() => setIsTrodoMenuOpen(false)}></div>
+                                                    <div className="absolute top-full right-0 mt-1.5 w-48 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right">
+                                                        {[
+                                                            { name: 'Oljefilter', slug: 'oljefilter' },
+                                                            { name: 'Luftfilter', slug: 'luftfilter' },
+                                                            { name: 'Kupéfilter', slug: 'kupefilter' },
+                                                            { name: 'Bränslefilter', slug: 'branslefilter' },
+                                                            { name: 'Tändstift', slug: 'tandstift' },
+                                                            { name: 'Bromsbelägg fram', slug: 'bromsbelagg' },
+                                                            { name: 'Bromsskivor fram', slug: 'bromsskivor' },
+                                                            { name: 'Vindrutetorkare', slug: 'torkarblad' }
+                                                        ].map(part => (
+                                                            <button
+                                                                key={part.name}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
+                                                                    
+                                                                    // Skickar både namnet och url-slugen!
+                                                                    window.postMessage({ action: 'START_TRODO_STORAGE_MISSION', regnr: formData.regnr.trim(), part: part.name, slug: part.slug }, '*');
+                                                                    window.open('https://www.trodo.se/', '_blank');
+                                                                    setIsTrodoMenuOpen(false);
+                                                                }}
+                                                                className="w-full text-left px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                            >
+                                                                + {part.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
 
                                         <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 shadow-sm">
                                             <SafeIcon name="plus" size={10} /> Lägg till
