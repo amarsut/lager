@@ -58,7 +58,287 @@ const HighlightText = ({ text, highlight }) => {
     );
 };
 
-// --- 3. BMG INTELLIGENCE SPOTLIGHT SEARCH ---
+// --- 3. NATIVE SYSTEMRADAR WIDGET (Premium Multitasking & Cache Memory) ---
+const GlobalSystemRadar = ({ isChatOpen }) => {
+    // NYTT: Ladda från webbläsarens minne vid start!
+    const [radars, setRadars] = useState(() => {
+        try {
+            const saved = localStorage.getItem('os_active_radars');
+            return saved ? JSON.parse(saved) : [];
+        } catch(e) { 
+            return []; 
+        }
+    });
+    const [copiedVins, setCopiedVins] = useState({});
+
+    // NYTT: Spara till minnet varje gång en radar ändras, öppnas eller stängs!
+    useEffect(() => {
+        localStorage.setItem('os_active_radars', JSON.stringify(radars));
+    }, [radars]);
+
+    useEffect(() => {
+        const handleTrigger = async (e) => {
+            const regnr = e.detail?.regnr?.toUpperCase();
+            const waitForExt = e.detail?.waitForExtension;
+            if (!regnr || !window.db) return;
+
+            setRadars(prev => {
+                const existing = prev.find(r => r.regnr === regnr);
+                if (existing) {
+                    return prev.map(r => r.regnr === regnr ? { ...r, isMinimized: false } : r);
+                }
+                return [...prev, { regnr, status: 'loading', data: null, isMinimized: false }];
+            });
+
+            if (waitForExt) {
+                setTimeout(() => {
+                    setRadars(prev => prev.map(r => (r.regnr === regnr && r.status === 'loading') ? { ...r, status: 'not_found' } : r));
+                }, 15000); 
+                return;
+            }
+
+            try {
+                setTimeout(async () => {
+                    const doc = await window.db.collection('vehicleSpecs').doc(regnr).get();
+                    if (doc.exists && Object.keys(doc.data()).length > 0) {
+                        setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'success', data: doc.data() } : r));
+                    } else {
+                        setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'not_found' } : r));
+                    }
+                }, 800);
+            } catch (err) {
+                setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'not_found' } : r));
+            }
+        };
+
+        const handleMessage = async (event) => {
+            const fordonData = event.data;
+            if (!fordonData || !['Car.info_Extension', 'Oljemagasinet_Extension'].includes(fordonData.source)) return;
+
+            const data = {
+                oil: fordonData.oljevolym ? `${fordonData.oljevolym.replace(/[^0-9.,]/g, '')} l` : '',
+                engine: fordonData.motorkod || '',
+                year: fordonData.årsmodell || '',
+                mileage: fordonData.miltal || '',
+                vin: fordonData.vin || '',
+                model: fordonData.bilmodell || ''
+            };
+
+            const regnr = fordonData.regnr?.toUpperCase();
+
+            setRadars(prev => {
+                const existing = prev.find(r => r.regnr === regnr);
+                if (existing) {
+                    return prev.map(r => r.regnr === regnr ? {
+                        ...r,
+                        status: 'success',
+                        data: { ...(r.data || {}), ...data },
+                        isMinimized: false
+                    } : r);
+                } else {
+                    return [...prev, { regnr, status: 'success', data, isMinimized: false }];
+                }
+            });
+
+            if (regnr && window.db) {
+                const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== ''));
+                if (Object.keys(cleanData).length > 0) {
+                    cleanData.updatedAt = new Date().toISOString();
+                    try {
+                        await window.db.collection('vehicleSpecs').doc(regnr).set(cleanData, { merge: true });
+                    } catch(e) {}
+                }
+            }
+        };
+
+        window.addEventListener('show-system-radar', handleTrigger);
+        window.addEventListener('message', handleMessage);
+        return () => {
+            window.removeEventListener('show-system-radar', handleTrigger);
+            window.removeEventListener('message', handleMessage);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (window.lucide && radars.length > 0) {
+            window.lucide.createIcons();
+        }
+    });
+
+    const handleCopyVin = (regnr, vin) => {
+        if (vin) {
+            navigator.clipboard.writeText(vin);
+            setCopiedVins(prev => ({ ...prev, [regnr]: true }));
+            setTimeout(() => {
+                setCopiedVins(prev => ({ ...prev, [regnr]: false }));
+            }, 2000);
+        }
+    };
+
+    const setMinimized = (regnr, val) => {
+        setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, isMinimized: val } : r));
+    };
+
+    const closeRadar = (regnr) => {
+        setRadars(prev => prev.filter(r => r.regnr !== regnr));
+    };
+
+    if (radars.length === 0) return null;
+
+    const StatCard = ({ icon, label, val }) => {
+        const displayVal = val || '-';
+        return (
+            <div className="bg-[#1e293b]/90 border border-white/5 rounded-xl p-3.5 flex flex-col gap-1.5 relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
+                <div className="absolute right-0 top-0 w-16 h-16 bg-emerald-500/5 blur-xl rounded-full pointer-events-none transition-all group-hover:bg-emerald-500/10"></div>
+                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                    <window.Icon name={icon} size={10} className="text-emerald-400/80" /> {label}
+                </div>
+                <div className={`text-[14px] font-bold truncate ${val ? 'text-white' : 'text-slate-600'}`} title={displayVal}>
+                    {displayVal}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className={`fixed bottom-[112px] z-[9999] flex flex-col gap-3 items-end pointer-events-none transition-all duration-500 ease-in-out ${isChatOpen ? 'lg:right-[490px] right-8' : 'right-8'}`}>
+            {radars.map(radar => {
+                
+                if (radar.isMinimized) {
+                    return (
+                        <div key={radar.regnr} className="pointer-events-auto animate-in slide-in-from-right-8 fade-in duration-300">
+                            <div 
+                                onClick={() => setMinimized(radar.regnr, false)}
+                                className="bg-[#0f172a]/95 backdrop-blur-2xl border border-emerald-500/40 shadow-[0_10px_25px_rgba(0,0,0,0.5),_0_0_15px_rgba(16,185,129,0.2)] rounded-full px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-[#1e293b] hover:border-emerald-400/60 transition-all group"
+                            >
+                                <span className="relative flex h-2.5 w-2.5 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                                
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-none">Aktiv</span>
+                                    <span className="text-[12px] font-mono font-bold text-white leading-none mt-1">{radar.regnr}</span>
+                                </div>
+
+                                <div className="w-px h-6 bg-white/10 mx-1"></div>
+
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); closeRadar(radar.regnr); }}
+                                    className="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                                    title="Stäng radarn helt"
+                                >
+                                    <window.Icon name="x" size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+
+                const isCopied = copiedVins[radar.regnr];
+
+                return (
+                    <div key={radar.regnr} className="pointer-events-auto animate-in slide-in-from-right-8 fade-in zoom-in-95 duration-300">
+                        <div className="bg-[#0f172a]/95 backdrop-blur-2xl border border-emerald-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5),_0_0_30px_rgba(16,185,129,0.15)] rounded-2xl w-[420px] relative overflow-hidden flex flex-col font-sans">
+                            
+                            <div className={`absolute top-0 left-0 w-full h-1 transition-colors ${radar.status === 'loading' ? 'bg-orange-500 animate-pulse' : radar.status === 'success' ? 'bg-emerald-500 shadow-[0_0_15px_#10b981]' : 'bg-red-500'}`}></div>
+                            
+                            <button 
+                                onClick={() => setMinimized(radar.regnr, true)}
+                                className="absolute top-4 right-12 w-7 h-7 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20"
+                                title="Minimera till hörnet"
+                            >
+                                <window.Icon name="minus" size={14} />
+                            </button>
+
+                            <button 
+                                onClick={() => closeRadar(radar.regnr)}
+                                className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20"
+                                title="Stäng radarn"
+                            >
+                                <window.Icon name="x" size={14} />
+                            </button>
+
+                            <div className="p-6">
+                                <div className="flex items-center gap-5 mb-5">
+                                    <div className="shrink-0 relative flex items-center justify-center">
+                                        {radar.status === 'loading' ? (
+                                            <>
+                                                <window.Icon name="loader" size={36} className="text-orange-500 animate-spin absolute" />
+                                                <div className="w-8 h-8 bg-orange-500/20 rounded-full animate-pulse"></div>
+                                            </>
+                                        ) : radar.status === 'success' ? (
+                                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                                                <window.Icon name="check-circle" size={26} className="text-emerald-400" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/30">
+                                                <window.Icon name="x-circle" size={26} className="text-red-400" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex flex-col flex-1 min-w-0 pr-12">
+                                        <span className={`text-[10px] font-black uppercase tracking-widest mb-1 drop-shadow-sm ${radar.status === 'loading' ? 'text-orange-500' : radar.status === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            {radar.status === 'loading' ? 'SYSTEMRADAR SÖKER...' : radar.status === 'success' ? 'DATA FÅNGAD' : 'SYSTEMRADAR'}
+                                        </span>
+                                        <div className="flex items-baseline gap-2">
+                                            <h3 className="text-2xl font-black text-white tracking-wider font-mono uppercase leading-none">{radar.regnr}</h3>
+                                        </div>
+                                        {radar.data?.model && radar.status === 'success' && (
+                                            <p className="text-[11px] text-slate-300 font-bold uppercase truncate mt-1.5 tracking-widest">{radar.data.model}</p>
+                                        )}
+                                        {radar.status === 'loading' && (
+                                            <p className="text-[11px] text-slate-400 font-medium mt-1.5">Etablerar anslutning till register...</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {radar.status === 'success' && radar.data && (
+                                    <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <StatCard icon="droplet" label="Oljevolym" val={radar.data.oil} />
+                                            <StatCard icon="cpu" label="Motorkod" val={radar.data.engine} />
+                                            <StatCard icon="calendar" label="Årsmodell" val={radar.data.year} />
+                                            <StatCard icon="gauge" label="Miltal" val={radar.data.mileage} />
+                                        </div>
+
+                                        <div 
+                                            onClick={() => handleCopyVin(radar.regnr, radar.data.vin)}
+                                            title="Kopiera Chassinummer"
+                                            className={`mt-1.5 group cursor-pointer border rounded-xl p-4 flex items-center justify-between transition-all duration-300 ${isCopied ? 'bg-emerald-500/20 border-emerald-500/50' : 'bg-[#1e293b]/80 border-white/5 hover:border-emerald-500/30'}`}
+                                        >
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5">
+                                                    <window.Icon name="fingerprint" size={10} className="text-slate-500" /> Chassinummer (VIN)
+                                                </span>
+                                                <span className={`font-mono text-[14px] font-bold tracking-[0.15em] truncate transition-colors ${isCopied ? 'text-emerald-400' : radar.data.vin ? 'text-white group-hover:text-emerald-400' : 'text-slate-600'}`}>
+                                                    {radar.data.vin || '-'}
+                                                </span>
+                                            </div>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isCopied ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110' : radar.data.vin ? 'bg-white/5 text-slate-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-400' : 'bg-transparent text-transparent'}`}>
+                                                {radar.data.vin && <window.Icon name={isCopied ? "check" : "copy"} size={16} />}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {radar.status === 'not_found' && (
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3 mt-2">
+                                        <window.Icon name="alert-circle" size={18} className="text-red-400 shrink-0 mt-0.5" />
+                                        <span className="text-[12px] font-medium text-red-200 leading-relaxed">Ingen teknisk fordonsdata hittades för {radar.regnr}. Prova att skanna via Car.info istället.</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+// --- 4. BMG INTELLIGENCE SPOTLIGHT SEARCH ---
 const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, navigateTo }) => {
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -73,7 +353,7 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
         if (saved) setRecentSearches(JSON.parse(saved));
     }, []);
 
-    // Överraskning 1: Debounce (Fördröj sökningen minimalt för prestanda)
+    // Debounce
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedQuery(query), 200);
         return () => clearTimeout(timer);
@@ -98,7 +378,7 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
     const handleCopy = (e, text) => {
         e.stopPropagation();
         navigator.clipboard.writeText(text);
-        setCopiedId(text); // Överraskning 2: Visuell feedback
+        setCopiedId(text);
         setTimeout(() => setCopiedId(null), 2000);
     };
 
@@ -112,10 +392,14 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
         let externalLinks = [];
         if (isRegNr) {
             externalLinks = [
-                { id: 'biluppgifter', icon: 'external-link', title: `Sök på Biluppgifter`, subtitle: `biluppgifter.se/fordon/${cleanedQuery}`, type: 'link', url: `https://biluppgifter.se/fordon/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
-                { id: 'carinfo', icon: 'external-link', title: `Sök på Car.info`, subtitle: `car.info/sv-se/license-plate/S/${cleanedQuery}`, type: 'link', url: `https://www.car.info/sv-se/license-plate/S/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
-                // NYTT: Oljemagasinet med Walkie-Talkie trigger
-                { id: 'oljemagasinet', icon: 'droplet', title: `Hämta Oljevolym`, subtitle: `Kör Systemradar på Oljemagasinet`, type: 'radar', regnr: cleanedQuery, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
+                // 1. Oljemagasinet (Intern Systemradar i Appen)
+                { id: 'oljemagasinet', icon: 'droplet', title: `Hämta Oljevolym`, subtitle: `Kör Systemradar i bakgrunden`, type: 'radar', category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                
+                // 2. Car.info (Öppnas som Popup för tillägget - NU MED #bmg_export)
+                { id: 'carinfo', icon: 'external-link', title: `Sök på Car.info`, subtitle: `Hämta ny fordonsdata via tillägg`, type: 'popup_link', url: `https://www.car.info/sv-se/license-plate/S/${cleanedQuery}#bmg_export`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                
+                // 3. Biluppgifter (Öppnas i ny vanlig flik)
+                { id: 'biluppgifter', icon: 'external-link', title: `Sök på Biluppgifter`, subtitle: `biluppgifter.se/fordon/${cleanedQuery}`, type: 'link', url: `https://biluppgifter.se/fordon/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
             ];
         }
 
@@ -153,7 +437,6 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
         }));
 
         // --- 5. DATABAS: DOKUMENT/FILER ---
-        // --- 5. DATABAS: DOKUMENT/FILER ---
         const docs = (allNotes || []).filter(n => 
             (n.type === 'file' || n.type === 'image' || n.fileUrl) && 
             (n.text && n.text.toLowerCase().includes(q))
@@ -178,7 +461,7 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
         }));
 
         return [...externalLinks, ...pages, ...jobs, ...docs, ...inv];
-    }, [debouncedQuery, allJobs, allNotes, allLagerItems]); // <- Glöm inte lägga till allLagerItems i slutet här!
+    }, [debouncedQuery, allJobs, allNotes, allLagerItems]);
 
     useEffect(() => {
         setActiveIndex(0);
@@ -204,32 +487,39 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
         if (debouncedQuery) saveSearch(debouncedQuery);
         onClose();
 
+        // 1. Intern Systemradar (Oljemagasinet) - Stannar i appen
         if (item.type === 'radar') {
-            const radarWindow = window.open('https://www.oljemagasinet.se/', '_blank');
-            let pings = 0;
-            const pingInterval = setInterval(() => {
-                if (radarWindow && !radarWindow.closed) {
-                    // Vi skickar med readOnly: true som en flagga
-                    radarWindow.postMessage({ 
-                        action: 'START_OS_RADAR', 
-                        regnr: item.regnr,
-                        readOnly: true 
-                    }, '*');
-                }
-                pings++;
-                if (pings > 20) clearInterval(pingInterval);
-            }, 500);
-        } else if (item.type === 'link') {
+            window.dispatchEvent(new CustomEvent('show-system-radar', { 
+                detail: { regnr: item.copyText } 
+            }));
+        } 
+        // 2. NYTT: Car.info - Tvingar fram ett litet popup-fönster OCH sätter radarn i vänteläge
+        else if (item.type === 'popup_link' && item.url) {
+            
+            // Starta radarn i appen, men säg åt den att vänta på Chrome-tillägget!
+            window.dispatchEvent(new CustomEvent('show-system-radar', { 
+                detail: { regnr: item.copyText, waitForExtension: true } 
+            }));
+
+            const w = 450;
+            const h = 600;
+            const left = (window.screen.width / 2) - (w / 2);
+            const top = (window.screen.height / 2) - (h / 2);
+            window.open(item.url, 'VehicleRadarPopup', `width=${w},height=${h},top=${top},left=${left}`);
+        } 
+        // 3. Vanliga länkar (Biluppgifter öppnas i ny standardflik)
+        else if (item.type === 'link' && item.url) {
             window.open(item.url, '_blank');
-        } else if (item.type === 'page') {
+        } 
+        else if (item.type === 'page') {
             const target = item.targetPage || item.id;
             navigateTo(target, target === 'NEW_JOB' ? { job: null } : null);
-        } else if (item.type === 'job') {
+        } 
+        else if (item.type === 'job') {
             navigateTo('NEW_JOB', { job: item.job });
         }
     };
 
-    // Överraskning 4: Dynamisk rensa-knapp
     const handleClearOrClose = () => {
         if (query) { setQuery(''); inputRef.current?.focus(); }
         else onClose();
@@ -240,14 +530,11 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
     let lastCategory = null;
 
     return (
-        // ÄNDRING 1: Tog bort pt-[5vh] så att den ligger dikt an mot toppen på mobilen (lg:pt-[10vh] behålls för desktop)
         <div className="fixed inset-0 z-[9999] flex justify-center items-start lg:pt-[10vh] bg-zinc-900/40 backdrop-blur-sm transition-opacity">
             <div className="absolute inset-0" onClick={onClose}></div>
             
-            {/* ÄNDRING 2: Tog bort 'mt-auto' och bytte 'rounded-t-2xl' till 'rounded-b-2xl' */}
             <div className="relative w-full h-[85vh] lg:h-auto lg:max-h-[80vh] lg:w-[800px] bg-white dark:bg-[#121826] rounded-b-2xl lg:rounded-2xl shadow-[0_30px_90px_rgba(0,0,0,0.4)] flex flex-col animate-in slide-in-from-top-4 lg:zoom-in-95 duration-200 overflow-hidden border border-zinc-200 dark:border-white/10">
                 
-                {/* Input-fält */}
                 <div className="flex items-center px-5 py-4 border-b border-zinc-100 dark:border-[#1a2235] shrink-0 bg-transparent">
                     <window.Icon name="search" size={22} className="text-orange-500 shrink-0" />
                     <input
@@ -267,10 +554,8 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
                     </button>
                 </div>
 
-                {/* Sökresultat & Innehåll (Dynamisk höjd-container) */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-2 bg-white dark:bg-[#121826]">
                     
-                    {/* Senaste sökningar som klickbara taggar när sökfältet är tomt */}
                     {!debouncedQuery && recentSearches.length > 0 && (
                         <div className="px-4 py-3 mb-2 border-b border-zinc-100 dark:border-white/5">
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-2">Senaste Sökningar</span>
@@ -300,12 +585,10 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
                                     className={`flex items-center gap-4 px-4 py-3 mx-2 my-0.5 rounded-xl cursor-pointer transition-all duration-100 group ${activeIndex === index ? 'bg-orange-50 dark:bg-orange-500/10' : 'bg-transparent hover:bg-zinc-50 dark:hover:bg-[#1a2235]'}`}
                                     onClick={() => executeAction(item)}
                                 >
-                                    {/* Ikon Box */}
                                     <div className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 transition-colors ${activeIndex === index ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20' : 'bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400'}`}>
                                         <window.Icon name={item.icon} size={18} />
                                     </div>
                                     
-                                    {/* Text (Här används Text Highlighting) */}
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <span className={`text-[14px] font-bold leading-tight mb-0.5 truncate ${activeIndex === index ? 'text-orange-700 dark:text-orange-400' : 'text-zinc-900 dark:text-zinc-200'}`}>
                                             <HighlightText text={item.title} highlight={debouncedQuery} />
@@ -316,7 +599,6 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
                                     </div>
                                     
                                     <div className="flex items-center gap-2 shrink-0">
-                                        {/* Nyhet: Kopiera-funktion */}
                                         {item.copyText && (
                                             <button 
                                                 onClick={(e) => handleCopy(e, item.copyText)} 
@@ -327,7 +609,6 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
                                             </button>
                                         )}
                                         
-                                        {/* Visuell Enter-hint */}
                                         {activeIndex === index && (
                                             <div className="flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-[#182032] border border-orange-200 dark:border-orange-500/20 rounded-md shadow-sm">
                                                 <span className="text-[9px] font-bold text-orange-500 uppercase tracking-widest">Enter</span>
@@ -349,7 +630,6 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
                     )}
                 </div>
 
-                {/* Footer */}
                 <div className="flex items-center justify-between px-5 py-3 bg-zinc-50 dark:bg-[#0f1522] border-t border-zinc-200 dark:border-white/5 shrink-0">
                     <span className="text-[10px] text-zinc-400 font-medium flex items-center gap-2">
                         <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-white/10 rounded text-zinc-600 dark:text-zinc-300">↑</span>
@@ -366,7 +646,7 @@ const SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, na
 };
 
 
-// --- 4. HUVUDAPPLIKATION (App) ---
+// --- 5. HUVUDAPPLIKATION (App) ---
 const App = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -379,19 +659,12 @@ const App = () => {
     const [allJobs, setAllJobs] = useState([]);
     const [editingJob, setEditingJob] = useState(null);
     const [allLagerItems, setAllLagerItems] = useState([]);
-    
-    // NYTT FÖR DOKUMENTSÖK: Sparar filerna från chatten/databasen globalt
     const [allNotes, setAllNotes] = useState([]);
-    
-    // DARK MODE STATE
     const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') === 'dark');
-    
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-    // SPOTLIGHT STATE
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
 
     const triggerHaptic = () => {
@@ -465,15 +738,13 @@ const App = () => {
         `;
     }, [isDark]);
 
-    // Hämta Notiser & Dokument globalt för Spotlight Search
     useEffect(() => {
         if (!user) return;
         const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
         const unsubscribe = db.collection("notes").orderBy("timestamp", "desc").limit(150).onSnapshot(snap => {
             if (snap.empty) { setHasUnread(false); return; }
             const allMsgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setAllNotes(allMsgs); // Spara datan för Spotlight-sökningen
-            
+            setAllNotes(allMsgs);
             const clockFound = allMsgs.some(msg => Object.values(msg).some(val => typeof val === 'string' && clockRegex.test(val)));
             if (view === 'CHAT') setHasUnread(false); else setHasUnread(clockFound);
         });
@@ -532,7 +803,6 @@ const App = () => {
     useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs]);
     useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); setAppReady(true); return () => clearInterval(timer); }, []);
     
-    // Se till att lucide-ikoner uppdateras även när spotlight öppnas/stängs
     useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes]);
 
     useEffect(() => {
@@ -589,6 +859,9 @@ const App = () => {
             {/* Global Spotlight Render */}
             <SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} allLagerItems={allLagerItems} navigateTo={navigateTo} />
 
+            {/* NYTT: Den Svävande Systemradarn */}
+            <GlobalSystemRadar isChatOpen={isChatOpen} />
+
             {/* Huvudlayout med Dark Mode bakgrund */}
             <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
@@ -611,7 +884,6 @@ const App = () => {
                             { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
-                            //{ id: 'GARAGE', icon: 'car', label: 'Garage' },
                             { id: 'LAGER', icon: 'package', label: 'Lager' },
                             { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
                             { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
