@@ -31,12 +31,18 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
 };
 
 const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
-    const [activeTab, setActiveTab] = React.useState('HISTORY');
     const [brand, setBrand] = React.useState(v.brand_manual || getBrand(v.model));
     const [specs, setSpecs] = React.useState({});
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const tStart = React.useRef(null);
+
+    // MAGIN: Tvingar ditt system att rita upp Lucide-ikoner i det nya fönstret!
+    React.useEffect(() => {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }); // Körs efter varje uppdatering så ikonerna aldrig "tappas bort"
 
     // Ladda teknisk data
     React.useEffect(() => {
@@ -45,28 +51,26 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
             if (d.exists) {
                 const data = d.data();
                 if(data.brand_manual) setBrand(data.brand_manual);
-                // Kombinera data: Låt databasens vehicleSpecs skriva över historikens data
                 setSpecs({ ...(v.latestSpecs || {}), ...data }); 
             } else {
-                // Om filen inte finns alls, använd historiken från senaste jobbet!
                 if (v.latestSpecs) setSpecs(v.latestSpecs);
             }
         });
         return () => u1();
     }, [v.regnr]);
 
-    // NYTT: Lyssna på Chrome-tillägget när användaren trycker "Hämta Data"
+    // Lyssna på Chrome-tillägget
     React.useEffect(() => {
         const handleMessage = async (event) => {
             const fordonData = event.data;
 
-            // Om datan kommer från Car.info
             if (fordonData && fordonData.source === 'Car.info_Extension') {
                 const specUpdates = {};
                 if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
                 if (fordonData.oljevolym) specUpdates.oil = `${fordonData.oljevolym} l`;
                 if (fordonData.miltal) specUpdates.mileage = fordonData.miltal;
                 if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
+                if (fordonData.vin) specUpdates.vin = fordonData.vin;
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
@@ -76,10 +80,11 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 }
             }
 
-            // NYTT: Om datan kommer från Oljemagasinet!
             if (fordonData && fordonData.source === 'Oljemagasinet_Extension') {
                 const specUpdates = {};
                 if (fordonData.oljevolym) specUpdates.oil = `${fordonData.oljevolym} l`;
+                if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
+                if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
@@ -117,22 +122,9 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const handleTouchEnd = (e) => {
         if (!tStart.current) return;
         const diff = e.changedTouches[0].clientX - tStart.current;
-        if (diff < -60 && activeTab === 'TECH') setActiveTab('HISTORY');
-        else if (diff > 60) {
-            if (activeTab === 'HISTORY') setActiveTab('TECH');
-            else onClose();
-        }
+        if (diff > 60) onClose(); 
         tStart.current = null;
     };
-
-    // UPPDATERAD: Endast relevant data visas
-    const fields = [
-        { id: 'reg', label: 'Fordon', icon: 'car', ph: v.regnr, readOnly: true, val: v.regnr },
-        { id: 'year', label: 'Årsmodell', icon: 'calendar', ph: 'T.ex. 2016' }, // <--- MÅSTE FINNAS!
-        { id: 'engine', label: 'Motorkod', icon: 'eng', ph: 'T.ex. CFGB' },
-        { id: 'oil', label: 'Motorolja / Volym', icon: 'oil', ph: 'T.ex. 4.7 l', action: 'oil_search' },
-        { id: 'mileage', label: 'Senaste Mätarställning', icon: 'trend', ph: 'T.ex. 12 500 mil' }
-    ];
 
     const filteredHistory = v.history.filter(j => {
         if (!histQ) return true;
@@ -146,9 +138,11 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
             
             <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="relative w-full sm:w-[500px] h-full bg-zinc-50 dark:bg-[#0f1522] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-white/10">
                 
-                {/* HEADER */}
+                {/* --- HEADER MED INTEGRERAD TEKNISK DATA --- */}
                 <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl text-zinc-900 dark:text-white shrink-0 relative overflow-hidden shadow-sm z-20 border-b border-zinc-200 dark:border-white/5 transition-colors">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+                    
+                    {/* Huvudinfo (Bil & Kund) */}
                     <div className="flex justify-between items-start p-6 pb-4 relative z-10">
                         <div className="flex items-center gap-5">
                             <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 flex items-center justify-center relative overflow-hidden group shadow-sm hover:border-orange-500/50 transition-all">
@@ -169,163 +163,168 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                         <div className="flex items-center gap-2">
                             <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-10 h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 transition-all z-50 group text-orange-600 dark:text-orange-400">
-                                <SafeIcon name="plus" size={20} className="transition-transform group-active:scale-90" />
+                                <window.Icon name="plus" size={20} className="transition-transform group-active:scale-90" />
                             </button>
                             <button onClick={onClose} title="Stäng" className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 transition-all z-50 text-zinc-800 dark:text-zinc-200">
-                                <SafeIcon name="x" size={20} className="text-zinc-800 dark:text-zinc-200" />
+                                <window.Icon name="x" size={20} className="text-zinc-800 dark:text-zinc-200" />
                             </button>
                         </div>
                     </div>
-                    {/* STATS RAD */}
-                    <div className="grid grid-cols-3 bg-zinc-50/50 dark:bg-black/20 border-t border-zinc-200 dark:border-white/5 py-3">
-                        <div className="border-r border-zinc-200 dark:border-white/5 text-center px-2"><div className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1">Omsättning</div><div className="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-500">{(v.totalRevenue/1000).toFixed(1)}k</div></div>
-                        <div className="border-r border-zinc-200 dark:border-white/5 text-center px-2"><div className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1">Besök</div><div className="text-lg font-mono font-bold text-zinc-900 dark:text-white">{v.visitCount}</div></div>
-                        <div className="text-center px-2"><div className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1">Senast</div><div className="text-sm font-mono font-bold text-zinc-700 dark:text-zinc-300 pt-1">{v.lastVisit ? v.lastVisit.split('T')[0].substring(2) : '-'}</div></div>
-                    </div>
-                </div>
 
-                {/* TABS */}
-                <div className="px-4 pt-3 bg-white dark:bg-[#182032] shrink-0 flex border-b border-zinc-200 dark:border-white/5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {[{id:'HISTORY',l:'Historik'},{id:'TECH',l:'Teknisk Data'}].map(t => (
-                        <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`flex-1 pb-3 px-4 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${activeTab===t.id ? 'border-orange-500 text-orange-500':'border-transparent text-zinc-500 dark:text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}>{t.l}</button>
-                    ))}
-                </div>
-
-                {/* CONTENT */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 transition-colors">
-                    {activeTab === 'HISTORY' ? (
-                        <div className="space-y-4 animate-in fade-in duration-300 pb-20 relative">
-                            <div className="relative mb-6">
+                    {/* Teknisk Data Grid */}
+                    <div className="bg-zinc-50/50 dark:bg-black/20 border-t border-zinc-200 dark:border-white/5 px-4 py-3">
+                        {/* Rad 1: 3 Kolumner (Årsmodell, Motor, Olja) */}
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                            {[
+                                { id: 'year', label: 'Årsmodell', val: specs.year, ph: '2016' },
+                                { id: 'engine', label: 'Motorkod', val: specs.engine, ph: 'CFGB' },
+                                { id: 'oil', label: 'Oljevolym', val: specs.oil, ph: '4.7 l' }
+                            ].map(f => (
+                                <div key={f.id} className="bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center relative group focus-within:border-orange-500 transition-colors">
+                                    <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">{f.label}</div>
+                                    <input 
+                                        type="text" 
+                                        className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
+                                        placeholder={f.ph}
+                                        value={f.val || ''}
+                                        onChange={(e) => setSpecs({...specs, [f.id]: e.target.value})}
+                                        onBlur={(e) => saveSpec(f.id, e.target.value)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                            
+                        {/* Rad 2: 3 Kolumner (Chassinummer tar 2, Miltal tar 1) */}
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="col-span-2 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
+                                <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">
+                                    Chassinummer (VIN)
+                                </div>
                                 <input 
                                     type="text" 
-                                    placeholder="SÖK I HISTORIK..." 
-                                    value={histQ}
-                                    onChange={(e) => setHistQ(e.target.value)}
-                                    className="w-full bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/5 rounded-xl p-3.5 pl-11 text-[12px] font-bold uppercase tracking-widest focus:outline-none focus:border-orange-500 shadow-sm transition-all"
+                                    className="w-full text-[12px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.15em] uppercase"
+                                    placeholder="WBA00000000000000"
+                                    value={specs.vin || ''}
+                                    onChange={(e) => setSpecs({...specs, vin: e.target.value.toUpperCase()})}
+                                    onBlur={(e) => saveSpec('vin', e.target.value)}
                                 />
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"><SafeIcon name="search" size={16} className="text-zinc-400"/></span>
                             </div>
-
-                            <div className="relative border-l-2 border-zinc-200 dark:border-white/10 ml-4 space-y-6">
-                                {filteredHistory.map((j, index) => {
-                                    const isHighlighted = j.id === highlightId;
-                                    const isLast = index === filteredHistory.length - 1;
-
-                                    return (
-                                        <div key={j.id} className="relative pl-6 group">
-                                            {isHighlighted && (
-                                                <div className="absolute bg-orange-500 z-0" style={{ left: '-2px', top: '16px', bottom: isLast ? '0' : '-24px', width: '2px' }}></div>
-                                            )}
-                                            <div className={`absolute -left-[7px] top-4 w-3 h-3 rounded-full border-2 shadow-sm z-10 transition-colors ${isHighlighted ? 'bg-orange-500 border-white dark:border-[#0f1522]' : (['KLAR','FAKTURERAS'].includes(j.status)?'bg-emerald-500 border-white dark:border-[#0f1522]':'bg-zinc-300 dark:bg-zinc-600 border-white dark:border-[#0f1522]')}`}></div>
-
-                                            <div 
-                                                onClick={()=>setView('NEW_JOB',{job:j})} 
-                                                className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 relative z-10 ${
-                                                    isHighlighted 
-                                                    ? 'bg-white dark:bg-[#182032] border-2 border-orange-500 shadow-lg' 
-                                                    : 'bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow-md'
-                                                }`}
-                                            >
-                                                <div className="flex justify-between items-baseline mb-2 border-b border-zinc-100 dark:border-white/5 pb-2">
-                                                    <div className={`font-mono text-[12px] font-bold ${isHighlighted ? 'text-orange-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                                                        {j.datum ? j.datum.split('T')[0] : 'Inväntar'}
-                                                    </div>
-                                                    <div className={`font-mono text-[14px] font-black ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-300'}`}>
-                                                        {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[10px] text-zinc-500 dark:text-zinc-500 font-sans">kr</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="flex justify-between items-center mb-3 mt-3">
-                                                    <div className={`text-[13px] font-black uppercase tracking-tight ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                                                        {j.kundnamn}
-                                                    </div>
-                                                    {window.Badge && <window.Badge status={j.status} />}
-                                                </div>
-
-                                                <p className={`text-[12px] leading-relaxed line-clamp-2 italic ${isHighlighted ? 'text-orange-800 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400'}`}>
-                                                    {j.kommentar || "Ingen notering."}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                            
+                            <div className="col-span-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
+                                <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">
+                                    Miltal
+                                </div>
+                                <input 
+                                    type="text" 
+                                    className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
+                                    placeholder="12 500 mil"
+                                    value={specs.mileage || ''}
+                                    onChange={(e) => setSpecs({...specs, mileage: e.target.value})}
+                                    onBlur={(e) => saveSpec('mileage', e.target.value)}
+                                />
                             </div>
                         </div>
-                    ) : (
-                        <div className="space-y-4 animate-in fade-in duration-300 pb-20">
-                            
-                            {/* NYTT: Hämta data-knapp */}
-                            <button
-                                type="button"
-                                onClick={() => window.open(`https://www.car.info/sv-se/license-plate/S/${v.regnr.trim()}#bmg_export`, '_blank')}
-                                className="mb-2 w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white border border-orange-600/50 shadow-md px-4 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95"
-                            >
-                                <SafeIcon name="download" size={14} />
-                                Hämta fordonsdata från nätet
-                            </button>
+                    </div>
+                </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                                {fields.map(f => (
-                                    <div key={f.id} className="bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 p-3.5 flex items-center gap-4 shadow-sm rounded-xl hover:border-zinc-300 dark:hover:border-zinc-500 relative group-focus-within:border-orange-400 transition-all">
-                                        <div className="w-10 h-10 flex items-center justify-center bg-zinc-100 dark:bg-[#121826] rounded-lg shrink-0">
-                                            <SafeIcon name={f.icon} size={18} className="text-zinc-800 dark:text-zinc-200" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden relative">
-                                            <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-none mb-1.5">{f.label}</div>
-                                            {f.readOnly ? (
-                                                <div className="text-[13px] font-bold text-zinc-900 dark:text-white truncate">{f.val}</div>
-                                            ) : (
-                                                <input 
-                                                    type="text" 
-                                                    className="w-full text-[13px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600 placeholder:font-normal"
-                                                    placeholder={f.ph}
-                                                    value={specs[f.id] || ''}
-                                                    onChange={(e) => setSpecs({...specs, [f.id]: e.target.value})}
-                                                    onBlur={(e) => saveSpec(f.id, e.target.value)}
-                                                />
-                                            )}
-                                            {f.action === 'oil_search' && (
-                                                <a 
-                                                    href={`https://www.google.com/search?q=castrol+mobil1+oil+selector+${v.regnr}`} 
-                                                    target="_blank" 
-                                                    rel="noreferrer"
-                                                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-orange-100 dark:bg-orange-500/10 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-500/20 active:scale-95 transition-all text-orange-600 dark:text-orange-400" 
-                                                >
-                                                    <SafeIcon name="search" size={14} className="text-orange-600 dark:text-orange-400" />
-                                                </a>
-                                            )}
+                {/* --- CONTENT: BARA HISTORIK --- */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 transition-colors">
+                    <div className="space-y-4 animate-in fade-in duration-300 pb-20 relative">
+                        
+                        <div className="relative mb-6">
+                            <input 
+                                type="text" 
+                                placeholder="SÖK I HISTORIK..." 
+                                value={histQ}
+                                onChange={(e) => setHistQ(e.target.value)}
+                                className="w-full bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/5 rounded-xl p-3.5 pl-11 text-[12px] font-bold uppercase tracking-widest focus:outline-none focus:border-orange-500 shadow-sm transition-all"
+                            />
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 flex items-center justify-center pointer-events-none">
+                                <window.Icon name="search" size={16} className="text-zinc-400"/>
+                            </span>
+                        </div>
+
+                        <div className="relative border-l-2 border-zinc-200 dark:border-white/10 ml-4 space-y-6">
+                            {filteredHistory.map((j, index) => {
+                                const isHighlighted = j.id === highlightId;
+                                const isLast = index === filteredHistory.length - 1;
+
+                                return (
+                                    <div key={j.id} className="relative pl-6 group">
+                                        {isHighlighted && (
+                                            <div className="absolute bg-orange-500 z-0" style={{ left: '-2px', top: '16px', bottom: isLast ? '0' : '-24px', width: '2px' }}></div>
+                                        )}
+                                        <div className={`absolute -left-[7px] top-4 w-3 h-3 rounded-full border-2 shadow-sm z-10 transition-colors ${isHighlighted ? 'bg-orange-500 border-white dark:border-[#0f1522]' : (['KLAR','FAKTURERAS'].includes(j.status)?'bg-emerald-500 border-white dark:border-[#0f1522]':'bg-zinc-300 dark:bg-zinc-600 border-white dark:border-[#0f1522]')}`}></div>
+
+                                        <div 
+                                            onClick={()=>setView('NEW_JOB',{job:j})} 
+                                            className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 relative z-10 ${
+                                                isHighlighted 
+                                                ? 'bg-white dark:bg-[#182032] border-2 border-orange-500 shadow-lg' 
+                                                : 'bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow-md'
+                                            }`}
+                                        >
+                                            <div className="flex justify-between items-baseline mb-2 border-b border-zinc-100 dark:border-white/5 pb-2">
+                                                <div className={`font-mono text-[12px] font-bold ${isHighlighted ? 'text-orange-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                    {j.datum ? j.datum.split('T')[0] : 'Inväntar'}
+                                                </div>
+                                                <div className={`font-mono text-[14px] font-black ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-300'}`}>
+                                                    {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[10px] text-zinc-500 dark:text-zinc-500 font-sans">kr</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex justify-between items-center mb-3 mt-3">
+                                                <div className={`text-[13px] font-black uppercase tracking-tight ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                                                    {j.kundnamn}
+                                                </div>
+                                                {window.Badge && <window.Badge status={j.status} />}
+                                            </div>
+
+                                            <p className={`text-[12px] leading-relaxed line-clamp-2 italic ${isHighlighted ? 'text-orange-800 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400'}`}>
+                                                    {j.kommentar || "Ingen notering."}
+                                            </p>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                );
+                            })}
                         </div>
-                    )}
+                    </div>
                 </div>
                 
-                {/* BOTTOM ACTION BAR */}
+                {/* --- BOTTOM ACTION BAR MED DATALÄNKAR --- */}
                 <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-[#1a2235] bg-zinc-50 dark:bg-[#121826] shrink-0 transition-colors z-20 flex gap-3">
-                    <a href={`https://biluppgifter.se/fordon/${v.regnr}#fordonsdata`} target="_blank" className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2.5 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all group no-underline shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300">
-                        <img src="https://biluppgifter.se/favicon.ico" alt="B" className="w-4 h-4 rounded shrink-0 grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100"/>
-                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-blue-600 dark:group-hover:text-blue-400">Biluppgifter</span>
-                    </a>
+                    
+                    <button
+                        type="button"
+                        onClick={() => {
+                            const carWindow = window.open(`https://www.car.info/sv-se/license-plate/S/${v.regnr.trim()}#bmg_export`, 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
+                            window.focus();
+                        }}
+                        className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all group shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300"
+                    >
+                        <window.Icon name="download" size={16} className="text-zinc-400 group-hover:text-blue-500 transition-colors" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Hämta All Data</span>
+                    </button>
+
                     <button 
                         onClick={() => {
-                            // WALKIE-TALKIE HACK: Öppna fliken rent, och skicka anrop via PostMessage
-                            const radarWindow = window.open('https://www.oljemagasinet.se/', '_blank');
+                            const radarWindow = window.open('https://www.oljemagasinet.se/', 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
+                            window.focus();
                             let pings = 0;
                             const pingInterval = setInterval(() => {
                                 if (radarWindow && !radarWindow.closed) {
                                     radarWindow.postMessage({ action: 'START_OS_RADAR', regnr: v.regnr.trim() }, '*');
                                 }
                                 pings++;
-                                if (pings > 20) clearInterval(pingInterval); // Slutar ropa efter 10 sekunder
+                                if (pings > 20) clearInterval(pingInterval); 
                             }, 500);
                         }}
-                        className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2.5 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all group no-underline shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300"
+                        className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all group shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300"
                     >
                         <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" className="w-4 h-4 rounded shrink-0 grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100"/>
-                        <span className="text-[10px] font-bold uppercase tracking-widest group-hover:text-orange-600 dark:group-hover:text-orange-400">Hämta Oljevolym</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Hämta Oljevolym</span>
                     </button>
+
                 </div>
             </div>
         </div>
