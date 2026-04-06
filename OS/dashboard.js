@@ -37,6 +37,69 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
+// 3. SMART DATA-IKON (Lyssnar live på fordonsregistret)
+// 3. SMART DATA-IKON (Lyssnar live på fordonsregistret)
+window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
+    const [hasData, setHasData] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!job) return;
+
+        const isValid = (val) => val && String(val).trim().length > 0 && String(val).trim() !== '-' && String(val).trim().toLowerCase() !== 'okänd modell';
+        
+        const checkOil = (vol) => {
+            if (!vol) return false;
+            const num = parseFloat(String(vol).replace(/,/g, '.').replace(/[^\d.]/g, ''));
+            return !isNaN(num) && num > 0 && num !== 4.3;
+        };
+
+        const localHasData = isValid(job.bilmodell) || isValid(job.motorkod) || isValid(job.vin) || isValid(job.miltal) || isValid(job.årsmodell) || checkOil(job.oljevolym);
+
+        if (localHasData) {
+            setHasData(true);
+            return;
+        }
+
+        const regnr = job.regnr ? job.regnr.toUpperCase().trim() : null;
+        if (!regnr || !window.db) return;
+
+        const unsubscribe = window.db.collection('vehicleSpecs').doc(regnr).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                const registryHasData = isValid(data.model) || isValid(data.engine) || isValid(data.vin) || isValid(data.mileage) || isValid(data.year) || checkOil(data.oil);
+                setHasData(registryHasData);
+            } else {
+                setHasData(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [job.id, job.regnr, job.bilmodell, job.motorkod, job.vin, job.miltal, job.årsmodell, job.oljevolym]);
+
+    // NYTT: Tvingar fram rendering av ikonen när data hittas i bakgrunden!
+    React.useEffect(() => {
+        if (hasData && window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [hasData]);
+
+    if (!hasData) return null;
+
+    if (isDesktop) {
+        return (
+            <div title="Teknisk fordonsdata finns sparad i garaget" className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/50 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all duration-300 group-hover:opacity-0 group-hover:scale-75 group-hover:translate-x-4 shadow-sm pointer-events-none z-0">
+                <window.Icon name="database" size={16} />
+            </div>
+        );
+    }
+
+    return (
+        <span title="Teknisk data tillgänglig i garaget" className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded-[4px] border border-emerald-200/50 dark:border-emerald-500/20 shadow-sm">
+            <window.Icon name="database" size={8} /> Data
+        </span>
+    );
+});
+
 // Färg-generator för avatarer
 const getAvatarTheme = (name) => {
     if (!name) return 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-[#182032] dark:text-zinc-400 dark:border-white/5';
@@ -141,9 +204,16 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     
                     {/* VÄNSTER: Fordon med Kopieringsfunktion */}
                     <div className="flex flex-col flex-1 pr-3 min-w-0">
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                            <window.Icon name="truck" size={10} /> Fordon
-                        </span>
+                        
+                        {/* --- ÄNDRAT HÄR: Flex-container för att visa Data-ikonen --- */}
+                        <div className="flex items-center justify-between mb-1.5 pr-1">
+                            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                <window.Icon name="truck" size={10} /> Fordon
+                            </span>
+                            
+                            {/* NYTT: Använder Live-Ikonen! */}
+                            <window.VehicleDataIcon job={job} isDesktop={false} />
+                        </div>
                         
                         <div 
                             onClick={handleCopy}
@@ -996,8 +1066,13 @@ window.DashboardView = React.memo(({
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="pl-4 pr-8 py-4 align-middle text-right">
-                                                    <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 flex justify-end items-center gap-2">
+                                                <td className="pl-4 pr-8 py-4 align-middle text-right relative">
+                                                    
+                                                    {/* NYTT: Använder Live-Ikonen som svävar i bakgrunden! */}
+                                                    <window.VehicleDataIcon job={job} isDesktop={true} />
+
+                                                    {/* DINA KNAPPAR: Gömda normalt, glider in vid hover */}
+                                                    <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 flex justify-end items-center gap-2 relative z-10">
                                                         {job.status !== 'KLAR' && (
                                                             <button title="Markera Klar" onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-200 dark:hover:border-emerald-500/30 hover:text-emerald-600 dark:hover:text-emerald-400 shadow-sm transition-all">
                                                                 <window.Icon name="check" size={16} />
