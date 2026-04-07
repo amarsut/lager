@@ -28,7 +28,7 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
             setRadars(prev => {
                 const existing = prev.find(r => r.regnr === regnr);
                 if (existing) {
-                    return prev.map(r => r.regnr === regnr ? { ...r, isMinimized: false } : r);
+                    return prev.map(r => r.regnr === regnr ? { ...r, status: 'loading', isMinimized: false } : r);
                 }
                 return [...prev, { regnr, status: 'loading', data: null, isMinimized: false }];
             });
@@ -37,20 +37,22 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
                 setTimeout(() => {
                     setRadars(prev => prev.map(r => (r.regnr === regnr && r.status === 'loading') ? { ...r, status: 'not_found' } : r));
                 }, 15000); 
-                return;
+                // FIX: Ingen 'return;' här! Vi låter den fortsätta och kolla Firebase direkt också.
             }
 
             try {
                 setTimeout(async () => {
                     const doc = await window.db.collection('vehicleSpecs').doc(regnr).get();
                     if (doc.exists && Object.keys(doc.data()).length > 0) {
+                        // Hittar den bilen lokalt så skriver den över och visar direkt!
                         setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'success', data: doc.data() } : r));
-                    } else {
+                    } else if (!waitForExt) {
+                        // Visa bara "not found" direkt om vi INTE väntar på tillägget
                         setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'not_found' } : r));
                     }
                 }, 800);
             } catch (err) {
-                setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'not_found' } : r));
+                if (!waitForExt) setRadars(prev => prev.map(r => r.regnr === regnr ? { ...r, status: 'not_found' } : r));
             }
         };
 
@@ -80,7 +82,7 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
                         isMinimized: false
                     } : r);
                 } 
-                // Om inte (dvs om signalen kom från newJob.js eller garage.js), ignorera popupen helt!
+                // Om inte, ignorera popupen helt!
                 return prev;
             });
 
