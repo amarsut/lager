@@ -162,18 +162,27 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
         if (debouncedQuery) saveSearch(debouncedQuery);
         onClose();
 
-        // 1 & 2. Osynlig Popup för Tillägg (Både Oljemagasinet & Car.info)
+        // 1 & 2. Osynlig Spök-Popup för Tillägg (Oljemagasinet & Car.info)
         if ((item.type === 'oljemagasinet_radar' || item.type === 'popup_link') && item.url) {
             
-            // Starta systemradarn i din app direkt
+            // Starta systemradarn nere i hörnet direkt
             window.dispatchEvent(new CustomEvent('show-system-radar', { 
                 detail: { regnr: item.copyText, waitForExtension: true } 
             }));
 
-            // FIX: Ghost-fönster! Vi öppnar det ur vägen (left=9999, top=9999) och gör det litet
-            const radarWindow = window.open(item.url, 'VehicleRadarPopup', 'width=400,height=400,left=9999,top=9999');
+            // EGNA FÖRBÄTTRINGAR: Extrem minimering och borttagna verktygsfält
+            const radarWindow = window.open(
+                item.url, 
+                'VehicleRadarPopup', 
+                'width=10,height=10,left=-5000,top=-5000,menubar=no,toolbar=no,location=no,status=no,resizable=no,scrollbars=no'
+            );
             
-            // Om det är Oljemagasinet, väck skriptet manuellt
+            // EGNA FÖRBÄTTRINGAR: Sno omedelbart tillbaka fokus till huvudsystemet!
+            if (radarWindow) {
+                radarWindow.blur();
+                window.focus();
+            }
+
             if (item.type === 'oljemagasinet_radar') {
                 let pings = 0;
                 const pingInterval = setInterval(() => {
