@@ -170,14 +170,14 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
                 detail: { regnr: item.copyText, waitForExtension: true } 
             }));
 
-            // EGNA FÖRBÄTTRINGAR: Extrem minimering och borttagna verktygsfält
+            // Tillbaka till originalet: 400x400 placerad nere i högra hörnet (9999)
             const radarWindow = window.open(
                 item.url, 
                 'VehicleRadarPopup', 
-                'width=10,height=10,left=-5000,top=-5000,menubar=no,toolbar=no,location=no,status=no,resizable=no,scrollbars=no'
+                'width=400,height=400,left=9999,top=9999'
             );
             
-            // EGNA FÖRBÄTTRINGAR: Sno omedelbart tillbaka fokus till huvudsystemet!
+            // Sno tillbaka fokus så man kan fortsätta jobba ostört
             if (radarWindow) {
                 radarWindow.blur();
                 window.focus();
@@ -193,7 +193,7 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
                     if (pings > 20) clearInterval(pingInterval); 
                 }, 500);
             }
-        } 
+        }
         // 3. Vanliga länkar (Biluppgifter öppnas i ny standardflik)
         else if (item.type === 'link' && item.url) {
             window.open(item.url, '_blank');
