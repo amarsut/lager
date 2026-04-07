@@ -66,6 +66,19 @@ const App = () => {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
+    const [globalTsData, setGlobalTsData] = useState(null); 
+
+    useEffect(() => {
+        const handleTsMessage = (event) => {
+            const data = event.data;
+            if (data && data.source === 'Transportstyrelsen_Extension') {
+                setGlobalTsData(data);
+                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate([10, 50, 10]);
+            }
+        };
+        window.addEventListener('message', handleTsMessage);
+        return () => window.removeEventListener('message', handleTsMessage);
+    }, []);
 
     useEffect(() => {
         window.openVehicleProfile = (regnr, highlightId = null) => {
@@ -200,7 +213,7 @@ const App = () => {
     useEffect(() => {
         const syncWithUrl = () => {
             const hash = window.location.hash.replace('#', '').toUpperCase();
-            const validViews = ['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE'];
+            const validViews = ['DASHBOARD', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE'];
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 1024) setSidebarOpen(false);
@@ -311,8 +324,9 @@ const App = () => {
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
                             { id: 'LAGER', icon: 'package', label: 'Lager' },
                             { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
-                            { id: 'GARAGE', icon: 'droplet', label: 'Oil_Status' },
+                            { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
                             { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
+                            { id: 'STATISTICS', icon: 'bar-chart-2', label: 'Statistik' },
                             { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
                         ].map(item => (
                             <div key={item.id} 
@@ -404,6 +418,7 @@ const App = () => {
                         {view === 'CALENDAR' && window.CalendarView && <window.CalendarView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'OIL_SUPPLY' && window.SupplyView && <window.SupplyView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'CHAT' && window.innerWidth < 1024 && window.ChatView && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
+                        {view === 'STATISTICS' && window.StatisticsView && <window.StatisticsView allJobs={allJobs} />}
                         {view === 'REFERENCE' && window.ReferenceView && <window.ReferenceView setView={navigateTo} />}
                     </div>
 
@@ -448,6 +463,10 @@ const App = () => {
                             setView={navigateTo}
                         />
                     )}
+
+                    {/* --- NYTT: GLOBAL TS MODAL --- */}
+                    {globalTsData && <window.TsDataModal data={globalTsData} onClose={() => setGlobalTsData(null)} navigateTo={navigateTo} />}
+
                 </main>
             </div>
         </>
