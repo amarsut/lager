@@ -1,110 +1,118 @@
-// --- GEMENSAM PREMIUM-STIL FÖR WIDGET ---
-const premiumWidgetStyles = `
-    <style>
-        @keyframes pulseGlow { 
-            0%, 100% { box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(249,115,22,0.1); border-color: rgba(249,115,22,0.3); } 
-            50% { box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(249,115,22,0.4); border-color: rgba(249,115,22,0.7); } 
-        }
-        @keyframes spinOuter { to { transform: rotate(360deg); } }
-        @keyframes spinInner { to { transform: rotate(-360deg); } }
-        @keyframes dataBlink { 
-            0%, 100% { opacity: 0.3; transform: scaleY(0.4); } 
-            50% { opacity: 1; transform: scaleY(1); } 
-        }
-        
-        /* HELSKÄRMS-ÖVERLÄGG */
-        .os-radar-wrapper {
-            position: fixed;
-            inset: 0;
-            z-index: 2147483647;
-            pointer-events: all;
-            transition: background-color 0.8s ease, backdrop-filter 0.8s ease;
-            background-color: rgba(15, 21, 34, 0.95);
-            backdrop-filter: blur(10px);
-            font-family: system-ui, sans-serif;
-        }
-        
-        /* NÄR ÅTGÄRD KRÄVS: TONAR BORT BAKGRUNDEN */
-        .os-radar-wrapper.shrunk {
-            background-color: transparent;
-            backdrop-filter: blur(0px);
-            pointer-events: none;
-        }
-        
-        /* SJÄLVA RADAR-RUTAN */
-        .os-radar-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(1.2);
-            background: linear-gradient(135deg, rgba(15,21,34,0.95), rgba(20,28,45,0.95));
-            border: 1px solid rgba(249,115,22,0.5);
-            border-radius: 16px;
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: pulseGlow 2s ease-in-out infinite alternate;
-            pointer-events: all;
-            width: max-content;
-        }
-        
-        /* NÄR ÅTGÄRD KRÄVS: RUTAN FLYGER NER TILL HÖRNET */
-        .os-radar-wrapper.shrunk .os-radar-box {
-            top: calc(100% - 24px);
-            left: calc(100% - 24px);
-            transform: translate(-100%, -100%) scale(1);
-        }
-    </style>
-`;
+/**
+ * PLANERARE // OS - EXTERNAL SCRAPER EXTENSION
+ * Version: 4.0 (Classic Engine + Shadow DOM)
+ * Beskrivning: Använder din beprövade parallell-skanning kombinerat med isolerad Shadow DOM UI.
+ */
 
-function getPremiumWidgetHTML(title, subtitle) {
-    return premiumWidgetStyles + `
-        <div class="os-radar-box">
-            <div style="width:36px; height:36px; position:relative; flex-shrink:0;" id="os-spinner-container">
-                <div style="position:absolute; inset:0; border:3px solid rgba(249,115,22,0.2); border-top-color:#f97316; border-radius:50%; animation: spinOuter 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;" id="os-spin-1"></div>
-                <div style="position:absolute; inset:6px; border:2px solid rgba(255,255,255,0.1); border-bottom-color:#ffffff; border-radius:50%; animation: spinInner 1.2s linear infinite;" id="os-spin-2"></div>
-            </div>
-            <div style="flex-grow:1; min-width:140px;">
-                <h1 style="color:#f97316; font-size:11px; font-weight:900; letter-spacing:1.5px; margin:0; text-transform:uppercase; text-shadow: 0 0 10px rgba(249,115,22,0.3);">${title}</h1>
-                <p style="color:#e4e4e7; font-size:10px; font-weight:500; letter-spacing:0.5px; margin:4px 0 0 0; opacity: 0.9;" id="os-radar-text">${subtitle}</p>
-            </div>
-            <div style="display:flex; gap:3px; height:14px; align-items:flex-end; padding-bottom:2px;" id="os-equalizer">
-                <div style="width:3px; height:100%; background:#f97316; border-radius:2px; animation: dataBlink 0.8s infinite 0.1s;"></div>
-                <div style="width:3px; height:100%; background:#f97316; border-radius:2px; animation: dataBlink 0.8s infinite 0.3s;"></div>
-                <div style="width:3px; height:100%; background:#f97316; border-radius:2px; animation: dataBlink 0.8s infinite 0.2s;"></div>
-            </div>
-        </div>
-    `;
+// ==========================================
+// 1. VERKTYG & HJÄLPMEDEL
+// ==========================================
+class ScraperUtils {
+    // Krossar moderna React/Vue-skydd i inmatningsfält
+    static setNativeValue(element, value) {
+        if (!element) return;
+        const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        const prototype = Object.getPrototypeOf(element);
+        const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, "value").set;
+        
+        if (valueSetter && valueSetter !== prototypeValueSetter) prototypeValueSetter.call(element, value);
+        else valueSetter.call(element, value);
+        
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 }
 
-function successWidget(loader, text) {
-    loader.classList.remove('shrunk');
-    
-    const box = loader.querySelector('.os-radar-box');
-    box.style.animation = 'none'; 
-    box.style.borderColor = '#10b981';
-    box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5), 0 0 30px rgba(16,185,129,0.4)';
-    
-    loader.querySelector('#os-equalizer').style.display = 'none';
-    loader.querySelector('#os-spin-1').style.borderColor = '#10b981';
-    loader.querySelector('#os-spin-1').style.borderTopColor = 'transparent';
-    loader.querySelector('#os-spin-1').style.animation = 'spinOuter 3s linear infinite';
-    loader.querySelector('#os-spin-2').style.display = 'none';
-    
-    const textEl = loader.querySelector('#os-radar-text');
-    textEl.innerHTML = `<span style="color:#10b981; font-weight:900;">✓ ${text}</span>`;
+// ==========================================
+// 2. ISOLERAD WIDGET (Shadow DOM)
+// ==========================================
+class RadarWidget {
+    constructor(title, subtitle, theme = 'orange') {
+        this.host = document.createElement('div');
+        this.host.id = 'os-radar-host';
+        this.host.style.cssText = 'position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;';
+        document.documentElement.appendChild(this.host);
+        
+        this.shadow = this.host.attachShadow({ mode: 'open' });
+        this.theme = theme;
+        this.colors = theme === 'blue' 
+            ? { main: '#3b82f6', glow: 'rgba(59,130,246,0.4)', bg: 'rgba(59,130,246,0.2)', success: '#10b981' } // Transportstyrelsen Blå
+            : { main: '#f97316', glow: 'rgba(249,115,22,0.4)', bg: 'rgba(249,115,22,0.2)', success: '#10b981' }; // Standard Orange
+            
+        this.render(title, subtitle);
+    }
+
+    render(title, subtitle) {
+        const c = this.colors;
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulseGlow { 0%, 100% { box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px ${c.bg}; border-color: ${c.bg}; } 50% { box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px ${c.glow}; border-color: ${c.glow}; } }
+            @keyframes spinOuter { to { transform: rotate(360deg); } }
+            @keyframes spinInner { to { transform: rotate(-360deg); } }
+            @keyframes dataBlink { 0%, 100% { opacity: 0.3; transform: scaleY(0.4); } 50% { opacity: 1; transform: scaleY(1); } }
+            
+            .os-radar-wrapper { position: fixed; inset: 0; pointer-events: all; transition: background-color 0.8s ease, backdrop-filter 0.8s ease; background-color: rgba(15, 21, 34, 0.95); backdrop-filter: blur(10px); font-family: system-ui, sans-serif; }
+            .os-radar-wrapper.shrunk { background-color: transparent; backdrop-filter: blur(0px); pointer-events: none; }
+            
+            .os-radar-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1.2); background: linear-gradient(135deg, rgba(15,21,34,0.95), rgba(20,28,45,0.95)); border: 1px solid ${c.bg}; border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); animation: pulseGlow 2s ease-in-out infinite alternate; pointer-events: all; width: max-content; }
+            .os-radar-wrapper.shrunk .os-radar-box { top: calc(100% - 24px); left: calc(100% - 24px); transform: translate(-100%, -100%) scale(1); }
+        `;
+
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'os-radar-wrapper';
+        this.wrapper.innerHTML = `
+            <div class="os-radar-box">
+                <div style="width:36px; height:36px; position:relative; flex-shrink:0;">
+                    <div style="position:absolute; inset:0; border:3px solid ${c.bg}; border-top-color:${c.main}; border-radius:50%; animation: spinOuter 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;" id="os-spin-1"></div>
+                    <div style="position:absolute; inset:6px; border:2px solid rgba(255,255,255,0.1); border-bottom-color:#ffffff; border-radius:50%; animation: spinInner 1.2s linear infinite;" id="os-spin-2"></div>
+                </div>
+                <div style="flex-grow:1; min-width:140px;">
+                    <h1 style="color:${c.main}; font-size:11px; font-weight:900; letter-spacing:1.5px; margin:0; text-transform:uppercase; text-shadow: 0 0 10px ${c.bg};">${title}</h1>
+                    <p style="color:#e4e4e7; font-size:10px; font-weight:500; letter-spacing:0.5px; margin:4px 0 0 0; opacity: 0.9;" id="os-radar-text">${subtitle}</p>
+                </div>
+            </div>
+        `;
+        
+        this.shadow.appendChild(style);
+        this.shadow.appendChild(this.wrapper);
+    }
+
+    success(text) {
+        this.wrapper.classList.remove('shrunk');
+        const box = this.shadow.querySelector('.os-radar-box');
+        box.style.animation = 'none'; 
+        box.style.borderColor = this.colors.success;
+        box.style.boxShadow = `0 10px 30px rgba(0,0,0,0.5), 0 0 30px rgba(16,185,129,0.4)`;
+        
+        const spin1 = this.shadow.getElementById('os-spin-1');
+        spin1.style.borderColor = this.colors.success;
+        spin1.style.borderTopColor = 'transparent';
+        spin1.style.animation = 'spinOuter 3s linear infinite';
+        this.shadow.getElementById('os-spin-2').style.display = 'none';
+        
+        this.shadow.getElementById('os-radar-text').innerHTML = `<span style="color:${this.colors.success}; font-weight:900;">✓ ${text}</span>`;
+    }
+
+    error(text) {
+        this.wrapper.classList.remove('shrunk');
+        const box = this.shadow.querySelector('.os-radar-box');
+        box.style.animation = 'none'; box.style.borderColor = '#ef4444';
+        this.shadow.getElementById('os-radar-text').innerHTML = `<span style="color:#ef4444; font-weight:900;">✕ ${text}</span>`;
+    }
+
+    destroy() {
+        this.wrapper.style.opacity = '0';
+        setTimeout(() => this.host.remove(), 500);
+    }
 }
 
 
-// --- 1. CAR.INFO SKANNERN ---
+// ==========================================
+// 3. CAR.INFO SKANNERN (Din exakta logik)
+// ==========================================
 if (window.location.hostname.includes('car.info') && window.location.hash.includes('bmg_export')) {
     
-    const loader = document.createElement('div');
-    loader.className = 'os-radar-wrapper';
-    loader.innerHTML = getPremiumWidgetHTML('Datalänk Aktiv', 'Laddar uppgifter...');
-    document.documentElement.appendChild(loader);
+    const widget = new RadarWidget('Datalänk Aktiv', 'Laddar uppgifter...');
 
     let attempts = 0;
     const carInfoRadar = setInterval(() => {
@@ -151,18 +159,19 @@ if (window.location.hostname.includes('car.info') && window.location.hash.includ
                     source: "Car.info_Extension"
                 };
 
-                successWidget(loader, 'Fordon data fångad!');
+                widget.success('Fordon data fångad!');
                 if (window.opener) window.opener.postMessage(fordonData, "*");
                 
                 setTimeout(() => window.close(), 1200);
             }
-
         } catch (e) { console.error("Fel:", e); }
     }, 500); 
 }
 
 
-// --- 2. OLJEMAGASINET SPÖK-SKANNERN ---
+// ==========================================
+// 4. OLJEMAGASINET SPÖK-SKANNERN (Din exakta logik)
+// ==========================================
 if (window.location.hostname.includes('oljemagasinet.se')) {
     
     window.addEventListener('message', (event) => {
@@ -172,11 +181,9 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
             if (window.osRadarActive) return;
             window.osRadarActive = true;
 
-            const loader = document.createElement('div');
-            loader.className = 'os-radar-wrapper';
-            loader.innerHTML = getPremiumWidgetHTML('Systemradar', `Söker: ${activeReg}...`);
-            document.documentElement.appendChild(loader);
+            const widget = new RadarWidget('Systemradar', `Söker: ${activeReg}...`);
 
+            // LOOP 1: Din inmatnings-logik
             const tryToInput = setInterval(() => {
                 const inputs = Array.from(document.querySelectorAll('input'));
                 const regInput = inputs.find(i => 
@@ -190,8 +197,9 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                     clearInterval(tryToInput);
                     regInput.focus();
                     regInput.value = activeReg;
-                    regInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    regInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    // Tillägg: React-krossaren ifall sajten uppdaterats
+                    ScraperUtils.setNativeValue(regInput, activeReg);
                     
                     setTimeout(() => {
                         const form = regInput.closest('form');
@@ -206,15 +214,14 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                 }
             }, 500); 
 
+            // LOOP 2: Din data-skanningslogik
             let attempts = 0;
             const radar = setInterval(() => {
                 attempts++;
                 const text = document.body.innerText.replace(/\s+/g, ' '); 
                 
                 if (attempts === 8) {
-                    loader.classList.add('shrunk');
-                    const textEl = loader.querySelector('#os-radar-text');
-                    if (textEl) textEl.innerHTML = "Väntar på val...";
+                    widget.shrink();
                 }
 
                 const volymMatch = text.match(/(?:Kapacitet|Volym|Motorolja|Påfyllningsmängd|Servicevolym|Rymmer|Åtgång|Oljesump|filter)[\s\S]{0,120}?(\d+[.,]\d+)\s*(?:l|liter)/i) || 
@@ -229,33 +236,25 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                     let bilmodell = "";
                     
                     try {
-                        // --- NYTT: Fysisk DOM-tolk anpassad exakt för Oljemagasinets nya layout ---
                         const carBox = document.querySelector('.plate-car-selection-box');
                         if (carBox) {
-                            
-                            // 1. Bilmodell & Årsmodell (Ligger i <p><strong>)
                             const titleEl = carBox.querySelector('p strong');
                             if (titleEl) {
-                                // Delar upp texten vid <br> (t.ex. "VOLKSWAGEN TIGUAN" och "SUV 2024")
                                 const titleParts = titleEl.innerHTML.split(/<br\s*\/?>/i);
                                 
-                                // Rensa bort ev. inre HTML från bilnamnet
                                 const tempDiv = document.createElement('div');
                                 tempDiv.innerHTML = titleParts[0];
                                 bilmodell = tempDiv.textContent.trim();
                                 
-                                // Årsmodell från andra halvan av texten
                                 if (titleParts.length > 1) {
                                     const yearMatch = titleParts[1].match(/\b(19\d{2}|20\d{2})\b/);
                                     if (yearMatch) arsmodell = yearMatch[1];
                                 } else {
-                                    // Reserv om <br> saknas
                                     const yearMatch = bilmodell.match(/\b(19\d{2}|20\d{2})\b/);
                                     if (yearMatch) arsmodell = yearMatch[1];
                                 }
                             }
                             
-                            // 2. Motorkod (Ligger i <th>Motorkod</th> och sedan i intilliggande <td>)
                             const ths = carBox.querySelectorAll('th');
                             for (let th of ths) {
                                 if (th.textContent.trim().toLowerCase().includes('motorkod')) {
@@ -267,7 +266,6 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                             }
                         }
                         
-                        // --- FALLBACK (Om HTML-klassen skulle saknas helt) ---
                         if (!motorkod || !arsmodell || !bilmodell) {
                             const flatText = document.body.innerText.replace(/\s+/g, ' ');
                             if (!motorkod) {
@@ -296,6 +294,7 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                         bilmodell: bilmodell
                     };
 
+                    // Använder din exakta postMessage-sekvens!
                     if (!event.data.readOnly) {
                         if (event.source) {
                             event.source.postMessage(payload, "*");
@@ -303,128 +302,174 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                             window.opener.postMessage(payload, "*");
                         }
                         
-                        successWidget(loader, `${volym} Liter Fångad!`);
+                        widget.success(`${volym} Liter Fångad!`);
                         setTimeout(() => window.close(), 1500);
                     } else {
                         const extraInfo = motorkod ? ` | Motor: ${motorkod}` : '';
-                        successWidget(loader, `Volym: ${volym} L${extraInfo}`);
-                        loader.querySelector('.os-radar-box').style.animation = 'none'; 
+                        widget.success(`Volym: ${volym} L${extraInfo}`);
+                        widget.stopAnimation();
                     }
                 }
 
                 if (attempts > 120) { 
                     clearInterval(radar);
                     clearInterval(tryToInput);
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.remove(), 500);
+                    widget.destroy();
                 }
             }, 500);
         }
     });
 }
 
-// --- 3. TRODO ASSISTENTEN (AJAX-Säker) ---
-if (window.location.hostname.includes('trodo.se')) {
+// ==========================================
+// 5. TRANSPORTSTYRELSEN SKRAPA (STANDALONE)
+// ==========================================
+if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) {
     
-    const checkStorage = setInterval(() => {
-        try {
-            if (!chrome || !chrome.storage || !chrome.storage.local) return;
-            chrome.storage.local.get(['TRODO_MISSION'], (result) => {
-                if (chrome.runtime.lastError) return;
-                if (result && result.TRODO_MISSION && !window.osRadarActive) {
-                    clearInterval(checkStorage);
-                    startTrodoAssistant(result.TRODO_MISSION);
-                }
-            });
-        } catch (e) { clearInterval(checkStorage); }
-    }, 500);
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.action === 'START_TS_RADAR') {
+            const activeReg = event.data.regnr;
+            if (window.osRadarActive) return;
+            window.osRadarActive = true;
 
-    function startTrodoAssistant(mission) {
-        window.osRadarActive = true;
-        const loader = document.createElement('div');
-        loader.className = 'os-radar-wrapper';
-        loader.innerHTML = getPremiumWidgetHTML('Trodo Assistent', `Initierar...`);
-        document.documentElement.appendChild(loader);
-
-        let attempts = 0;
-        const radar = setInterval(() => {
-            attempts++;
+            const loader = document.createElement('div');
+            loader.style.cssText = 'position: fixed; inset: 0; z-index: 2147483647; background: rgba(15, 21, 34, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; transition: opacity 0.5s;';
             
-            document.querySelectorAll('button').forEach(btn => {
-                const t = btn.innerText.toLowerCase();
-                if(t.includes('godkänn') || t.includes('tillåt') || t.includes('accept') || t.includes('förstår')) btn.click();
-            });
+            loader.innerHTML = `
+                <div id="ts-box" style="background: linear-gradient(135deg, rgba(15,21,34,0.95), rgba(20,28,45,0.95)); border: 1px solid rgba(59,130,246,0.5); border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(59,130,246,0.2); transition: all 0.3s;">
+                    <div style="width:36px; height:36px; position:relative; flex-shrink:0;">
+                        <div id="ts-spin" style="position:absolute; inset:0; border:3px solid rgba(59,130,246,0.2); border-top-color:#3b82f6; border-radius:50%; animation: ts-spin-anim 1s linear infinite;"></div>
+                    </div>
+                    <div style="flex-grow:1; min-width:140px;">
+                        <h1 style="color:#3b82f6; font-size:11px; font-weight:900; letter-spacing:1.5px; margin:0; text-transform:uppercase;">Myndighetslänk</h1>
+                        <p id="ts-text" style="color:#e4e4e7; font-size:10px; font-weight:500; letter-spacing:0.5px; margin:4px 0 0 0;">Slår upp: ${activeReg}...</p>
+                    </div>
+                </div>
+                <style>@keyframes ts-spin-anim { 100% { transform: rotate(360deg); } }</style>
+            `;
+            document.documentElement.appendChild(loader);
 
-            if (mission.phase === 'ENTER_REG') {
-                loader.querySelector('#os-radar-text').innerText = `Låser fordon: ${mission.regnr}...`;
-                
-                const allRegInputs = document.querySelectorAll('input[name*="reg"], input[id*="reg"], input[placeholder*="ABC"], input[placeholder*="Reg"], .registration-input input');
-                let regInput = Array.from(allRegInputs).find(el => el.offsetWidth > 0 && el.offsetHeight > 0);
-                
-                if (regInput) { 
-                    regInput.focus();
+            const updateWidget = (text, success = false, err = false) => {
+                const textEl = document.getElementById('ts-text');
+                if(textEl) textEl.innerText = text;
+                if (success) {
+                    document.getElementById('ts-box').style.borderColor = '#10b981';
+                    document.getElementById('ts-spin').style.borderTopColor = '#10b981';
+                }
+                if (err) {
+                    document.getElementById('ts-box').style.borderColor = '#ef4444';
+                    document.getElementById('ts-spin').style.borderTopColor = '#ef4444';
+                    document.getElementById('ts-spin').style.animation = 'none';
+                }
+            };
+
+            // 1. Fyll i sökfältet
+            const tryToInput = setInterval(() => {
+                const regInput = document.querySelector('input[id*="ts-regnr"], input[name*="ts-regnr"], input[type="text"]');
+                const searchBtn = document.querySelector('button.btn-primary, input[type="submit"], button[type="submit"]');
+
+                if (regInput && searchBtn && !regInput.value) {
+                    clearInterval(tryToInput);
                     
                     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                    if (nativeInputValueSetter) {
-                        nativeInputValueSetter.call(regInput, mission.regnr);
-                    } else {
-                        regInput.value = mission.regnr;
-                    }
-                    
-                    ['input', 'change', 'keydown', 'keyup'].forEach(eType => {
-                        regInput.dispatchEvent(new Event(eType, { bubbles: true }));
-                    });
-                    
-                    mission.phase = 'WAIT_FOR_AJAX';
-                    
-                    try {
-                        chrome.storage.local.set({ TRODO_MISSION: mission }, () => {
-                            setTimeout(() => {
-                                let btn = null;
-                                let parent = regInput.parentElement;
-                                for(let i=0; i<3; i++) {
-                                    if(parent) {
-                                        btn = Array.from(parent.querySelectorAll('button')).find(b => b.offsetWidth > 0);
-                                        if(btn) break;
-                                        parent = parent.parentElement;
-                                    }
-                                }
+                    if (nativeInputValueSetter) nativeInputValueSetter.call(regInput, activeReg);
+                    else regInput.value = activeReg;
 
-                                if (btn) {
-                                    btn.click();
-                                } else {
-                                    regInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
-                                    if (regInput.form) regInput.form.submit();
-                                }
-                            }, 800);
-                        });
-                    } catch(e) {}
+                    regInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    regInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    setTimeout(() => searchBtn.click(), 500);
                 }
-            }
-            
-            else if (mission.phase === 'WAIT_FOR_AJAX') {
-                loader.querySelector('#os-radar-text').innerText = `Synkar databas för ${mission.regnr}...`;
-                
-                mission.phase = 'DONE';
-                try {
-                    chrome.storage.local.set({ TRODO_MISSION: mission }, () => {
-                        clearInterval(radar); 
-                        
-                        setTimeout(() => {
-                            loader.querySelector('#os-radar-text').innerText = `Öppnar ${mission.part}...`;
-                            
-                            chrome.storage.local.remove('TRODO_MISSION', () => {
-                                window.location.href = `https://www.trodo.se/${mission.slug}`; 
-                            });
-                        }, 2500); 
-                    });
-                } catch(e) { clearInterval(radar); }
-            }
+            }, 500); 
 
-            if (attempts > 40) { 
-                clearInterval(radar);
-                chrome.storage.local.remove('TRODO_MISSION');
-            }
-        }, 500);
-    }
+            // 2. Skanna och Extrahera
+            let attempts = 0;
+            const radar = setInterval(() => {
+                attempts++;
+                const bodyText = document.body.innerText; 
+                
+                // Trigg: Resultatsidan har laddat om vi ser dessa rubriker
+                if (bodyText.includes('Fordonsidentitet') && bodyText.includes('Fordonsstatus')) {
+                    clearInterval(radar);
+                    updateWidget('Laddar ner fordonsregister...');
+
+                    // BRUTE-FORCE: Öppna ALLA stängda dragspel och flikar på hela sidan
+                    const openAllPanels = () => {
+                        document.querySelectorAll('button, a, summary').forEach(el => {
+                            // Om knappen säger att den är stängd, eller har klassen 'collapsed'
+                            if (el.getAttribute('aria-expanded') === 'false' || el.classList.contains('collapsed')) {
+                                try { el.click(); } catch(e){}
+                            }
+                        });
+                    };
+                    
+                    openAllPanels();
+                    // Kör en gång till efter 1 sekund utifall vissa laddades in med fördröjning
+                    setTimeout(openAllPanels, 1000);
+
+                    // Vänta in animationerna (2.5 sekunder), SEN läser vi av texten
+                    setTimeout(() => {
+                        // Nu hämtar vi texten igen, den här gången är alla menyer utfällda!
+                        const finalLines = document.body.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+
+                        const extract = (labels) => {
+                            const labelArray = Array.isArray(labels) ? labels : [labels];
+                            for (let label of labelArray) {
+                                // A: Leta rad för rad (Rubrik på rad 1, Värde på rad 2)
+                                const idx = finalLines.findIndex(l => l.toLowerCase() === label.toLowerCase());
+                                if (idx !== -1 && idx + 1 < finalLines.length) {
+                                    return finalLines[idx + 1];
+                                }
+                                // B: Leta inline ("Rubrik: Värde")
+                                const inline = finalLines.find(l => l.toLowerCase().startsWith(label.toLowerCase() + ':'));
+                                if (inline) {
+                                    return inline.substring(label.length + 1).trim();
+                                }
+                            }
+                            return "SAKNAS";
+                        };
+
+                        // Bygger JSON med breda sökord ifall TS byter namn på något
+                        const payload = { 
+                            source: 'Transportstyrelsen_Extension', 
+                            regnr: activeReg,
+                            chassinummer: extract(['Chassinummer', 'Identifieringsnummer']),
+                            fabrikat: extract(['Fabrikat', 'Märke']),
+                            handelsbeteckning: extract(['Handelsbeteckning', 'Modell']),
+                            färg: extract('Färg'),
+                            fordonsår: extract('Fordonsår'),
+                            tillverkad: extract(['Fordonet tillverkat', 'Tillverkningsår/månad']),
+                            import: extract(['Import/införsel', 'Import']),
+                            fordonsstatus: extract('Fordonsstatus'),
+                            användningsförbud: extract(['Användningsförbud', 'Körförbud']),
+                            besiktning_senast: extract(['Besiktigas senast', 'Senaste besiktning']),
+                            mätarställning: extract('Mätarställning'),
+                            upplysningar: extract(['Upplysningar', 'Övriga upplysningar']),
+                            årsskatt: extract('Årsskatt'),
+                            betalningsmånad: extract(['Betalningsmånad/er', 'Betalningsmånad']),
+                            återbetalning: extract(['Återbetalning vid avställning', 'Återbetalning']),
+                            växellåda: extract('Växellåda'),
+                            drivmedel: extract(['Drivmedel', 'Drivmedel 1']),
+                            motoreffekt: extract(['Motoreffekt', 'Effekt']),
+                            euroklass: extract(['Euroklassning', 'Miljöklass']),
+                            blandad_körning: extract(['Blandad körning', 'Bränsleförbrukning'])
+                        };
+
+                        if (window.opener) window.opener.postMessage(payload, "*");
+                        
+                        updateWidget('Registerutdrag sparat!', true);
+                        setTimeout(() => window.close(), 2000);
+
+                    }, 2500); 
+                }
+
+                // Lång timeout för ev. Captcha
+                if (attempts > 120) { 
+                    clearInterval(radar);
+                    updateWidget('Timeout eller Captcha-blockering', false, true);
+                    setTimeout(() => loader.remove(), 3000);
+                }
+            }, 500);
+        }
+    });
 }
