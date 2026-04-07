@@ -203,7 +203,12 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
             navigateTo(target, target === 'NEW_JOB' ? { job: null } : null);
         } 
         else if (item.type === 'job') {
-            navigateTo('NEW_JOB', { job: item.job });
+            onClose();
+            if (window.openVehicleProfile) {
+                window.openVehicleProfile(item.job.regnr, item.job.id);
+            } else {
+                navigateTo('NEW_JOB', { job: item.job });
+            }
         }
     };
 
