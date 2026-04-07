@@ -316,8 +316,15 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     <button
                         type="button"
                         onClick={() => {
-                            const carWindow = window.open(`https://www.car.info/sv-se/license-plate/S/${v.regnr.trim()}#bmg_export`, 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
-                            window.focus();
+                            const carWindow = window.open(
+                                `https://www.car.info/sv-se/license-plate/S/${v.regnr.trim()}#bmg_export`, 
+                                'OS_Radar', 
+                                'width=10,height=10,left=-5000,top=-5000,menubar=no,toolbar=no,location=no'
+                            );
+                            if (carWindow) {
+                                carWindow.blur();
+                                window.focus();
+                            }
                         }}
                         className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all group shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300"
                     >
@@ -327,8 +334,16 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                     <button 
                         onClick={() => {
-                            const radarWindow = window.open('https://www.oljemagasinet.se/', 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
-                            window.focus();
+                            const radarWindow = window.open(
+                                'https://www.oljemagasinet.se/', 
+                                'OS_Radar', 
+                                'width=10,height=10,left=-5000,top=-5000,menubar=no,toolbar=no,location=no'
+                            );
+                            if (radarWindow) {
+                                radarWindow.blur();
+                                window.focus();
+                            }
+                            
                             let pings = 0;
                             const pingInterval = setInterval(() => {
                                 if (radarWindow && !radarWindow.closed) {
