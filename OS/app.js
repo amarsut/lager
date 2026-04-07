@@ -84,10 +84,17 @@ const GlobalSystemRadar = ({ isChatOpen }) => {
 
             setRadars(prev => {
                 const existing = prev.find(r => r.regnr === regnr);
+                // Har Spotlight startat denna sökning? Uppdatera och visa rutan!
                 if (existing) {
-                    return prev.map(r => r.regnr === regnr ? { ...r, isMinimized: false } : r);
-                }
-                return [...prev, { regnr, status: 'loading', data: null, isMinimized: false }];
+                    return prev.map(r => r.regnr === regnr ? {
+                        ...r,
+                        status: 'success',
+                        data: { ...(r.data || {}), ...data },
+                        isMinimized: false
+                    } : r);
+                } 
+                // Om inte (dvs om signalen kom från newJob.js), ignorera popupen helt!
+                return prev;
             });
 
             if (waitForExt) {
