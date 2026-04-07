@@ -105,8 +105,12 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
             
             const newModels = {};
             selectedCustomer.jobs.forEach(j => {
-                if (j.regnr && j.regnr !== '-' && j.bilmodell && j.bilmodell.toLowerCase() !== 'okänd modell') {
-                    newModels[j.regnr.toUpperCase()] = j.bilmodell;
+                if (j.regnr && j.regnr !== '-' && j.bilmodell) {
+                    const bm = j.bilmodell.toLowerCase();
+                    // Ignorera om det är Okänd modell eller en Car.info-paus
+                    if (bm !== 'okänd modell' && !bm.includes('kaffepaus')) {
+                        newModels[j.regnr.toUpperCase()] = j.bilmodell;
+                    }
                 }
             });
 
@@ -118,7 +122,10 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                     try {
                         const doc = await window.db.collection('vehicleSpecs').doc(regnr).get();
                         if (doc.exists && doc.data().model && isMounted) {
-                            setVehicleModels(prev => ({ ...prev, [regnr]: doc.data().model }));
+                            const dbModel = doc.data().model;
+                            if (!dbModel.toLowerCase().includes('kaffepaus')) {
+                                setVehicleModels(prev => ({ ...prev, [regnr]: dbModel }));
+                            }
                         }
                     } catch (e) {}
                 }
@@ -367,12 +374,19 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                 {visibleLogs.length > 0 ? visibleLogs.map((j, i) => {
                                     const jobDate = j.datum ? j.datum.split('T')[0] : 'Inget Datum';
                                     const regnr = j.regnr || '-';
-                                    const model = vehicleModels[regnr] || j.bilmodell || 'Okänd Fordonsmodell';
+                                    
+                                    let model = vehicleModels[regnr] || j.bilmodell || 'Okänd Fordonsmodell';
+                                    // Om bilmodellen på gamla ordern är en "kaffepaus", tvinga fram databas-modellen istället!
+                                    if (model.toLowerCase().includes('kaffepaus')) {
+                                        model = vehicleModels[regnr] || 'Okänd Fordonsmodell';
+                                    }
                                     
                                     return (
                                         <div 
                                             key={i} 
-                                            onClick={() => { setEditingJob(j); setView('NEW_JOB'); }}
+                                            onClick={() => { 
+                                                if (window.openVehicleProfile) window.openVehicleProfile(regnr, j.id); 
+                                            }}
                                             className="group p-4 bg-white/50 dark:bg-black/10 border border-zinc-200 dark:border-white/5 hover:border-orange-400 dark:hover:border-orange-500/50 hover:shadow-md transition-all cursor-pointer rounded-2xl flex flex-col min-w-0"
                                         >
                                             <div className="flex items-start justify-between mb-3 border-b border-zinc-100 dark:border-white/5 pb-3 min-w-0">
