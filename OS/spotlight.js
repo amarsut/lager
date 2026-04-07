@@ -62,18 +62,22 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
         const cleanedQuery = debouncedQuery.replace(/\s+/g, '').toUpperCase();
         
         // --- 1. DETEKTERA REG.NR ---
+        // --- 1. DETEKTERA REG.NR ---
         const isRegNr = /^[A-Z]{3}\d{2}[A-Z0-9]$/.test(cleanedQuery);
         
         let externalLinks = [];
         if (isRegNr) {
             externalLinks = [
-                // 1. Oljemagasinet (Öppnas som Popup + Kör Systemradar)
+                // 1. Oljemagasinet
                 { id: 'oljemagasinet', icon: 'droplet', title: `Hämta Oljevolym`, subtitle: `Hämta ny data via tillägg`, type: 'oljemagasinet_radar', url: `https://www.oljemagasinet.se/`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
                 
-                // 2. Car.info (Öppnas som Popup för tillägget)
+                // 2. Transportstyrelsen (Med korrekta länken!)
+                { id: 'ts', icon: 'shield', title: `Myndighetsdata (TS)`, subtitle: `Hämta officiellt registerutdrag`, type: 'ts_radar', url: `https://fordon-fu-regnr.transportstyrelsen.se/`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                
+                // 3. Car.info
                 { id: 'carinfo', icon: 'external-link', title: `Sök på Car.info`, subtitle: `Hämta ny fordonsdata via tillägg`, type: 'popup_link', url: `https://www.car.info/sv-se/license-plate/S/${cleanedQuery}#bmg_export`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
                 
-                // 3. Biluppgifter (Öppnas i ny vanlig flik)
+                // 4. Biluppgifter
                 { id: 'biluppgifter', icon: 'external-link', title: `Sök på Biluppgifter`, subtitle: `biluppgifter.se/fordon/${cleanedQuery}`, type: 'link', url: `https://biluppgifter.se/fordon/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
             ];
         }
@@ -165,19 +169,12 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
         // 1 & 2. Osynlig Spök-Popup för Tillägg (Oljemagasinet & Car.info)
         if ((item.type === 'oljemagasinet_radar' || item.type === 'popup_link') && item.url) {
             
-            // Starta systemradarn nere i hörnet direkt
             window.dispatchEvent(new CustomEvent('show-system-radar', { 
                 detail: { regnr: item.copyText, waitForExtension: true } 
             }));
 
-            // Tillbaka till originalet: 400x400 placerad nere i högra hörnet (9999)
-            const radarWindow = window.open(
-                item.url, 
-                'VehicleRadarPopup', 
-                'width=400,height=400,left=9999,top=9999'
-            );
+            const radarWindow = window.open(item.url, 'VehicleRadarPopup', 'width=400,height=400,left=9999,top=9999');
             
-            // Sno tillbaka fokus så man kan fortsätta jobba ostört
             if (radarWindow) {
                 radarWindow.blur();
                 window.focus();
@@ -193,6 +190,25 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
                     if (pings > 20) clearInterval(pingInterval); 
                 }, 500);
             }
+        }
+        // --- NYTT: TS RADAR KÖRNING ---
+        else if (item.type === 'ts_radar') {
+            // Öppnar Transportstyrelsen lite större så man kan lösa ev. Captcha
+            const tsWindow = window.open(item.url, 'OS_Radar_TS', 'width=500,height=650,left=9999,top=9999');
+            
+            if (tsWindow) {
+                tsWindow.blur();
+                window.focus();
+            }
+
+            let pings = 0;
+            const pingInterval = setInterval(() => {
+                if (tsWindow && !tsWindow.closed) {
+                    tsWindow.postMessage({ action: 'START_TS_RADAR', regnr: item.copyText }, '*');
+                }
+                pings++;
+                if (pings > 20) clearInterval(pingInterval); 
+            }, 500);
         }
         // 3. Vanliga länkar (Biluppgifter öppnas i ny standardflik)
         else if (item.type === 'link' && item.url) {
