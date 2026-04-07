@@ -82,6 +82,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     const p = prev || { regnr: fordonData.regnr, isNewData: true };
                     return {
                         ...p,
+                        bilmodell: fordonData.bilmodell || p.bilmodell, // <-- NY RAD!
                         motorkod: fordonData.motorkod || p.motorkod,
                         årsmodell: fordonData.årsmodell || p.årsmodell,
                         oljevolym: fordonData.oljevolym ? `${fordonData.oljevolym.replace(/[^0-9.,]/g, '')} l` : p.oljevolym
