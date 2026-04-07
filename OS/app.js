@@ -65,6 +65,13 @@ const App = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+    const [globalVehicle, setGlobalVehicle] = useState(null);
+
+    useEffect(() => {
+        window.openVehicleProfile = (regnr, highlightId = null) => {
+            setGlobalVehicle({ regnr, highlightId });
+        };
+    }, []);
 
     const triggerHaptic = () => {
         if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
@@ -162,6 +169,8 @@ const App = () => {
         setViewParams(params);
         if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
         if (window.innerWidth < 1024) setSidebarOpen(false);
+
+        setGlobalVehicle(null);
     };
 
     useEffect(() => {
@@ -179,6 +188,9 @@ const App = () => {
                 setViewParams(event.state.params);
                 if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) setEditingJob(event.state.params.job);
                 else setEditingJob(null);
+                
+                // NYTT: Stäng fordonsdatan när vi backar
+                setGlobalVehicle(null);
             }
         };
         window.addEventListener('popstate', handlePopState);
@@ -192,6 +204,9 @@ const App = () => {
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 1024) setSidebarOpen(false);
+                
+                // NYTT: Stäng fordonsdatan
+                setGlobalVehicle(null);
             }
         };
         syncWithUrl();
@@ -423,6 +438,16 @@ const App = () => {
                             <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
                         </button>
                     </div>
+
+                    {/* GLOBAL MODUL: Fordonsakt / Sidofält */}
+                    {globalVehicle && window.VehicleProfileLoader && (
+                        <window.VehicleProfileLoader
+                            regnr={globalVehicle.regnr}
+                            highlightId={globalVehicle.highlightId}
+                            onClose={() => setGlobalVehicle(null)}
+                            setView={navigateTo}
+                        />
+                    )}
                 </main>
             </div>
         </>
