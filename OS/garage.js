@@ -71,6 +71,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 if (fordonData.miltal) specUpdates.mileage = fordonData.miltal;
                 if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
                 if (fordonData.vin) specUpdates.vin = fordonData.vin;
+                if (fordonData.bilmodell) specUpdates.model = fordonData.bilmodell; // NY RAD
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
@@ -85,6 +86,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 if (fordonData.oljevolym) specUpdates.oil = `${fordonData.oljevolym} l`;
                 if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
                 if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
+                if (fordonData.bilmodell) specUpdates.model = fordonData.bilmodell; // NY RAD
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
