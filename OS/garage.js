@@ -160,7 +160,17 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                     {v.regnr}
                                     {regCopied && <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-sans tracking-widest uppercase animate-in fade-in zoom-in">Kopierad!</span>}
                                 </h2>
-                                <div className="text-[12px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mt-1 truncate max-w-[200px]">{v.customer || v.model}</div>
+                                <div className="flex flex-col mt-2">
+                                    <span className="text-[12px] font-black text-zinc-700 dark:text-zinc-200 uppercase tracking-widest truncate max-w-[280px]">
+                                        {specs.model || v.model || 'Okänd Modell'}
+                                    </span>
+                                    {v.customer && v.customer !== 'Okänd' && (
+                                        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest mt-1.5 truncate max-w-[250px]">
+                                            <window.Icon name="user" size={10} className="inline-block mr-1.5 -mt-0.5" />
+                                            {v.customer}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
