@@ -317,7 +317,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             const carWindow = window.open(
                                 `https://www.car.info/sv-se/license-plate/S/${v.regnr.trim()}#bmg_export`, 
                                 'OS_Radar', 
-                                'width=10,height=10,left=-5000,top=-5000,menubar=no,toolbar=no,location=no'
+                                'width=400,height=400,left=9999,top=9999'
                             );
                             if (carWindow) {
                                 carWindow.blur();
@@ -335,7 +335,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             const radarWindow = window.open(
                                 'https://www.oljemagasinet.se/', 
                                 'OS_Radar', 
-                                'width=10,height=10,left=-5000,top=-5000,menubar=no,toolbar=no,location=no'
+                                'width=400,height=400,left=9999,top=9999'
                             );
                             if (radarWindow) {
                                 radarWindow.blur();
