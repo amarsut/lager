@@ -162,36 +162,28 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
         if (debouncedQuery) saveSearch(debouncedQuery);
         onClose();
 
-        // 1. Oljemagasinet - Öppnar popup och väcker tillägget!
-        if (item.type === 'oljemagasinet_radar' && item.url) {
-            window.dispatchEvent(new CustomEvent('show-system-radar', { 
-                detail: { regnr: item.copyText, waitForExtension: true } 
-            }));
-
-            const w = 450; const h = 600;
-            const left = (window.screen.width / 2) - (w / 2);
-            const top = (window.screen.height / 2) - (h / 2);
-            const radarWindow = window.open(item.url, 'VehicleRadarPopup', `width=${w},height=${h},top=${top},left=${left}`);
+        // 1 & 2. Osynlig Popup för Tillägg (Både Oljemagasinet & Car.info)
+        if ((item.type === 'oljemagasinet_radar' || item.type === 'popup_link') && item.url) {
             
-            let pings = 0;
-            const pingInterval = setInterval(() => {
-                if (radarWindow && !radarWindow.closed) {
-                    radarWindow.postMessage({ action: 'START_OS_RADAR', regnr: item.copyText }, '*');
-                }
-                pings++;
-                if (pings > 20) clearInterval(pingInterval); 
-            }, 500);
-        } 
-        // 2. Car.info - VÄCKER tillägget OCH öppnar popup-fönstret!
-        else if (item.type === 'popup_link' && item.url) {
+            // Starta systemradarn i din app direkt
             window.dispatchEvent(new CustomEvent('show-system-radar', { 
                 detail: { regnr: item.copyText, waitForExtension: true } 
             }));
 
-            const w = 450; const h = 600;
-            const left = (window.screen.width / 2) - (w / 2);
-            const top = (window.screen.height / 2) - (h / 2);
-            window.open(item.url, 'VehicleRadarPopup', `width=${w},height=${h},top=${top},left=${left}`);
+            // FIX: Ghost-fönster! Vi öppnar det ur vägen (left=9999, top=9999) och gör det litet
+            const radarWindow = window.open(item.url, 'VehicleRadarPopup', 'width=400,height=400,left=9999,top=9999');
+            
+            // Om det är Oljemagasinet, väck skriptet manuellt
+            if (item.type === 'oljemagasinet_radar') {
+                let pings = 0;
+                const pingInterval = setInterval(() => {
+                    if (radarWindow && !radarWindow.closed) {
+                        radarWindow.postMessage({ action: 'START_OS_RADAR', regnr: item.copyText }, '*');
+                    }
+                    pings++;
+                    if (pings > 20) clearInterval(pingInterval); 
+                }, 500);
+            }
         } 
         // 3. Vanliga länkar (Biluppgifter öppnas i ny standardflik)
         else if (item.type === 'link' && item.url) {
