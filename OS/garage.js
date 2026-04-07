@@ -145,47 +145,45 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
                     
                     {/* Huvudinfo (Bil & Kund) */}
-                    <div className="flex justify-between items-start p-5 sm:p-6 pb-4 sm:pb-5 relative z-10 w-full overflow-hidden">
-                        <div className="flex items-center gap-4 sm:gap-5 flex-1 min-w-0 pr-2">
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-zinc-100 dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 flex items-center justify-center relative overflow-hidden group shadow-sm hover:border-orange-500/50 transition-all shrink-0">
+                    <div className="flex justify-between items-start p-6 pb-4 relative z-10 w-full overflow-hidden">
+                        <div className="flex items-center gap-4 sm:gap-5 flex-1 min-w-0 pr-4">
+                            <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 flex items-center justify-center relative overflow-hidden group shadow-sm hover:border-orange-500/50 transition-all shrink-0">
                                 <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full text-black" onChange={changeBrand} value={brand||""}>
                                     <option value="">...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
                                 </select>
-                                {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-6 h-6 sm:w-7 sm:h-7 object-contain z-10 opacity-80 dark:invert pointer-events-none"/> : <SafeIcon name="car" size={24} className="text-zinc-600 dark:text-zinc-400 z-10"/>}
+                                {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-7 h-7 object-contain z-10 opacity-80 dark:invert pointer-events-none"/> : <SafeIcon name="car" size={24} className="text-zinc-600 dark:text-zinc-400 z-10"/>}
                                 <div className="absolute inset-0 bg-white/80 dark:bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none"><SafeIcon name="edit" size={16} className="text-orange-500 dark:text-white"/></div>
                             </div>
-                            
-                            <div className="flex flex-col justify-center flex-1 min-w-0">
+                            <div className="flex flex-col min-w-0 justify-center">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <SafeIcon name="db" size={12} className="text-orange-500"/>
+                                    <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Fordonsakt</span>
+                                </div>
                                 <div className="flex items-center gap-3">
-                                    <h2 onClick={copyRegClick} className="text-2xl sm:text-3xl font-black font-mono tracking-tight uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors truncate">
+                                    <h2 onClick={copyRegClick} className="text-3xl sm:text-4xl font-black font-mono tracking-tighter uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors truncate">
                                         {v.regnr}
                                     </h2>
-                                    {regCopied && (
-                                        <span className="text-[9px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-md font-bold tracking-widest uppercase animate-in fade-in zoom-in shrink-0">
-                                            Kopierad
-                                        </span>
-                                    )}
+                                    {regCopied && <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-sans tracking-widest uppercase animate-in fade-in zoom-in shrink-0">Kopierad!</span>}
                                 </div>
-                                <div className="flex flex-col mt-1 sm:mt-1.5 min-w-0">
-                                    <span className="text-[11px] sm:text-[12px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest truncate leading-tight w-full">
+                                <div className="flex flex-col mt-1.5 min-w-0">
+                                    <span className="text-[12px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-widest truncate w-full leading-tight">
                                         {specs.model || v.model || 'Okänd Modell'}
                                     </span>
                                     {v.customer && v.customer !== 'Okänd' && (
-                                        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5 truncate flex items-center w-full">
-                                            <window.Icon name="user" size={10} className="inline-block shrink-0 mr-1.5 opacity-70" />
+                                        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest mt-0.5 truncate flex items-center w-full">
+                                            <window.Icon name="user" size={10} className="shrink-0 mr-1.5" />
                                             <span className="truncate">{v.customer}</span>
                                         </span>
                                     )}
                                 </div>
                             </div>
                         </div>
-
                         <div className="flex items-center gap-2 shrink-0">
-                            <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 transition-all z-50 group text-orange-600 dark:text-orange-400 border border-transparent dark:hover:border-orange-500/30">
-                                <window.Icon name="plus" size={18} className="transition-transform group-active:scale-90" />
+                            <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-10 h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 transition-all z-50 group text-orange-600 dark:text-orange-400 border border-transparent dark:hover:border-orange-500/30">
+                                <window.Icon name="plus" size={20} className="transition-transform group-active:scale-90" />
                             </button>
-                            <button onClick={onClose} title="Stäng" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 transition-all z-50 text-zinc-800 dark:text-zinc-200 border border-transparent dark:hover:border-white/10">
-                                <window.Icon name="x" size={18} className="text-zinc-800 dark:text-zinc-200" />
+                            <button onClick={onClose} title="Stäng" className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 transition-all z-50 text-zinc-800 dark:text-zinc-200 border border-transparent dark:hover:border-white/10">
+                                <window.Icon name="x" size={20} className="text-zinc-800 dark:text-zinc-200" />
                             </button>
                         </div>
                     </div>
