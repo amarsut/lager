@@ -149,7 +149,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
 
     return (
         <div
-            onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id) : null}
+            onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id, job) : null}
             className={`w-full relative active:scale-[0.98] transition-all bg-white hover:bg-orange-50 dark:bg-[#182032] dark:hover:bg-[#1f2940] border-2 border-zinc-200 dark:border-zinc-600 rounded-xl shadow-md group select-none overflow-hidden mb-3 ${isDone ? 'opacity-70 grayscale-[0.3]' : ''}`}
         >
             <div className="p-4">
@@ -729,8 +729,11 @@ window.DashboardView = React.memo(({
         return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
     };
 
-    const handleOpenHistory = React.useCallback((regnr, jobId) => {
-        setHistoryTarget({ regnr, highlightId: jobId });
+    const handleOpenHistory = React.useCallback((regnr, jobId, job) => {
+        // Öppna ENDAST fordonsdatan (sidebar) oavsett enhet
+        if (window.openVehicleProfile) {
+            window.openVehicleProfile(regnr, jobId); 
+        }
     }, []);
 
     React.useEffect(() => {
@@ -900,25 +903,50 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="flex flex-col flex-1 pb-10">
-                    <div className="flex px-4 border-b border-zinc-200 dark:border-white/10 space-x-2">
-                        {filters.map(f => (
-                            <button 
-                                key={f} 
-                                data-tab={f} 
-                                onClick={() => setActiveFilter(f)} 
-                                className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
-                            >
-                                {f}
-                                {(statusCounts[f] || 0) > 0 && (
-                                    <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>
-                                        {statusCounts[f]}
-                                    </span>
-                                )}
-                                {activeFilter === f && (
-                                    <span className="absolute bottom-[1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
-                                )}
-                            </button>
-                        ))}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0">
+                        {/* Flikarna till vänster */}
+                        <div className="flex space-x-2">
+                            {filters.map(f => (
+                                <button 
+                                    key={f} 
+                                    data-tab={f} 
+                                    onClick={() => setActiveFilter(f)} 
+                                    className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                                >
+                                    {f}
+                                    {(statusCounts[f] || 0) > 0 && (
+                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>
+                                            {statusCounts[f]}
+                                        </span>
+                                    )}
+                                    {activeFilter === f && (
+                                        <span className="absolute bottom-[1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Sökfältet till höger */}
+                        <div className="relative group mb-2 sm:mb-0 shrink-0">
+                            <input 
+                                type="text" 
+                                placeholder="SÖK I LISTAN..." 
+                                className="bg-white/50 dark:bg-[#1a2235]/50 border border-zinc-200 dark:border-white/10 focus:border-orange-500 py-2 pl-9 pr-8 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-64 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-lg shadow-sm"
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                            />
+                            <window.Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                            
+                            {/* Rensa-knapp (visas bara när man har skrivit något) */}
+                            {globalSearch && (
+                                <button 
+                                    onClick={() => setGlobalSearch('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors"
+                                >
+                                    <window.Icon name="x" size={14} />
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* TABELLEN MED SORTERING */}
@@ -979,7 +1007,7 @@ window.DashboardView = React.memo(({
                                         return (
                                             <tr 
                                                 key={job.id} 
-                                                onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id) : null} 
+                                                onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
                                                 className={`group transition-all duration-300 cursor-pointer relative bg-transparent hover:bg-orange-50 dark:hover:bg-orange-500/10 border-b border-zinc-100 dark:border-white/5 last:border-0`}
                                             >
                                                 <td className="pl-7 pr-4 py-4 align-middle relative">
@@ -1078,7 +1106,13 @@ window.DashboardView = React.memo(({
                                                                 <window.Icon name="check" size={16} />
                                                             </button>
                                                         )}
-                                                        <button title="Redigera" onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-200 dark:hover:border-blue-500/30 hover:text-blue-600 dark:hover:text-blue-400 shadow-sm transition-all">
+                                                        <button title="Redigera" onClick={() => {
+                                                            setView('NEW_JOB', { job: job });
+                                                            if (window.openVehicleProfile) {
+                                                                window.openVehicleProfile(job.regnr, job.id);
+                                                            }
+                                                        }}
+                                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-200 dark:hover:border-blue-500/30 hover:text-blue-600 dark:hover:text-blue-400 shadow-sm transition-all">
                                                             <window.Icon name="edit-2" size={16} />
                                                         </button>
                                                         <button title="Radera" onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 dark:hover:border-red-500/30 hover:text-red-600 dark:hover:text-red-400 shadow-sm transition-all">
@@ -1247,16 +1281,6 @@ window.DashboardView = React.memo(({
                 )}
                 </div>
             </div>
-
-            {/* MODUL: History */}
-            {historyTarget && window.VehicleProfileLoader && (
-                <window.VehicleProfileLoader
-                    regnr={historyTarget.regnr}
-                    highlightId={historyTarget.highlightId}
-                    onClose={() => setHistoryTarget(null)}
-                    setView={setView}
-                />
-            )}
         </div>
     );
 }, dashboardPropsAreEqual);
