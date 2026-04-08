@@ -333,15 +333,16 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
             window.osRadarActive = true;
 
             const loader = document.createElement('div');
-            loader.style.cssText = 'position: fixed; inset: 0; z-index: 2147483647; background: rgba(15, 21, 34, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; transition: opacity 0.5s;';
+            // FIX: Ändrat från fullskärm till en flytande widget i hörnet. pointer-events: none gör att du kan klicka på sidan bakom!
+            loader.style.cssText = 'position: fixed; bottom: 32px; right: 32px; z-index: 2147483647; font-family: system-ui, sans-serif; transition: opacity 0.5s; pointer-events: none;';
             
             loader.innerHTML = `
-                <div id="ts-box" style="background: linear-gradient(135deg, rgba(15,21,34,0.95), rgba(20,28,45,0.95)); border: 1px solid rgba(59,130,246,0.5); border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(59,130,246,0.2); transition: all 0.3s;">
+                <div id="ts-box" style="background: linear-gradient(135deg, rgba(15,21,34,0.95), rgba(20,28,45,0.95)); border: 1px solid rgba(59,130,246,0.5); border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(59,130,246,0.2); transition: all 0.3s; pointer-events: all;">
                     <div style="width:36px; height:36px; position:relative; flex-shrink:0;">
                         <div id="ts-spin" style="position:absolute; inset:0; border:3px solid rgba(59,130,246,0.2); border-top-color:#3b82f6; border-radius:50%; animation: ts-spin-anim 1s linear infinite;"></div>
                     </div>
                     <div style="flex-grow:1; min-width:140px;">
-                        <h1 style="color:#3b82f6; font-size:11px; font-weight:900; letter-spacing:1.5px; margin:0; text-transform:uppercase;">Myndighetslänk</h1>
+                        <h1 id="ts-title" style="color:#3b82f6; font-size:11px; font-weight:900; letter-spacing:1.5px; margin:0; text-transform:uppercase;">Myndighetslänk</h1>
                         <p id="ts-text" style="color:#e4e4e7; font-size:10px; font-weight:500; letter-spacing:0.5px; margin:4px 0 0 0;">Slår upp: ${activeReg}...</p>
                     </div>
                 </div>
@@ -349,17 +350,28 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
             `;
             document.documentElement.appendChild(loader);
 
-            const updateWidget = (text, success = false, err = false) => {
+            const updateWidget = (text, state = 'loading') => {
                 const textEl = document.getElementById('ts-text');
+                const box = document.getElementById('ts-box');
+                const spin = document.getElementById('ts-spin');
+                const title = document.getElementById('ts-title');
+                
                 if(textEl) textEl.innerText = text;
-                if (success) {
-                    document.getElementById('ts-box').style.borderColor = '#10b981';
-                    document.getElementById('ts-spin').style.borderTopColor = '#10b981';
-                }
-                if (err) {
-                    document.getElementById('ts-box').style.borderColor = '#ef4444';
-                    document.getElementById('ts-spin').style.borderTopColor = '#ef4444';
-                    document.getElementById('ts-spin').style.animation = 'none';
+                
+                if (state === 'success') {
+                    box.style.borderColor = '#10b981';
+                    spin.style.borderTopColor = '#10b981';
+                    title.style.color = '#10b981';
+                } else if (state === 'error') {
+                    box.style.borderColor = '#ef4444';
+                    spin.style.borderTopColor = '#ef4444';
+                    spin.style.animation = 'none';
+                    title.style.color = '#ef4444';
+                } else if (state === 'warning') {
+                    box.style.borderColor = '#f59e0b'; // Orange färg för Captcha
+                    spin.style.borderTopColor = '#f59e0b';
+                    spin.style.animation = 'ts-spin-anim 2.5s linear infinite'; // Långsammare spinn
+                    title.style.color = '#f59e0b';
                 }
             };
 
@@ -384,19 +396,36 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
 
             // 2. Skanna och Extrahera
             let attempts = 0;
+            let captchaDetected = false;
+
             const radar = setInterval(() => {
                 attempts++;
                 const bodyText = document.body.innerText; 
+
+                // NYTT: Kontrollera om en Captcha eller säkerhetskontroll dyker upp
+                const hasCaptcha = document.querySelector('iframe[src*="recaptcha"]') || 
+                                   document.querySelector('.g-recaptcha') || 
+                                   bodyText.includes('säkerhetskontroll') || 
+                                   bodyText.includes('Jag är ingen robot');
+
+                if (hasCaptcha && !captchaDetected) {
+                    captchaDetected = true;
+                    updateWidget('Lös Captcha för att fortsätta...', 'warning');
+                }
+
+                // Om vi väntar på Captcha, nollställ attempts så vi inte timear ut medan du klickar på övergångsställen
+                if (captchaDetected && !bodyText.includes('Fordonsidentitet')) {
+                    attempts = 0; 
+                }
                 
                 // Trigg: Resultatsidan har laddat om vi ser dessa rubriker
                 if (bodyText.includes('Fordonsidentitet') && bodyText.includes('Fordonsstatus')) {
                     clearInterval(radar);
-                    updateWidget('Laddar ner fordonsregister...');
+                    updateWidget('Laddar ner fordonsregister...', 'loading');
 
                     // BRUTE-FORCE: Öppna ALLA stängda dragspel och flikar på hela sidan
                     const openAllPanels = () => {
                         document.querySelectorAll('button, a, summary').forEach(el => {
-                            // Om knappen säger att den är stängd, eller har klassen 'collapsed'
                             if (el.getAttribute('aria-expanded') === 'false' || el.classList.contains('collapsed')) {
                                 try { el.click(); } catch(e){}
                             }
@@ -404,23 +433,19 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                     };
                     
                     openAllPanels();
-                    // Kör en gång till efter 1 sekund utifall vissa laddades in med fördröjning
                     setTimeout(openAllPanels, 1000);
 
                     // Vänta in animationerna (2.5 sekunder), SEN läser vi av texten
                     setTimeout(() => {
-                        // Nu hämtar vi texten igen, den här gången är alla menyer utfällda!
                         const finalLines = document.body.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
 
                         const extract = (labels) => {
                             const labelArray = Array.isArray(labels) ? labels : [labels];
                             for (let label of labelArray) {
-                                // A: Leta rad för rad (Rubrik på rad 1, Värde på rad 2)
                                 const idx = finalLines.findIndex(l => l.toLowerCase() === label.toLowerCase());
                                 if (idx !== -1 && idx + 1 < finalLines.length) {
                                     return finalLines[idx + 1];
                                 }
-                                // B: Leta inline ("Rubrik: Värde")
                                 const inline = finalLines.find(l => l.toLowerCase().startsWith(label.toLowerCase() + ':'));
                                 if (inline) {
                                     return inline.substring(label.length + 1).trim();
@@ -429,7 +454,6 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                             return "SAKNAS";
                         };
 
-                        // Bygger JSON med breda sökord ifall TS byter namn på något
                         const payload = { 
                             source: 'Transportstyrelsen_Extension', 
                             regnr: activeReg,
@@ -457,16 +481,16 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
 
                         if (window.opener) window.opener.postMessage(payload, "*");
                         
-                        updateWidget('Registerutdrag sparat!', true);
+                        updateWidget('Registerutdrag sparat!', 'success');
                         setTimeout(() => window.close(), 2000);
 
                     }, 2500); 
                 }
 
-                // Lång timeout för ev. Captcha
+                // Lång timeout för säkerhets skull
                 if (attempts > 120) { 
                     clearInterval(radar);
-                    updateWidget('Timeout eller Captcha-blockering', false, true);
+                    updateWidget('Timeout uppstod', 'error');
                     setTimeout(() => loader.remove(), 3000);
                 }
             }, 500);
