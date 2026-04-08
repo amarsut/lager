@@ -59,40 +59,24 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         return () => u1();
     }, [v.regnr]);
 
-    // Lyssna på Chrome-tillägget
+    // Lyssna på Chrome-tillägget (Uppdaterar live om radarn fångar data)
     React.useEffect(() => {
         const handleMessage = async (event) => {
             const fordonData = event.data;
 
-            if (fordonData && fordonData.source === 'Car.info_Extension') {
+            if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension'].includes(fordonData.source)) {
                 const specUpdates = {};
                 if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
-                if (fordonData.oljevolym) specUpdates.oil = `${fordonData.oljevolym} l`;
+                if (fordonData.oljevolym) specUpdates.oil = fordonData.oljevolym.toString().includes('l') ? fordonData.oljevolym : `${fordonData.oljevolym} l`;
                 if (fordonData.miltal) specUpdates.mileage = fordonData.miltal;
                 if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
                 if (fordonData.vin) specUpdates.vin = fordonData.vin;
-                if (fordonData.bilmodell) specUpdates.model = fordonData.bilmodell; // NY RAD
+                if (fordonData.bilmodell) specUpdates.model = fordonData.bilmodell;
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
                     setSpecs(prev => ({ ...prev, ...specUpdates }));
-                    if (window.db) await window.db.collection("vehicleSpecs").doc(v.regnr).set(specUpdates, { merge: true });
-                    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
-                }
-            }
-
-            if (fordonData && fordonData.source === 'Oljemagasinet_Extension') {
-                const specUpdates = {};
-                if (fordonData.oljevolym) specUpdates.oil = `${fordonData.oljevolym} l`;
-                if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
-                if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
-                if (fordonData.bilmodell) specUpdates.model = fordonData.bilmodell; // NY RAD
-                
-                if (Object.keys(specUpdates).length > 0) {
-                    specUpdates.updatedAt = new Date().toISOString();
-                    setSpecs(prev => ({ ...prev, ...specUpdates }));
-                    if (window.db) await window.db.collection("vehicleSpecs").doc(v.regnr).set(specUpdates, { merge: true });
-                    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
+                    // Spara i bakgrunden (Hanteras primärt av radarn, men bra som säkerhet här)
                 }
             }
         };
@@ -135,22 +119,19 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     }).sort((a,b)=>b.datum.localeCompare(a.datum));
 
     return (
-        // 1. Ta bort pointer-events-none så att vi kan fånga klick igen
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-200">
             
-            {/* 2. Vi lägger in overlayen igen, fast helt genomskinlig, som stänger panelen vid klick! */}
             <div className="absolute inset-0 bg-transparent cursor-default" onClick={onClose}></div>
             
-            {/* 3. Panelen glid in precis som vanligt */}
             <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="relative w-full sm:w-[500px] h-full bg-zinc-50 dark:bg-[#0f1522] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-white/10">
                 
-                {/* --- HEADER MED INTEGRERAD TEKNISK DATA --- */}
+                {/* --- HEADER --- */}
                 <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl text-zinc-900 dark:text-white shrink-0 relative overflow-hidden shadow-sm z-20 border-b border-zinc-200 dark:border-white/5 transition-colors">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
                     
-                    {/* Huvudinfo (Bil & Kund) */}
-                    <div className="flex justify-between items-start p-5 sm:p-6 pb-4 sm:pb-5 relative z-10">
-                        <div className="flex items-center gap-4 sm:gap-5">
+                    {/* Huvudinfo (Bil & Kund) - ÄNDRING: flex-1 min-w-0 fixar mobilkrysset! */}
+                    <div className="flex justify-between items-start p-4 sm:p-6 pb-4 sm:pb-5 relative z-10">
+                        <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0 pr-2">
                             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-zinc-100 dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 flex items-center justify-center relative overflow-hidden group shadow-sm hover:border-orange-500/50 transition-all shrink-0">
                                 <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full text-black" onChange={changeBrand} value={brand||""}>
                                     <option value="">...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
@@ -159,7 +140,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 <div className="absolute inset-0 bg-white/80 dark:bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none"><SafeIcon name="edit" size={16} className="text-orange-500 dark:text-white"/></div>
                             </div>
                             
-                            <div className="flex flex-col justify-center">
+                            <div className="flex flex-col justify-center flex-1 min-w-0">
                                 <div className="flex items-center gap-3">
                                     <h2 onClick={copyRegClick} className="text-2xl sm:text-3xl font-black font-mono tracking-tight uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors">
                                         {v.regnr}
@@ -170,12 +151,12 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex flex-col mt-1 sm:mt-1.5">
-                                    <span className="text-[11px] sm:text-[12px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest truncate max-w-[200px] sm:max-w-[280px] leading-tight">
+                                <div className="flex flex-col mt-1 sm:mt-1.5 min-w-0">
+                                    <span className="text-[11px] sm:text-[12px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest truncate w-full leading-tight">
                                         {specs.model || v.model || 'Okänd Modell'}
                                     </span>
                                     {v.customer && v.customer !== 'Okänd' && (
-                                        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5 truncate max-w-[200px] sm:max-w-[280px] flex items-center">
+                                        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5 truncate w-full flex items-center">
                                             <window.Icon name="user" size={10} className="inline-block mr-1.5 opacity-70" />
                                             {v.customer}
                                         </span>
@@ -184,7 +165,8 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        {/* ÄNDRING: Krymper aldrig (shrink-0) så knapparna alltid får plats */}
+                        <div className="flex items-center gap-2 shrink-0 pl-2">
                             <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 transition-all z-50 group text-orange-600 dark:text-orange-400 border border-transparent dark:hover:border-orange-500/30">
                                 <window.Icon name="plus" size={18} className="transition-transform group-active:scale-90" />
                             </button>
@@ -196,28 +178,38 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                     {/* Teknisk Data Grid */}
                     <div className="bg-zinc-50/50 dark:bg-black/20 border-t border-zinc-200 dark:border-white/5 px-4 py-3">
-                        {/* Rad 1: 3 Kolumner (Årsmodell, Motor, Olja) */}
+                        
                         <div className="grid grid-cols-3 gap-2 mb-2">
+                            {/* ÄNDRING: Lade till focus: true för motorkod och oljevolym */}
                             {[
-                                { id: 'year', label: 'Årsmodell', val: specs.year, ph: '2016' },
-                                { id: 'engine', label: 'Motorkod', val: specs.engine, ph: 'CFGB' },
-                                { id: 'oil', label: 'Oljevolym', val: specs.oil, ph: '4.7 l' }
-                            ].map(f => (
-                                <div key={f.id} className="bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center relative group focus-within:border-orange-500 transition-colors">
-                                    <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">{f.label}</div>
-                                    <input 
-                                        type="text" 
-                                        className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
-                                        placeholder={f.ph}
-                                        value={f.val || ''}
-                                        onChange={(e) => setSpecs({...specs, [f.id]: e.target.value})}
-                                        onBlur={(e) => saveSpec(f.id, e.target.value)}
-                                    />
-                                </div>
-                            ))}
+                                { id: 'year', label: 'Årsmodell', val: specs.year, ph: '2016', focus: false },
+                                { id: 'engine', label: 'Motorkod', val: specs.engine, ph: 'CFGB', focus: true },
+                                { id: 'oil', label: 'Oljevolym', val: specs.oil, ph: '4.7 l', focus: true }
+                            ].map(f => {
+                                const boxStyle = f.focus 
+                                    ? 'bg-[#1e293b]/5 dark:bg-[#1e293b] border-orange-500/40 shadow-[inset_0_0_15px_rgba(249,115,22,0.05)] focus-within:border-orange-500 focus-within:bg-orange-50/50 dark:focus-within:bg-[#1a2235]' 
+                                    : 'bg-white dark:bg-[#1a2235] border-zinc-200 dark:border-white/5 shadow-sm focus-within:border-orange-500';
+                                
+                                const labelStyle = f.focus 
+                                    ? 'text-orange-600 dark:text-orange-400' 
+                                    : 'text-zinc-500 dark:text-zinc-400';
+
+                                return (
+                                    <div key={f.id} className={`${boxStyle} border rounded-lg p-2 flex flex-col justify-center relative group transition-colors`}>
+                                        <div className={`text-[8px] font-bold uppercase tracking-widest mb-0.5 ${labelStyle}`}>{f.label}</div>
+                                        <input 
+                                            type="text" 
+                                            className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
+                                            placeholder={f.ph}
+                                            value={f.val || ''}
+                                            onChange={(e) => setSpecs({...specs, [f.id]: e.target.value})}
+                                            onBlur={(e) => saveSpec(f.id, e.target.value)}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                             
-                        {/* Rad 2: 3 Kolumner (Chassinummer tar 2, Miltal tar 1) */}
                         <div className="grid grid-cols-3 gap-2">
                             <div className="col-span-2 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
                                 <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">
@@ -250,7 +242,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
                 </div>
 
-                {/* --- CONTENT: BARA HISTORIK --- */}
+                {/* --- CONTENT: HISTORIK --- */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 transition-colors">
                     <div className="space-y-4 animate-in fade-in duration-300 pb-20 relative">
                         
@@ -282,10 +274,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                         <div 
                                             onClick={() => {
                                                 setView('NEW_JOB', { job: j });
-                                                // Om vi är på en mobilskärm (<1024px), stäng sidopanelen så vi ser redigeringsvyn!
-                                                if (window.innerWidth < 1024) {
-                                                    onClose();
-                                                }
+                                                if (window.innerWidth < 1024) onClose();
                                             }} 
                                             className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 relative z-10 ${
                                                 isHighlighted 
@@ -320,56 +309,40 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
                 </div>
                 
-                {/* --- BOTTOM ACTION BAR MED DATALÄNKAR --- */}
+                {/* --- BOTTOM ACTION BAR: SMART SEARCH & MOBILE FALLBACK --- */}
                 <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-[#1a2235] bg-zinc-50 dark:bg-[#121826] shrink-0 transition-colors z-20 flex gap-3">
                     
-                    <button
-                        type="button"
-                        onClick={() => {
-                            const carWindow = window.open(
-                                `https://www.car.info/sv-se/license-plate/S/${v.regnr.trim()}#bmg_export`, 
-                                'OS_Radar', 
-                                'width=400,height=400,left=9999,top=9999'
-                            );
-                            if (carWindow) {
-                                carWindow.blur();
-                                window.focus();
-                            }
-                        }}
-                        className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all group shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300"
-                    >
-                        <window.Icon name="download" size={16} className="text-zinc-400 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Hämta All Data</span>
-                    </button>
-
+                    {/* SMART SÖKNING (flex-1 gör den lika bred som manuell-knappen på mobil) */}
                     <button 
                         onClick={() => {
-                            const radarWindow = window.open(
-                                'https://www.oljemagasinet.se/', 
-                                'OS_Radar', 
-                                'width=400,height=400,left=9999,top=9999'
-                            );
-                            if (radarWindow) {
-                                radarWindow.blur();
-                                window.focus();
+                            if (window.osSearchVehicle) {
+                                window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH');
                             }
-                            
-                            let pings = 0;
-                            const pingInterval = setInterval(() => {
-                                if (radarWindow && !radarWindow.closed) {
-                                    radarWindow.postMessage({ action: 'START_OS_RADAR', regnr: v.regnr.trim() }, '*');
-                                }
-                                pings++;
-                                if (pings > 20) clearInterval(pingInterval); 
-                            }, 500);
                         }}
-                        className="flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all group shadow-sm active:scale-95 text-zinc-700 dark:text-zinc-300"
+                        className="flex-1 bg-white dark:bg-[#1a2235] border border-orange-500/30 dark:border-orange-500/20 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all group shadow-sm active:scale-95 text-orange-500 dark:text-orange-500 min-w-0"
                     >
-                        <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" className="w-4 h-4 rounded shrink-0 grayscale group-hover:grayscale-0 transition-all opacity-80 group-hover:opacity-100"/>
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Hämta Oljevolym</span>
+                        <window.Icon name="zap" size={16} className="text-orange-500 group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest truncate">Smart Sök</span>
+                    </button>
+
+                    {/* ENBART MOBIL: Manuell sökning (flex-1) */}
+                    <button 
+                        onClick={() => {
+                            if (navigator.clipboard) {
+                                navigator.clipboard.writeText(v.regnr.trim());
+                                setRegCopied(true);
+                                setTimeout(() => setRegCopied(false), 2000);
+                            }
+                            window.open('https://www.oljemagasinet.se/', '_blank');
+                        }}
+                        className="flex sm:hidden flex-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 py-3 rounded-xl items-center justify-center gap-2 active:scale-95 text-zinc-700 dark:text-zinc-300 shadow-sm min-w-0"
+                    >
+                        <img src="https://www.google.com/s2/favicons?domain=oljemagasinet.se" alt="O" className="w-3.5 h-3.5 rounded shrink-0 grayscale opacity-80" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest truncate">Manuell</span>
                     </button>
 
                 </div>
+
             </div>
         </div>
     );
