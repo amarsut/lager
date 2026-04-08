@@ -62,23 +62,21 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
         const cleanedQuery = debouncedQuery.replace(/\s+/g, '').toUpperCase();
         
         // --- 1. DETEKTERA REG.NR ---
-        // --- 1. DETEKTERA REG.NR ---
         const isRegNr = /^[A-Z]{3}\d{2}[A-Z0-9]$/.test(cleanedQuery);
         
         let externalLinks = [];
         if (isRegNr) {
             externalLinks = [
-                // 1. Oljemagasinet
-                { id: 'oljemagasinet', icon: 'droplet', title: `Hämta Oljevolym`, subtitle: `Hämta ny data via tillägg`, type: 'oljemagasinet_radar', url: `https://www.oljemagasinet.se/`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                // NY: Smart Sökning som delegerar till den uppdaterade systemradarn!
+                { id: 'smart_search', icon: 'zap', title: `Smart Sökning (Databas först)`, subtitle: `Hämtar all info direkt utan fönster om den finns`, type: 'os_radar_action', actionTarget: 'SMART_SEARCH', category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
                 
-                // 2. Transportstyrelsen (Med korrekta länken!)
-                { id: 'ts', icon: 'shield', title: `Myndighetsdata (TS)`, subtitle: `Hämta officiellt registerutdrag`, type: 'ts_radar', url: `https://fordon-fu-regnr.transportstyrelsen.se/`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                // Specifika Källor (Dessa går nu OCKSÅ via den smarta cachen)
+                { id: 'oljemagasinet', icon: 'droplet', title: `Hämta Oljevolym`, subtitle: `Tvinga sökning via Oljemagasinet`, type: 'os_radar_action', actionTarget: 'START_OS_RADAR', category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                { id: 'ts', icon: 'shield', title: `Myndighetsdata (TS)`, subtitle: `Tvinga sökning via Transportstyrelsen`, type: 'os_radar_action', actionTarget: 'START_TS_RADAR', category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
+                { id: 'carinfo', icon: 'car', title: `Sök på Car.info`, subtitle: `Tvinga sökning via Car.info`, type: 'os_radar_action', actionTarget: 'START_CARINFO', category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
                 
-                // 3. Car.info
-                { id: 'carinfo', icon: 'external-link', title: `Sök på Car.info`, subtitle: `Hämta ny fordonsdata via tillägg`, type: 'popup_link', url: `https://www.car.info/sv-se/license-plate/S/${cleanedQuery}#bmg_export`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery },
-                
-                // 4. Biluppgifter
-                { id: 'biluppgifter', icon: 'external-link', title: `Sök på Biluppgifter`, subtitle: `biluppgifter.se/fordon/${cleanedQuery}`, type: 'link', url: `https://biluppgifter.se/fordon/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
+                // Ren utgående länk
+                { id: 'biluppgifter', icon: 'external-link', title: `Öppna i Biluppgifter`, subtitle: `biluppgifter.se/fordon/${cleanedQuery}`, type: 'link', url: `https://biluppgifter.se/fordon/${cleanedQuery}`, category: `Fordonsuppgifter: ${cleanedQuery}`, copyText: cleanedQuery }
             ];
         }
 
@@ -166,60 +164,26 @@ window.SpotlightSearch = ({ isOpen, onClose, allJobs, allNotes, allLagerItems, n
         if (debouncedQuery) saveSearch(debouncedQuery);
         onClose();
 
-        // 1 & 2. Osynlig Spök-Popup för Tillägg (Oljemagasinet & Car.info)
-        if ((item.type === 'oljemagasinet_radar' || item.type === 'popup_link') && item.url) {
-            
-            window.dispatchEvent(new CustomEvent('show-system-radar', { 
-                detail: { regnr: item.copyText, waitForExtension: true } 
-            }));
-
-            const radarWindow = window.open(item.url, 'VehicleRadarPopup', 'width=400,height=400,left=9999,top=9999');
-            
-            if (radarWindow) {
-                radarWindow.blur();
-                window.focus();
-            }
-
-            if (item.type === 'oljemagasinet_radar') {
-                let pings = 0;
-                const pingInterval = setInterval(() => {
-                    if (radarWindow && !radarWindow.closed) {
-                        radarWindow.postMessage({ action: 'START_OS_RADAR', regnr: item.copyText }, '*');
-                    }
-                    pings++;
-                    if (pings > 20) clearInterval(pingInterval); 
-                }, 500);
+        // 1. Delegera alla fordons-sökningar direkt till Systemradarn!
+        // Nu kollar den ALLTID databasen först tack vare uppdateringen i systemRadar.js
+        if (item.type === 'os_radar_action') {
+            if (window.osSearchVehicle) {
+                window.osSearchVehicle(item.copyText, item.actionTarget);
+            } else {
+                console.warn("SystemRadar är inte laddad.");
             }
         }
-        // --- NYTT: TS RADAR KÖRNING ---
-        else if (item.type === 'ts_radar') {
-            // Öppnar Transportstyrelsen lite större så man kan lösa ev. Captcha
-            const tsWindow = window.open(item.url, 'OS_Radar_TS', 'width=500,height=650,left=9999,top=9999');
-            
-            if (tsWindow) {
-                tsWindow.blur();
-                window.focus();
-            }
-
-            let pings = 0;
-            const pingInterval = setInterval(() => {
-                if (tsWindow && !tsWindow.closed) {
-                    tsWindow.postMessage({ action: 'START_TS_RADAR', regnr: item.copyText }, '*');
-                }
-                pings++;
-                if (pings > 20) clearInterval(pingInterval); 
-            }, 500);
-        }
-        // 3. Vanliga länkar (Biluppgifter öppnas i ny standardflik)
+        // 2. Vanliga webblänkar
         else if (item.type === 'link' && item.url) {
             window.open(item.url, '_blank');
         } 
+        // 3. Navigation
         else if (item.type === 'page') {
             const target = item.targetPage || item.id;
             navigateTo(target, target === 'NEW_JOB' ? { job: null } : null);
         } 
+        // 4. Jobb-kort
         else if (item.type === 'job') {
-            onClose();
             if (window.openVehicleProfile) {
                 window.openVehicleProfile(item.job.regnr, item.job.id);
             } else {
