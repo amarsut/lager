@@ -66,19 +66,6 @@ const App = () => {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
-    const [globalTsData, setGlobalTsData] = useState(null); 
-
-    useEffect(() => {
-        const handleTsMessage = (event) => {
-            const data = event.data;
-            if (data && data.source === 'Transportstyrelsen_Extension') {
-                setGlobalTsData(data);
-                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate([10, 50, 10]);
-            }
-        };
-        window.addEventListener('message', handleTsMessage);
-        return () => window.removeEventListener('message', handleTsMessage);
-    }, []);
 
     useEffect(() => {
         window.openVehicleProfile = (regnr, highlightId = null) => {
@@ -297,7 +284,7 @@ const App = () => {
 
             {/* Den Svävande Systemradarn (Laddas in säkert om den finns) */}
             {window.GlobalSystemRadar && (
-                <window.GlobalSystemRadar isChatOpen={isChatOpen} />
+                <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
             )}
 
             {/* Huvudlayout med Dark Mode bakgrund */}
@@ -463,10 +450,6 @@ const App = () => {
                             setView={navigateTo}
                         />
                     )}
-
-                    {/* --- NYTT: GLOBAL TS MODAL --- */}
-                    {globalTsData && <window.TsDataModal data={globalTsData} onClose={() => setGlobalTsData(null)} navigateTo={navigateTo} />}
-
                 </main>
             </div>
         </>
