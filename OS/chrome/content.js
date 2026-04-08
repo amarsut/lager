@@ -1,14 +1,12 @@
 /**
  * PLANERARE // OS - EXTERNAL SCRAPER EXTENSION
- * Version: 4.0 (Classic Engine + Shadow DOM)
- * Beskrivning: Använder din beprövade parallell-skanning kombinerat med isolerad Shadow DOM UI.
+ * Version: 4.7 (Classic TS Engine + Shadow DOM)
  */
 
 // ==========================================
 // 1. VERKTYG & HJÄLPMEDEL
 // ==========================================
 class ScraperUtils {
-    // Krossar moderna React/Vue-skydd i inmatningsfält
     static setNativeValue(element, value) {
         if (!element) return;
         const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
@@ -36,8 +34,8 @@ class RadarWidget {
         this.shadow = this.host.attachShadow({ mode: 'open' });
         this.theme = theme;
         this.colors = theme === 'blue' 
-            ? { main: '#3b82f6', glow: 'rgba(59,130,246,0.4)', bg: 'rgba(59,130,246,0.2)', success: '#10b981' } // Transportstyrelsen Blå
-            : { main: '#f97316', glow: 'rgba(249,115,22,0.4)', bg: 'rgba(249,115,22,0.2)', success: '#10b981' }; // Standard Orange
+            ? { main: '#3b82f6', glow: 'rgba(59,130,246,0.4)', bg: 'rgba(59,130,246,0.2)', success: '#10b981' } 
+            : { main: '#f97316', glow: 'rgba(249,115,22,0.4)', bg: 'rgba(249,115,22,0.2)', success: '#10b981' }; 
             
         this.render(title, subtitle);
     }
@@ -49,7 +47,6 @@ class RadarWidget {
             @keyframes pulseGlow { 0%, 100% { box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px ${c.bg}; border-color: ${c.bg}; } 50% { box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px ${c.glow}; border-color: ${c.glow}; } }
             @keyframes spinOuter { to { transform: rotate(360deg); } }
             @keyframes spinInner { to { transform: rotate(-360deg); } }
-            @keyframes dataBlink { 0%, 100% { opacity: 0.3; transform: scaleY(0.4); } 50% { opacity: 1; transform: scaleY(1); } }
             
             .os-radar-wrapper { position: fixed; inset: 0; pointer-events: all; transition: background-color 0.8s ease, backdrop-filter 0.8s ease; background-color: rgba(15, 21, 34, 0.95); backdrop-filter: blur(10px); font-family: system-ui, sans-serif; }
             .os-radar-wrapper.shrunk { background-color: transparent; backdrop-filter: blur(0px); pointer-events: none; }
@@ -75,6 +72,18 @@ class RadarWidget {
         
         this.shadow.appendChild(style);
         this.shadow.appendChild(this.wrapper);
+    }
+
+    shrink() { if (this.wrapper) this.wrapper.classList.add('shrunk'); }
+    updateText(text) { const textEl = this.shadow.getElementById('os-radar-text'); if (textEl) textEl.innerText = text; }
+    
+    stopAnimation() {
+        const box = this.shadow.querySelector('.os-radar-box');
+        if (box) box.style.animation = 'none';
+        const spin1 = this.shadow.getElementById('os-spin-1');
+        const spin2 = this.shadow.getElementById('os-spin-2');
+        if (spin1) spin1.style.animation = 'none';
+        if (spin2) spin2.style.display = 'none';
     }
 
     success(text) {
@@ -106,14 +115,11 @@ class RadarWidget {
     }
 }
 
-
 // ==========================================
-// 3. CAR.INFO SKANNERN (Din exakta logik)
+// 3. CAR.INFO SKANNERN
 // ==========================================
 if (window.location.hostname.includes('car.info') && window.location.hash.includes('bmg_export')) {
-    
     const widget = new RadarWidget('Datalänk Aktiv', 'Laddar uppgifter...');
-
     let attempts = 0;
     const carInfoRadar = setInterval(() => {
         attempts++;
@@ -161,29 +167,26 @@ if (window.location.hostname.includes('car.info') && window.location.hash.includ
 
                 widget.success('Fordon data fångad!');
                 if (window.opener) window.opener.postMessage(fordonData, "*");
-                
                 setTimeout(() => window.close(), 1200);
             }
         } catch (e) { console.error("Fel:", e); }
     }, 500); 
 }
 
-
 // ==========================================
-// 4. OLJEMAGASINET SPÖK-SKANNERN (Din exakta logik)
+// 4. OLJEMAGASINET SPÖK-SKANNERN 
 // ==========================================
 if (window.location.hostname.includes('oljemagasinet.se')) {
+    if (window._omListener) window.removeEventListener('message', window._omListener);
     
-    window.addEventListener('message', (event) => {
+    window._omListener = (event) => {
         if (event.data && event.data.action === 'START_OS_RADAR') {
-            
             const activeReg = event.data.regnr;
             if (window.osRadarActive) return;
             window.osRadarActive = true;
 
             const widget = new RadarWidget('Systemradar', `Söker: ${activeReg}...`);
 
-            // LOOP 1: Din inmatnings-logik
             const tryToInput = setInterval(() => {
                 const inputs = Array.from(document.querySelectorAll('input'));
                 const regInput = inputs.find(i => 
@@ -196,9 +199,6 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                 if (regInput && !regInput.value) {
                     clearInterval(tryToInput);
                     regInput.focus();
-                    regInput.value = activeReg;
-                    
-                    // Tillägg: React-krossaren ifall sajten uppdaterats
                     ScraperUtils.setNativeValue(regInput, activeReg);
                     
                     setTimeout(() => {
@@ -214,26 +214,19 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                 }
             }, 500); 
 
-            // LOOP 2: Din data-skanningslogik
-            let attempts = 0;
-            const radar = setInterval(() => {
-                attempts++;
-                const text = document.body.innerText.replace(/\s+/g, ' '); 
-                
-                if (attempts === 8) {
-                    widget.shrink();
-                }
+            let timeoutTrigger = setTimeout(() => widget.shrink(), 4000);
 
+            const observer = new MutationObserver((mutations, obs) => {
+                const text = document.body.innerText.replace(/\s+/g, ' '); 
                 const volymMatch = text.match(/(?:Kapacitet|Volym|Motorolja|Påfyllningsmängd|Servicevolym|Rymmer|Åtgång|Oljesump|filter)[\s\S]{0,120}?(\d+[.,]\d+)\s*(?:l|liter)/i) || 
                                    text.match(/(\d+[.,]\d+)\s*(?:l|liter)[\s\S]{0,80}?(?:Kapacitet|Volym|Motorolja|Åtgång|Oljesump|filter)/i);
 
                 if (volymMatch) {
-                    clearInterval(radar);
-                    const volym = volymMatch[1].replace(',', '.').trim();
+                    obs.disconnect(); 
+                    clearTimeout(timeoutTrigger);
                     
-                    let motorkod = "";
-                    let arsmodell = "";
-                    let bilmodell = "";
+                    const volym = volymMatch[1].replace(',', '.').trim();
+                    let motorkod = "", arsmodell = "", bilmodell = "";
                     
                     try {
                         const carBox = document.querySelector('.plate-car-selection-box');
@@ -241,7 +234,6 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                             const titleEl = carBox.querySelector('p strong');
                             if (titleEl) {
                                 const titleParts = titleEl.innerHTML.split(/<br\s*\/?>/i);
-                                
                                 const tempDiv = document.createElement('div');
                                 tempDiv.innerHTML = titleParts[0];
                                 bilmodell = tempDiv.textContent.trim();
@@ -259,23 +251,15 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                             for (let th of ths) {
                                 if (th.textContent.trim().toLowerCase().includes('motorkod')) {
                                     const nextTd = th.nextElementSibling;
-                                    if (nextTd && nextTd.tagName.toLowerCase() === 'td') {
-                                        motorkod = nextTd.textContent.trim();
-                                    }
+                                    if (nextTd && nextTd.tagName.toLowerCase() === 'td') motorkod = nextTd.textContent.trim();
                                 }
                             }
                         }
                         
                         if (!motorkod || !arsmodell || !bilmodell) {
                             const flatText = document.body.innerText.replace(/\s+/g, ' ');
-                            if (!motorkod) {
-                                let mMatch = flatText.match(/Motorkod\s*([A-Z0-9\-]{3,12})/i);
-                                if (mMatch) motorkod = mMatch[1].trim();
-                            }
-                            if (!arsmodell) {
-                                let yMatch = flatText.match(/Årsmodell\s*(\d{4})/i);
-                                if (yMatch) arsmodell = yMatch[1].trim();
-                            }
+                            if (!motorkod) { let mMatch = flatText.match(/Motorkod\s*([A-Z0-9\-]{3,12})/i); if (mMatch) motorkod = mMatch[1].trim(); }
+                            if (!arsmodell) { let yMatch = flatText.match(/Årsmodell\s*(\d{4})/i); if (yMatch) arsmodell = yMatch[1].trim(); }
                             if (!bilmodell) {
                                 const safeReg = activeReg.replace(/[^A-Z0-9]/gi, '');
                                 const modelRegex = new RegExp(`([A-Z0-9\\s\\-\\(\\)\\.,]+?)\\s*(?:Bensin|Diesel|El|Laddhybrid|Etano|Hybrid)?.*?\\(${safeReg}\\)`, 'i');
@@ -283,25 +267,13 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                                 if (modelMatch) bilmodell = modelMatch[1].trim();
                             }
                         }
-                    } catch (e) { console.error("Kunde inte läsa extra data:", e); }
+                    } catch (e) {}
 
-                    const payload = { 
-                        source: 'Oljemagasinet_Extension', 
-                        regnr: activeReg, 
-                        oljevolym: volym,
-                        motorkod: motorkod,
-                        årsmodell: arsmodell,
-                        bilmodell: bilmodell
-                    };
+                    const payload = { source: 'Oljemagasinet_Extension', regnr: activeReg, oljevolym: volym, motorkod, årsmodell: arsmodell, bilmodell };
 
-                    // Använder din exakta postMessage-sekvens!
                     if (!event.data.readOnly) {
-                        if (event.source) {
-                            event.source.postMessage(payload, "*");
-                        } else if (window.opener) {
-                            window.opener.postMessage(payload, "*");
-                        }
-                        
+                        if (event.source) event.source.postMessage(payload, "*");
+                        else if (window.opener) window.opener.postMessage(payload, "*");
                         widget.success(`${volym} Liter Fångad!`);
                         setTimeout(() => window.close(), 1500);
                     } else {
@@ -310,70 +282,34 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
                         widget.stopAnimation();
                     }
                 }
+            });
 
-                if (attempts > 120) { 
-                    clearInterval(radar);
-                    clearInterval(tryToInput);
-                    widget.destroy();
-                }
-            }, 500);
+            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+            setTimeout(() => {
+                observer.disconnect();
+                clearInterval(tryToInput);
+                widget.destroy();
+            }, 60000);
         }
-    });
+    };
+    window.addEventListener('message', window._omListener);
 }
 
 // ==========================================
-// 5. TRANSPORTSTYRELSEN SKRAPA (STANDALONE)
+// 5. TRANSPORTSTYRELSEN SKRAPA (DIN VALDA KOD)
 // ==========================================
 if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) {
     
-    window.addEventListener('message', (event) => {
+    if (window._tsListener) window.removeEventListener('message', window._tsListener);
+    
+    window._tsListener = (event) => {
         if (event.data && event.data.action === 'START_TS_RADAR') {
             const activeReg = event.data.regnr;
             if (window.osRadarActive) return;
             window.osRadarActive = true;
 
-            const loader = document.createElement('div');
-            // FIX: Ändrat från fullskärm till en flytande widget i hörnet. pointer-events: none gör att du kan klicka på sidan bakom!
-            loader.style.cssText = 'position: fixed; bottom: 32px; right: 32px; z-index: 2147483647; font-family: system-ui, sans-serif; transition: opacity 0.5s; pointer-events: none;';
-            
-            loader.innerHTML = `
-                <div id="ts-box" style="background: linear-gradient(135deg, rgba(15,21,34,0.95), rgba(20,28,45,0.95)); border: 1px solid rgba(59,130,246,0.5); border-radius: 16px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(59,130,246,0.2); transition: all 0.3s; pointer-events: all;">
-                    <div style="width:36px; height:36px; position:relative; flex-shrink:0;">
-                        <div id="ts-spin" style="position:absolute; inset:0; border:3px solid rgba(59,130,246,0.2); border-top-color:#3b82f6; border-radius:50%; animation: ts-spin-anim 1s linear infinite;"></div>
-                    </div>
-                    <div style="flex-grow:1; min-width:140px;">
-                        <h1 id="ts-title" style="color:#3b82f6; font-size:11px; font-weight:900; letter-spacing:1.5px; margin:0; text-transform:uppercase;">Myndighetslänk</h1>
-                        <p id="ts-text" style="color:#e4e4e7; font-size:10px; font-weight:500; letter-spacing:0.5px; margin:4px 0 0 0;">Slår upp: ${activeReg}...</p>
-                    </div>
-                </div>
-                <style>@keyframes ts-spin-anim { 100% { transform: rotate(360deg); } }</style>
-            `;
-            document.documentElement.appendChild(loader);
-
-            const updateWidget = (text, state = 'loading') => {
-                const textEl = document.getElementById('ts-text');
-                const box = document.getElementById('ts-box');
-                const spin = document.getElementById('ts-spin');
-                const title = document.getElementById('ts-title');
-                
-                if(textEl) textEl.innerText = text;
-                
-                if (state === 'success') {
-                    box.style.borderColor = '#10b981';
-                    spin.style.borderTopColor = '#10b981';
-                    title.style.color = '#10b981';
-                } else if (state === 'error') {
-                    box.style.borderColor = '#ef4444';
-                    spin.style.borderTopColor = '#ef4444';
-                    spin.style.animation = 'none';
-                    title.style.color = '#ef4444';
-                } else if (state === 'warning') {
-                    box.style.borderColor = '#f59e0b'; // Orange färg för Captcha
-                    spin.style.borderTopColor = '#f59e0b';
-                    spin.style.animation = 'ts-spin-anim 2.5s linear infinite'; // Långsammare spinn
-                    title.style.color = '#f59e0b';
-                }
-            };
+            const widget = new RadarWidget('Myndighetslänk', `Slår upp: ${activeReg}...`, 'blue');
 
             // 1. Fyll i sökfältet
             const tryToInput = setInterval(() => {
@@ -394,34 +330,40 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                 }
             }, 500); 
 
-            // 2. Skanna och Extrahera
+            // 2. Skanna och Extrahera (DIN ORIGINALKOD)
             let attempts = 0;
-            let captchaDetected = false;
-
             const radar = setInterval(() => {
                 attempts++;
                 const bodyText = document.body.innerText; 
-
-                // NYTT: Kontrollera om en Captcha eller säkerhetskontroll dyker upp
-                const hasCaptcha = document.querySelector('iframe[src*="recaptcha"]') || 
-                                   document.querySelector('.g-recaptcha') || 
-                                   bodyText.includes('säkerhetskontroll') || 
-                                   bodyText.includes('Jag är ingen robot');
-
-                if (hasCaptcha && !captchaDetected) {
-                    captchaDetected = true;
-                    updateWidget('Lös Captcha för att fortsätta...', 'warning');
-                }
-
-                // Om vi väntar på Captcha, nollställ attempts så vi inte timear ut medan du klickar på övergångsställen
-                if (captchaDetected && !bodyText.includes('Fordonsidentitet')) {
-                    attempts = 0; 
-                }
+                const bodyTextLower = bodyText.toLowerCase();
                 
-                // Trigg: Resultatsidan har laddat om vi ser dessa rubriker
-                if (bodyText.includes('Fordonsidentitet') && bodyText.includes('Fordonsstatus')) {
+                // --- Auto-klicka bort "Ett oväntat fel inträffade" ---
+                if (bodyTextLower.includes('oväntat fel')) {
+                    const buttons = Array.from(document.querySelectorAll('button'));
+                    const okBtn = buttons.find(b => b.innerText.trim().toLowerCase() === 'ok' || b.innerText.trim().toLowerCase() === 'stäng');
+                    if (okBtn) {
+                        try { okBtn.click(); } catch(e){}
+                    }
+                }
+
+                // Om vi inte hittat resultatet på 4 sekunder, krymp UI:t
+                if (attempts === 8) {
+                    widget.shrink();
+                    widget.updateText(`Väntar på data för ${activeReg}...`);
+                }
+
+                // --- Smartare Trigg baserat på rubriker ---
+                const expectedTitle = `fordonsuppgifter för ${activeReg.toLowerCase()}`;
+                const hasTitle = bodyTextLower.includes(expectedTitle);
+                const hasStatus = bodyTextLower.includes('fordonsstatus');
+
+                // Trigg: Resultatsidan har laddat!
+                if (hasTitle && hasStatus) {
                     clearInterval(radar);
-                    updateWidget('Laddar ner fordonsregister...', 'loading');
+                    
+                    // Ta tillbaka UI:t till mitten
+                    widget.wrapper.classList.remove('shrunk');
+                    widget.updateText('Laddar ner fordonsregister...');
 
                     // BRUTE-FORCE: Öppna ALLA stängda dragspel och flikar på hela sidan
                     const openAllPanels = () => {
@@ -433,6 +375,7 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                     };
                     
                     openAllPanels();
+                    // Kör en gång till efter 1 sekund utifall element renderades med fördröjning
                     setTimeout(openAllPanels, 1000);
 
                     // Vänta in animationerna (2.5 sekunder), SEN läser vi av texten
@@ -481,19 +424,20 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
 
                         if (window.opener) window.opener.postMessage(payload, "*");
                         
-                        updateWidget('Registerutdrag sparat!', 'success');
+                        widget.success('Registerutdrag sparat!');
                         setTimeout(() => window.close(), 2000);
 
                     }, 2500); 
                 }
 
-                // Lång timeout för säkerhets skull
-                if (attempts > 120) { 
+                // Lång timeout för ev. Captcha eller Fel - Ökad till 3 minuter (360 attempts)
+                if (attempts > 360) { 
                     clearInterval(radar);
-                    updateWidget('Timeout uppstod', 'error');
-                    setTimeout(() => loader.remove(), 3000);
+                    widget.error('Timeout eller blockerad av systemet');
+                    setTimeout(() => widget.destroy(), 3000);
                 }
             }, 500);
         }
-    });
+    };
+    window.addEventListener('message', window._tsListener);
 }
