@@ -48,95 +48,41 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
 
-    // --- DIREKTLÄNK MED CHROME-TILLÄGGET ---
+    // --- LIVE-SYNK MED DATABASEN (Single Source of Truth) ---
     React.useEffect(() => {
-        const handleMessage = (event) => {
-            const fordonData = event.data;
+        const cleanReg = formData.regnr?.toUpperCase().trim();
+        if (!cleanReg || cleanReg.length < 5 || !window.db) return;
 
-            if (fordonData && fordonData.source === 'Car.info_Extension') {
-                setFetchedCarInfo({
-                    regnr: fordonData.regnr || "",
-                    bilmodell: fordonData.bilmodell || "",
-                    motorkod: fordonData.motorkod,
-                    miltal: fordonData.miltal,
-                    oljevolym: fordonData.oljevolym,
-                    årsmodell: fordonData.årsmodell,
-                    vin: fordonData.vin,
-                    isNewData: true 
-                });
+        // Vi sätter upp en prenumeration på just detta regnr i cachen.
+        // När Radarn har skrapat klart och sparar i db, uppdateras detta formulär direkt!
+        const unsubscribe = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(doc => {
+            if (doc.exists) {
+                const specs = doc.data();
+                
+                setFetchedCarInfo(prev => ({
+                    regnr: cleanReg,
+                    bilmodell: specs.model || prev?.bilmodell || "",
+                    motorkod: specs.engine || prev?.motorkod || "",
+                    miltal: specs.mileage || prev?.miltal || "",
+                    oljevolym: specs.oil ? specs.oil.replace(' l', '') : (prev?.oljevolym || ""),
+                    årsmodell: specs.year || prev?.årsmodell || "",
+                    vin: specs.vin || prev?.vin || "",
+                    isNewData: false // Behöver inte autosparas igen, datan kommer ju FRÅN databasen
+                }));
 
-                setFormData(p => ({ ...p, regnr: fordonData.regnr || p.regnr }));
-
-                if (fordonData.oljevolym) {
-                    let oljaNum = parseFloat(fordonData.oljevolym.replace(',', '.').replace(/[^0-9.]/g, ''));
+                // Om vi nyss fick in oljevolym via radarn, uppdatera priskalkylen
+                if (specs.oil) {
+                    let oljaNum = parseFloat(specs.oil.toString().replace(',', '.').replace(/[^0-9.]/g, ''));
                     if (!isNaN(oljaNum) && oljaNum > 0) {
                         setOilLiters(oljaNum);
-                        updateOilLogic(oljaNum);
+                        // updateOilLogic(oljaNum) körs separat när oilLiters ändras i UI
                     }
                 }
-                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
             }
+        });
 
-            if (fordonData && fordonData.source === 'Oljemagasinet_Extension') {
-                setFetchedCarInfo(prev => {
-                    const p = prev || { regnr: fordonData.regnr, isNewData: true };
-                    return {
-                        ...p,
-                        bilmodell: fordonData.bilmodell || p.bilmodell, // <-- NY RAD!
-                        motorkod: fordonData.motorkod || p.motorkod,
-                        årsmodell: fordonData.årsmodell || p.årsmodell,
-                        oljevolym: fordonData.oljevolym ? `${fordonData.oljevolym.replace(/[^0-9.,]/g, '')} l` : p.oljevolym
-                    };
-                });
-
-                if (fordonData.oljevolym) {
-                    let oljaNum = parseFloat(fordonData.oljevolym.replace(',', '.').replace(/[^0-9.]/g, ''));
-                    if (!isNaN(oljaNum) && oljaNum > 0) {
-                        setOilLiters(oljaNum);
-                        updateOilLogic(oljaNum);
-                    }
-                }
-                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
-            }
-        };
-
-        window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
-    }, [updateOilLogic]);
-
-    // --- BLIXTSNABB AUTO-SPARNING I BAKGRUNDEN ---
-    React.useEffect(() => {
-        if (fetchedCarInfo && fetchedCarInfo.regnr && fetchedCarInfo.isNewData && window.db) {
-            const finalRegnr = fetchedCarInfo.regnr.toUpperCase().trim();
-            
-            const specUpdates = {};
-            if (fetchedCarInfo.motorkod) specUpdates.engine = fetchedCarInfo.motorkod;
-            if (fetchedCarInfo.oljevolym) specUpdates.oil = `${fetchedCarInfo.oljevolym} l`;
-            if (fetchedCarInfo.miltal) specUpdates.mileage = fetchedCarInfo.miltal;
-            if (fetchedCarInfo.årsmodell) specUpdates.year = fetchedCarInfo.årsmodell;
-            if (fetchedCarInfo.vin) specUpdates.vin = fetchedCarInfo.vin; 
-            
-            if (Object.keys(specUpdates).length > 0) {
-                specUpdates.updatedAt = new Date().toISOString();
-                window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true });
-            }
-
-            if (editingJob && editingJob.id) {
-                let oljaNum = 4.3;
-                if (fetchedCarInfo.oljevolym) {
-                    const parsed = parseFloat(fetchedCarInfo.oljevolym.replace(',', '.').replace(/[^0-9.]/g, ''));
-                    if (!isNaN(parsed) && parsed > 0) oljaNum = parsed;
-                }
-                window.db.collection("jobs").doc(editingJob.id).set({
-                    bilmodell: fetchedCarInfo.bilmodell || '',
-                    motorkod: fetchedCarInfo.motorkod || '',
-                    miltal: fetchedCarInfo.miltal || '',
-                    årsmodell: fetchedCarInfo.årsmodell || '',
-                    oljevolym: oljaNum
-                }, { merge: true });
-            }
-        }
-    }, [fetchedCarInfo, editingJob]);
+        return () => unsubscribe();
+    }, [formData.regnr]);
 
     // Ladda in befintligt jobb
     React.useEffect(() => {
@@ -480,13 +426,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         type="button"
                                         onClick={() => {
                                             if(!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                            const carWindow = window.open(`https://www.car.info/sv-se/license-plate/S/${formData.regnr.trim()}#bmg_export`, 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
-                                            window.focus();
+                                            // ÄNDRING: Vi anropar nu den smarta radarn istället för Car.info!
+                                            if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'SMART_SEARCH');
                                         }}
                                         className="shrink-0 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 hover:border-orange-200 dark:hover:border-orange-500/30 text-zinc-500 px-3 rounded-lg flex items-center justify-center transition-all"
-                                        title="Sök fordonsdata på Car.info"
+                                        title="Smart Sökning (Hämtar all tillgänglig fordonsdata)"
                                     >
-                                        <window.Icon name="search" size={16} />
+                                        <window.Icon name="zap" size={16} /> {/* Bytte ikon till zap (blixt) för att matcha Smart Sök */}
                                     </button>
                                 </div>
                             </InputWrapper>
@@ -611,24 +557,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 type="button" 
                                                 onClick={() => {
                                                     if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                    const radarWindow = window.open('https://www.oljemagasinet.se/', 'OS_Radar', 'width=400,height=400,left=9999,top=9999');
-                                                    window.focus();
-
-                                                    let pings = 0;
-                                                    const pingInterval = setInterval(() => {
-                                                        if (radarWindow && !radarWindow.closed) {
-                                                            radarWindow.postMessage({ action: 'START_OS_RADAR', regnr: formData.regnr.trim() }, '*');
-                                                        }
-                                                        pings++;
-                                                        if (pings > 20) clearInterval(pingInterval);
-                                                    }, 500);
+                                                    if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
                                                 }}
                                                 className="shrink-0 px-5 bg-orange-500 text-white rounded-lg flex items-center justify-center transition-all active:scale-95 shadow-sm group border border-transparent"
-                                                title="Skanna Oljemagasinet"
+                                                title="Hämta Oljevolym"
                                             >
+                                                {/* Knivskarp inline-SVG (Droppe) */}
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
-                                                    <circle cx="11" cy="11" r="8"></circle>
-                                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                                                 </svg>
                                             </button>
                                         </div>
