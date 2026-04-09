@@ -3,26 +3,24 @@
 // ==========================================
 // NY HUVUDMOTOR FÖR ATT STARTA SÖKNINGAR SÄKERT
 // ==========================================
-window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH') => {
+window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH', forceScrape = false) => {
     if (!regnr || !window.db) return;
     const cleanReg = regnr.toUpperCase().trim();
 
     try {
-        // 1. Kolla cachen först (asynkront, tar bara några millisekunder om man är online)
+        // 1. Kolla cachen först
         const doc = await window.db.collection('vehicleSpecs').doc(cleanReg).get();
         const cachedData = doc.exists ? doc.data() : null;
 
         // 2. Logik: Behöver vi verkligen skrapa?
-        let needsScrape = false;
+        let needsScrape = forceScrape; // Om forceScrape är true, tvinga skrapning oavsett!
         let finalTarget = targetType;
 
-        if (!cachedData) {
+        if (!cachedData && !forceScrape) {
             needsScrape = true;
-            // ÄNDRING: Prio 1 är nu Oljemagasinet!
             if (targetType === 'SMART_SEARCH') finalTarget = 'START_OS_RADAR'; 
-        } else {
+        } else if (!forceScrape) {
             if (targetType === 'SMART_SEARCH') {
-                // Har vi någon data alls? Nöj oss med den! Inga onödiga sökningar.
                 needsScrape = false;
             } else if (targetType === 'START_OS_RADAR' && !cachedData.oil) {
                 needsScrape = true;
@@ -33,7 +31,12 @@ window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH') => {
             }
         }
 
-        // 3A. DATAN FINNS REDAN -> Inget popup-blink, visa datan direkt!
+        // Hantera fallback för tvingad Smart Sökning
+        if (forceScrape && targetType === 'SMART_SEARCH') {
+            finalTarget = 'START_OS_RADAR';
+        }
+
+        // 3A. DATAN FINNS REDAN -> Visa direkt!
         if (!needsScrape) {
             window.dispatchEvent(new CustomEvent('show-system-radar', { 
                 detail: { regnr: cleanReg, forceShowData: cachedData }
@@ -41,31 +44,23 @@ window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH') => {
             return;
         }
 
-        // 3B. DATAN SAKNAS ELLER ÄR OFULLSTÄNDIG -> Nu öppnar vi fönstret och skrapar!
+        // 3B. DATAN SAKNAS ELLER TVINGAS UPPDATERA -> Skrapa!
         let url = '';
         if (finalTarget === 'START_OS_RADAR') url = 'https://www.oljemagasinet.se/';
         if (finalTarget === 'START_TS_RADAR') url = 'https://fordon-fu-regnr.transportstyrelsen.se/';
         if (finalTarget === 'START_CARINFO') url = `https://www.car.info/sv-se/license-plate/S/${cleanReg}#bmg_export`;
 
-        // Öppnar sökfönstret (Chrome tillåter detta inom 1000ms från ett klick även inuti en async funktion)
         const popup = window.open(url, 'VehicleRadarPopup', 'width=450,height=550,left=9999,top=9999');
         
-        if (!popup) {
-            console.warn("Webbläsaren blockerade popup-fönstret.");
-            // Valfritt: Alert till användaren att tillåta popups
-        }
-
-        // --- MAGIN: Visa radarn som "Laddar...", och skicka med ev. gammal data ---
         window.dispatchEvent(new CustomEvent('show-system-radar', { 
             detail: { 
                 regnr: cleanReg, 
                 waitForExtension: true, 
                 actionTrigger: finalTarget,
-                partialData: cachedData
+                partialData: cachedData // Visar befintlig data medans den letar efter ny!
             }
         }));
 
-        // Pings för att kickstarta skrapan
         let pings = 0;
         const pingInterval = setInterval(() => {
             if (popup && !popup.closed) {
@@ -210,7 +205,7 @@ window.GlobalSystemRadar = ({ isChatOpen, navigateTo }) => {
     const closeRadar = (regnr) => setRadars(prev => prev.filter(r => r.regnr !== regnr));
 
     const handleRetry = (radar) => {
-        window.osSearchVehicle(radar.regnr, radar.actionTrigger || 'START_OS_RADAR');
+        window.osSearchVehicle(radar.regnr, radar.actionTrigger || 'START_OS_RADAR', true);
     };
 
     if (radars.length === 0) return null;
@@ -404,24 +399,27 @@ window.GlobalSystemRadar = ({ isChatOpen, navigateTo }) => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex gap-2 mt-1">
-                                                <button 
-                                                    onClick={() => {
-                                                        if(navigateTo) navigateTo('NEW_JOB', { job: { regnr: radar.data.regnr, bilmodell: radar.data.model, vin: radar.data.vin, miltal: radar.data.mileage?.replace(/\D/g, '') }});
-                                                    }}
-                                                    className="flex-1 flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors"
-                                                >
-                                                    <window.Icon name="file-plus" size={14} /> Arbetsorder
-                                                </button>
+                                            <div className="flex gap-1.5 mt-2">
                                                 
-                                                {!hasTsData && (
-                                                    <button 
-                                                        onClick={() => window.osSearchVehicle(radar.regnr, 'START_TS_RADAR')}
-                                                        className="flex-1 flex items-center justify-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors"
-                                                    >
-                                                        <window.Icon name="shield" size={14} /> TS-Data
-                                                    </button>
-                                                )}
+                                                {/* KONTROLL 1: Transportstyrelsen */}
+                                                <button 
+                                                    onClick={() => window.osSearchVehicle(radar.regnr, 'START_TS_RADAR', true)}
+                                                    className="flex-1 flex items-center justify-center gap-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors"
+                                                    title="Uppdatera data från Transportstyrelsen"
+                                                >
+                                                    {/* Byter ikon från sköld till uppdateringssnurra om datan redan finns */}
+                                                    <window.Icon name={hasTsData ? "refresh-cw" : "shield"} size={14} className="shrink-0" /> <span className="truncate">TS</span>
+                                                </button>
+
+                                                {/* KONTROLL 2: Oljemagasinet */}
+                                                <button 
+                                                    onClick={() => window.osSearchVehicle(radar.regnr, 'START_OS_RADAR', true)}
+                                                    className="flex-1 flex items-center justify-center gap-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors"
+                                                    title="Uppdatera Oljevolym"
+                                                >
+                                                    {/* Byter ikon till uppdateringssnurra om oljevolym redan finns */}
+                                                    <window.Icon name={radar.data.oil ? "refresh-cw" : "droplet"} size={14} className="shrink-0" /> <span className="truncate">Olja</span>
+                                                </button>
                                             </div>
                                         </div>
                                     )}
