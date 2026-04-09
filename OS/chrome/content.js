@@ -120,9 +120,14 @@ class RadarWidget {
 // ==========================================
 if (window.location.hostname.includes('car.info') && window.location.hash.includes('bmg_export')) {
     const widget = new RadarWidget('Datalänk Aktiv', 'Laddar uppgifter...');
-    let attempts = 0;
-    const carInfoRadar = setInterval(() => {
-        attempts++;
+    
+    let searchTimeout = setTimeout(() => {
+        carInfoObserver.disconnect();
+        widget.error('Timeout - Kunde inte ladda data');
+        setTimeout(() => window.close(), 2000);
+    }, 15000); // 15 sekunder max
+
+    const carInfoObserver = new MutationObserver((mutations, obs) => {
         try {
             let regnr = "", model = "", motor = "", miltal = "", oljevolym = "", årsmodell = "", vin = "";
             const visibleText = document.body.innerText;
@@ -157,8 +162,10 @@ if (window.location.hostname.includes('car.info') && window.location.hash.includ
             const oljaMatch = compressedText.match(/Motorolja,\s*volym\s*([\d.,]+)\s*l/i) || compressedText.match(/Oljevolym\s*([\d.,]+)\s*l/i) || compressedText.match(/Motorolja\s*([\d.,]+)\s*l/i);
             if (oljaMatch) oljevolym = oljaMatch[1].trim();
 
-            if (oljaMatch || motorMatch || attempts > 10) {
-                clearInterval(carInfoRadar);
+            // Trigg: Vi har tillräckligt med data (eller så har h1 laddats och vi får nöja oss med det vi har)
+            if (oljaMatch || motorMatch || h1) {
+                obs.disconnect(); // Stanna övervakningen
+                clearTimeout(searchTimeout);
 
                 const fordonData = {
                     regnr, bilmodell: model || "Okänd modell", motorkod: motor || "", miltal: miltal || "", oljevolym: oljevolym || "", årsmodell: årsmodell || "", vin: vin || "",
@@ -170,7 +177,9 @@ if (window.location.hostname.includes('car.info') && window.location.hash.includ
                 setTimeout(() => window.close(), 1200);
             }
         } catch (e) { console.error("Fel:", e); }
-    }, 500); 
+    });
+
+    carInfoObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
 }
 
 // ==========================================
@@ -297,9 +306,9 @@ if (window.location.hostname.includes('oljemagasinet.se')) {
 }
 
 // ==========================================
-// 5. TRANSPORTSTYRELSEN SKRAPA (DIN VALDA KOD)
+// 5. TRANSPORTSTYRELSEN SKRAPA (MUTATION OBSERVER)
 // ==========================================
-if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) {
+if (window.location.hostname.includes('transportstyrelsen.se')) {
     
     if (window._tsListener) window.removeEventListener('message', window._tsListener);
     
@@ -311,61 +320,47 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
 
             const widget = new RadarWidget('Myndighetslänk', `Slår upp: ${activeReg}...`, 'blue');
 
-            // 1. Fyll i sökfältet
+            // 1. INMATNING (Körs tills fältet hittas)
             const tryToInput = setInterval(() => {
-                const regInput = document.querySelector('input[id*="ts-regnr"], input[name*="ts-regnr"], input[type="text"]');
-                const searchBtn = document.querySelector('button.btn-primary, input[type="submit"], button[type="submit"]');
+                const regInput = document.querySelector('input[type="text"], input[name*="regnr"], input[id*="reg"]');
+                const buttons = Array.from(document.querySelectorAll('button, input[type="submit"]'));
+                const searchBtn = buttons.find(b => b.innerText.toLowerCase().includes('sök') || b.value?.toLowerCase().includes('sök') || b.classList.contains('btn-primary'));
 
                 if (regInput && searchBtn && !regInput.value) {
                     clearInterval(tryToInput);
-                    
-                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                    if (nativeInputValueSetter) nativeInputValueSetter.call(regInput, activeReg);
-                    else regInput.value = activeReg;
-
+                    regInput.value = activeReg;
                     regInput.dispatchEvent(new Event('input', { bubbles: true }));
                     regInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    
-                    setTimeout(() => searchBtn.click(), 500);
+                    setTimeout(() => searchBtn.click(), 800);
                 }
-            }, 500); 
+            }, 500);
 
-            // 2. Skanna och Extrahera (DIN ORIGINALKOD)
-            let attempts = 0;
-            const radar = setInterval(() => {
-                attempts++;
-                const bodyText = document.body.innerText; 
-                const bodyTextLower = bodyText.toLowerCase();
+            // 2. EXTRAHERING MED MUTATION OBSERVER (Blixtsnabb, drar noll CPU)
+            let timeoutTimer = setTimeout(() => {
+                observer.disconnect();
+                widget.error('Timeout. Hittade inte datan.');
+                setTimeout(() => window.close(), 3000);
+            }, 60000); // Ger upp efter 60 sekunder
+
+            const observer = new MutationObserver((mutations, obs) => {
+                const bodyTextLower = document.body.innerText.toLowerCase();
                 
-                // --- Auto-klicka bort "Ett oväntat fel inträffade" ---
-                if (bodyTextLower.includes('oväntat fel')) {
-                    const buttons = Array.from(document.querySelectorAll('button'));
-                    const okBtn = buttons.find(b => b.innerText.trim().toLowerCase() === 'ok' || b.innerText.trim().toLowerCase() === 'stäng');
-                    if (okBtn) {
-                        try { okBtn.click(); } catch(e){}
-                    }
+                // Captcha-skydd
+                if (bodyTextLower.includes('robot') || bodyTextLower.includes('säkerhetskontroll')) {
+                    widget.updateText('Kräver manuell Captcha. Lös i fönstret!');
+                    return; 
                 }
 
-                // Om vi inte hittat resultatet på 4 sekunder, krymp UI:t
-                if (attempts === 8) {
-                    widget.shrink();
-                    widget.updateText(`Väntar på data för ${activeReg}...`);
-                }
-
-                // --- Smartare Trigg baserat på rubriker ---
-                const expectedTitle = `fordonsuppgifter för ${activeReg.toLowerCase()}`;
-                const hasTitle = bodyTextLower.includes(expectedTitle);
-                const hasStatus = bodyTextLower.includes('fordonsstatus');
-
-                // Trigg: Resultatsidan har laddat!
-                if (hasTitle && hasStatus) {
-                    clearInterval(radar);
+                // Trigg: Titta efter om Regnr OCH chassinummer syns. Då är sidan redo!
+                if (bodyTextLower.includes(activeReg.toLowerCase()) && (bodyTextLower.includes('chassinummer') || bodyTextLower.includes('fordonsstatus'))) {
                     
-                    // Ta tillbaka UI:t till mitten
+                    obs.disconnect(); // Stanna övervakaren direkt så den inte körs i onödan
+                    clearTimeout(timeoutTimer);
+                    
                     widget.wrapper.classList.remove('shrunk');
-                    widget.updateText('Laddar ner fordonsregister...');
-
-                    // BRUTE-FORCE: Öppna ALLA stängda dragspel och flikar på hela sidan
+                    widget.updateText('Extraherar all fordonsdata...');
+                    
+                    // Brute-force för att fälla ut alla dolda menyer
                     const openAllPanels = () => {
                         document.querySelectorAll('button, a, summary').forEach(el => {
                             if (el.getAttribute('aria-expanded') === 'false' || el.classList.contains('collapsed')) {
@@ -375,24 +370,19 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                     };
                     
                     openAllPanels();
-                    // Kör en gång till efter 1 sekund utifall element renderades med fördröjning
                     setTimeout(openAllPanels, 1000);
 
-                    // Vänta in animationerna (2.5 sekunder), SEN läser vi av texten
                     setTimeout(() => {
                         const finalLines = document.body.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-
+                        
                         const extract = (labels) => {
                             const labelArray = Array.isArray(labels) ? labels : [labels];
                             for (let label of labelArray) {
                                 const idx = finalLines.findIndex(l => l.toLowerCase() === label.toLowerCase());
-                                if (idx !== -1 && idx + 1 < finalLines.length) {
-                                    return finalLines[idx + 1];
-                                }
+                                if (idx !== -1 && idx + 1 < finalLines.length) return finalLines[idx + 1];
+                                
                                 const inline = finalLines.find(l => l.toLowerCase().startsWith(label.toLowerCase() + ':'));
-                                if (inline) {
-                                    return inline.substring(label.length + 1).trim();
-                                }
+                                if (inline) return inline.substring(label.length + 1).trim();
                             }
                             return "SAKNAS";
                         };
@@ -404,12 +394,12 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                             fabrikat: extract(['Fabrikat', 'Märke']),
                             handelsbeteckning: extract(['Handelsbeteckning', 'Modell']),
                             färg: extract('Färg'),
-                            fordonsår: extract('Fordonsår'),
+                            fordonsår: extract(['Fordonsår', 'Årsmodell']),
                             tillverkad: extract(['Fordonet tillverkat', 'Tillverkningsår/månad']),
                             import: extract(['Import/införsel', 'Import']),
                             fordonsstatus: extract('Fordonsstatus'),
                             användningsförbud: extract(['Användningsförbud', 'Körförbud']),
-                            besiktning_senast: extract(['Besiktigas senast', 'Senaste besiktning']),
+                            besiktning_senast: extract(['Besiktigas senast', 'Senaste besiktning', 'Giltig till']),
                             mätarställning: extract('Mätarställning'),
                             upplysningar: extract(['Upplysningar', 'Övriga upplysningar']),
                             årsskatt: extract('Årsskatt'),
@@ -423,20 +413,14 @@ if (window.location.hostname.includes('fordon-fu-regnr.transportstyrelsen.se')) 
                         };
 
                         if (window.opener) window.opener.postMessage(payload, "*");
-                        
-                        widget.success('Registerutdrag sparat!');
+                        widget.success('Data sparad!');
                         setTimeout(() => window.close(), 2000);
-
-                    }, 2500); 
+                    }, 2500);
                 }
+            });
 
-                // Lång timeout för ev. Captcha eller Fel - Ökad till 3 minuter (360 attempts)
-                if (attempts > 360) { 
-                    clearInterval(radar);
-                    widget.error('Timeout eller blockerad av systemet');
-                    setTimeout(() => widget.destroy(), 3000);
-                }
-            }, 500);
+            // Starta övervakningen av hela sidan
+            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
         }
     };
     window.addEventListener('message', window._tsListener);
