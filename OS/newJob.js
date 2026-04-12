@@ -47,6 +47,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [isTrodoMenuOpen, setIsTrodoMenuOpen] = React.useState(false);
     
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
+    const [trodoPrices, setTrodoPrices] = React.useState(null);
+    const [isFetchingParts, setIsFetchingParts] = React.useState(false);
 
     // --- LIVE-SYNK MED DATABASEN (Single Source of Truth) ---
     React.useEffect(() => {
@@ -83,6 +85,36 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
         return () => unsubscribe();
     }, [formData.regnr]);
+
+    // LYSSNA EFTER PRISER FRÅN TRODO-SKRAPAN
+    React.useEffect(() => {
+        const handleTrodoMsg = (e) => {
+            if (e.data && e.data.source === 'Trodo_Extension') {
+                setTrodoPrices(e.data.data);
+                
+                // LÄGGER IN PRISERNA AUTOMATISKT I UTGIFTERNA (med 40% påslag)
+                setExpenses(prev => {
+                    const newExpenses = [...prev];
+                    let i = 0;
+                    Object.entries(e.data.data).forEach(([part, info]) => {
+                        if(info.price !== '0' && i < 3) {
+                            const inkopspris = parseFloat(info.price);
+                            const kundpris = (inkopspris * 1.4).toFixed(0); // 40% marginal till kunden
+                            
+                            // Letar upp en tom rad, eller skriver över
+                            while (i < 3 && newExpenses[i].desc !== '') i++;
+                            if (i < 3) {
+                                newExpenses[i] = { desc: `${part} (${info.brand})`, amount: kundpris };
+                            }
+                        }
+                    });
+                    return newExpenses;
+                });
+            }
+        };
+        window.addEventListener('message', handleTrodoMsg);
+        return () => window.removeEventListener('message', handleTrodoMsg);
+    }, []);
 
     // Ladda in befintligt jobb
     React.useEffect(() => {
@@ -345,6 +377,49 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const partsTotal = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
     const finalPriceNum = parseFloat(formData.kundpris) || 0;
     const laborTotal = Math.max(0, finalPriceNum - partsTotal);
+
+    // --- FUNKTIONER FÖR TRODO AUTOMATISERING ---
+    const fetchPartsFromTrodo = (parts) => {
+        if (!formData.regnr) return alert("Skriv in ett regnr först!");
+        setIsFetchingParts(true);
+
+        // 1. Skicka uppdraget till Tilläggets bakgrundsminne (Chrome Storage)
+        window.postMessage({
+            action: 'SET_TRODO_MISSION',
+            regnr: formData.regnr.trim(),
+            parts: parts
+        }, '*');
+
+        // 2. Öppna fönstret - Tillägget tar automatiskt över när sidan laddas!
+        const w = 450, h = 550;
+        const left = (window.screen.width / 2) - (w / 2);
+        const top = (window.screen.height / 2) - (h / 2);
+        window.open('https://www.trodo.se/', `Trodo_${Date.now()}`, `width=${w},height=${h},left=${left},top=${top}`);
+    };
+
+    React.useEffect(() => {
+        const handleTrodoMsg = (e) => {
+            if (e.data && e.data.source === 'Trodo_Extension') {
+                setTrodoPrices(e.data.data);
+                setIsFetchingParts(false);
+                
+                // TIPS: Avkommentera nedan om du vill att priserna ska matas in direkt i utgiftsraderna med 40% påslag!
+                /*
+                const newExpenses = [...emptyExpenses];
+                let i = 0;
+                Object.entries(e.data.data).forEach(([part, info]) => {
+                    if(info.price !== '0' && i < 3) {
+                        newExpenses[i] = { desc: `${part} (${info.brand})`, amount: (parseFloat(info.price) * 1.4).toFixed(0) };
+                        i++;
+                    }
+                });
+                setExpenses(newExpenses);
+                */
+            }
+        };
+        window.addEventListener('message', handleTrodoMsg);
+        return () => window.removeEventListener('message', handleTrodoMsg);
+    }, [emptyExpenses]);
 
     const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-lg lg:rounded-xl shadow-sm";
     const sectionCardClasses = "bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow";
@@ -680,29 +755,39 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     <div className="fixed inset-0 z-40" onClick={() => setIsTrodoMenuOpen(false)}></div>
                                                     <div className="absolute top-full right-0 mt-1.5 w-48 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right">
                                                         {[
-                                                            { name: 'Oljefilter', slug: 'oljefilter' },
-                                                            { name: 'Luftfilter', slug: 'luftfilter' },
-                                                            { name: 'Kupéfilter', slug: 'kupefilter' },
-                                                            { name: 'Bränslefilter', slug: 'branslefilter' },
-                                                            { name: 'Tändstift', slug: 'tandstift' },
-                                                            { name: 'Bromsbelägg fram', slug: 'bromsbelagg' },
-                                                            { name: 'Bromsskivor fram', slug: 'bromsskivor' },
-                                                            { name: 'Vindrutetorkare', slug: 'torkarblad' }
-                                                        ].map(part => (
+                                                            { name: 'Båda (Olja + Luft)', parts: ['Oljefilter', 'Luftfilter'], highlight: true },
+                                                            { name: 'Oljefilter', parts: ['Oljefilter'] },
+                                                            { name: 'Luftfilter', parts: ['Luftfilter'] },
+                                                            { name: 'Kupéfilter', parts: ['Kupéfilter'] },
+                                                            { name: 'Bränslefilter', parts: ['Bränslefilter'] },
+                                                            { name: 'Tändstift', parts: ['Tändstift'] },
+                                                            { name: 'Bromsbelägg fram', parts: ['Bromsbelägg fram'] },
+                                                            { name: 'Bromsskivor fram', parts: ['Bromsskivor fram'] }
+                                                        ].map(item => (
                                                             <button
-                                                                key={part.name}
+                                                                key={item.name}
                                                                 type="button"
                                                                 onClick={() => {
                                                                     if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                                    
-                                                                    // Skickar både namnet och url-slugen!
-                                                                    window.postMessage({ action: 'START_TRODO_STORAGE_MISSION', regnr: formData.regnr.trim(), part: part.name, slug: part.slug }, '*');
-                                                                    window.open('https://www.trodo.se/', '_blank');
                                                                     setIsTrodoMenuOpen(false);
+                                                                    
+                                                                    // THE NUCLEAR OPTION: Skicka uppdraget till Tilläggets bakgrundsminne!
+                                                                    window.postMessage({
+                                                                        action: 'SET_TRODO_MISSION',
+                                                                        regnr: formData.regnr.trim(),
+                                                                        parts: item.parts
+                                                                    }, '*');
+                                                                    
+                                                                    const w = 450, h = 550;
+                                                                    const left = (window.screen.width / 2) - (w / 2);
+                                                                    const top = (window.screen.height / 2) - (h / 2);
+                                                                    
+                                                                    // Öppna bara en helt vanlig, ren Trodo-sida. Tillägget tar över!
+                                                                    window.open('https://www.trodo.se/', `Trodo_${Date.now()}`, `width=${w},height=${h},left=${left},top=${top}`);
                                                                 }}
-                                                                className="w-full text-left px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                                className={`w-full text-left px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${item.highlight ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10' : 'text-zinc-600 dark:text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                                             >
-                                                                + {part.name}
+                                                                + {item.name}
                                                             </button>
                                                         ))}
                                                     </div>
@@ -738,6 +823,45 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </div>
                                     ))}
                                 </div>
+
+                                {/* --- TRODO AUTOMATISERING UI --- */}
+                                <div className="bg-zinc-50 dark:bg-[#1a2235]/40 border border-zinc-200/80 dark:border-white/5 rounded-xl p-4 shadow-sm mt-4 transition-all">
+                                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-3 flex items-center gap-2">
+                                        <SafeIcon name="shopping-cart" size={12} /> Autopriser Grossist
+                                    </div>
+
+                                    {/* RESULTAT-VISNING */}
+                                    {isFetchingParts && (
+                                        <div className="text-[10px] font-bold tracking-widest text-blue-500 animate-pulse flex items-center gap-2 uppercase">
+                                            <SafeIcon name="loader" size={12} className="animate-spin" /> Hämtar priser...
+                                        </div>
+                                    )}
+                                    
+                                    {trodoPrices && !isFetchingParts && (
+                                        <div className="bg-white dark:bg-[#0f1522] rounded-lg p-2 border border-zinc-200 dark:border-white/5 space-y-1">
+                                            {Object.entries(trodoPrices).map(([part, info]) => (
+                                                <a 
+                                                    key={part} 
+                                                    href={info.url || '#'} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="flex justify-between items-center text-[12px] group hover:bg-zinc-50 dark:hover:bg-white/5 p-2 rounded-lg transition-all cursor-pointer no-underline"
+                                                >
+                                                    <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                                                        {part} 
+                                                        <span className="text-zinc-400 text-[10px] font-normal italic">({info.brand})</span>
+                                                        {info.url && <SafeIcon name="external-link" size={10} className="text-zinc-300 dark:text-zinc-600 group-hover:text-blue-500 transition-colors" />}
+                                                    </span>
+                                                    <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
+                                                        {info.price === '0' ? 'Visa på Trodo' : `${info.price} kr`}
+                                                    </span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {/* --- SLUT TRODO UI --- */}
+
                             </div>
                         </div>
                     </div>
