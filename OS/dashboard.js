@@ -37,7 +37,134 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
-// 3. SMART DATA-IKON (Lyssnar live på fordonsregistret)
+// --- WIDGET 3: LIVE VÄDERPROGNOS (SMHI SNOW1g) ---
+window.WeatherWidget = React.memo(() => {
+    const [weatherData, setWeatherData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState(false);
+
+    React.useEffect(() => {
+        const lon = "13.3034";
+        const lat = "55.8390";
+        // Den helt nya URL:en för SMHI (uppdaterad april 2026)
+        const url = `https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/${lon}/lat/${lat}/data.json`;
+
+        const fetchWeather = async () => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Kunde inte ansluta till SMHI");
+                const data = await response.json();
+                
+                const todayStr = new Date().toISOString().split('T')[0];
+                const dailyData = [];
+                const seenDays = new Set();
+                
+                data.timeSeries.forEach(entry => {
+                    // Nytt för snow1g: Tiden ligger under "time"
+                    const dateStr = entry.time.split('T')[0];
+                    const isNoon = entry.time.includes("12:00:00");
+                    
+                    if (!seenDays.has(dateStr)) {
+                        if (dateStr === todayStr) {
+                            dailyData.push(entry);
+                            seenDays.add(dateStr);
+                        } else if (isNoon) {
+                            dailyData.push(entry);
+                            seenDays.add(dateStr);
+                        }
+                    }
+                });
+                
+                const mapSmhiIcon = (symbolCode) => {
+                    if (symbolCode === 9999) return 'cloud'; // Ignorera felvärden
+                    if (symbolCode >= 1 && symbolCode <= 2) return 'sun'; 
+                    if (symbolCode >= 3 && symbolCode <= 4) return 'cloud-sun'; 
+                    if (symbolCode >= 5 && symbolCode <= 7) return 'cloud'; 
+                    if (symbolCode >= 8 && symbolCode <= 10) return 'cloud-drizzle'; 
+                    if (symbolCode >= 18 && symbolCode <= 20) return 'cloud-rain'; 
+                    if (symbolCode >= 11 && symbolCode <= 17) return 'cloud-snow'; 
+                    if (symbolCode === 21) return 'cloud-lightning'; 
+                    return 'cloud';
+                };
+
+                const days = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
+                
+                const formattedData = dailyData.slice(0, 7).map((day, index) => {
+                    const date = new Date(day.time);
+                    
+                    // Nytt för snow1g: Direktåtkomst via day.data
+                    const temp = day.data?.air_temperature !== undefined && day.data?.air_temperature !== 9999 
+                        ? `${Math.round(day.data.air_temperature)}°` 
+                        : '-°';
+                        
+                    const symbol = day.data?.symbol_code !== undefined && day.data?.symbol_code !== 9999 
+                        ? mapSmhiIcon(day.data.symbol_code) 
+                        : 'cloud';
+                    
+                    return {
+                        day: index === 0 ? 'Idag' : days[date.getDay()],
+                        icon: symbol,
+                        temp: temp
+                    };
+                });
+
+                setWeatherData(formattedData);
+                setLoading(false);
+            } catch (err) {
+                console.error("Fel vid hämtning av väderdata:", err);
+                setError(true);
+                setLoading(false);
+            }
+        };
+
+        fetchWeather();
+        const interval = setInterval(fetchWeather, 3600000); 
+        return () => clearInterval(interval);
+    }, []);
+
+    React.useEffect(() => {
+        if (!loading && !error && window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [weatherData, loading, error]);
+
+    return (
+        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-5 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-sky-500/5 transition-all flex flex-col justify-between min-h-[140px]">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-sky-500/10 blur-3xl rounded-full pointer-events-none"></div>
+            
+            <div className="relative z-10 flex items-center justify-between mb-3">
+                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                    <window.Icon name="cloud-sun" size={12} className="text-sky-500" /> Väder (7d)
+                </div>
+                <span className="text-[8px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2 py-0.5 rounded-md border border-sky-200/50 dark:border-sky-500/20 uppercase tracking-widest flex items-center gap-1">
+                    {loading ? <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span> : null}
+                    Eslöv
+                </span>
+            </div>
+
+            <div className="relative z-10 flex items-end justify-between gap-1 w-full mt-auto min-h-[40px]">
+                {loading ? (
+                    <div className="w-full text-center text-[10px] text-zinc-400 uppercase tracking-widest py-2">Hämtar data...</div>
+                ) : error ? (
+                    <div className="w-full text-center text-[10px] text-red-400 uppercase tracking-widest font-bold py-2">Kunde inte nå SMHI</div>
+                ) : (
+                    weatherData.map((w, i) => (
+                        <div key={i} className="flex flex-col items-center justify-end flex-1 group/day cursor-default transition-transform hover:-translate-y-1">
+                            <span className={`text-[8px] font-bold uppercase tracking-widest mb-1.5 ${i === 0 ? 'text-sky-500' : 'text-zinc-400 group-hover/day:text-zinc-600 dark:group-hover/day:text-zinc-300'}`}>
+                                {w.day}
+                            </span>
+                            <window.Icon name={w.icon} size={16} className={`mb-1.5 ${i === 0 ? 'text-sky-500 drop-shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`} />
+                            <span className="text-[11px] font-bold text-zinc-900 dark:text-white leading-none">
+                                {w.temp}
+                            </span>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+});
+
 // 3. SMART DATA-IKON (Lyssnar live på fordonsregistret)
 window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
     const [hasData, setHasData] = React.useState(false);
@@ -886,18 +1013,7 @@ window.DashboardView = React.memo(({
                                 </div>
                             </div>
 
-                            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-red-500/5 transition-all">
-                                <div className="absolute right-0 top-0 w-32 h-32 bg-red-500/5 blur-3xl rounded-full pointer-events-none"></div>
-                                <window.Icon name="alert-triangle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-red-500/10 transition-colors" />
-                                <div className="relative z-10">
-                                    <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <window.Icon name="zap" size={12} /> Prioritet
-                                    </div>
-                                    <div className={`text-4xl font-light tracking-tighter leading-none ${urgentCount > 0 ? 'text-red-500' : 'text-zinc-900 dark:text-white'}`}>
-                                        {urgentCount} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <window.WeatherWidget />
                         </>
                     )}
                 </div>
