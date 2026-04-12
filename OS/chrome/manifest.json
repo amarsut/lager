@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Planerare OS - Bridge",
-  "version": "1.5",
+  "version": "1.6",
   "description": "Total integration mellan Planerare OS, fordonsregister och grossister.",
   "permissions": [
     "clipboardWrite",
@@ -11,8 +11,9 @@
   "host_permissions": [
     "*://*.car.info/*",
     "*://*.oljemagasinet.se/*",
+    "*://*.transportstyrelsen.se/*",
     "*://*.trodo.se/*",
-    "*://*.transportstyrelsen.se/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"
@@ -20,9 +21,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.car.info/*",
-        "*://*.oljemagasinet.se/*",
-        "*://*.transportstyrelsen.se/*"
+        "<all_urls>"
       ],
       "js": ["content.js"],
       "run_at": "document_end"
