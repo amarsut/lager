@@ -9,6 +9,10 @@ const getBrand = (t) => {
     return (l.includes('merc') || l.includes('benz')) ? 'mercedes' : null;
 };
 
+// NYTT: Gör märkestolken tillgänglig globalt för Dashboarden!
+window.VEHICLE_BRANDS = BRANDS;
+window.getVehicleBrand = getBrand;
+
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const s = size; const c = className;
     switch (name) {
