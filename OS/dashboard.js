@@ -243,6 +243,88 @@ const getAvatarTheme = (name) => {
     return themes[Math.abs(hash) % themes.length];
 };
 
+// --- SMART AVATAR MED BILMÄRKE (Skottsäker version) ---
+const AVATAR_BRANDS = { 'Volvo':'volvo', 'BMW':'bmw', 'Audi':'audi', 'VW':'volkswagen', 'Volkswagen':'volkswagen', 'Mercedes':'mercedes', 'Benz':'mercedes', 'Tesla':'tesla', 'Toyota':'toyota', 'Ford':'ford', 'Kia':'kia', 'Saab':'saab', 'Porsche':'porsche', 'Seat':'seat', 'Skoda':'skoda', 'Nissan':'nissan', 'Peugeot':'peugeot', 'Renault':'renault', 'Fiat':'fiat', 'Iveco':'iveco', 'Honda':'honda', 'Mazda':'mazda', 'Hyundai':'hyundai', 'Polestar':'polestar', 'Mini':'mini', 'Jeep':'jeep', 'Land Rover':'landrover', 'Subaru':'subaru', 'Suzuki':'suzuki', 'Lexus':'lexus', 'Chevrolet':'chevrolet', 'Citroen':'citroen', 'Opel':'opel', 'Dacia':'dacia', 'Mitsubishi':'mitsubishi', 'Jaguar':'jaguar', 'Dodge':'dodge', 'Ram':'ram', 'Cupra':'cupra' };
+
+const getLocalBrand = (text1, text2) => {
+    const combined = `${text1 || ''} ${text2 || ''}`.toLowerCase();
+    if (!combined.trim()) return null;
+    
+    for (const [key, slug] of Object.entries(AVATAR_BRANDS)) {
+        if (combined.includes(key.toLowerCase()) || combined.includes(slug)) {
+            return slug;
+        }
+    }
+    return null;
+};
+
+window.CustomerAvatar = React.memo(({ job }) => {
+    const [brand, setBrand] = React.useState(null);
+    const [hasDbData, setHasDbData] = React.useState(false); // Nytt state för att bekräfta databas-kontakt
+
+    React.useEffect(() => {
+        // 1. Sätt initial gissning om jobbet redan har modell inskrivet
+        if (job.bilmodell) {
+            const initialBrand = getLocalBrand(job.bilmodell);
+            if (initialBrand) setBrand(initialBrand);
+        }
+
+        const regnr = job.regnr ? job.regnr.toUpperCase().trim() : null;
+        if (!regnr || !window.db) return;
+
+        // 2. Lyssna live på Systemradarn
+        const unsubscribe = window.db.collection('vehicleSpecs').doc(regnr).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                setHasDbData(true); // Vi har kontakt med databasen för denna bil!
+                
+                if (data.brand_manual) {
+                    setBrand(data.brand_manual);
+                } else {
+                    // Sök brett i BÅDE 'model' och 'fabrikat' för att inte missa något
+                    const foundBrand = getLocalBrand(data.model, data.fabrikat);
+                    if (foundBrand) {
+                        setBrand(foundBrand);
+                    }
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, [job.regnr, job.bilmodell]);
+
+    // Ladda in reserv-ikonen om vi behöver den
+    React.useEffect(() => {
+        if (hasDbData && !brand && window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [hasDbData, brand]);
+
+    const initials = job.kundnamn ? job.kundnamn.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : '??';
+    const avatarTheme = getAvatarTheme(job.kundnamn);
+    const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+
+    return (
+        <div className="relative shrink-0 z-10">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[12px] font-bold border shadow-sm transition-all ${avatarTheme} ${isDone ? 'opacity-70 grayscale' : ''}`}>
+                {initials}
+            </div>
+            
+            {/* Om vi hittade bilmärket -> Visa Loggan */}
+            {brand ? (
+                <div className="absolute -bottom-1.5 -right-1.5 w-[22px] h-[22px] bg-white dark:bg-[#182032] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center p-[4px] overflow-hidden animate-in zoom-in duration-300 z-20">
+                    <img src={`https://cdn.simpleicons.org/${brand}`} className="w-full h-full object-contain opacity-80 dark:invert" alt={brand} onError={(e) => e.target.style.display = 'none'} />
+                </div>
+            ) : 
+            /* Om databasen har infon men inte kunde gissa märket -> Visa grå reserv-bil */
+            hasDbData ? (
+                <div title="Fordonsteknisk data hittad, men okänt märke" className="absolute -bottom-1.5 -right-1.5 w-[22px] h-[22px] bg-zinc-100 dark:bg-[#1a2235] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center overflow-hidden animate-in zoom-in duration-300 z-20 text-zinc-400">
+                    <window.Icon name="car" size={12} />
+                </div>
+            ) : null}
+        </div>
+    );
+});
+
 // 3. MOBILKORTET
 const mobileCardPropsAreEqual = (prev, next) => {
     return prev.job === next.job && prev.job.status === next.job.status && prev.job.datum === next.job.datum;
@@ -262,9 +344,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const isReg = vehicleDisplay.length <= 8 && /\d/.test(vehicleDisplay);
     const price = parseInt(job.kundpris) || 0;
 
-    const initials = job.kundnamn ? job.kundnamn.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : '??';
-    const avatarTheme = getAvatarTheme(job.kundnamn);
-
     // FUNKTION FÖR SNABBKOPIERING (MOBIL)
     const handleCopy = (e) => {
         e.stopPropagation(); // Förhindrar att kortet öppnas
@@ -283,9 +362,8 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 {/* RAD 1: Header */}
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 border ${avatarTheme}`}>
-                            {initials}
-                        </div>
+                        {/* NYTT: Smarta avataren med bilmärke (Mobil) */}
+                        <window.CustomerAvatar job={job} />
                         <div className="flex flex-col min-w-0">
                             <div className={`text-[15px] font-bold truncate leading-tight mb-0.5 ${isDone ? 'text-zinc-600 dark:text-zinc-500' : 'text-zinc-900 dark:text-white'}`}>
                                 {job.kundnamn}
@@ -1117,8 +1195,6 @@ window.DashboardView = React.memo(({
                                         const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
                                         const regDisplay = job.regnr || job.bilmodell || '-';
                                         const isReg = regDisplay.length <= 8 && /\d/.test(regDisplay);
-                                        const initials = job.kundnamn ? job.kundnamn.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : '??';
-                                        const avatarTheme = getAvatarTheme(job.kundnamn);
 
                                         return (
                                             <tr 
@@ -1130,9 +1206,8 @@ window.DashboardView = React.memo(({
                                                     <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                                     
                                                     <div className="flex items-center gap-4 group-hover:translate-x-1 transition-transform duration-300">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[12px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
-                                                            {initials}
-                                                        </div>
+                                                        {/* NYTT: Smarta avataren med bilmärke (Desktop) */}
+                                                        <window.CustomerAvatar job={job} />
                                                         <div>
                                                             <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-none mb-1.5 group-hover:text-orange-500 transition-colors">{job.kundnamn}</div>
                                                             <div className="flex items-center gap-2">
