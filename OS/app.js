@@ -36,13 +36,23 @@ const SplashScreen = () => (
     <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out duration-500 delay-1000 fill-mode-forwards pointer-events-none">
         <div className="flex flex-col items-center">
             <div className="w-16 h-16 bg-[#f97316] flex items-center justify-center font-black rounded-sm text-black shadow-lg text-3xl animate-pulse">P</div>
-            <h1 className="mt-4 text-white font-black uppercase tracking-[0.3em] text-sm">Planerare // OS</h1>
+            <h1 className="mt-4 text-white font-black uppercase tracking-[0.3em] text-sm">AutoGrid</h1>
             <div className="mt-6 w-32 h-1 bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-[#f97316] animate-[loading_1s_ease-in-out_infinite]"></div>
             </div>
             <p className="mt-2 text-[8px] font-black text-zinc-500 uppercase tracking-widest">Initializing_Core_Systems...</p>
         </div>
     </div>
+);
+
+// Lägg denna direkt under dina imports och Firebase-konfiguration i app.js
+const HexLogo = ({ className = "" }) => (
+    <svg viewBox="0 0 100 100" className={`drop-shadow-[0_0_15px_rgba(249,115,22,0.4)] ${className}`}>
+        <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" strokeWidth="3" opacity="0.6"/>
+        <polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" strokeWidth="1" opacity="0.3"/>
+        <path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="#ffffff" />
+        <path d="M35 60 L65 60" stroke="#f97316" strokeWidth="5" strokeLinecap="round" />
+    </svg>
 );
 
 // --- 3. HUVUDAPPLIKATION (App) ---
@@ -292,13 +302,31 @@ const App = () => {
                 
                 {/* Sidomeny (Sömlös i Dark Mode) */}
                 <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-zinc-950 dark:bg-[#0b0f19] text-white border-r border-zinc-800 dark:border-white/5 flex flex-col shadow-2xl lg:shadow-none`}>
-                    <div className="h-20 flex items-center justify-between px-6 border-b border-zinc-800 dark:border-[#1a2235] overflow-hidden shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg cursor-pointer hover:scale-105 transition-transform">P</div>
-                            {sidebarOpen && <span className="font-black tracking-widest text-[10px] uppercase whitespace-nowrap">Planerare // OS</span>}
+                    <div className="h-20 flex items-center justify-between px-6 border-b border-zinc-800 dark:border-white/5 overflow-hidden shrink-0">
+                        <div className="flex items-center gap-3.5">
+                            
+                            {/* Helt frilagd HexLogo utan mörk bakgrundsruta */}
+                            <div 
+                                onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} 
+                                className="cursor-pointer group shrink-0 relative flex items-center justify-center"
+                            >
+                                <HexLogo className="w-8 h-8 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.4)] group-hover:drop-shadow-[0_0_20px_rgba(249,115,22,0.8)]" />
+                            </div>
+                            
+                            {/* AutoGrid Typografi (Något justerad storlek och marginal för perfekt linjering) */}
+                            {sidebarOpen && (
+                                <span className="font-black tracking-[0.2em] text-[14px] uppercase whitespace-nowrap flex items-center text-zinc-900 dark:text-white animate-in fade-in duration-300 mt-[2px]">
+                                    AUTO<span className="text-orange-500 font-light">GRID</span>
+                                </span>
+                            )}
                         </div>
+                        
+                        {/* Stäng-knappen */}
                         {sidebarOpen && (
-                            <button onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="hidden lg:block text-zinc-500 hover:text-white transition-colors">
+                            <button 
+                                onClick={() => { triggerHaptic(); setSidebarOpen(false); }} 
+                                className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-white dark:hover:bg-white/10 transition-all"
+                            >
                                 <window.Icon name="chevron-left" size={18} />
                             </button>
                         )}
@@ -459,15 +487,154 @@ const App = () => {
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const handleLogin = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(email, password); };
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }, [showPassword, error]);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+        } catch (err) {
+            setError('Åtkomst nekad. Kontrollera dina uppgifter.');
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-black flex items-center justify-center font-mono z-[300]">
-            <form onSubmit={handleLogin} className="w-full max-w-sm p-8 bg-[#0a0f18] border border-[#1a2235] space-y-6 text-white shadow-2xl">
-                <h2 className="text-white font-black uppercase tracking-widest border-b border-orange-600 pb-4 text-center text-xs">System_Core_Access</h2>
-                <input type="email" placeholder="EMAIL" className="w-full bg-[#121826] border border-[#1a2235] p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={email} onChange={e => setEmail(e.target.value)} />
-                <input type="password" placeholder="PASSWORD" className="w-full bg-[#121826] border border-[#1a2235] p-4 text-white text-[10px] outline-none focus:border-orange-500 transition-all" value={password} onChange={e => setPassword(e.target.value)} />
-                <button type="submit" className="w-full bg-[#f97316] text-black font-black py-5 text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-colors active:scale-95 shadow-lg">Authenticate</button>
-            </form>
+        <div className="fixed inset-0 bg-[#06080a] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700">
+            
+            {/* Autofyll-hack anpassat för den ljusare mörka bakgrunden */}
+            <style dangerouslySetInnerHTML={{__html: `
+                input:-webkit-autofill,
+                input:-webkit-autofill:hover, 
+                input:-webkit-autofill:focus, 
+                input:-webkit-autofill:active{
+                    -webkit-box-shadow: 0 0 0 30px #0f131c inset !important;
+                    -webkit-text-fill-color: white !important;
+                    transition: background-color 5000s ease-in-out 0s;
+                }
+            `}} />
+
+            {/* --- BAKGRUNDSEFFEKTER --- */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none"></div>
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[600px] sm:h-[600px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+            {/* --- INLOGGNINGSKORT --- */}
+            <div className="relative w-full max-w-[400px] mx-5 sm:mx-0 bg-[#0b0e14]/70 backdrop-blur-2xl border border-white/[0.08] shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-[32px] sm:rounded-[40px] z-10 overflow-hidden group">
+                
+                {/* Dynamisk highlight i toppen */}
+                <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-orange-500/60 to-transparent group-hover:via-orange-500 transition-all duration-700"></div>
+
+                <div className="p-8 sm:p-12">
+                    {/* LOGO & HEADER */}
+                    <div className="flex flex-col items-center mb-10">
+                        
+                        {/* === NYA PREMIUM HEX-LOGGAN HÄR === */}
+                        <div className="w-20 h-20 bg-gradient-to-b from-[#1a1f2e] to-[#0a0d14] flex items-center justify-center rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] mb-6 ring-1 ring-white/10 relative overflow-hidden group-hover:shadow-[0_15px_40px_rgba(249,115,22,0.2)] transition-all duration-500">
+                            
+                            <HexLogo className="w-12 h-12 relative z-10" />
+                            
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-full group-hover:-translate-y-full transition-transform duration-1000"></div>
+                        </div>
+                        {/* ================================== */}
+                        
+                        {/* AutoGrid Typografi */}
+                        <h1 className="text-white font-black uppercase tracking-[0.25em] text-xl flex items-center">
+                            AUTO<span className="text-orange-500 font-light">GRID</span>
+                        </h1>
+                        <p className="text-zinc-500 text-[9px] font-bold tracking-[0.3em] uppercase mt-2">Secure Access</p>
+                    </div>
+
+                    {/* HUVUDFORMULÄR */}
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        
+                        {error && (
+                            <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-2xl text-red-400 text-[13px] font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
+                                <window.Icon name="alert-octagon" size={20} className="shrink-0 text-red-500" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        {/* Email Input */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
+                                E-postadress
+                            </label>
+                            <div className="relative group/input">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
+                                    <window.Icon name="mail" size={18} />
+                                </div>
+                                <input 
+                                    type="email" 
+                                    placeholder="namn@foretag.se" 
+                                    required
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50" 
+                                    value={email} 
+                                    onChange={e => setEmail(e.target.value)} 
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password Input */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
+                                Lösenord
+                            </label>
+                            <div className="relative group/input">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
+                                    <window.Icon name="lock" size={18} />
+                                </div>
+                                <input 
+                                    type={showPassword ? "text" : "password"} 
+                                    placeholder="••••••••" 
+                                    required
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
+                                    value={password} 
+                                    onChange={e => setPassword(e.target.value)} 
+                                    disabled={isLoading}
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-500 hover:text-white transition-colors focus:outline-none"
+                                    tabIndex="-1"
+                                >
+                                    <window.Icon name={showPassword ? "eye-off" : "eye"} size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button 
+                            type="submit" 
+                            disabled={isLoading}
+                            className="w-full h-14 mt-8 relative overflow-hidden group/btn bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 disabled:opacity-70 disabled:cursor-not-allowed text-black font-black rounded-2xl text-[14px] tracking-[0.15em] uppercase transition-all hover:scale-[1.02] shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_15px_40px_rgba(249,115,22,0.5)] active:scale-[0.98] flex items-center justify-center gap-3"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <window.Icon name="loader-2" size={20} className="animate-spin text-black/80" />
+                                    <span>Verifierar...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Logga in</span>
+                                    <window.Icon name="arrow-right" size={18} className="opacity-80 group-hover/btn:translate-x-1.5 transition-transform" />
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 };
