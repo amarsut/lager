@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoGrid PNG Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function downloadPNG(svgId, size, filename) {
+            const svgElement = document.getElementById(svgId);
+            const btn = document.getElementById('btn-' + svgId);
+            const originalText = btn.innerHTML;
+            
+            // Visa laddningsstatus
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Skapar...`;
+            btn.classList.add('bg-orange-600', 'text-white', 'border-orange-500');
+            btn.classList.remove('text-orange-500', 'hover:bg-orange-500/10', 'border-orange-500/50');
+
+            // 1. Skapa en canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 2. Serialisera SVG till sträng
+            const xml = new XMLSerializer().serializeToString(svgElement);
+            
+            // 3. Konvertera till Base64
+            const svg64 = btoa(unescape(encodeURIComponent(xml)));
+            const b64Start = 'data:image/svg+xml;base64,';
+            const image64 = b64Start + svg64;
+
+            // 4. Ladda in i ett Image-objekt och rita på canvas
+            const img = new Image();
+            img.onload = function() {
+                // Rita ut bilden
+                ctx.drawImage(img, 0, 0, size, size);
+                
+                // Exportera till PNG
+                const pngData = canvas.toDataURL("image/png");
+                
+                // Trigga nedladdning
+                const a = document.createElement("a");
+                a.download = filename;
+                a.href = pngData;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // Återställ knapp
+                setTimeout(() => {
+                    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2"><polyline points="20 6 9 17 4 12"></polyline></svg> Klar!`;
+                    btn.classList.remove('bg-orange-600');
+                    btn.classList.add('bg-green-600', 'border-green-500');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('bg-green-600', 'text-white', 'border-green-500');
+                        btn.classList.add('text-orange-500', 'hover:bg-orange-500/10', 'border-orange-500/50');
+                    }, 2000);
+                }, 300);
+            };
+            img.src = image64;
+        }
+    </script>
+</head>
+<body class="bg-[#06080a] text-white font-sans min-h-screen p-8 selection:bg-orange-500 selection:text-black">
+    
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-12 border-b border-white/10 pb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-black tracking-widest uppercase mb-2">AUTO<span class="text-orange-500 font-light">GRID</span> Export</h1>
+                <p class="text-zinc-400">Generera äkta .PNG-filer från dina SVG-ikoner för applikationsbyggen.</p>
+            </div>
+            <div class="hidden sm:flex items-center gap-2 text-xs font-bold text-orange-500 bg-orange-500/10 px-4 py-2 rounded-lg border border-orange-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                PNG RASTERIZER AKTIVERAD
+            </div>
+        </header>
+
+        <div class="space-y-12">
+            
+            <!-- 512x512 -->
+            <div class="bg-[#0b0e14] border border-white/5 rounded-2xl p-6 flex flex-col md:flex-row gap-8 items-start relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1 h-full bg-orange-500/50 group-hover:bg-orange-500 transition-colors"></div>
+                <div class="shrink-0 flex flex-col items-center gap-4 pl-4">
+                    <div class="bg-black/40 p-4 rounded-3xl border border-white/5 shadow-2xl flex items-center justify-center bg-[radial-gradient(#ffffff11_1px,transparent_1px)] [background-size:16px_16px]" style="width: 256px; height: 256px;">
+                        <!-- SVG (Gömd bakom kulisserna för export) -->
+                        <svg id="svg-512" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" class="w-full h-full">
+                            <defs>
+                                <filter id="glow-512" x="-50%" y="-50%" width="200%" height="200%">
+                                    <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f97316" flood-opacity="0.4"/>
+                                </filter>
+                            </defs>
+                            <g filter="url(#glow-512)">
+                                <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" stroke-width="3" opacity="0.6"/>
+                                <polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" stroke-width="1" opacity="0.3"/>
+                                <path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="#ffffff" />
+                                <path d="M35 60 L65 60" stroke="#f97316" stroke-width="5" stroke-linecap="round" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex-1 w-full py-4">
+                    <h3 class="text-xl font-black tracking-widest text-white mb-1">Splash Screen</h3>
+                    <p class="text-zinc-500 text-sm mb-6">Används som startskärm när PWA-appen öppnas på mobilen, samt som master-ikon i Google Play / App Store.</p>
+                    
+                    <div class="flex items-center gap-4 bg-black/30 p-4 rounded-xl border border-white/5 mb-6">
+                        <div class="text-zinc-400 text-xs uppercase tracking-widest font-bold">Upplösning:</div>
+                        <div class="text-white font-mono">512 x 512 px</div>
+                        <div class="w-px h-4 bg-white/10 mx-2"></div>
+                        <div class="text-zinc-400 text-xs uppercase tracking-widest font-bold">Format:</div>
+                        <div class="text-white font-mono">PNG (Transparent)</div>
+                    </div>
+
+                    <button id="btn-svg-512" onclick="downloadPNG('svg-512', 512, 'AutoGrid_Icon_512x512.png')" class="w-full sm:w-auto text-sm font-bold uppercase tracking-widest px-8 py-4 rounded-xl border border-orange-500/50 text-orange-500 hover:bg-orange-500/10 transition-all shadow-[0_0_20px_rgba(249,115,22,0.1)] hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2 -mt-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Ladda ner PNG
+                    </button>
+                </div>
+            </div>
+
+            <!-- 192x192 -->
+            <div class="bg-[#0b0e14] border border-white/5 rounded-2xl p-6 flex flex-col md:flex-row gap-8 items-start relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1 h-full bg-orange-500/50 group-hover:bg-orange-500 transition-colors"></div>
+                <div class="shrink-0 flex flex-col items-center gap-4 pl-4">
+                    <div class="bg-black/40 p-4 rounded-3xl border border-white/5 shadow-xl flex items-center justify-center bg-[radial-gradient(#ffffff11_1px,transparent_1px)] [background-size:16px_16px]" style="width: 256px; height: 256px;">
+                        <svg id="svg-192" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="192" height="192">
+                            <defs><filter id="glow-192" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f97316" flood-opacity="0.4"/></filter></defs>
+                            <g filter="url(#glow-192)">
+                                <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" stroke-width="3" opacity="0.6"/><polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" stroke-width="1" opacity="0.3"/><path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="#ffffff" /><path d="M35 60 L65 60" stroke="#f97316" stroke-width="5" stroke-linecap="round" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex-1 w-full py-4">
+                    <h3 class="text-xl font-black tracking-widest text-white mb-1">Android App Icon</h3>
+                    <p class="text-zinc-500 text-sm mb-6">Den primära ikonen som visas på hemskärmen på Android-telefoner och i manifest-filen för PWA.</p>
+                    
+                    <div class="flex items-center gap-4 bg-black/30 p-4 rounded-xl border border-white/5 mb-6">
+                        <div class="text-zinc-400 text-xs uppercase tracking-widest font-bold">Upplösning:</div>
+                        <div class="text-white font-mono">192 x 192 px</div>
+                        <div class="w-px h-4 bg-white/10 mx-2"></div>
+                        <div class="text-zinc-400 text-xs uppercase tracking-widest font-bold">Format:</div>
+                        <div class="text-white font-mono">PNG (Transparent)</div>
+                    </div>
+
+                    <button id="btn-svg-192" onclick="downloadPNG('svg-192', 192, 'AutoGrid_Icon_192x192.png')" class="w-full sm:w-auto text-sm font-bold uppercase tracking-widest px-8 py-4 rounded-xl border border-orange-500/50 text-orange-500 hover:bg-orange-500/10 transition-all shadow-[0_0_20px_rgba(249,115,22,0.1)] hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2 -mt-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Ladda ner PNG
+                    </button>
+                </div>
+            </div>
+
+            <!-- 32x32 & 16x16 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 32x32 -->
+                <div class="bg-[#0b0e14] border border-white/5 rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-orange-500/50 group-hover:bg-orange-500 transition-colors"></div>
+                    <div>
+                        <div class="flex items-center gap-6 mb-6">
+                            <div class="bg-black/40 p-4 rounded-xl border border-white/5 shadow-md flex items-center justify-center bg-[radial-gradient(#ffffff11_1px,transparent_1px)] [background-size:8px_8px]" style="width: 80px; height: 80px;">
+                                <svg id="svg-32" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
+                                    <defs><filter id="glow-32" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f97316" flood-opacity="0.6"/></filter></defs>
+                                    <g filter="url(#glow-32)">
+                                        <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" stroke-width="3" opacity="0.8"/><polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" stroke-width="1" opacity="0.5"/><path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="#ffffff" /><path d="M35 60 L65 60" stroke="#f97316" stroke-width="6" stroke-linecap="round" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <h3 class="font-bold text-white tracking-widest uppercase">Favicon</h3>
+                                <span class="text-xs text-zinc-500 uppercase tracking-widest mt-1">32 x 32 px</span>
+                            </div>
+                        </div>
+                        <p class="text-zinc-400 text-sm mb-6">Standardikonen som syns i webbläsarens flikar och bokmärkesfältet.</p>
+                    </div>
+                    <button id="btn-svg-32" onclick="downloadPNG('svg-32', 32, 'AutoGrid_Favicon_32x32.png')" class="w-full text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl border border-orange-500/50 text-orange-500 hover:bg-orange-500/10 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2 -mt-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Ladda ner PNG
+                    </button>
+                </div>
+
+                <!-- 16x16 -->
+                <div class="bg-[#0b0e14] border border-white/5 rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-orange-500/50 group-hover:bg-orange-500 transition-colors"></div>
+                    <div>
+                        <div class="flex items-center gap-6 mb-6">
+                            <div class="bg-black/40 p-4 rounded-xl border border-white/5 shadow-md flex items-center justify-center bg-[radial-gradient(#ffffff11_1px,transparent_1px)] [background-size:8px_8px]" style="width: 80px; height: 80px;">
+                                <svg id="svg-16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+                                    <defs><filter id="glow-16" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f97316" flood-opacity="0.8"/></filter></defs>
+                                    <g filter="url(#glow-16)">
+                                        <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" stroke-width="4" opacity="1"/><path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="#ffffff" /><path d="M35 60 L65 60" stroke="#f97316" stroke-width="8" stroke-linecap="round" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <h3 class="font-bold text-white tracking-widest uppercase">Micro Favicon</h3>
+                                <span class="text-xs text-zinc-500 uppercase tracking-widest mt-1">16 x 16 px</span>
+                            </div>
+                        </div>
+                        <p class="text-zinc-400 text-sm mb-6">Används i legacy-system och på väldigt små skärmar. Förenklad för tydlighet.</p>
+                    </div>
+                    <button id="btn-svg-16" onclick="downloadPNG('svg-16', 16, 'AutoGrid_Favicon_16x16.png')" class="w-full text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl border border-orange-500/50 text-orange-500 hover:bg-orange-500/10 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2 -mt-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Ladda ner PNG
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
