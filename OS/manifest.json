@@ -1,7 +1,7 @@
 {
-  "name": "Mission_Log",
-  "short_name": "Misson_Log",
-  "description": "Industrial Logistics Matrix OS",
+  "name": "AutoGrid",
+  "short_name": "AutoGrid",
+  "description": "Logistics AutoGrid",
   "start_url": "/lager/OS/index.html",
   "scope": "/lager/OS/",
   "display": "standalone",
