@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 // --- 1. HJÄLPFUNKTIONER ---
 
@@ -47,6 +47,15 @@ const getDateLabel = (ts) => {
     return date.toLocaleDateString([], { day: 'numeric', month: 'short' }).toUpperCase();
 };
 
+// Generera färg baserat på avsändare
+const getSenderColor = (email) => {
+    if (!email) return 'bg-zinc-500';
+    const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-rose-500', 'bg-cyan-500', 'bg-amber-500'];
+    let hash = 0;
+    for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+};
+
 // --- 2. HUVUDKOMPONENT ---
 
 const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
@@ -57,12 +66,12 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
     
-    // Filter styrs lokalt
     const [filter, setFilter] = useState(viewParams?.filter || 'all');
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
+    const inputRef = useRef(null);
     
     const stateRef = useRef({ activeImage, filter, viewParams });
     useEffect(() => { stateRef.current = { activeImage, filter, viewParams }; }, [activeImage, filter, viewParams]);
@@ -71,22 +80,34 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         if (window.lucide) {
             window.lucide.createIcons();
         }
-    }, [filter, isPopup, activeImage, messages, activeMenu]); // Lade till activeMenu här
+    }, [filter, isPopup, activeImage, messages, activeMenu]);
 
     let lastDateLabel = null;
+    let lastSender = null;
 
-    // --- SCROLL FUNKTION ---
-    const scrollToBottom = () => {
+    // --- SCROLL FUNKTION (Mjuk Native-scroll) ---
+    const scrollToBottom = useCallback((smooth = true) => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (filter === 'all') {
-            setTimeout(scrollToBottom, 50);
+            // Vid första inladdning, vänta på DOM och scrolla snabbt ner
+            setTimeout(() => scrollToBottom(false), 100);
         }
-    }, [filter]);
+    }, [filter, scrollToBottom]);
+
+    // Lyssna på nya meddelanden och scrolla ner mjukt
+    useEffect(() => {
+        if (messages.length > 0 && filter === 'all') {
+            setTimeout(() => scrollToBottom(true), 50);
+        }
+    }, [messages.length, filter, scrollToBottom]);
 
     // --- HANTERA BAKÅT (Historik) ---
     useEffect(() => {
@@ -134,7 +155,6 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     // --- FILTER & NAVIGATION ---
     const handleFilterChange = (newFilter) => {
         if (newFilter === filter) return;
-        
         setFilter(newFilter);
 
         if (!isPopup) {
@@ -165,19 +185,14 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         setActiveImage(msg); 
         
         if (!isPopup) {
-            // Vi pushar bara ett tomt state så hårdvaruknappen fungerar, 
-            // men vi ropar inte på setView() längre för då kraschar navigationen.
             window.history.pushState({ imageOpen: true }, "", window.location.href);
         }
     };
 
-    // Lägg till denna nya funktion direkt under:
     const closeImageViewer = (e) => {
         if (e) e.stopPropagation();
         setActiveImage(null);
-        if (!isPopup) {
-            window.history.back(); // Tar bort det tillfälliga statet vi lade till ovan
-        }
+        if (!isPopup) window.history.back();
     };
 
     // --- FIREBASE SUBSCRIPTION ---
@@ -185,12 +200,9 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
             const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setMessages(docs);
-            if (filter === 'all') {
-                setTimeout(scrollToBottom, 100);
-            }
         });
         return () => unsubscribe();
-    }, [filter]);
+    }, []);
 
     const handleAction = async (e) => {
         if (e) e.preventDefault();
@@ -202,6 +214,10 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         const currentEditId = editingId;
         setInputText("");
         setEditingId(null);
+        
+        // Återfokusera inputen direkt för mobil användarvänlighet
+        if (inputRef.current && !isMobile) inputRef.current.focus();
+
         try {
             if (currentEditId) {
                 await window.db.collection("notes").doc(currentEditId).update({ text: textToSend, isEdited: true });
@@ -210,7 +226,6 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     text: textToSend, sender: user.email, timestamp: new Date().toISOString(), type: 'text'
                 });
             }
-            scrollToBottom();
         } catch (error) { console.error("Action Error:", error); }
     };
 
@@ -230,7 +245,6 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 text: file.name, fileUrl: fileData, type: file.type.startsWith('image/') ? 'image' : 'file',
                 timestamp: new Date().toISOString(), sender: user.email
             });
-            scrollToBottom();
         } catch (err) { console.error(err); }
         setIsUploading(false);
         e.target.value = null;
@@ -257,7 +271,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
             if (part.match(urlRegex)) {
                 return (
                     <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                        className="underline decoration-1 hover:opacity-70 break-all transition-opacity font-medium">
+                        className="underline decoration-1 hover:opacity-70 break-all transition-opacity font-bold">
                         {part}
                     </a>
                 );
@@ -268,27 +282,28 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
     // --- RENDERING ---
     return (
-        <div className={isPopup ? "w-full h-full flex flex-col bg-transparent" : "fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 max-lg:bg-zinc-50 max-lg:dark:bg-[#0f1522] animate-in fade-in duration-300 font-sans"}>
-            <div className={`w-full h-full flex flex-col bg-zinc-50 dark:bg-[#0f1522] ${isPopup ? 'border-none' : 'lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-2xl lg:border border-zinc-200 dark:border-white/5 lg:shadow-2xl'} overflow-hidden`}>
+        <div className={isPopup ? "w-full h-full flex flex-col bg-transparent" : "fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 bg-zinc-50 dark:bg-[#0f1522] animate-in fade-in duration-300 font-sans"}>
+            
+            {/* HUVUDCONTAINER */}
+            <div className={`w-full h-full flex flex-col bg-zinc-50 dark:bg-[#0f1522] ${isPopup ? 'border-none' : 'lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-2xl lg:border border-zinc-200 dark:border-white/5 lg:shadow-2xl'} overflow-hidden relative`}>
 
-                {/* HEADER - Premium Dashboard Style */}
-                <div className="h-[72px] bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-5 shrink-0 z-10 shadow-sm transition-colors duration-300">
-                    <div className="flex items-center gap-4">
+                {/* HEADER - Native Style */}
+                <div className="h-[72px] bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20 shadow-sm transition-colors duration-300">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         {!isPopup && (
                             <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] border border-transparent dark:border-white/5 text-zinc-500 hover:text-orange-500 dark:hover:text-white shadow-sm transition-all active:scale-95">
                                 <window.Icon name={filter === 'image' ? "grid" : "arrow-left"} size={20} className="pointer-events-none" />
                             </button>
                         )}
                         <div className="flex items-center gap-3">
-                            {/* Premium Logo (Hidden on mobile to save space if needed, visible here) */}
-                            <div className="relative group cursor-default shrink-0 hidden md:block">
+                            <div className="relative group cursor-default shrink-0 hidden sm:block">
                                 <div className="absolute inset-0 bg-orange-500/40 blur-md rounded-full transition-all group-hover:bg-orange-500/60" />
                                 <div className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
                                     <window.Icon name="message-square" size={18} />
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <h2 className="text-[16px] font-black uppercase tracking-tight text-zinc-900 dark:text-white leading-none">
+                                <h2 className="text-[15px] sm:text-[16px] font-black uppercase tracking-tight text-zinc-900 dark:text-white leading-none">
                                     System_<span className="text-zinc-400 dark:text-zinc-500 font-light">Chat</span>
                                 </h2>
                                 <span className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
@@ -311,7 +326,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                         {/* Stäng-knapp för popup */}
                         {isPopup && (
                             <div className="pl-2 border-l border-zinc-200 dark:border-white/5 ml-1">
-                                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 text-zinc-400 hover:text-red-500 transition-colors">
+                                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] hover:bg-red-50 dark:hover:bg-red-500/10 text-zinc-500 hover:text-red-500 transition-colors">
                                     <window.Icon name="x" size={20} className="pointer-events-none" />
                                 </button>
                             </div>
@@ -320,9 +335,9 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 </div>
 
                 {/* FLOW (Meddelandelista) */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 lg:p-6 custom-scrollbar bg-transparent">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar bg-transparent">
                     {filter === 'image' ? (
-                        <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 animate-in zoom-in duration-300">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 animate-in zoom-in duration-300">
                             {messages.filter(m => m.type === 'image' || m.image).map(msg => (
                                 <div key={msg.id} className="relative group rounded-xl overflow-hidden border border-zinc-200 dark:border-white/10 aspect-square shadow-sm">
                                     <img src={msg.fileUrl || msg.image} className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-500" alt="Gallery" onClick={(e) => handleOpenImage(e, msg)} />
@@ -330,55 +345,76 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             ))}
                         </div>
                     ) : (
-                        <div className="space-y-5 pb-2">
-                            {messages.map((msg) => {
+                        <div className="flex flex-col gap-1 pb-4">
+                            {messages.map((msg, index) => {
                                 const isMe = msg.sender === user.email;
                                 const isImage = msg.type === 'image' || msg.image;
+                                
                                 const currentLabel = getDateLabel(msg.timestamp);
                                 const showSeparator = currentLabel !== lastDateLabel;
                                 lastDateLabel = currentLabel;
+
+                                // Kolla om förra meddelandet var från samma person för att justera marginaler
+                                const isSameSenderAsPrev = index > 0 && messages[index - 1].sender === msg.sender && !showSeparator;
+                                const isSameSenderAsNext = index < messages.length - 1 && messages[index + 1].sender === msg.sender;
                                 
                                 return (
                                     <React.Fragment key={msg.id}>
                                         {showSeparator && (
-                                            <div className="flex items-center justify-center my-6">
-                                                <span className="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest uppercase bg-zinc-100 dark:bg-white/5 text-zinc-500 border border-zinc-200 dark:border-white/5 shadow-sm">
+                                            <div className="flex items-center justify-center mt-6 mb-4">
+                                                <span className="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest uppercase bg-zinc-200/50 dark:bg-white/5 text-zinc-500 border border-zinc-200/80 dark:border-white/5 shadow-sm">
                                                     {currentLabel}
                                                 </span>
                                             </div>
                                         )}
-                                        <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full`}>
-                                            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] lg:max-w-[70%] group relative`}
+                                        
+                                        <div className={`flex w-full animate-in slide-in-from-bottom-2 fade-in duration-300 ${isMe ? 'justify-end' : 'justify-start'} ${isSameSenderAsPrev ? 'mt-0.5' : 'mt-3'}`}>
+                                            
+                                            {/* Avatar för andra användare (Native iMessage-känsla) */}
+                                            {!isMe && (
+                                                <div className="w-7 h-7 shrink-0 mr-2 flex flex-col justify-end">
+                                                    {!isSameSenderAsNext && (
+                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm ${getSenderColor(msg.sender)}`}>
+                                                            {getSenderName(msg).charAt(0)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] sm:max-w-[70%] group relative`}
                                                  onMouseEnter={() => !isMobile && setActiveMenu(msg.id)}
                                                  onMouseLeave={() => !isMobile && setActiveMenu(null)}
                                                  onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
                                                 
-                                                {!isMe && (
-                                                    <span className="text-[10px] font-bold px-1 mb-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                {/* Namn överst (Bara om det är nytt meddelande från personen) */}
+                                                {!isMe && !isSameSenderAsPrev && (
+                                                    <span className="text-[10px] font-bold px-1 mb-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400 pl-2">
                                                         {getSenderName(msg)}
                                                     </span>
                                                 )}
 
-                                                <div className="relative max-w-max">
+                                                <div className="relative max-w-max flex flex-col">
                                                     {isImage ? (
-                                                        <img src={msg.fileUrl || msg.image} className={`max-w-[250px] lg:max-w-[300px] block shadow-md cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
+                                                        <img src={msg.fileUrl || msg.image} className={`max-w-[220px] sm:max-w-[300px] block shadow-sm cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
                                                     ) : (
-                                                        <div className={`px-4 py-2.5 text-[14px] shadow-sm font-medium ${isMe ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl rounded-tr-[4px] border border-orange-400/50 shadow-[0_4px_14px_rgba(249,115,22,0.3)]' : 'bg-white dark:bg-[#1a2235] text-zinc-800 dark:text-zinc-200 rounded-2xl rounded-tl-[4px] border border-zinc-200 dark:border-white/5'}`}>
+                                                        <div className={`px-4 py-2.5 text-[14px] shadow-sm font-medium ${isMe ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white border border-orange-400/50 shadow-[0_4px_14px_rgba(249,115,22,0.2)]' : 'bg-white dark:bg-[#1a2235] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/5 shadow-sm'} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tr-[4px]') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-sm' : 'rounded-2xl rounded-tl-[4px]')}`}>
                                                             <p className="leading-snug break-words whitespace-pre-wrap">{renderMessageText(msg.text)}</p>
                                                         </div>
                                                     )}
                                                     
-                                                    {/* REAKTIONER/MENY (Glassy Dashboard Look) */}
+                                                    {/* REAKTIONER/MENY */}
                                                     {activeMenu === msg.id && (
-                                                        <div ref={menuRef} className={`absolute -top-14 ${isMe ? 'right-0' : 'left-0'} pb-2 z-[100] animate-in zoom-in duration-150`}>
+                                                        <div ref={menuRef} className={`absolute -top-12 ${isMe ? 'right-0' : 'left-0'} pb-2 z-[100] animate-in zoom-in-95 duration-150`}>
                                                             <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl">
-                                                                {['🕒', '✅', '❌', '⚠️'].map(emoji => (
+                                                                {['👍', '🔥', '😂', '❓'].map(emoji => (
                                                                     <button key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-lg hover:scale-110 transition-transform hover:bg-zinc-100 dark:hover:bg-white/5">{emoji}</button>
                                                                 ))}
                                                                 <div className="w-[1px] h-5 bg-zinc-200 dark:bg-white/10 mx-1"></div>
-                                                                <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 transition-colors">
-                                                                    <window.Icon name="edit-2" size={14} />
-                                                                </button>
+                                                                {isMe && (
+                                                                    <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 transition-colors">
+                                                                        <window.Icon name="edit-2" size={14} />
+                                                                    </button>
+                                                                )}
                                                                 <button onClick={(e) => { e.stopPropagation(); window.db.collection("notes").doc(msg.id).delete(); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-colors">
                                                                     <window.Icon name="trash-2" size={14} />
                                                                 </button>
@@ -387,77 +423,89 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                                     )}
                                                 </div>
 
-                                                {/* VISNING AV REAKTIONER */}
-                                                {(msg.reactions && Object.keys(msg.reactions).length > 0) ? (
-                                                    <div className={`flex gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                        {Object.entries(msg.reactions).map(([emoji, count]) => (
-                                                            <div key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="px-2 py-1 rounded-lg text-sm flex items-center gap-1.5 border border-zinc-200 dark:border-white/5 bg-white dark:bg-[#1a2235] text-zinc-700 dark:text-zinc-300 shadow-sm cursor-pointer active:scale-95 transition-transform">
-                                                                <span>{emoji}</span><span className="font-bold text-[10px]">{count}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[9px] font-bold mt-1 px-1 uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                                                {/* VISNING AV REAKTIONER & TID */}
+                                                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} mt-1`}>
+                                                    {(msg.reactions && Object.keys(msg.reactions).length > 0) && (
+                                                        <div className={`flex gap-1 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                            {Object.entries(msg.reactions).map(([emoji, count]) => (
+                                                                <div key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="px-1.5 py-0.5 rounded-full text-[11px] flex items-center gap-1 border border-zinc-200 dark:border-white/5 bg-white/50 dark:bg-[#1a2235]/50 backdrop-blur-md text-zinc-700 dark:text-zinc-300 shadow-sm cursor-pointer active:scale-95 transition-transform">
+                                                                    <span>{emoji}</span><span className="font-bold">{count}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Visa tiden diskret om det är sista meddelandet i en klunga, eller om man hovrar */}
+                                                    <span className={`text-[9px] font-bold px-1 uppercase tracking-widest text-zinc-400 dark:text-zinc-600 transition-opacity duration-300 ${!isSameSenderAsNext || activeMenu === msg.id ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
                                                         {formatTime(msg.timestamp)}
                                                     </span>
-                                                )}
-                                                
-                                                {/* Tidstämpel om reaktioner finns (för att hålla layouten snygg) */}
-                                                {(msg.reactions && Object.keys(msg.reactions).length > 0) && (
-                                                    <span className={`text-[9px] font-bold mt-1 px-1 uppercase tracking-widest text-zinc-400 dark:text-zinc-600`}>
-                                                        {formatTime(msg.timestamp)}
-                                                    </span>
-                                                )}
+                                                </div>
                                             </div>
                                         </div>
                                     </React.Fragment>
                                 );
                             })}
+                            
+                            {/* Loader när bild laddas upp */}
+                            {isUploading && (
+                                <div className="flex justify-end w-full mt-2 animate-in slide-in-from-bottom-2 fade-in">
+                                    <div className="bg-zinc-100 dark:bg-[#1a2235] px-4 py-3 rounded-2xl rounded-tr-sm flex items-center gap-2">
+                                        <window.Icon name="loader-2" size={16} className="animate-spin text-orange-500" />
+                                        <span className="text-xs font-bold text-zinc-500">Laddar upp...</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
 
-                {/* FOOTER / INPUT */}
-                <div className="p-3 border-t border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl shrink-0 z-10 transition-colors duration-300">
+                {/* FOOTER / INPUT (Native iMessage Style) */}
+                <div className="p-3 sm:p-4 bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-white/5 shrink-0 z-20 pb-safe">
                     {editingId && (
-                        <div className="flex items-center justify-between mb-2 px-3 animate-in slide-in-from-bottom-2">
+                        <div className="flex items-center justify-between mb-2 px-2 animate-in slide-in-from-bottom-2">
                             <span className="text-[10px] font-black text-orange-500 tracking-widest uppercase flex items-center gap-2">
                                 <window.Icon name="edit-2" size={12} /> Redigerar meddelande
                             </span>
-                            <button onClick={() => { setEditingId(null); setInputText(""); }} className="text-zinc-400 hover:text-red-500 transition-colors">
-                                <window.Icon name="x" size={16} />
+                            <button onClick={() => { setEditingId(null); setInputText(""); }} className="text-zinc-400 hover:text-red-500 transition-colors bg-zinc-100 dark:bg-white/5 rounded-full p-1">
+                                <window.Icon name="x" size={12} />
                             </button>
                         </div>
                     )}
-                    <form onSubmit={handleAction} className="flex items-center gap-2 max-w-4xl mx-auto">
-                        <div className="flex items-center shrink-0 gap-1">
+                    <form onSubmit={handleAction} className="flex items-end gap-2 w-full max-w-4xl mx-auto relative">
+                        <div className="flex items-center shrink-0 mb-1">
                             {!editingId && (
                                 <>
-                                    <label className="w-10 h-10 rounded-xl cursor-pointer flex items-center justify-center transition-all text-zinc-500 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-[#1a2235]">
-                                        <window.Icon name="paperclip" size={20} />
+                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
+                                        <window.Icon name="plus" size={24} />
                                         <input type="file" className="hidden" onChange={handleFile} />
                                     </label>
-                                    <label className="w-10 h-10 rounded-xl cursor-pointer flex items-center justify-center transition-all text-zinc-500 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-[#1a2235]">
-                                        <window.Icon name="camera" size={20} />
-                                        <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
-                                    </label>
+                                    {isMobile && (
+                                        <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
+                                            <window.Icon name="camera" size={20} />
+                                            <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
+                                        </label>
+                                    )}
                                 </>
                             )}
                         </div>
-                        <div className="flex-1 px-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-white/10 transition-all bg-zinc-50 dark:bg-[#0f1522] focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/10 shadow-inner">
+                        
+                        <div className="flex-1 min-h-[44px] bg-zinc-100 dark:bg-black/50 border border-zinc-200 dark:border-white/10 rounded-2xl flex items-center transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/10 shadow-inner overflow-hidden">
                             <input
+                                ref={inputRef}
                                 autoFocus={!!editingId}
                                 value={inputText}
                                 onChange={(e) => setInputText(e.target.value)}
-                                placeholder={editingId ? "Redigera..." : "Skriv ett meddelande..."}
-                                className="w-full bg-transparent border-none outline-none text-[14px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                                placeholder={editingId ? "Redigera..." : "iMessage"}
+                                className="w-full bg-transparent border-none outline-none px-4 py-3 text-[15px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                                autoComplete="off"
                             />
                         </div>
-                        <button type="submit" disabled={!inputText.trim()} className="flex items-center justify-center w-11 h-11 shrink-0 rounded-2xl bg-orange-500 hover:bg-orange-400 disabled:bg-zinc-200 disabled:dark:bg-white/5 disabled:text-zinc-400 dark:disabled:text-zinc-600 text-white shadow-md transition-all active:scale-95 disabled:active:scale-100 disabled:cursor-not-allowed">
+                        
+                        <button type="submit" disabled={!inputText.trim() && !isUploading} className="flex items-center justify-center w-11 h-11 mb-0.5 shrink-0 rounded-full bg-orange-500 hover:bg-orange-400 disabled:bg-zinc-200 disabled:dark:bg-white/5 disabled:text-zinc-400 dark:disabled:text-zinc-600 text-white shadow-sm transition-all active:scale-90 disabled:active:scale-100">
                             {editingId ? (
                                 <window.Icon name="check" size={20} />
                             ) : (
-                                <window.Icon name="send" size={20} className="rotate-45 -ml-0.5 mt-0.5" />
+                                <window.Icon name="arrow-up" size={20} />
                             )}
                         </button>
                     </form>
@@ -466,25 +514,16 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
             {/* LIGHTBOX / BILDMODAL */}
             {activeImage && activeImage.fileUrl && (
-                <div className="fixed inset-0 z-[1100] bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 font-sans" onClick={() => {
-                    if (isPopup) {
-                        setActiveImage(null);
-                    } else {
-                        window.history.back();
-                    }
-                }}>
+                <div className="fixed inset-0 z-[1100] bg-black/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 font-sans" onClick={closeImageViewer}>
                     
-                    {/* KNAPPPLATTA (Sticky uppe) */}
-                    <div className={`absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 z-50 lg:bg-transparent lg:top-4 lg:right-4 lg:left-auto lg:h-auto lg:p-2 lg:bg-black/60 lg:backdrop-blur-md lg:rounded-2xl lg:border lg:border-white/10`} onClick={e => e.stopPropagation()}>
+                    {/* KNAPPPLATTA */}
+                    <div className={`absolute top-0 right-0 left-0 h-safe-top min-h-[80px] bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 z-50 lg:bg-transparent lg:top-4 lg:right-4 lg:left-auto lg:min-h-0 lg:p-2 lg:bg-black/60 lg:backdrop-blur-md lg:rounded-2xl lg:border lg:border-white/10`} onClick={e => e.stopPropagation()}>
                         
-                        {/* Back-knapp (Bara mobil) */}
-                        <button onClick={() => { isPopup ? setActiveImage(null) : window.history.back(); }} className="w-12 h-12 lg:hidden flex items-center justify-center rounded-xl active:scale-95 transition-transform text-white">
+                        <button onClick={closeImageViewer} className="w-12 h-12 lg:hidden flex items-center justify-center rounded-xl active:scale-95 transition-transform text-white">
                             <window.Icon name="arrow-left" size={24} />
                         </button>
 
-                        {/* Knappar till höger */}
                         <div className="flex items-center gap-2 ml-auto">
-                            
                             <button onClick={(e) => {
                                 e.stopPropagation();
                                 if (activeImage.fileUrl.startsWith('data:')) {
@@ -501,7 +540,6 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                 <window.Icon name="external-link" size={20} />
                             </button>
 
-                            {/* Ladda ner */}
                             {activeImage.fileUrl.startsWith('data:') ? (
                                  <a href={activeImage.fileUrl} download={activeImage.text || 'bifogad_fil'} title="Ladda ner fil" className="flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
                                     <window.Icon name="download" size={20} />
@@ -524,38 +562,36 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                 </button>
                             )}
 
-                            {/* Papperskorg (Bara ägare) */}
                             {activeImage.sender === user.email && (
                                 <button onClick={(e) => { 
                                     e.stopPropagation(); 
                                     if(confirm("Ta bort filen?")) { 
                                         window.db.collection("notes").doc(activeImage.id).delete(); 
-                                        isPopup ? setActiveImage(null) : window.history.back(); 
+                                        closeImageViewer(); 
                                     } 
                                 }} title="Ta bort fil" className="flex w-10 h-10 items-center justify-center rounded-xl text-red-400 hover:text-red-300 hover:bg-white/10 active:scale-95 transition-all">
                                     <window.Icon name="trash-2" size={20} />
                                 </button>
                             )}
 
-                            {/* Stäng-knapp (Bara dator) */}
-                            <button onClick={() => { isPopup ? setActiveImage(null) : window.history.back(); }} title="Stäng bild" className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                            <button onClick={closeImageViewer} title="Stäng bild" className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
                                 <window.Icon name="x" size={24} />
                             </button>
                         </div>
                     </div>
 
                     {/* BILDINNEHÅLL */}
-                    <div className="w-full h-full flex flex-col items-center justify-center p-4 lg:p-12 z-10" onClick={() => { isPopup ? setActiveImage(null) : window.history.back(); }}>
+                    <div className="w-full h-full flex flex-col items-center justify-center p-4 lg:p-12 z-10" onClick={closeImageViewer}>
                         {activeImage.type !== 'file' ? (
-                            <img src={activeImage.fileUrl} alt={activeImage.text} className="max-w-full max-h-full object-contain drop-shadow-2xl animate-in zoom-in-95 duration-300 rounded-lg" onClick={e => e.stopPropagation()}/>
+                            <img src={activeImage.fileUrl} alt={activeImage.text} className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg" onClick={e => e.stopPropagation()}/>
                         ) : (
-                            <div className="flex flex-col items-center gap-6 p-12 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+                            <div className="flex flex-col items-center gap-6 p-12 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl" onClick={e => e.stopPropagation()}>
                                 <div className="w-24 h-24 flex items-center justify-center rounded-2xl bg-black/50 border border-white/10 shadow-inner">
                                     <window.Icon name="file-text" size={48} className="text-white/40" />
                                 </div>
                                 <div className="text-center">
                                     <h3 className="text-xl font-black text-white uppercase tracking-wider mb-2">{activeImage.text}</h3>
-                                    <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">{activeImage.fileUrl.startsWith('data:') ? 'LOKAL FIL // BASE64' : 'LÄNKAD FIL // URL'}</p>
+                                    <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">{activeImage.fileUrl.startsWith('data:') ? 'LOKAL FIL' : 'LÄNKAD FIL'}</p>
                                 </div>
                             </div>
                         )}
