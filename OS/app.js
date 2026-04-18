@@ -1,6 +1,6 @@
-// app.js - Återskapad från backup, men slimmad (Radar och Spotlight utbrutna)
+// app.js - AutoGrid Edition (Beta/Premium UX)
 
-const { useState, useEffect, useMemo, useRef, memo } = React;
+const { useState, useEffect, useMemo, useRef, useCallback, memo } = React;
 
 // --- 1. FIREBASE ---
 const firebaseConfig = {
@@ -26,34 +26,50 @@ window.db = db;
 window.firebase = firebase;
 
 // --- 2. GLOBALA KOMPONENTER ---
-window.Icon = ({ name, size = 18, className = "" }) => (
+window.Icon = memo(({ name, size = 18, className = "" }) => (
     <span className={`inline-flex items-center justify-center ${className}`} style={{ width: size, height: size }}>
         <i data-lucide={name} style={{ width: '100%', height: '100%' }}></i>
     </span>
-);
+));
 
-const SplashScreen = () => (
-    <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out duration-500 delay-1000 fill-mode-forwards pointer-events-none">
-        <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-[#f97316] flex items-center justify-center font-black rounded-sm text-black shadow-lg text-3xl animate-pulse">P</div>
-            <h1 className="mt-4 text-white font-black uppercase tracking-[0.3em] text-sm">AutoGrid</h1>
-            <div className="mt-6 w-32 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-[#f97316] animate-[loading_1s_ease-in-out_infinite]"></div>
-            </div>
-            <p className="mt-2 text-[8px] font-black text-zinc-500 uppercase tracking-widest">Initializing_Core_Systems...</p>
-        </div>
-    </div>
-);
-
-// Lägg denna direkt under dina imports och Firebase-konfiguration i app.js
-const HexLogo = ({ className = "" }) => (
+const HexLogo = memo(({ className = "", iconColor = "fill-zinc-900 dark:fill-white" }) => (
     <svg viewBox="0 0 100 100" className={`drop-shadow-[0_0_15px_rgba(249,115,22,0.4)] ${className}`}>
         <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" strokeWidth="3" opacity="0.6"/>
         <polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" strokeWidth="1" opacity="0.3"/>
-        <path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="#ffffff" />
+        <path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" className={`${iconColor} transition-colors duration-300`} />
         <path d="M35 60 L65 60" stroke="#f97316" strokeWidth="5" strokeLinecap="round" />
     </svg>
-);
+));
+
+const SplashScreen = memo(() => (
+    <div className="fixed inset-0 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out zoom-out-95 duration-700 delay-1000 fill-mode-forwards pointer-events-none transition-colors duration-300">
+        <div className="flex flex-col items-center">
+            <div className="w-24 h-24 flex items-center justify-center mb-6 animate-[pulse_2s_ease-in-out_infinite]">
+                <HexLogo className="w-20 h-20" />
+            </div>
+            <h1 className="text-zinc-900 dark:text-white font-black uppercase tracking-[0.25em] text-lg flex items-center">
+                AUTO<span className="text-orange-500 font-light">GRID</span>
+            </h1>
+            <div className="mt-8 w-40 h-1 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden relative">
+                <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-600 to-orange-400 animate-[loading_1.5s_ease-in-out_infinite] w-1/2 rounded-full"></div>
+            </div>
+            <p className="mt-4 text-[8px] font-black text-zinc-500 uppercase tracking-widest animate-pulse">Initializing_Core_Systems...</p>
+        </div>
+    </div>
+));
+
+// Fast Navigations-data för att undvika re-renders
+const NAV_ITEMS = [
+    { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
+    { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
+    { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
+    { id: 'LAGER', icon: 'package', label: 'Lager' },
+    { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
+    { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
+    { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
+    { id: 'STATISTICS', icon: 'bar-chart-2', label: 'Statistik' },
+    { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
+];
 
 // --- 3. HUVUDAPPLIKATION (App) ---
 const App = () => {
@@ -69,7 +85,7 @@ const App = () => {
     const [editingJob, setEditingJob] = useState(null);
     const [allLagerItems, setAllLagerItems] = useState([]);
     const [allNotes, setAllNotes] = useState([]);
-    const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') === 'dark');
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') !== 'light'); 
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -77,34 +93,24 @@ const App = () => {
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
 
-    // --- AUTOMATISK UTLOGGNING VID INAKTIVITET ---
+    // AUTOMATISK UTLOGGNING
     useEffect(() => {
-        // Om användaren inte är inloggad, gör ingenting
         if (!user) return;
-
         let timeoutId;
-        // Tid för utloggning: 15 minuter (i millisekunder)
-        const INACTIVITY_LIMIT = 15 * 60 * 1000; 
-
-        // Funktion som återställer timern varje gång användaren gör något
+        const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 min
+        
         const resetTimer = () => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
-                auth.signOut(); // Loggar ut via Firebase
+                auth.signOut();
                 console.log("Automatiskt utloggad pga inaktivitet.");
             }, INACTIVITY_LIMIT);
         };
 
-        // Händelser som systemet räknar som "aktivitet"
         const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
-        
-        // Sätt igång lyssnarna på hela sidan
         events.forEach(event => document.addEventListener(event, resetTimer, { passive: true }));
-        
-        // Starta timern direkt när man loggar in
         resetTimer();
 
-        // Städa upp om komponenten stängs
         return () => {
             clearTimeout(timeoutId);
             events.forEach(event => document.removeEventListener(event, resetTimer));
@@ -112,16 +118,13 @@ const App = () => {
     }, [user]);
 
     useEffect(() => {
-        window.openVehicleProfile = (regnr, highlightId = null) => {
-            setGlobalVehicle({ regnr, highlightId });
-        };
+        window.openVehicleProfile = (regnr, highlightId = null) => setGlobalVehicle({ regnr, highlightId });
     }, []);
 
-    const triggerHaptic = () => {
+    const triggerHaptic = useCallback(() => {
         if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(12);
-    };
+    }, []);
 
-    // --- SPOTLIGHT EVENT LISTENERS ---
     useEffect(() => {
         const handleOpenSpotlight = () => setIsSpotlightOpen(true);
         const handleCmdK = (e) => {
@@ -133,18 +136,16 @@ const App = () => {
 
         window.addEventListener('open-spotlight', handleOpenSpotlight);
         window.addEventListener('keydown', handleCmdK);
-
         return () => {
             window.removeEventListener('open-spotlight', handleOpenSpotlight);
             window.removeEventListener('keydown', handleCmdK);
         };
     }, []);
 
-    // --- DARK MODE INJECTION ---
+    // CSS INJECTION & THEME
     useEffect(() => {
         const root = document.documentElement;
         root.style.setProperty('--brand-primary', '#f97316');
-        root.style.setProperty('--sidebar-text', '#ffffff');
 
         if (isDark) {
             root.classList.add('dark');
@@ -153,7 +154,7 @@ const App = () => {
         } else {
             root.classList.remove('dark');
             localStorage.setItem('sys_theme', 'light');
-            document.body.style.background = 'linear-gradient(to bottom right, #ffffff, #f4f4f5, #e4e4e7)'; 
+            document.body.style.background = '#fafafa'; 
         }
 
         let meta = document.querySelector('meta[name="theme-color"]');
@@ -172,22 +173,24 @@ const App = () => {
         }
 
         styleTag.innerHTML = `
-            @keyframes loading { 0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; } }
-            @keyframes subtleGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-            .dark-premium-bg { background: linear-gradient(-45deg, #020617, #0f172a, #1e293b, #020617); background-size: 400% 400%; animation: subtleGradient 20s ease infinite; }
+            @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
             input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
             input[type=number] { -moz-appearance: textfield; }
             input:focus, select:focus, textarea:focus { outline: none !important; box-shadow: none !important; }
-            .theme-bg { background-color: var(--brand-primary) !important; }
-            .theme-text { color: var(--brand-primary) !important; }
-            .theme-border { border-color: var(--brand-primary) !important; }
-            .theme-sidebar-active { background-color: rgba(249, 115, 22, 0.12) !important; color: var(--brand-primary) !important; border-right: 3px solid var(--brand-primary) !important; }
-            .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; color: #52525b; border: none; background: transparent; }
-            .mobile-nav-btn.active { color: var(--brand-primary); }
-            .mobile-nav-label { font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+            
+            /* Snygga Custom Scrollbars */
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 10px; }
+            .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
+            ::-webkit-scrollbar-thumb:hover { background: rgba(249, 115, 22, 0.5); }
+            
+            .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; border: none; background: transparent; }
+            .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
         `;
     }, [isDark]);
 
+    // DATA FETCHING
     useEffect(() => {
         if (!user) return;
         const clockRegex = /[🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛⏰⌚⌛⏳]/u;
@@ -201,7 +204,7 @@ const App = () => {
         return () => unsubscribe();
     }, [user, view]);
 
-    const navigateTo = (newView, params = null) => {
+    const navigateTo = useCallback((newView, params = null) => {
         triggerHaptic();
         const hashPath = `#${newView.toLowerCase()}`;
         if (view === newView) {
@@ -213,9 +216,11 @@ const App = () => {
         setViewParams(params);
         if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
         if (window.innerWidth < 1024) setSidebarOpen(false);
-
         setGlobalVehicle(null);
-    };
+        
+        // Auto-scroll till toppen vid vy-byte
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [view, triggerHaptic]);
 
     useEffect(() => {
         const handleStatus = () => setIsOnline(navigator.onLine);
@@ -232,8 +237,6 @@ const App = () => {
                 setViewParams(event.state.params);
                 if (event.state.params && Object.prototype.hasOwnProperty.call(event.state.params, 'job')) setEditingJob(event.state.params.job);
                 else setEditingJob(null);
-                
-                // NYTT: Stäng fordonsdatan när vi backar
                 setGlobalVehicle(null);
             }
         };
@@ -248,8 +251,6 @@ const App = () => {
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 1024) setSidebarOpen(false);
-                
-                // NYTT: Stäng fordonsdatan
                 setGlobalVehicle(null);
             }
         };
@@ -258,10 +259,21 @@ const App = () => {
         return () => window.removeEventListener('hashchange', syncWithUrl);
     }, []);
 
-    useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs]);
-    useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); setAppReady(true); return () => clearInterval(timer); }, []);
+    useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs, navigateTo]);
     
-    useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes]);
+    useEffect(() => { 
+        const timer = setInterval(() => setTime(new Date()), 1000); 
+        setAppReady(true); 
+        return () => clearInterval(timer); 
+    }, []);
+    
+    // Säkerställ att ikoner laddas, med en liten delay som fallback
+    useEffect(() => { 
+        if (window.lucide) {
+            window.lucide.createIcons();
+            setTimeout(() => window.lucide.createIcons(), 100);
+        }
+    }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes, appReady]);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(u => { setUser(u); setLoading(false); });
@@ -314,52 +326,53 @@ const App = () => {
         <>
             {!appReady && <SplashScreen />}
             
-            {/* Global Spotlight Render (Laddas in säkert om den finns) */}
-            {window.SpotlightSearch && (
-                <window.SpotlightSearch 
-                    isOpen={isSpotlightOpen} 
-                    onClose={() => setIsSpotlightOpen(false)} 
-                    allJobs={allJobs} 
-                    allNotes={allNotes} 
-                    allLagerItems={allLagerItems} 
-                    navigateTo={navigateTo} 
-                />
+            {/* OFFLINE BANNER */}
+            {!isOnline && (
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-500/95 text-white px-5 py-2.5 rounded-full text-[11px] font-bold tracking-widest uppercase backdrop-blur-md flex items-center gap-2 shadow-[0_10px_30px_rgba(239,68,68,0.4)] animate-in slide-in-from-top-4 fade-in duration-300">
+                    <window.Icon name="wifi-off" size={14} /> System Offline
+                </div>
             )}
 
-            {/* Den Svävande Systemradarn (Laddas in säkert om den finns) */}
+            {window.SpotlightSearch && (
+                <window.SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} allLagerItems={allLagerItems} navigateTo={navigateTo} />
+            )}
             {window.GlobalSystemRadar && (
                 <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
             )}
 
-            {/* Huvudlayout med Dark Mode bakgrund */}
             <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
-                {/* Sidomeny (Sömlös i Dark Mode) */}
-                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-zinc-950 dark:bg-[#0b0f19] text-white border-r border-zinc-800 dark:border-white/5 flex flex-col shadow-2xl lg:shadow-none`}>
-                    <div className="h-20 flex items-center justify-between px-6 border-b border-zinc-800 dark:border-white/5 overflow-hidden shrink-0">
+                {/* DYNAMISK SIDEBAR */}
+                {/* DYNAMISK SIDEBAR (Alltid mörk, oavsett tema) */}
+                {/* DYNAMISK SIDEBAR (Låst till Alltid Mörk) */}
+                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl lg:shadow-none select-none group/sidebar`}>
+                    
+                    <div className={`h-20 flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} border-b border-white/5 overflow-hidden shrink-0`}>
                         <div className="flex items-center gap-3.5">
-                            
-                            {/* Helt frilagd HexLogo utan mörk bakgrundsruta */}
+                            {/* Klickbar logga som öppnar/stänger sidebaren */}
                             <div 
                                 onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} 
-                                className="cursor-pointer group shrink-0 relative flex items-center justify-center"
+                                className="cursor-pointer shrink-0 relative flex items-center justify-center group/logo"
+                                title={sidebarOpen ? "Fäll in meny" : "Fäll ut meny"}
                             >
-                                <HexLogo className="w-8 h-8 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.4)] group-hover:drop-shadow-[0_0_20px_rgba(249,115,22,0.8)]" />
+                                {/* Använder iconColor="fill-white" så A:et ALDRIG blir svart */}
+                                <HexLogo 
+                                    className={`transition-all duration-300 group-hover/logo:scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.4)] group-hover/logo:drop-shadow-[0_0_20px_rgba(249,115,22,0.8)] ${sidebarOpen ? 'w-8 h-8' : 'w-10 h-10'}`} 
+                                    iconColor="fill-white" 
+                                />
                             </div>
                             
-                            {/* AutoGrid Typografi (Alltid vit text eftersom sidebaren förblir mörk) */}
                             {sidebarOpen && (
-                                <span className="font-black tracking-[0.2em] text-[14px] uppercase whitespace-nowrap flex items-center text-white animate-in fade-in duration-300 mt-[2px]">
+                                <span className="font-black tracking-[0.2em] text-[14px] uppercase whitespace-nowrap flex items-center text-white animate-in fade-in duration-300 mt-[2px] cursor-pointer" onClick={() => navigateTo('DASHBOARD')}>
                                     AUTO<span className="text-orange-500 font-light">GRID</span>
                                 </span>
                             )}
                         </div>
                         
-                        {/* Stäng-knappen */}
                         {sidebarOpen && (
                             <button 
                                 onClick={() => { triggerHaptic(); setSidebarOpen(false); }} 
-                                className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-white dark:hover:bg-white/10 transition-all"
+                                className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
                             >
                                 <window.Icon name="chevron-left" size={18} />
                             </button>
@@ -367,55 +380,56 @@ const App = () => {
                     </div>
                     
                     <nav className="flex-1 py-6 space-y-1 overflow-y-auto custom-scrollbar">
-                        {[
-                            { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
-                            { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
-                            { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
-                            { id: 'LAGER', icon: 'package', label: 'Lager' },
-                            { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
-                            { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
-                            { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
-                            { id: 'STATISTICS', icon: 'bar-chart-2', label: 'Statistik' },
-                            { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
-                        ].map(item => (
-                            <div key={item.id} 
-                                onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
-                                className={`flex items-center px-6 py-4 cursor-pointer transition-all ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${view === item.id ? 'theme-sidebar-active' : 'hover:opacity-80 text-zinc-400 hover:text-white'}`}>                                
-                                <div className="relative flex items-center justify-center">
-                                    <window.Icon name={item.icon} size={18} />
-                                    {item.id === 'CHAT' && hasUnread && (
-                                        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
-                                        </span>
-                                    )}
+                        {NAV_ITEMS.map(item => {
+                            const isActive = view === item.id;
+                            return (
+                                <div key={item.id} 
+                                    onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
+                                    // Hover-färgerna är nu låsta till hover:bg-white/[0.05] och hover:text-white
+                                    className={`flex items-center px-6 py-4 cursor-pointer transition-all duration-300 group relative ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${isActive ? 'bg-orange-500/10 text-orange-500' : 'text-zinc-500 hover:text-white hover:bg-white/[0.05]'}`}>                                
+                                    
+                                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)] animate-in fade-in duration-300"></div>}
+
+                                    <div className={`relative flex items-center justify-center transition-transform duration-300 ${isActive ? '' : 'group-hover:translate-x-1'}`}>
+                                        <window.Icon name={item.icon} size={18} />
+                                        {item.id === 'CHAT' && hasUnread && (
+                                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
+                                            </span>
+                                        )}
+                                    </div>
+                                    {sidebarOpen && <span className={`ml-4 text-[12px] font-medium transition-transform duration-300 ${isActive ? '' : 'group-hover:translate-x-1'}`}>{item.label.replace('_', ' ')}</span>}
                                 </div>
-                                {sidebarOpen && <span className="ml-4 text-[12px] font-medium">{item.label.replace('_', ' ')}</span>}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </nav>
 
-                    <div className="mt-auto border-t border-zinc-800 dark:border-[#1a2235] bg-black/20 pb-20 lg:pb-0">
-                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-5 text-zinc-400 hover:text-white transition-colors border-b border-zinc-800 dark:border-[#1a2235] gap-4`}>
-                            <window.Icon name={isDark ? "sun" : "moon"} size={18} className={isDark ? "text-orange-500" : ""} />
+                    <div className="mt-auto border-t border-white/5 bg-black/20 pb-20 lg:pb-0 transition-colors duration-300">
+                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
+                            <div className="relative w-5 h-5 flex items-center justify-center">
+                                <window.Icon name={isDark ? "sun" : "moon"} size={18} className={`absolute transition-all duration-500 ${isDark ? "text-orange-500 rotate-0 opacity-100 scale-100" : "-rotate-90 opacity-0 scale-50"}`} />
+                                <window.Icon name={isDark ? "sun" : "moon"} size={18} className={`absolute transition-all duration-500 ${!isDark ? "text-zinc-400 rotate-0 opacity-100 scale-100 group-hover:text-white" : "rotate-90 opacity-0 scale-50"}`} />
+                            </div>
                             {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
                         </button>
 
-                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-5 gap-3`}>
+                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-5 gap-3 group/profile cursor-pointer`}>
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="min-w-[32px] w-8 h-8 theme-bg flex items-center justify-center font-black rounded-sm text-black shadow-lg uppercase text-[10px]">
-                                    {user.email ? user.email[0] : 'U'}
+                                {/* Profilikon låst till mörk tema färg */}
+                                <div className="min-w-[32px] w-8 h-8 bg-zinc-800 flex items-center justify-center font-black rounded-lg text-white shadow-sm uppercase text-[12px] transition-transform duration-300 group-hover/profile:scale-105">
+                                    {user?.email ? user.email[0] : 'U'}
                                 </div>
                                 {sidebarOpen && (
                                     <div className="flex flex-col min-w-0">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white truncate">{user.displayName || 'Operator'}</span>
-                                        <span className="text-[7px] text-zinc-500 truncate font-mono uppercase tracking-tighter">{user.email}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white truncate transition-colors">{user?.displayName || 'Operator'}</span>
+                                        <span className="text-[7px] text-zinc-500 truncate font-mono uppercase tracking-tighter">{user?.email}</span>
                                     </div>
                                 )}
                             </div>
                             {sidebarOpen && (
-                                <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-sm transition-all group shrink-0">
-                                    <window.Icon name="log-out" size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                                <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all group/logout shrink-0 z-10" title="Logga ut">
+                                    <window.Icon name="log-out" size={16} className="group-hover/logout:translate-x-0.5 transition-transform" />
                                 </button>
                             )}
                         </div>
@@ -428,10 +442,10 @@ const App = () => {
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                     
-                    {/* Chattbubbla */}
+                    {/* Svävande Chattbubbla */}
                     <button 
                         onClick={() => setIsChatOpen(!isChatOpen)} 
-                        className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-[0_10px_30px_rgba(249,115,22,0.4)] items-center justify-center transition-all z-[600] border border-black/20 ${isChatOpen ? 'bg-zinc-800 text-white hover:scale-105' : 'theme-bg text-black hover:scale-110 active:scale-95'}`}
+                        className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full items-center justify-center transition-all duration-300 z-[600] animate-in zoom-in-50 duration-500 ${isChatOpen ? 'bg-zinc-800 text-white hover:scale-105 shadow-lg' : hasUnread ? 'bg-orange-500 text-white hover:scale-110 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-[pulse_2s_infinite]' : 'bg-orange-500 text-black hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.4)]'}`}
                     >
                         <window.Icon name={isChatOpen ? "x" : "message-square"} size={24} />
                         {hasUnread && !isChatOpen && (
@@ -445,21 +459,14 @@ const App = () => {
                     {isChatOpen && window.innerWidth >= 1024 && window.ChatView && (
                         <>
                             <div className="fixed inset-0 z-[490]" onClick={() => setIsChatOpen(false)}></div>
-                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-[#2a3441] bg-white dark:bg-[#121826] ring-1 ring-black/5 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-[#2a3441] bg-white dark:bg-[#121826] ring-1 ring-black/5 animate-in slide-in-from-bottom-8 fade-in duration-300">
                                 <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} isPopup={true} onClose={() => setIsChatOpen(false)} />
                             </div>
                         </>
                     )}
 
-                    {/* DYNAMISK VY-CONTAINER */}
                     <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
-                        {view === 'DASHBOARD' && window.DashboardView && (
-                            <window.DashboardView 
-                                allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} 
-                                activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts}
-                                globalSearch={globalSearch} setGlobalSearch={setGlobalSearch}
-                            />
-                        )}
+                        {view === 'DASHBOARD' && window.DashboardView && <window.DashboardView allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} />}
                         {view === 'NEW_JOB' && window.NewJobView && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
                         {view === 'GARAGE' && window.GarageView && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'LAGER' && window.LagerView && <window.LagerView allJobs={allJobs} />} 
@@ -471,46 +478,44 @@ const App = () => {
                         {view === 'REFERENCE' && window.ReferenceView && <window.ReferenceView setView={navigateTo} />}
                     </div>
 
-                    {/* Mobila Bottenmenyn */}
-                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950 dark:bg-[#121826] border-t border-zinc-900 dark:border-[#1a2235] flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-xl">
-                        <button onClick={() => navigateTo('DASHBOARD')} className={`mobile-nav-btn ${view === 'DASHBOARD' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
-                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="grid" size={20} /></div>
-                            <span className="mobile-nav-label">Status</span>
-                        </button>
-                        <button onClick={() => navigateTo('CALENDAR')} className={`mobile-nav-btn ${view === 'CALENDAR' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
-                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="calendar" size={20} /></div>
-                            <span className="mobile-nav-label">Plan</span>
-                        </button>
-                        <button onClick={() => navigateTo('NEW_JOB', { job: null })} className={`mobile-nav-btn ${view === 'NEW_JOB' && !sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
-                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name="plus-square" size={20} /></div>
-                            <span className="mobile-nav-label">Nytt</span>
-                        </button>
-                        <button onClick={() => navigateTo('CHAT')} className={`mobile-nav-btn ${view === 'CHAT' ? 'active' : 'dark:text-zinc-500'}`}>
-                            <div className="relative inline-flex items-center justify-center p-1">
-                                <window.Icon name="message-square" size={20} />
-                                {hasUnread && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-black dark:border-[#121826] shadow-[0_0_10px_rgba(249,115,22,1)]"></span>
-                                    </span>
-                                )}
+                    {/* Mobila Bottenmenyn (Förfinad Glassmorphism) */}
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/90 dark:bg-[#121826]/90 border-t border-zinc-200/80 dark:border-[#1a2235] flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.02)] select-none">
+                        {[
+                            { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
+                            { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
+                            { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt', param: { job: null } },
+                            { id: 'CHAT', icon: 'message-square', label: 'Chatt', hasBadge: hasUnread },
+                        ].map(item => {
+                            const isActive = view === item.id && !sidebarOpen;
+                            return (
+                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative ${isActive ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                    <div className={`relative inline-flex items-center justify-center p-1 transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}>
+                                        <window.Icon name={item.icon} size={20} />
+                                        {item.hasBadge && (
+                                            <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-white dark:border-[#121826] shadow-sm"></span>
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className={`mobile-nav-label transition-all duration-300 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute bottom-0'}`}>{item.label}</span>
+                                    {/* Aktiv Dot */}
+                                    {isActive && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full"></span>}
+                                </button>
+                            );
+                        })}
+                        
+                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                            <div className={`relative inline-flex items-center justify-center p-1 transition-transform duration-300 ${sidebarOpen ? '-translate-y-1' : ''}`}>
+                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} />
                             </div>
-                            <span className="mobile-nav-label">Chatt</span>
-                        </button>
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`mobile-nav-btn ${sidebarOpen ? 'active' : 'dark:text-zinc-500'}`}>
-                            <div className="relative inline-flex items-center justify-center p-1"><window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} /></div>
-                            <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
+                            <span className={`mobile-nav-label transition-all duration-300 ${sidebarOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute bottom-0'}`}>{sidebarOpen ? "Stäng" : "Mer"}</span>
+                            {sidebarOpen && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full"></span>}
                         </button>
                     </div>
 
-                    {/* GLOBAL MODUL: Fordonsakt / Sidofält */}
                     {globalVehicle && window.VehicleProfileLoader && (
-                        <window.VehicleProfileLoader
-                            regnr={globalVehicle.regnr}
-                            highlightId={globalVehicle.highlightId}
-                            onClose={() => setGlobalVehicle(null)}
-                            setView={navigateTo}
-                        />
+                        <window.VehicleProfileLoader regnr={globalVehicle.regnr} highlightId={globalVehicle.highlightId} onClose={() => setGlobalVehicle(null)} setView={navigateTo} />
                     )}
                 </main>
             </div>
@@ -518,17 +523,24 @@ const App = () => {
     );
 };
 
-const LoginScreen = () => {
+// --- 4. DYNAMISK INLOGGNINGSSKÄRM ---
+const LoginScreen = memo(() => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const emailRef = useRef(null);
+
+    // Auto-fokus på e-post när skärmen laddas
+    useEffect(() => {
+        if (emailRef.current) {
+            emailRef.current.focus();
+        }
+    }, []);
 
     useEffect(() => {
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
+        if (window.lucide) window.lucide.createIcons();
     }, [showPassword, error]);
 
     const handleLogin = async (e) => {
@@ -540,78 +552,77 @@ const LoginScreen = () => {
         } catch (err) {
             setError('Åtkomst nekad. Kontrollera dina uppgifter.');
             setIsLoading(false);
+            if (emailRef.current) emailRef.current.focus();
         }
     };
 
     return (
-        <div className="fixed inset-0 bg-[#06080a] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700">
+        <div className="fixed inset-0 bg-zinc-50 dark:bg-[#06080a] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700 transition-colors duration-300">
             
-            {/* Autofyll-hack anpassat för den ljusare mörka bakgrunden */}
             <style dangerouslySetInnerHTML={{__html: `
-                input:-webkit-autofill,
-                input:-webkit-autofill:hover, 
-                input:-webkit-autofill:focus, 
-                input:-webkit-autofill:active{
+                .dark input:-webkit-autofill,
+                .dark input:-webkit-autofill:hover, 
+                .dark input:-webkit-autofill:focus, 
+                .dark input:-webkit-autofill:active{
                     -webkit-box-shadow: 0 0 0 30px #0f131c inset !important;
                     -webkit-text-fill-color: white !important;
                     transition: background-color 5000s ease-in-out 0s;
                 }
+                input:-webkit-autofill,
+                input:-webkit-autofill:hover, 
+                input:-webkit-autofill:focus, 
+                input:-webkit-autofill:active{
+                    -webkit-box-shadow: 0 0 0 30px #f4f4f5 inset !important;
+                    -webkit-text-fill-color: black !important;
+                    transition: background-color 5000s ease-in-out 0s;
+                }
             `}} />
 
-            {/* --- BAKGRUNDSEFFEKTER --- */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none"></div>
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[600px] sm:h-[600px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+            {/* Dynamiska Bakgrundseffekter (Pulsar extremt långsamt för Premium-feel) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#e4e4e7_0%,_#fafafa_70%)] dark:bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none transition-colors duration-500"></div>
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[600px] sm:h-[600px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none animate-[pulse_10s_ease-in-out_infinite]"></div>
 
-            {/* --- INLOGGNINGSKORT --- */}
-            <div className="relative w-full max-w-[400px] mx-5 sm:mx-0 bg-[#0b0e14]/70 backdrop-blur-2xl border border-white/[0.08] shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-[32px] sm:rounded-[40px] z-10 overflow-hidden group">
+            <div className="relative w-full max-w-[400px] mx-5 sm:mx-0 bg-white/80 dark:bg-[#0b0e14]/70 backdrop-blur-2xl border border-black/5 dark:border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.05)] dark:shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-[32px] sm:rounded-[40px] z-10 overflow-hidden group transition-colors duration-300">
                 
-                {/* Dynamisk highlight i toppen */}
                 <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-orange-500/60 to-transparent group-hover:via-orange-500 transition-all duration-700"></div>
 
                 <div className="p-8 sm:p-12">
-                    {/* LOGO & HEADER */}
+                    
                     <div className="flex flex-col items-center mb-10">
-                        
-                        {/* === NYA PREMIUM HEX-LOGGAN HÄR === */}
-                        <div className="w-20 h-20 bg-gradient-to-b from-[#1a1f2e] to-[#0a0d14] flex items-center justify-center rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] mb-6 ring-1 ring-white/10 relative overflow-hidden group-hover:shadow-[0_15px_40px_rgba(249,115,22,0.2)] transition-all duration-500">
-                            
+                        <div className="w-20 h-20 bg-gradient-to-b from-white to-zinc-100 dark:from-[#1a1f2e] dark:to-[#0a0d14] flex items-center justify-center rounded-[24px] shadow-lg dark:shadow-[0_15px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] mb-6 ring-1 ring-black/5 dark:ring-white/10 relative overflow-hidden group-hover:shadow-[0_15px_40px_rgba(249,115,22,0.2)] transition-all duration-500">
                             <HexLogo className="w-12 h-12 relative z-10" />
-                            
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-full group-hover:-translate-y-full transition-transform duration-1000"></div>
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-black/5 dark:via-white/5 to-transparent translate-y-full group-hover:-translate-y-full transition-transform duration-1000"></div>
                         </div>
-                        {/* ================================== */}
                         
-                        {/* AutoGrid Typografi */}
-                        <h1 className="text-white font-black uppercase tracking-[0.25em] text-xl flex items-center">
+                        <h1 className="text-zinc-900 dark:text-white font-black uppercase tracking-[0.25em] text-xl flex items-center transition-colors">
                             AUTO<span className="text-orange-500 font-light">GRID</span>
                         </h1>
                         <p className="text-zinc-500 text-[9px] font-bold tracking-[0.3em] uppercase mt-2">Secure Access</p>
                     </div>
 
-                    {/* HUVUDFORMULÄR */}
                     <form onSubmit={handleLogin} className="space-y-5">
-                        
                         {error && (
-                            <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-2xl text-red-400 text-[13px] font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
+                            <div className="p-4 bg-red-100 dark:bg-red-900/20 border border-red-500/30 rounded-2xl text-red-600 dark:text-red-400 text-[13px] font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
                                 <window.Icon name="alert-octagon" size={20} className="shrink-0 text-red-500" />
                                 <span>{error}</span>
                             </div>
                         )}
 
-                        {/* Email Input */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
+                            <label htmlFor="emailInput" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
                                 E-postadress
                             </label>
                             <div className="relative group/input">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-400 dark:text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
                                     <window.Icon name="mail" size={18} />
                                 </div>
                                 <input 
+                                    id="emailInput"
+                                    ref={emailRef}
                                     type="email" 
                                     placeholder="namn@foretag.se" 
                                     required
-                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50" 
+                                    className="w-full h-14 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl pl-12 text-zinc-900 dark:text-white text-[15px] outline-none focus:border-orange-500/50 dark:focus:border-orange-500/50 focus:bg-white dark:focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 disabled:opacity-50" 
                                     value={email} 
                                     onChange={e => setEmail(e.target.value)} 
                                     disabled={isLoading}
@@ -619,20 +630,20 @@ const LoginScreen = () => {
                             </div>
                         </div>
 
-                        {/* Password Input */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
+                            <label htmlFor="passwordInput" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
                                 Lösenord
                             </label>
                             <div className="relative group/input">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-400 dark:text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
                                     <window.Icon name="lock" size={18} />
                                 </div>
                                 <input 
+                                    id="passwordInput"
                                     type={showPassword ? "text" : "password"} 
                                     placeholder="••••••••" 
                                     required
-                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
+                                    className="w-full h-14 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl pl-12 pr-12 text-zinc-900 dark:text-white text-[15px] outline-none focus:border-orange-500/50 dark:focus:border-orange-500/50 focus:bg-white dark:focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
                                     value={password} 
                                     onChange={e => setPassword(e.target.value)} 
                                     disabled={isLoading}
@@ -640,15 +651,15 @@ const LoginScreen = () => {
                                 <button 
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-500 hover:text-white transition-colors focus:outline-none"
+                                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors focus:outline-none disabled:opacity-50"
                                     tabIndex="-1"
+                                    disabled={isLoading}
                                 >
                                     <window.Icon name={showPassword ? "eye-off" : "eye"} size={18} />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Submit Button */}
                         <button 
                             type="submit" 
                             disabled={isLoading}
@@ -671,7 +682,7 @@ const LoginScreen = () => {
             </div>
         </div>
     );
-};
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
