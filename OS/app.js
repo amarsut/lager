@@ -406,15 +406,16 @@ const App = () => {
                     </nav>
 
                     <div className="mt-auto border-t border-white/5 bg-black/20 pb-20 lg:pb-0 transition-colors duration-300">
-                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
+                        {/* Tightare padding: py-3.5 istället för py-5, lite mindre ikoner */}
+                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
                             <div className="relative w-5 h-5 flex items-center justify-center">
-                                <window.Icon name={isDark ? "sun" : "moon"} size={18} className={`absolute transition-all duration-500 ${isDark ? "text-orange-500 rotate-0 opacity-100 scale-100" : "-rotate-90 opacity-0 scale-50"}`} />
-                                <window.Icon name={isDark ? "sun" : "moon"} size={18} className={`absolute transition-all duration-500 ${!isDark ? "text-zinc-400 rotate-0 opacity-100 scale-100 group-hover:text-white" : "rotate-90 opacity-0 scale-50"}`} />
+                                <window.Icon name={isDark ? "sun" : "moon"} size={16} className={`absolute transition-all duration-500 ${isDark ? "text-orange-500 rotate-0 opacity-100 scale-100" : "-rotate-90 opacity-0 scale-50"}`} />
+                                <window.Icon name={isDark ? "sun" : "moon"} size={16} className={`absolute transition-all duration-500 ${!isDark ? "text-zinc-400 rotate-0 opacity-100 scale-100 group-hover:text-white" : "rotate-90 opacity-0 scale-50"}`} />
                             </div>
                             {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
                         </button>
 
-                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-5 gap-3 group/profile cursor-pointer`}>
+                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-3.5 gap-3 group/profile cursor-pointer`}>
                             <div className="flex items-center gap-3 min-w-0">
                                 {/* Profilikon låst till mörk tema färg */}
                                 <div className="min-w-[32px] w-8 h-8 bg-zinc-800 flex items-center justify-center font-black rounded-lg text-white shadow-sm uppercase text-[12px] transition-transform duration-300 group-hover/profile:scale-105">
@@ -479,7 +480,7 @@ const App = () => {
                     </div>
 
                     {/* Mobila Bottenmenyn (Förfinad Glassmorphism) */}
-                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/90 dark:bg-[#121826]/90 border-t border-zinc-200/80 dark:border-[#1a2235] flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.02)] select-none">
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">
                         {[
                             { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
@@ -488,26 +489,24 @@ const App = () => {
                         ].map(item => {
                             const isActive = view === item.id && !sidebarOpen;
                             return (
-                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative ${isActive ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-300'}`}>
+                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative ${isActive ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'}`}>
                                     <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
                                         <window.Icon name={item.icon} size={20} className={isActive ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
                                         {item.hasBadge && (
                                             <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-white dark:border-[#121826] shadow-sm"></span>
+                                                {/* Badge-border är nu mörk för att matcha */}
+                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-[#0b0f19] shadow-sm"></span>
                                             </span>
                                         )}
                                     </div>
-                                    {/* Texten är nu alltid synlig */}
                                     <span className="mobile-nav-label">{item.label}</span>
-                                    
-                                    {/* Aktiv Dot nere vid kanten */}
                                     {isActive && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full animate-in fade-in duration-300"></span>}
                                 </button>
                             );
                         })}
                         
-                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-300'}`}>
+                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'}`}>
                             <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
                                 <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} className={sidebarOpen ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
                             </div>
