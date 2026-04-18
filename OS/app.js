@@ -77,6 +77,40 @@ const App = () => {
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
 
+    // --- AUTOMATISK UTLOGGNING VID INAKTIVITET ---
+    useEffect(() => {
+        // Om användaren inte är inloggad, gör ingenting
+        if (!user) return;
+
+        let timeoutId;
+        // Tid för utloggning: 15 minuter (i millisekunder)
+        const INACTIVITY_LIMIT = 15 * 60 * 1000; 
+
+        // Funktion som återställer timern varje gång användaren gör något
+        const resetTimer = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                auth.signOut(); // Loggar ut via Firebase
+                console.log("Automatiskt utloggad pga inaktivitet.");
+            }, INACTIVITY_LIMIT);
+        };
+
+        // Händelser som systemet räknar som "aktivitet"
+        const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+        
+        // Sätt igång lyssnarna på hela sidan
+        events.forEach(event => document.addEventListener(event, resetTimer, { passive: true }));
+        
+        // Starta timern direkt när man loggar in
+        resetTimer();
+
+        // Städa upp om komponenten stängs
+        return () => {
+            clearTimeout(timeoutId);
+            events.forEach(event => document.removeEventListener(event, resetTimer));
+        };
+    }, [user]);
+
     useEffect(() => {
         window.openVehicleProfile = (regnr, highlightId = null) => {
             setGlobalVehicle({ regnr, highlightId });
@@ -313,9 +347,9 @@ const App = () => {
                                 <HexLogo className="w-8 h-8 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.4)] group-hover:drop-shadow-[0_0_20px_rgba(249,115,22,0.8)]" />
                             </div>
                             
-                            {/* AutoGrid Typografi (Något justerad storlek och marginal för perfekt linjering) */}
+                            {/* AutoGrid Typografi (Alltid vit text eftersom sidebaren förblir mörk) */}
                             {sidebarOpen && (
-                                <span className="font-black tracking-[0.2em] text-[14px] uppercase whitespace-nowrap flex items-center text-zinc-900 dark:text-white animate-in fade-in duration-300 mt-[2px]">
+                                <span className="font-black tracking-[0.2em] text-[14px] uppercase whitespace-nowrap flex items-center text-white animate-in fade-in duration-300 mt-[2px]">
                                     AUTO<span className="text-orange-500 font-light">GRID</span>
                                 </span>
                             )}
