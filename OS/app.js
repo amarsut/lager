@@ -488,9 +488,9 @@ const App = () => {
                         ].map(item => {
                             const isActive = view === item.id && !sidebarOpen;
                             return (
-                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative ${isActive ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                                    <div className={`relative inline-flex items-center justify-center p-1 transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}>
-                                        <window.Icon name={item.icon} size={20} />
+                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative ${isActive ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-300'}`}>
+                                    <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
+                                        <window.Icon name={item.icon} size={20} className={isActive ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
                                         {item.hasBadge && (
                                             <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -498,19 +498,21 @@ const App = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <span className={`mobile-nav-label transition-all duration-300 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute bottom-0'}`}>{item.label}</span>
-                                    {/* Aktiv Dot */}
-                                    {isActive && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full"></span>}
+                                    {/* Texten är nu alltid synlig */}
+                                    <span className="mobile-nav-label">{item.label}</span>
+                                    
+                                    {/* Aktiv Dot nere vid kanten */}
+                                    {isActive && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full animate-in fade-in duration-300"></span>}
                                 </button>
                             );
                         })}
                         
-                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                            <div className={`relative inline-flex items-center justify-center p-1 transition-transform duration-300 ${sidebarOpen ? '-translate-y-1' : ''}`}>
-                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} />
+                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-300'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
+                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} className={sidebarOpen ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
                             </div>
-                            <span className={`mobile-nav-label transition-all duration-300 ${sidebarOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute bottom-0'}`}>{sidebarOpen ? "Stäng" : "Mer"}</span>
-                            {sidebarOpen && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full"></span>}
+                            <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
+                            {sidebarOpen && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full animate-in fade-in duration-300"></span>}
                         </button>
                     </div>
 
