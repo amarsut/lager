@@ -86,12 +86,17 @@ const App = () => {
     const [allLagerItems, setAllLagerItems] = useState([]);
     const [allNotes, setAllNotes] = useState([]);
     const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') !== 'light'); 
+    const [isNightLight, setIsNightLight] = useState(() => localStorage.getItem('sys_nightlight') === 'true');
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
+
+    useEffect(() => {
+        localStorage.setItem('sys_nightlight', isNightLight);
+    }, [isNightLight]);
 
     // AUTOMATISK UTLOGGNING
     useEffect(() => {
@@ -336,9 +341,17 @@ const App = () => {
             {window.SpotlightSearch && (
                 <window.SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} allLagerItems={allLagerItems} navigateTo={navigateTo} />
             )}
+            {/* Svävande Systemradarn */}
             {window.GlobalSystemRadar && (
                 <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
             )}
+
+            {/* === NYTT: NATTLJUS-FILTER === */}
+            <div 
+                className={`fixed inset-0 pointer-events-none z-[9999] transition-opacity duration-1000 mix-blend-multiply ${isNightLight && !isDark ? 'opacity-100' : 'opacity-0'}`}
+                style={{ backgroundColor: '#ffb04f', opacity: isNightLight && !isDark ? 0.15 : 0 }} 
+            ></div>
+            {/* ============================= */}
 
             <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
@@ -406,6 +419,17 @@ const App = () => {
                     </nav>
 
                     <div className="mt-auto border-t border-white/5 bg-black/20 pb-20 lg:pb-0 transition-colors duration-300">
+    
+                        {/* NYTT: Nattljus-knapp (Visas endast i ljust tema) */}
+                        {!isDark && (
+                            <button onClick={() => { triggerHaptic(); setIsNightLight(!isNightLight); }} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
+                                <div className="relative w-5 h-5 flex items-center justify-center">
+                                    <window.Icon name="eye" size={16} className={`transition-colors duration-500 ${isNightLight ? "text-orange-400" : "text-zinc-400 group-hover:text-white"}`} />
+                                </div>
+                                {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isNightLight ? 'Nattljus PÅ' : 'Nattljus AV'}</span>}
+                            </button>
+                        )}
+
                         {/* Tightare padding: py-3.5 istället för py-5, lite mindre ikoner */}
                         <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
                             <div className="relative w-5 h-5 flex items-center justify-center">
