@@ -1367,6 +1367,8 @@ window.DashboardView = React.memo(({
                 {activeFilter === 'FAKTURERAS' && invoiceStats.total > 0 && (
                     <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                        
+                        {/* Övre summeringen */}
                         <div className="flex items-center justify-between relative z-10">
                             <div>
                                 <h3 className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-1.5">
@@ -1382,6 +1384,40 @@ window.DashboardView = React.memo(({
                                 </span>
                             </div>
                         </div>
+
+                        {/* NY DEL: Kund-översikt för mobil */}
+                        <div className="relative z-10 mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
+                            <div className="space-y-3.5">
+                                {/* Visar de 5 största kunderna på mobilen för att spara plats */}
+                                {invoiceStats.topCustomers.slice(0, 5).map(([name, amount], idx) => {
+                                    const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                    return (
+                                        <div key={idx} className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between items-end text-[12px] font-medium text-zinc-800 dark:text-zinc-200 leading-none">
+                                                <span className="truncate pr-2">{name}</span>
+                                                <span className="font-mono font-bold shrink-0">
+                                                    {amount.toLocaleString('sv-SE')} <span className="text-[9px] text-zinc-400 font-sans tracking-widest">kr</span>
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" 
+                                                    style={{ width: `${percentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                
+                                {/* Om det finns fler än 5 kunder, visa hur många som är dolda */}
+                                {invoiceStats.topCustomers.length > 5 && (
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-center text-zinc-400 dark:text-zinc-500 pt-1">
+                                        + {invoiceStats.topCustomers.length - 5} fler kunder
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
                     </div>
                 )}
 
