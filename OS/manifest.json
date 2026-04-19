@@ -5,7 +5,7 @@
   "start_url": "/lager/OS/index.html",
   "scope": "/lager/OS/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#06080a",
   "theme_color": "#f97316",
   "icons": [
         {
@@ -19,6 +19,12 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
+        },
+        {
+            "src": "icons/512x512_maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ]
 }
