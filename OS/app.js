@@ -582,44 +582,36 @@ const LoginScreen = memo(() => {
     };
 
     return (
-        <div className="fixed inset-0 bg-zinc-50 dark:bg-[#06080a] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700 transition-colors duration-300">
+        <div className="fixed inset-0 bg-[#06080a] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700 transition-colors duration-300">
             
             <style dangerouslySetInnerHTML={{__html: `
-                .dark input:-webkit-autofill,
-                .dark input:-webkit-autofill:hover, 
-                .dark input:-webkit-autofill:focus, 
-                .dark input:-webkit-autofill:active{
-                    -webkit-box-shadow: 0 0 0 30px #0f131c inset !important;
-                    -webkit-text-fill-color: white !important;
-                    transition: background-color 5000s ease-in-out 0s;
-                }
                 input:-webkit-autofill,
                 input:-webkit-autofill:hover, 
                 input:-webkit-autofill:focus, 
-                input:-webkit-autofill:active{
-                    -webkit-box-shadow: 0 0 0 30px #f4f4f5 inset !important;
-                    -webkit-text-fill-color: black !important;
+                input:-webkit-autofill:active {
+                    -webkit-box-shadow: 0 0 0 30px #0f131c inset !important;
+                    -webkit-text-fill-color: white !important;
                     transition: background-color 5000s ease-in-out 0s;
                 }
             `}} />
 
             {/* Dynamiska Bakgrundseffekter (Pulsar extremt långsamt för Premium-feel) */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#e4e4e7_0%,_#fafafa_70%)] dark:bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none transition-colors duration-500"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none transition-colors duration-500"></div>
             <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[600px] sm:h-[600px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none animate-[pulse_10s_ease-in-out_infinite]"></div>
 
-            <div className="relative w-full max-w-[400px] mx-5 sm:mx-0 bg-white/80 dark:bg-[#0b0e14]/70 backdrop-blur-2xl border border-black/5 dark:border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.05)] dark:shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-[32px] sm:rounded-[40px] z-10 overflow-hidden group transition-colors duration-300">
+            <div className="relative w-full max-w-[400px] mx-5 sm:mx-0 bg-[#0b0e14]/70 backdrop-blur-2xl border border-white/[0.08] shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-[32px] sm:rounded-[40px] z-10 overflow-hidden group transition-colors duration-300">
                 
                 <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-orange-500/60 to-transparent group-hover:via-orange-500 transition-all duration-700"></div>
 
                 <div className="p-8 sm:p-12">
                     
                     <div className="flex flex-col items-center mb-10">
-                        <div className="w-20 h-20 bg-gradient-to-b from-white to-zinc-100 dark:from-[#1a1f2e] dark:to-[#0a0d14] flex items-center justify-center rounded-[24px] shadow-lg dark:shadow-[0_15px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] mb-6 ring-1 ring-black/5 dark:ring-white/10 relative overflow-hidden group-hover:shadow-[0_15px_40px_rgba(249,115,22,0.2)] transition-all duration-500">
-                            <HexLogo className="w-12 h-12 relative z-10" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-black/5 dark:via-white/5 to-transparent translate-y-full group-hover:-translate-y-full transition-transform duration-1000"></div>
+                        <div className="w-20 h-20 bg-gradient-to-b from-[#1a1f2e] to-[#0a0d14] flex items-center justify-center rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] mb-6 ring-1 ring-white/10 relative overflow-hidden group-hover:shadow-[0_15px_40px_rgba(249,115,22,0.2)] transition-all duration-500">
+                            <HexLogo className="w-12 h-12 relative z-10" iconColor="fill-white" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-full group-hover:-translate-y-full transition-transform duration-1000"></div>
                         </div>
                         
-                        <h1 className="text-zinc-900 dark:text-white font-black uppercase tracking-[0.25em] text-xl flex items-center transition-colors">
+                        <h1 className="text-white font-black uppercase tracking-[0.25em] text-xl flex items-center transition-colors">
                             AUTO<span className="text-orange-500 font-light">GRID</span>
                         </h1>
                         <p className="text-zinc-500 text-[9px] font-bold tracking-[0.3em] uppercase mt-2">Secure Access</p>
@@ -627,7 +619,7 @@ const LoginScreen = memo(() => {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         {error && (
-                            <div className="p-4 bg-red-100 dark:bg-red-900/20 border border-red-500/30 rounded-2xl text-red-600 dark:text-red-400 text-[13px] font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
+                            <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-2xl text-red-400 text-[13px] font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
                                 <window.Icon name="alert-octagon" size={20} className="shrink-0 text-red-500" />
                                 <span>{error}</span>
                             </div>
@@ -638,7 +630,7 @@ const LoginScreen = memo(() => {
                                 E-postadress
                             </label>
                             <div className="relative group/input">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-400 dark:text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
                                     <window.Icon name="mail" size={18} />
                                 </div>
                                 <input 
@@ -647,7 +639,7 @@ const LoginScreen = memo(() => {
                                     type="email" 
                                     placeholder="namn@foretag.se" 
                                     required
-                                    className="w-full h-14 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl pl-12 text-zinc-900 dark:text-white text-[15px] outline-none focus:border-orange-500/50 dark:focus:border-orange-500/50 focus:bg-white dark:focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 disabled:opacity-50" 
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50" 
                                     value={email} 
                                     onChange={e => setEmail(e.target.value)} 
                                     disabled={isLoading}
@@ -660,7 +652,7 @@ const LoginScreen = memo(() => {
                                 Lösenord
                             </label>
                             <div className="relative group/input">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-400 dark:text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
                                     <window.Icon name="lock" size={18} />
                                 </div>
                                 <input 
@@ -668,7 +660,7 @@ const LoginScreen = memo(() => {
                                     type={showPassword ? "text" : "password"} 
                                     placeholder="••••••••" 
                                     required
-                                    className="w-full h-14 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl pl-12 pr-12 text-zinc-900 dark:text-white text-[15px] outline-none focus:border-orange-500/50 dark:focus:border-orange-500/50 focus:bg-white dark:focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
                                     value={password} 
                                     onChange={e => setPassword(e.target.value)} 
                                     disabled={isLoading}
@@ -676,7 +668,7 @@ const LoginScreen = memo(() => {
                                 <button 
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors focus:outline-none disabled:opacity-50"
+                                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-500 hover:text-white transition-colors focus:outline-none disabled:opacity-50"
                                     tabIndex="-1"
                                     disabled={isLoading}
                                 >
