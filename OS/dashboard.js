@@ -409,7 +409,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     {/* Fordon */}
                     <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-2xl p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between relative overflow-hidden">
                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                        <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                 <window.Icon name="car" size={10} /> Fordon
                             </span>
                         </div>
