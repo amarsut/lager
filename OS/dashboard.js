@@ -293,13 +293,19 @@ window.CustomerAvatar = React.memo(({ job }) => {
             </div>
             
             {brand ? (
-                <div className="absolute -bottom-1.5 -right-1.5 w-[22px] h-[22px] bg-white dark:bg-[#182032] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center p-[4px] overflow-hidden animate-in zoom-in duration-300 z-20">
+                /* ÄNDRING: 
+                   - w-[22px] och h-[22px] är ändrat till w-[26px] h-[26px]
+                   - p-[4px] är ändrat till p-[3px] (gör att själva bilden får ta mer plats)
+                   - positionen är ändrad till -bottom-2 -right-2
+                */
+                <div className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-white dark:bg-[#182032] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center p-[3px] overflow-hidden animate-in zoom-in duration-300 z-20">
                     <img src={`https://cdn.simpleicons.org/${brand}`} className="w-full h-full object-contain opacity-80 dark:invert transition-opacity hover:opacity-100" alt={brand} onError={(e) => e.target.style.display = 'none'} />
                 </div>
             ) : 
             hasDbData ? (
-                <div title="Fordonsteknisk data hittad, men okänt märke" className="absolute -bottom-1.5 -right-1.5 w-[22px] h-[22px] bg-zinc-100 dark:bg-[#1a2235] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center overflow-hidden animate-in zoom-in duration-300 z-20 text-zinc-400">
-                    <window.Icon name="car" size={12} />
+                /* ÄNDRING: Samma storleksändringar för den allmänna bil-ikonen (fallback) */
+                <div title="Fordonsteknisk data hittad, men okänt märke" className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-zinc-100 dark:bg-[#1a2235] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center overflow-hidden animate-in zoom-in duration-300 z-20 text-zinc-400">
+                    <window.Icon name="car" size={14} /> {/* Ikonen är också lite större (size 14 istället för 12) */}
                 </div>
             ) : null}
         </div>
