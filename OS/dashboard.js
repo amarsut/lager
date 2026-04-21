@@ -840,7 +840,7 @@ window.DashboardView = React.memo(({
     };
 
     const tabsRef = React.useRef(null);
-    const filters = ['ALLA', 'BOKAD', 'OFFERERAD', 'FAKTURERAS', 'KLAR'];
+    const filters = ['ALLA', 'BOKAD', 'FAKTURERAS', 'OFFERERAD', 'KLAR'];
 
     const stats30Days = React.useMemo(() => {
         const thirtyDaysAgo = new Date();
