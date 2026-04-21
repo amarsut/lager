@@ -39,6 +39,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [specs, setSpecs] = React.useState({});
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
+    const [vinCopied, setVinCopied] = React.useState(false);
     const tStart = React.useRef(null);
 
     // MAGIN: Tvingar ditt system att rita upp Lucide-ikoner i det nya fönstret!
@@ -105,6 +106,14 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
             navigator.clipboard.writeText(v.regnr);
             setRegCopied(true);
             setTimeout(() => setRegCopied(false), 2000);
+        }
+    };
+
+    const copyVinClick = () => {
+        if(navigator.clipboard && specs.vin) {
+            navigator.clipboard.writeText(specs.vin);
+            setVinCopied(true);
+            setTimeout(() => setVinCopied(false), 2000);
         }
     };
 
@@ -215,18 +224,38 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                             
                         <div className="grid grid-cols-3 gap-2">
-                            <div className="col-span-2 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
-                                <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">
-                                    Chassinummer (VIN)
+                            <div className="col-span-2 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-1.5 pl-2.5 shadow-sm flex items-center justify-between group focus-within:border-orange-500 transition-colors">
+                                
+                                {/* Vänster sida: Etikett och Inmatning */}
+                                <div className="flex flex-col justify-center flex-1 min-w-0">
+                                    <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-0.5">
+                                        Chassinummer (VIN)
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        className="w-full text-[12px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.15em] uppercase"
+                                        placeholder="WBA00000000000000"
+                                        value={specs.vin || ''}
+                                        onChange={(e) => setSpecs({...specs, vin: e.target.value.toUpperCase()})}
+                                        onBlur={(e) => saveSpec('vin', e.target.value)}
+                                    />
                                 </div>
-                                <input 
-                                    type="text" 
-                                    className="w-full text-[12px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.15em] uppercase"
-                                    placeholder="WBA00000000000000"
-                                    value={specs.vin || ''}
-                                    onChange={(e) => setSpecs({...specs, vin: e.target.value.toUpperCase()})}
-                                    onBlur={(e) => saveSpec('vin', e.target.value)}
-                                />
+
+                                {/* Höger sida: Stor och alltid synlig kopiera-knapp */}
+                                {specs.vin && (
+                                    <button 
+                                        onClick={copyVinClick}
+                                        title="Kopiera VIN"
+                                        className={`ml-2 shrink-0 h-[32px] px-3 flex items-center justify-center gap-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all duration-300 active:scale-95
+                                            ${vinCopied 
+                                                ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                                                : 'bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-600 dark:hover:text-orange-400'
+                                            }`}
+                                    >
+                                        <window.Icon name={vinCopied ? "check" : "copy"} size={12} />
+                                        {vinCopied ? '' : ''}
+                                    </button>
+                                )}
                             </div>
                             
                             <div className="col-span-1 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
@@ -270,9 +299,11 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                                 return (
                                     <div key={j.id} className="relative pl-6 group">
+                                        {/* Tidslinje-strecket */}
                                         {isHighlighted && (
                                             <div className="absolute bg-orange-500 z-0" style={{ left: '-2px', top: '16px', bottom: isLast ? '0' : '-24px', width: '2px' }}></div>
                                         )}
+                                        {/* Tidslinje-punkten */}
                                         <div className={`absolute -left-[7px] top-4 w-3 h-3 rounded-full border-2 shadow-sm z-10 transition-colors ${isHighlighted ? 'bg-orange-500 border-white dark:border-[#0f1522]' : (['KLAR','FAKTURERAS'].includes(j.status)?'bg-emerald-500 border-white dark:border-[#0f1522]':'bg-zinc-300 dark:bg-zinc-600 border-white dark:border-[#0f1522]')}`}></div>
 
                                         <div 
@@ -280,31 +311,40 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                                 setView('NEW_JOB', { job: j });
                                                 if (window.innerWidth < 1024) onClose();
                                             }} 
-                                            className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 relative z-10 ${
+                                            // ÄNDRING: Kompaktare padding (p-3.5), skuggor och en mjuk pop-effekt (scale) på det aktiva kortet
+                                            className={`cursor-pointer rounded-2xl p-3.5 transition-all duration-300 relative z-10 ${
                                                 isHighlighted 
-                                                ? 'bg-white dark:bg-[#182032] border-2 border-orange-500 shadow-lg' 
-                                                : 'bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow-md'
+                                                ? 'bg-white dark:bg-[#182032] border-2 border-orange-500 shadow-md scale-[1.02]' 
+                                                : 'bg-white/80 dark:bg-[#1a2235]/80 border border-zinc-200/80 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow hover:-translate-y-px active:scale-95'
                                             }`}
                                         >
-                                            <div className="flex justify-between items-baseline mb-2 border-b border-zinc-100 dark:border-white/5 pb-2">
-                                                <div className={`font-mono text-[12px] font-bold ${isHighlighted ? 'text-orange-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                            {/* RAD 1: Datum & Status */}
+                                            <div className="flex justify-between items-center mb-1.5">
+                                                <div className={`flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-widest ${isHighlighted ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                    <window.Icon name="calendar" size={10} className={isHighlighted ? "text-orange-500" : "text-zinc-400"} />
                                                     {j.datum ? j.datum.split('T')[0] : 'Inväntar'}
-                                                </div>
-                                                <div className={`font-mono text-[14px] font-black ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-300'}`}>
-                                                    {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[10px] text-zinc-500 dark:text-zinc-500 font-sans">kr</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex justify-between items-center mb-3 mt-3">
-                                                <div className={`text-[13px] font-black uppercase tracking-tight ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                                                    {j.kundnamn}
                                                 </div>
                                                 {window.Badge && <window.Badge status={j.status} />}
                                             </div>
+                                            
+                                            {/* RAD 2: Kundnamn & Pris */}
+                                            <div className="flex justify-between items-end gap-3">
+                                                <div className={`text-[13px] font-black uppercase tracking-tight truncate ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                                                    {j.kundnamn}
+                                                </div>
+                                                <div className={`font-mono text-[14px] font-black shrink-0 leading-none ${isHighlighted ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300'}`}>
+                                                    {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-sans uppercase tracking-widest">kr</span>
+                                                </div>
+                                            </div>
 
-                                            <p className={`text-[12px] leading-relaxed line-clamp-2 italic ${isHighlighted ? 'text-orange-800 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400'}`}>
-                                                    {j.kommentar || "Ingen notering."}
-                                            </p>
+                                            {/* RAD 3: Kommentar (Separerad och snygg) */}
+                                            {j.kommentar && (
+                                                <div className="mt-2.5 pt-2 border-t border-zinc-100 dark:border-white/5">
+                                                    <p className={`text-[11px] leading-snug line-clamp-2 italic ${isHighlighted ? 'text-orange-800 dark:text-orange-200/80' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                        {j.kommentar}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
