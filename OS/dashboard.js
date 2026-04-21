@@ -407,30 +407,52 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 {/* INFO BUBBLOR (Delade lådor som du ville ha det) */}
                 <div className="flex items-stretch gap-2 mb-4">
                     {/* Fordon */}
-                        <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                    <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-2xl p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between relative overflow-hidden">
+                         <div className="flex items-center justify-between mb-2">
+                            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
                                 <window.Icon name="car" size={10} /> Fordon
                             </span>
                         </div>
                         
-                        <div onClick={handleCopy} className={`inline-flex items-center rounded-md border shadow-sm overflow-hidden h-[28px] relative transition-all active:scale-95 ${isReg ? 'bg-white dark:bg-[#182032] border-zinc-300 dark:border-[#2a3441]' : 'bg-transparent border-transparent'}`}>
-                            {copied && (
-                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in fade-in duration-200">
-                                    <window.Icon name="check" size={14} />
-                                </div>
-                            )}
+                        <div 
+                            onClick={handleCopy} 
+                            className={`inline-flex items-center rounded-md border shadow-sm overflow-hidden h-[28px] relative transition-all duration-300 active:scale-95 cursor-pointer
+                                ${copied 
+                                    ? 'border-emerald-400 ring-2 ring-emerald-400/20 dark:border-emerald-500 dark:ring-emerald-500/20' 
+                                    : isReg ? 'border-zinc-300 dark:border-[#2a3441]' : 'border-transparent'
+                                }`}
+                        >
                             {isReg ? (
                                 <>
-                                    <div className="w-[16px] bg-[#003399] h-full flex flex-col items-center justify-between py-[2px] shrink-0">
+                                    <div className="w-[16px] bg-[#003399] h-full flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
                                         <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
                                         <span className="text-[7px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                     </div>
-                                    <div className="flex h-full items-center justify-center px-2.5 w-full bg-white dark:bg-[#1a2235]">
-                                        <span className="font-mono font-bold text-[14px] text-zinc-900 dark:text-zinc-100 tracking-[0.1em] leading-none mt-[1px]">{vehicleDisplay}</span>
+                                    
+                                    {/* Mjuk grön bakgrund vid kopiering - "relative" tillagt för att hålla ikonen på plats */}
+                                    <div className={`flex h-full items-center justify-center px-2.5 w-full relative transition-colors duration-300 ${copied ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'bg-white dark:bg-[#1a2235]'}`}>
+                                        
+                                        {/* Texten ligger alltid i mitten och ändrar bara färg */}
+                                        <span className={`font-mono font-bold text-[14px] tracking-[0.1em] leading-none mt-[1px] transition-colors duration-300 ${copied ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                                            {vehicleDisplay}
+                                        </span>
+
+                                        {/* Ikonen svävar fritt till höger så texten slipper hoppa */}
+                                        <div className={`absolute right-1.5 transition-all duration-300 ${copied ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+                                            <window.Icon name="check" size={12} className="text-emerald-500" />
+                                        </div>
                                     </div>
                                 </>
                             ) : (
-                                <span className="font-mono font-bold text-[13px] text-zinc-800 dark:text-zinc-300 uppercase leading-none mt-[1px]">{vehicleDisplay}</span>
+                                // Samma princip för bilar som saknar reg-nummer
+                                <div className={`relative flex items-center justify-center px-2 py-1 rounded w-full transition-colors duration-300 ${copied ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20' : 'text-zinc-800 dark:text-zinc-300'}`}>
+                                    <span className="font-mono font-bold text-[13px] uppercase leading-none mt-[1px]">
+                                        {vehicleDisplay}
+                                    </span>
+                                    <div className={`absolute right-1 transition-all duration-300 ${copied ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+                                        <window.Icon name="check" size={12} />
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>
