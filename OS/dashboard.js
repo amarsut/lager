@@ -502,11 +502,12 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     
                     <div className="shrink-0 text-right">
                         {price > 0 ? (
-                            <div className="flex flex-col items-end">
+                            // ÄNDRING: Ligger nu på samma rad med texten "kr"
+                            <div className="flex items-baseline gap-1">
                                 <span className="text-[18px] font-black text-zinc-900 dark:text-white leading-none tracking-tight">
                                     {price.toLocaleString('sv-SE')}
                                 </span> 
-                                <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">SEK inkl. moms</span>
+                                <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">kr</span>
                             </div>
                         ) : (
                             <span className="text-[9px] font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded-md uppercase tracking-widest">Ej prissatt</span>
@@ -829,6 +830,7 @@ window.DashboardView = React.memo(({
     const [copiedRegId, setCopiedRegId] = React.useState(null); 
     const [sortConfig, setSortConfig] = React.useState({ key: null, direction: 'asc' });
     const [showMobileWidgets, setShowMobileWidgets] = React.useState(false);
+    const [showWaitingJobs, setShowWaitingJobs] = React.useState(false);
     
     React.useEffect(() => {
         setVisibleCount(20);
@@ -1193,131 +1195,154 @@ window.DashboardView = React.memo(({
                                     </tbody>
                                 ) : (
                                     <tbody className="divide-y divide-zinc-100 dark:divide-white/5 relative z-10">
-                                        {visibleJobs.map((job, index) => {
+                                    {(() => {
+                                        let hasRenderedWaitingHeader = false;
+                                        
+                                        return visibleJobs.map((job, index) => {
                                             const dateText = formatDate(job.datum);
                                             const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
                                             const regDisplay = job.regnr || job.bilmodell || '-';
                                             const isReg = regDisplay.length <= 8 && /\d/.test(regDisplay);
                                             const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
                                             const price = parseInt(job.kundpris) || 0;
+                                            
+                                            const isWaiting = !job.datum;
+                                            const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader;
+                                            if (showWaitingHeader) hasRenderedWaitingHeader = true;
 
                                             return (
-                                                <tr 
-                                                    key={job.id} 
-                                                    onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                    // Svävande 3D-effekt vid hover
-                                                    className={`group transition-all duration-300 cursor-pointer relative bg-transparent hover:bg-white dark:hover:bg-[#1f2940] hover:shadow-lg hover:-translate-y-[1px] hover:z-20 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
-                                                >
-                                                    <td className="pl-7 pr-4 py-4 align-middle relative rounded-l-xl">
-                                                        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
-                                                        
-                                                        <div className="flex items-center gap-4 group-hover:translate-x-1 transition-transform duration-300">
-                                                            <window.CustomerAvatar job={job} />
-                                                            <div>
-                                                                <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-none mb-1.5 group-hover:text-orange-500 transition-colors">{job.kundnamn}</div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-widest"><window.Icon name="hash" size={10} className="inline mr-1 -mt-0.5" />{job.id.substring(0,6)}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-4 align-middle">
-                                                        <div className="flex flex-col min-w-0">
-                                                            <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
-                                                                {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
-                                                            </span>
-                                                            
-                                                            {job.kommentar && (
-                                                                <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 italic truncate max-w-[140px]">
-                                                                    <window.Icon name="message-square" size={10} className="shrink-0" />
-                                                                    <span className="truncate">{job.kommentar}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-4 align-middle">
-                                                        <div 
-                                                            onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
-                                                            title="Kopiera Reg.nr"
-                                                            className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-[#1a2235] border-zinc-200 dark:border-[#2a3441]' : 'bg-transparent border-transparent'} transition-all`}
-                                                        >
-                                                            {copiedRegId === job.id && (
-                                                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
-                                                                    <window.Icon name="check" size={14} />
-                                                                </div>
-                                                            )}
-                                                            {isReg ? (
-                                                                <>
-                                                                    <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
-                                                                        <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
-                                                                        <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
+                                                <React.Fragment key={job.id}>
+                                                    {showWaitingHeader && (
+                                                        <tr className="bg-zinc-50/30 dark:bg-white/[0.01]">
+                                                            <td colSpan="7" className="px-8 py-5">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="flex items-center gap-2 text-[10px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-[0.2em] shrink-0">
+                                                                        <window.Icon name="clock" size={14} />
+                                                                        Inväntar Planering
                                                                     </div>
-                                                                    <div className="flex-1 flex items-center justify-center bg-white dark:bg-transparent">
-                                                                        <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px] group-hover/copy:text-orange-600 dark:group-hover/copy:text-orange-400 transition-colors">{regDisplay}</span>
-                                                                    </div>
-                                                                </>
-                                                            ) : (
-                                                                <div className="flex-1 flex items-center justify-start px-1">
-                                                                    <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px] group-hover/copy:text-orange-500 transition-colors">{regDisplay}</span>
+                                                                    <div className="h-px flex-1 bg-gradient-to-r from-orange-500/20 to-transparent"></div>
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-4 align-middle">
-                                                        {job.datum ? (
-                                                            <div className="flex items-center gap-2.5">
-                                                                {isUrgent && (
-                                                                    <span className="relative flex h-2 w-2 shrink-0">
-                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
-                                                                    </span>
-                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    )}
+
+                                                    <tr 
+                                                        onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
+                                                        // ÄNDRING: Tog bort skuggan och translateY. Ersatte med en mjuk bakgrundston (hover:bg-zinc-50). Ger en stabilare tabell!
+                                                        className={`group transition-colors duration-200 cursor-pointer relative bg-transparent hover:bg-zinc-50/80 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
+                                                    >
+                                                        <td className="pl-7 pr-4 py-4 align-middle relative">
+                                                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
+                                                            <div className="flex items-center gap-4">
+                                                                <window.CustomerAvatar job={job} />
                                                                 <div>
-                                                                    <div className={`text-[12px] font-bold uppercase tracking-wide ${isUrgent ? 'text-orange-600' : 'text-zinc-800 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors'}`}>{dateText}</div>
-                                                                    <div className={`text-[11px] font-mono mt-0.5 ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-400 dark:text-zinc-500'}`}>{job.datum.split('T')[1]}</div>
+                                                                    <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-none mb-1.5 group-hover:text-orange-500 transition-colors">{job.kundnamn}</div>
+                                                                    <div className="flex items-center gap-2 text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                                                                        <window.Icon name="hash" size={10} className="inline mr-1 -mt-0.5" />{job.id.substring(0,6)}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        ) : <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-1 rounded-md uppercase tracking-widest">Inväntar</span>}
-                                                    </td>
-                                                    <td className="px-4 py-4 align-middle">
-                                                        <window.Badge status={job.status} />
-                                                    </td>
-                                                    <td className="px-4 py-4 align-middle text-right">
-                                                        <div className="flex flex-col items-end">
-                                                            <div className={`font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums transition-colors ${price > 10000 ? 'font-medium text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white'}`}>
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                                                                    {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
+                                                                </span>
+                                                                {job.kommentar && (
+                                                                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 italic truncate max-w-[140px]">
+                                                                        <window.Icon name="message-square" size={10} className="shrink-0" />
+                                                                        <span className="truncate">{job.kommentar}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            <div 
+                                                                onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
+                                                                className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-[#1a2235] border-zinc-200 dark:border-[#2a3441]' : 'bg-transparent border-transparent'} transition-all`}
+                                                            >
+                                                                {copiedRegId === job.id && (
+                                                                    <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
+                                                                        <window.Icon name="check" size={14} />
+                                                                    </div>
+                                                                )}
+                                                                {isReg ? (
+                                                                    <>
+                                                                        <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
+                                                                            <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
+                                                                            <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
+                                                                        </div>
+                                                                        <div className="flex-1 flex items-center justify-center bg-white dark:bg-transparent">
+                                                                            <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px] group-hover/copy:text-orange-600 dark:group-hover/copy:text-orange-400 transition-colors">{regDisplay}</span>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="flex-1 flex items-center justify-start px-1">
+                                                                        <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px] group-hover/copy:text-orange-500 transition-colors">{regDisplay}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            {job.datum ? (
+                                                                <div className="flex items-center gap-2.5">
+                                                                    {isUrgent && (
+                                                                        <span className="relative flex h-2 w-2 shrink-0">
+                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
+                                                                        </span>
+                                                                    )}
+                                                                    {/* ÄNDRING: Datum och tid har nu samma layout och storlek som i mobilen */}
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className={`text-[13px] font-black uppercase leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white transition-colors'}`}>
+                                                                            {dateText}
+                                                                        </span>
+                                                                        <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                                            {job.datum.split('T')[1]}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                /* ÄNDRING: Inväntar-badgen har nu en mjuk orange färg och subtil border (skriker mindre) */
+                                                                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10 px-2 py-1 rounded-md uppercase tracking-widest border border-orange-200/50 dark:border-orange-500/20">Inväntar</span>
+                                                            )}
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            <window.Badge status={job.status} />
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle text-right">
+                                                            <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                                                                 {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="pl-4 pr-8 py-4 align-middle text-right relative rounded-r-xl">
-                                                        
-                                                        <window.VehicleDataIcon job={job} isDesktop={true} />
+                                                        </td>
 
-                                                        {/* MJUKARE QUICK ACTIONS */}
-                                                        <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 ease-out flex justify-end items-center gap-2 relative z-10 scale-95 group-hover:scale-100">
-                                                            {job.status !== 'KLAR' && (
-                                                                <button title="Markera Klar" onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-200 dark:hover:border-emerald-500/30 hover:text-emerald-600 dark:hover:text-emerald-400 shadow-sm transition-all hover:scale-110 active:scale-95">
-                                                                    <window.Icon name="check" size={16} />
+                                                        <td className="pl-4 pr-8 py-4 align-middle text-right relative">
+                                                            <window.VehicleDataIcon job={job} isDesktop={true} />
+                                                            <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 ease-out flex justify-end items-center gap-2 relative z-10 scale-95 group-hover:scale-100">
+                                                                {job.status !== 'KLAR' && (
+                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                        <window.Icon name="check" size={16} />
+                                                                    </button>
+                                                                )}
+                                                                <button onClick={() => setView('NEW_JOB', { job: job })} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                    <window.Icon name="edit-2" size={16} />
                                                                 </button>
-                                                            )}
-                                                            <button title="Redigera" onClick={() => {
-                                                                setView('NEW_JOB', { job: job });
-                                                                if (window.openVehicleProfile) {
-                                                                    window.openVehicleProfile(job.regnr, job.id);
-                                                                }
-                                                            }}
-                                                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-200 dark:hover:border-blue-500/30 hover:text-blue-600 dark:hover:text-blue-400 shadow-sm transition-all hover:scale-110 active:scale-95">
-                                                                <window.Icon name="edit-2" size={16} />
-                                                            </button>
-                                                            <button title="Radera" onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 dark:hover:border-red-500/30 hover:text-red-600 dark:hover:text-red-400 shadow-sm transition-all hover:scale-110 active:scale-95">
-                                                                <window.Icon name="trash" size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                    <window.Icon name="trash" size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </React.Fragment>
                                             );
-                                        })}
-                                    </tbody>
+                                        });
+                                    })()}
+                                </tbody>
                                 )}
                             </table>
                             
@@ -1465,35 +1490,76 @@ window.DashboardView = React.memo(({
                         <>
                             {(() => {
                                 let lastDate = null;
-                                return visibleJobs.map((job, index) => { 
-                                const currentDate = job.datum ? formatDate(job.datum) : 'INVÄNTAR DATUM';
-                                const showHeader = currentDate !== lastDate;
-                                lastDate = currentDate;
+                                // Räkna ut hur många jobb som väntar på tid
+                                const waitingJobsCount = visibleJobs.filter(j => !j.datum).length;
 
-                                return (
-                                    <React.Fragment key={job.id}>
-                                        {showHeader && (
-                                            <div className={`${index === 0 ? 'mt-3' : 'mt-6'} mb-3 px-2 flex items-center gap-2 animate-in fade-in duration-300`}>
-                                                <div className="h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
-                                                <h3 className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                                                    {currentDate}
-                                                </h3>
-                                            </div>
-                                        )}
-                                        <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
-                                    </React.Fragment>
-                                );
-                            });
-                        })()}
-                        
-                        {hasMore && (
-                            <div className="mt-2 mb-6 px-1">
-                                <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 hover:border-orange-500/50 text-zinc-700 dark:text-zinc-300 hover:text-orange-500 text-[12px] font-bold uppercase tracking-widest rounded-2xl shadow-sm active:scale-95 transition-all">
-                                    Ladda in fler ({sortedAndFilteredJobs.length - visibleCount} kvar)
-                                </button>
-                            </div>
-                        )}
-                    </>
+                                return visibleJobs.map((job, index) => { 
+                                    const isWaiting = !job.datum;
+                                    const currentDate = isWaiting ? 'INVÄNTAR DATUM' : formatDate(job.datum);
+                                    const showHeader = currentDate !== lastDate;
+                                    lastDate = currentDate;
+
+                                    // SPECIAL-RENDERING FÖR OBOKADE JOBB
+                                    if (isWaiting) {
+                                        return (
+                                            <React.Fragment key={job.id}>
+                                                {showHeader && (
+                                                    <div className={`${index === 0 ? 'mt-2' : 'mt-6'} mb-4 px-1 animate-in fade-in duration-300`}>
+                                                        <button 
+                                                            onClick={() => setShowWaitingJobs(!showWaitingJobs)}
+                                                            className="w-full flex items-center justify-between bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl hover:border-orange-400 dark:hover:border-orange-500/50 shadow-sm transition-all active:scale-[0.98]"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                                                                    <window.Icon name="clock" size={18} />
+                                                                </div>
+                                                                <div className="flex flex-col items-start">
+                                                                    <span className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">Inväntar Datum</span>
+                                                                    <span className="text-[11px] text-zinc-500 font-bold">{waitingJobsCount} {waitingJobsCount === 1 ? 'uppdrag' : 'uppdrag'} att planera</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className={`w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-[#1a2235] text-zinc-400 shadow-sm border border-zinc-100 dark:border-white/5 transition-transform duration-300 ${showWaitingJobs ? 'rotate-180 text-orange-500 border-orange-200 dark:border-orange-500/30' : ''}`}>
+                                                                <window.Icon name="chevron-down" size={16} />
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Rendera endast kortet om rutan är utfälld */}
+                                                {showWaitingJobs && (
+                                                    <div className="animate-in slide-in-from-top-2 fade-in duration-300">
+                                                        <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    }
+
+                                    // STANDARD-RENDERING FÖR BOKADE JOBB
+                                    return (
+                                        <React.Fragment key={job.id}>
+                                            {showHeader && (
+                                                <div className={`${index === 0 ? 'mt-3' : 'mt-6'} mb-3 px-2 flex items-center gap-2 animate-in fade-in duration-300`}>
+                                                    <div className="h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+                                                    <h3 className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                                                        {currentDate}
+                                                    </h3>
+                                                </div>
+                                            )}
+                                            <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
+                                        </React.Fragment>
+                                    );
+                                });
+                            })()}
+                            
+                            {hasMore && (
+                                <div className="mt-2 mb-6 px-1">
+                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 hover:border-orange-500/50 text-zinc-700 dark:text-zinc-300 hover:text-orange-500 text-[12px] font-bold uppercase tracking-widest rounded-2xl shadow-sm active:scale-95 transition-all">
+                                        Ladda in fler ({sortedAndFilteredJobs.length - visibleCount} kvar)
+                                    </button>
+                                </div>
+                            )}
+                        </>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-24 text-zinc-400">
                         <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center">
