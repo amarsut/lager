@@ -30,8 +30,8 @@ window.Badge = React.memo(({ status }) => {
     };
     const style = config[s] || config['BOKAD'];
     return (
-        <span className={`px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5 rounded-lg border backdrop-blur-sm transition-all duration-300 ${style.bg} ${style.text} ${style.border}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`}></span>
+        <span className={`h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest inline-flex items-center justify-center gap-1 rounded-lg border backdrop-blur-sm transition-all duration-300 ${style.bg} ${style.text} ${style.border}`}>
+            <span className={`w-1 h-1 rounded-full ${style.dot}`}></span>
             {s}
         </span>
     );
@@ -220,8 +220,8 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
     }
 
     return (
-        <span title="Teknisk data tillgänglig i garaget" className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded-[4px] border border-emerald-200/50 dark:border-emerald-500/20 shadow-sm transition-all">
-            <window.Icon name="database" size={8} className={pulse ? "animate-spin" : ""} /> Data
+        <span title="Teknisk data tillgänglig i garaget" className="h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-200/50 dark:border-emerald-500/20 shadow-sm transition-all">
+            <window.Icon name="database" size={9} className={pulse ? "animate-spin" : ""} /> DATA
         </span>
     );
 });
@@ -311,9 +311,10 @@ const mobileCardPropsAreEqual = (prev, next) => {
     return prev.job === next.job && prev.job.status === next.job.status && prev.job.datum === next.job.datum;
 };
 
+// --- UPPGRADERAT MOBILKORT ---
 const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
-    const [copied, setCopied] = React.useState(false); 
+    const [copied, setCopied] = React.useState(false);
 
     const isWaiting = !job.datum;
     const dateString = formatDate(job.datum);
@@ -325,7 +326,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const price = parseInt(job.kundpris) || 0;
 
     const handleCopy = (e) => {
-        e.stopPropagation(); 
+        e.stopPropagation();
         if (!job.regnr || job.regnr === '-') return;
         navigator.clipboard.writeText(vehicleDisplay);
         setCopied(true);
@@ -335,46 +336,60 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     return (
         <div
             onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id, job) : null}
-            className={`w-full relative active:scale-[0.98] transition-all bg-white hover:bg-orange-50/50 dark:bg-[#182032] dark:hover:bg-[#1f2940] border-2 rounded-2xl shadow-sm hover:shadow-md group select-none overflow-hidden mb-3.5 
-                ${isDone ? 'opacity-70 grayscale-[0.3] border-zinc-200 dark:border-white/5' : 
-                  isUrgentDate ? 'border-orange-400 dark:border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.15)] dark:shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 
-                  'border-zinc-200 dark:border-white/5'}`}
+            // Tunnare ram (border-2) och skarpare hörn (rounded-2xl)
+            className={`w-full relative active:scale-[0.97] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border-2 rounded-2xl
+                ${isDone ? 'opacity-60 grayscale-[0.2] border-zinc-200 dark:border-white/5' : 
+                  isUrgentDate ? 'border-orange-300 dark:border-orange-500/50 shadow-[0_4px_15px_-3px_rgba(249,115,22,0.1)]' : 
+                  'border-zinc-200 dark:border-[#2a3441] shadow-[0_4px_10px_-3px_rgba(0,0,0,0.05)]'}
+            `}
         >
-            <div className="p-4">
+            {/* Kortets bakgrund */}
+            <div className={`absolute inset-0 transition-colors duration-300 ${
+                isUrgentDate && !isDone 
+                ? 'bg-gradient-to-b from-orange-50 to-white dark:from-orange-500/10 dark:to-[#182032]' 
+                : 'bg-white dark:bg-[#182032]'
+            }`}></div>
+
+            <div className="p-4 relative z-10">
+                {/* HEADER I KORTET */}
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
                         <window.CustomerAvatar job={job} />
                         <div className="flex flex-col min-w-0">
-                            <div className={`text-[15px] font-bold truncate leading-tight mb-0.5 transition-colors ${isDone ? 'text-zinc-600 dark:text-zinc-500' : 'text-zinc-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400'}`}>
+                            <div className="text-[15px] font-black tracking-tight truncate leading-tight text-zinc-900 dark:text-white group-hover:text-orange-500 transition-colors">
                                 {job.kundnamn}
                             </div>
-                            <div className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
-                                <window.Icon name="hash" size={10} /> {job.id.substring(0, 6)}
+                            <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 flex items-center gap-1 mt-0.5">
+                                <span className="bg-zinc-100 dark:bg-white/5 px-1.5 py-0.5 rounded text-[9px]">#{job.id.substring(0, 6)}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 relative z-30">
+                    <div className="flex items-center gap-2 relative z-30">
+                        {/* Data-badge direkt bredvid Status */}
+                        <window.VehicleDataIcon job={job} isDesktop={false} />
                         <window.Badge status={job.status} />
+                        
                         <div className="relative">
-                            <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 -mr-2 -mt-1 flex items-center justify-center text-zinc-400 hover:text-black dark:text-zinc-500 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full">
+                            <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full active:scale-90 -mr-2">
                                 <window.Icon name="more-horizontal" size={18} />
                             </button>
+                            {/* Menyn */}
                             {menuOpen && (
                                 <>
-                                    <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-zinc-200 dark:border-white/10 z-50 p-1.5 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right">
+                                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#1f2940]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-100 dark:border-white/10 z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right">
                                         {job.status !== 'KLAR' && (
-                                            <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-2.5 rounded-lg transition-colors">
-                                                <window.Icon name="check-circle" size={14} className="text-emerald-500" /> Markera klar
+                                            <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-3 rounded-xl transition-colors">
+                                                <window.Icon name="check-circle" size={16} className="text-emerald-500" /> Markera klar
                                             </button>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 rounded-lg transition-colors">
-                                            <window.Icon name="edit-2" size={14} className="text-blue-500" /> Redigera order
+                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-3 rounded-xl transition-colors">
+                                            <window.Icon name="edit-2" size={16} className="text-blue-500" /> Redigera order
                                         </button>
-                                        <div className="h-px bg-zinc-100 dark:bg-white/5 my-1 mx-2"></div>
-                                        <button onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) { window.db.collection("jobs").doc(job.id).update({ deleted: true }); } setMenuOpen(false); }} className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wide text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2.5 rounded-lg transition-colors">
-                                            <window.Icon name="trash-2" size={14} className="text-red-500" /> Radera order
+                                        <div className="h-[1px] bg-zinc-100 dark:bg-white/5 my-1 mx-2"></div>
+                                        <button onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) { window.db.collection("jobs").doc(job.id).update({ deleted: true }); } setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 flex items-center gap-3 rounded-xl transition-colors">
+                                            <window.Icon name="trash-2" size={16} className="text-red-500" /> Radera order
                                         </button>
                                     </div>
                                 </>
@@ -383,34 +398,30 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                <div className="flex items-center p-3 mb-4 rounded-xl border border-zinc-200 dark:border-white/5 bg-zinc-50/80 dark:bg-[#0f1522]/50 shadow-inner">
-                    
-                    <div className="flex flex-col flex-1 pr-3 min-w-0 border-r border-dashed border-zinc-200 dark:border-white/10">
-                        <div className="flex items-center justify-between mb-1.5 pr-2">
-                            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-                                <window.Icon name="truck" size={10} /> Fordon
+                {/* INFO BUBBLOR (Delade lådor som du ville ha det) */}
+                <div className="flex items-stretch gap-2 mb-4">
+                    {/* Fordon */}
+                        <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                         <div className="flex items-center justify-between mb-2">
+                            <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                <window.Icon name="car" size={10} /> Fordon
                             </span>
-                            <window.VehicleDataIcon job={job} isDesktop={false} />
                         </div>
                         
-                        <div 
-                            onClick={handleCopy}
-                            title="Kopiera Reg.nr"
-                            className={`inline-flex items-center rounded-[4px] border overflow-hidden h-[26px] relative transition-all cursor-pointer hover:border-orange-400 dark:hover:border-orange-500/50 hover:shadow-sm ${isReg ? 'bg-white dark:bg-[#182032] border-zinc-300 dark:border-[#2a3441]' : 'bg-transparent border-transparent'}`}
-                        >
+                        <div onClick={handleCopy} className={`inline-flex items-center rounded-md border shadow-sm overflow-hidden h-[28px] relative transition-all active:scale-95 ${isReg ? 'bg-white dark:bg-[#182032] border-zinc-300 dark:border-[#2a3441]' : 'bg-transparent border-transparent'}`}>
                             {copied && (
-                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
+                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in fade-in duration-200">
                                     <window.Icon name="check" size={14} />
                                 </div>
                             )}
-
                             {isReg ? (
                                 <>
-                                    <div className="w-[14px] bg-[#003399] h-full flex flex-col items-center justify-between py-[1px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
-                                        <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[2px]"></div>
+                                    <div className="w-[16px] bg-[#003399] h-full flex flex-col items-center justify-between py-[2px] shrink-0">
+                                        <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
                                         <span className="text-[7px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                     </div>
-                                    <div className="flex h-full items-center justify-center px-2 min-w-[64px]"><span className="font-mono font-bold text-[13px] text-zinc-900 dark:text-zinc-200 tracking-wider leading-none mt-[1px]">{vehicleDisplay}</span></div>
+                                    <div className="flex h-full items-center justify-center px-2.5 w-full bg-white dark:bg-[#1a2235]">
+                                        <span className="font-mono font-bold text-[14px] text-zinc-900 dark:text-zinc-100 tracking-[0.1em] leading-none mt-[1px]">{vehicleDisplay}</span>
+                                    </div>
                                 </>
                             ) : (
                                 <span className="font-mono font-bold text-[13px] text-zinc-800 dark:text-zinc-300 uppercase leading-none mt-[1px]">{vehicleDisplay}</span>
@@ -418,44 +429,44 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-end text-right flex-1 pl-3 min-w-0 justify-center">
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest mb-1.5 flex items-center justify-end gap-1.5 w-full">
-                            <window.Icon name="clock" size={10} /> {job.datum ? 'Bokat' : 'Status'}
+                    {/* Datum */}
+                        <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
+                        <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <window.Icon name="calendar" size={10} /> {job.datum ? 'Tid & Datum' : 'Status'}
                         </span>
                         {job.datum ? (
-                            <div className="flex items-center justify-end gap-2 h-[26px]">
-                                {!isDone && isUrgentDate && (
-                                    <span className="relative flex h-2 w-2 shrink-0">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span>
-                                    </span>
-                                )}
-                                <div className="flex flex-col items-end">
-                                    <span className={`text-[12px] font-black uppercase leading-none truncate mt-[1px] ${!isDone && isUrgentDate ? 'text-orange-500' : 'text-zinc-900 dark:text-white'}`}>
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    {!isDone && isUrgentDate && (
+                                        <span className="relative flex h-2 w-2 shrink-0">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                        </span>
+                                    )}
+                                    <span className={`text-[13px] font-black uppercase leading-none truncate ${!isDone && isUrgentDate ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white'}`}>
                                         {dateString}
                                     </span>
-                                    <span className={`font-mono font-bold text-[10px] mt-0.5 ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                                        {job.datum.split('T')[1]}
+                                    {/* Klockslaget ligger nu bredvid datumet och saknar bakgrundsfärg */}
+                                    <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                       {job.datum.split('T')[1]}
                                     </span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex items-center justify-end h-[26px]">
-                                <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest mt-[1px]">Inväntar</span>
-                            </div>
+                            <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest mt-auto">Inväntar tid</span>
                         )}
                     </div>
                 </div>
 
-                <div className="flex items-end justify-between mt-1">
-                    <div className="flex-1 min-w-0 mr-4">
-                        <span className="text-[14px] font-black text-zinc-900 dark:text-white uppercase tracking-tight block truncate">
+                {/* FOOTER I KORTET */}
+                <div className="flex items-end justify-between gap-4 mt-2">
+                    <div className="flex-1 min-w-0">
+                        <span className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-tight block truncate">
                             {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                         </span>
-                        
                         {job.kommentar && (
-                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1 italic flex items-center gap-1.5 font-medium">
-                                <window.Icon name="message-square" size={10} className="shrink-0" />
+                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-snug flex items-start gap-1.5 font-medium">
+                                <window.Icon name="message-square" size={10} className="shrink-0 mt-[2px] opacity-70" />
                                 {job.kommentar}
                             </span>
                         )}
@@ -463,14 +474,14 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     
                     <div className="shrink-0 text-right">
                         {price > 0 ? (
-                            <div className="flex items-baseline justify-end gap-1">
-                                <span className="text-[18px] font-mono font-black text-zinc-900 dark:text-white leading-none">
+                            <div className="flex flex-col items-end">
+                                <span className="text-[18px] font-black text-zinc-900 dark:text-white leading-none tracking-tight">
                                     {price.toLocaleString('sv-SE')}
                                 </span> 
-                                <span className="text-[10px] text-zinc-400 font-sans font-bold uppercase tracking-wider">kr</span>
+                                <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">SEK inkl. moms</span>
                             </div>
                         ) : (
-                            <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-widest block mt-1">Ej prissatt</span>
+                            <span className="text-[9px] font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded-md uppercase tracking-widest">Ej prissatt</span>
                         )}
                     </div>
                 </div>
