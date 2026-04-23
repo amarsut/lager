@@ -458,7 +458,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
 
                     {/* Datum */}
-                        <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
+                    <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
                         <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
                             <window.Icon name="calendar" size={10} /> {job.datum ? 'Tid & Datum' : 'Status'}
                         </span>
@@ -474,14 +474,17 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                     <span className={`text-[13px] font-black uppercase leading-none truncate ${!isDone && isUrgentDate ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white'}`}>
                                         {dateString}
                                     </span>
-                                    {/* Klockslaget ligger nu bredvid datumet och saknar bakgrundsfärg */}
                                     <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                        {job.datum.split('T')[1]}
                                     </span>
                                 </div>
                             </div>
                         ) : (
-                            <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest mt-auto">Inväntar tid</span>
+                            /* NY PREMIUM PLACEHOLDER: Snygg mjuk badge istället för streckad låda */
+                            <div className="inline-flex items-center gap-1.5 mt-auto w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
+                                 <window.Icon name="clock" size={10} className="text-zinc-400" />
+                                 <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -1111,24 +1114,31 @@ window.DashboardView = React.memo(({
                             ))}
                         </div>
 
+                        {/* UPPDATERAD SÖKRUTA */}
                         <div className="relative group mb-2 sm:mb-0 shrink-0">
                             <input 
                                 type="text" 
                                 placeholder="SÖK I LISTAN..." 
-                                className="bg-white dark:bg-[#1a2235]/50 border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 py-2 pl-9 pr-8 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-64 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-lg shadow-sm"
+                                className="bg-white dark:bg-[#1a2235] border border-zinc-200/80 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-2.5 pl-10 pr-10 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-xl shadow-sm"
                                 value={globalSearch}
                                 onChange={(e) => setGlobalSearch(e.target.value)}
                             />
-                            <window.Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 group-focus-within:rotate-90 transition-all duration-300" />
+                            {/* Förstoringsglaset */}
+                            <window.Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
                             
-                            {globalSearch && (
+                            {/* Visar antingen ett kryss eller en "⌘F" hint */}
+                            {globalSearch ? (
                                 <button 
                                     onClick={() => setGlobalSearch('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 bg-zinc-50 dark:bg-black/30 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-md p-0.5 transition-colors"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-red-500 bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all active:scale-95"
                                     title="Rensa sökning"
                                 >
                                     <window.Icon name="x" size={12} />
                                 </button>
+                            ) : (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                                    <kbd className="hidden sm:flex items-center justify-center px-1.5 py-0.5 text-[9px] font-sans font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded text-center">⌘F</kbd>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -1212,15 +1222,19 @@ window.DashboardView = React.memo(({
 
                                             return (
                                                 <React.Fragment key={job.id}>
+                                                    
+                                                    {/* NY AVDELARE DATOR: Premium gradient-linje & solid pill */}
                                                     {showWaitingHeader && (
-                                                        <tr className="bg-zinc-50/30 dark:bg-white/[0.01]">
-                                                            <td colSpan="7" className="px-8 py-5">
-                                                                <div className="flex items-center gap-4">
-                                                                    <div className="flex items-center gap-2 text-[10px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-[0.2em] shrink-0">
-                                                                        <window.Icon name="clock" size={14} />
-                                                                        Inväntar Planering
-                                                                    </div>
-                                                                    <div className="h-px flex-1 bg-gradient-to-r from-orange-500/20 to-transparent"></div>
+                                                        <tr>
+                                                            <td colSpan="7" className="py-8 relative">
+                                                                <div className="absolute inset-0 flex items-center px-4" aria-hidden="true">
+                                                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
+                                                                </div>
+                                                                <div className="relative flex justify-center">
+                                                                    <span className="bg-zinc-50 dark:bg-[#1a2235] px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-2 rounded-full border border-zinc-200/80 dark:border-white/5 shadow-sm">
+                                                                        <window.Icon name="inbox" size={14} className="text-zinc-400" />
+                                                                        Oplanerade Uppdrag
+                                                                    </span>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -1228,7 +1242,6 @@ window.DashboardView = React.memo(({
 
                                                     <tr 
                                                         onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                        // ÄNDRING: Tog bort skuggan och translateY. Ersatte med en mjuk bakgrundston (hover:bg-zinc-50). Ger en stabilare tabell!
                                                         className={`group transition-colors duration-200 cursor-pointer relative bg-transparent hover:bg-zinc-50/80 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
                                                     >
                                                         <td className="pl-7 pr-4 py-4 align-middle relative">
@@ -1295,7 +1308,6 @@ window.DashboardView = React.memo(({
                                                                             <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
                                                                         </span>
                                                                     )}
-                                                                    {/* ÄNDRING: Datum och tid har nu samma layout och storlek som i mobilen */}
                                                                     <div className="flex items-center gap-1.5">
                                                                         <span className={`text-[13px] font-black uppercase leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white transition-colors'}`}>
                                                                             {dateText}
@@ -1306,8 +1318,11 @@ window.DashboardView = React.memo(({
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                /* ÄNDRING: Inväntar-badgen har nu en mjuk orange färg och subtil border (skriker mindre) */
-                                                                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10 px-2 py-1 rounded-md uppercase tracking-widest border border-orange-200/50 dark:border-orange-500/20">Inväntar</span>
+                                                                /* NY PREMIUM PLACEHOLDER DATORN: Matchar mobilen perfekt */
+                                                                <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
+                                                                     <window.Icon name="clock" size={10} className="text-zinc-400" />
+                                                                     <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
+                                                                </div>
                                                             )}
                                                         </td>
 
@@ -1504,23 +1519,22 @@ window.DashboardView = React.memo(({
                                         return (
                                             <React.Fragment key={job.id}>
                                                 {showHeader && (
-                                                    <div className={`${index === 0 ? 'mt-2' : 'mt-6'} mb-4 px-1 animate-in fade-in duration-300`}>
+                                                    <div className={`${index === 0 ? 'mt-4' : 'mt-8'} mb-6 px-4 flex justify-center relative animate-in fade-in duration-300`}>
+                                                        {/* Mjuk gradient-linje istället för streckad */}
+                                                        <div className="absolute inset-0 flex items-center px-6" aria-hidden="true">
+                                                            <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
+                                                        </div>
+                                                        {/* Solid och elegant knapp */}
                                                         <button 
                                                             onClick={() => setShowWaitingJobs(!showWaitingJobs)}
-                                                            className="w-full flex items-center justify-between bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl hover:border-orange-400 dark:hover:border-orange-500/50 shadow-sm transition-all active:scale-[0.98]"
+                                                            className="relative bg-white dark:bg-[#1a2235] px-5 py-2 rounded-full border border-zinc-200 dark:border-white/5 shadow-sm flex items-center gap-2.5 hover:border-orange-500 hover:text-orange-500 text-zinc-600 dark:text-zinc-300 transition-all active:scale-95 z-10"
                                                         >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
-                                                                    <window.Icon name="clock" size={18} />
-                                                                </div>
-                                                                <div className="flex flex-col items-start">
-                                                                    <span className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">Inväntar Datum</span>
-                                                                    <span className="text-[11px] text-zinc-500 font-bold">{waitingJobsCount} {waitingJobsCount === 1 ? 'uppdrag' : 'uppdrag'} att planera</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className={`w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-[#1a2235] text-zinc-400 shadow-sm border border-zinc-100 dark:border-white/5 transition-transform duration-300 ${showWaitingJobs ? 'rotate-180 text-orange-500 border-orange-200 dark:border-orange-500/30' : ''}`}>
-                                                                <window.Icon name="chevron-down" size={16} />
-                                                            </div>
+                                                            <window.Icon name="inbox" size={14} className={showWaitingJobs ? 'text-orange-500' : 'text-zinc-400'} />
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest mt-[1px] flex items-center gap-1.5">
+                                                                Oplanerade
+                                                                <span className="bg-zinc-100 dark:bg-white/5 text-zinc-500 px-1.5 py-0.5 rounded-md text-[9px]">{waitingJobsCount}</span>
+                                                            </span>
+                                                            <window.Icon name="chevron-down" size={14} className={`transition-transform duration-300 ${showWaitingJobs ? 'rotate-180 text-orange-500' : 'text-zinc-400'}`} />
                                                         </button>
                                                     </div>
                                                 )}
