@@ -148,7 +148,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                 key={i} 
                                 onDragOver={(e) => e.preventDefault()} 
                                 onDrop={(e) => onDrop(e, dStr)} 
-                                className={`min-w-0 flex flex-col transition-all border-b border-zinc-200 dark:border-white/5 ${viewMode === 'WEEK' ? 'min-h-[500px] md:min-h-[650px]' : 'min-h-[100px] md:min-h-[150px]'} ${!isCurrentMonth ? 'bg-zinc-50/50 dark:bg-[#121826]/50' : 'bg-transparent'} ${today ? 'bg-orange-50/30 dark:bg-orange-500/[0.02]' : ''}`}
+                                className={`min-w-0 flex flex-col transition-all border-b border-zinc-200 dark:border-white/5 ${viewMode === 'WEEK' ? 'min-h-[400px] md:min-h-[500px]' : 'min-h-[80px] md:min-h-[110px]'} ${!isCurrentMonth ? 'bg-zinc-50/50 dark:bg-[#121826]/50' : 'bg-transparent'} ${today ? 'bg-orange-50/30 dark:bg-orange-500/[0.02]' : ''}`}
                             >
                                 {/* Dag-Header */}
                                 <div className={`p-2 md:p-4 border-b border-zinc-200 dark:border-white/5 transition-colors ${today ? 'bg-orange-100/50 dark:bg-orange-500/10' : 'bg-zinc-50/80 dark:bg-[#1a2235]/50'}`}>
@@ -182,9 +182,13 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-400 to-orange-600 opacity-80"></div>
                                                 
                                                 {/* --- MOBIL VY: Endast Initialer & Tid (Kompakt och snyggt) --- */}
-                                                <div className="md:hidden flex flex-col items-center justify-center gap-1 pl-1 py-0.5">
-                                                    <span className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-tighter leading-none">{initials}</span>
-                                                    <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 font-bold tracking-tighter">{job.datum?.split('T')[1]?.substring(0, 5)}</span>
+                                                <div className="md:hidden flex flex-col justify-start pl-1 gap-[2px]">
+                                                    <span className="text-[7.5px] font-bold text-zinc-900 dark:text-white uppercase leading-[8.5px] line-clamp-2 break-all">
+                                                        {job.kundnamn}
+                                                    </span>
+                                                    <span className="text-[7px] font-mono font-bold text-orange-600 dark:text-orange-500 tracking-tighter">
+                                                        {job.datum?.split('T')[1]?.substring(0, 5)}
+                                                    </span>
                                                 </div>
 
                                                 {/* --- DESKTOP VY: Fullständig information --- */}
