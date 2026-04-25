@@ -135,12 +135,15 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                 </div>
             </div>
 
-            {/* CALENDAR GRID (mb-0 tar bort marginalen i botten) */}
+            {/* CALENDAR GRID */}
             <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 shadow-sm overflow-hidden rounded-3xl mx-4 lg:mx-2 mb-0">
                 <div className="grid grid-cols-7 divide-x divide-zinc-200 dark:divide-white/5">
                     {calendarDays.map(({ date, isCurrentMonth }, i) => {
                         const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                        const jobs = jobsByDate[dStr] || [];
+                        const allDayJobs = jobsByDate[dStr] || [];
+                        // Begränsa till max 3 uppdrag per dag om vi är i månadsvy
+                        const displayJobs = viewMode === 'MONTH' ? allDayJobs.slice(0, 3) : allDayJobs;
+                        const extraCount = allDayJobs.length - displayJobs.length;
                         const today = isToday(date);
                         
                         return (
@@ -148,7 +151,8 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                 key={i} 
                                 onDragOver={(e) => e.preventDefault()} 
                                 onDrop={(e) => onDrop(e, dStr)} 
-                                className={`min-w-0 flex flex-col transition-all border-b border-zinc-200 dark:border-white/5 ${viewMode === 'WEEK' ? 'min-h-[400px] md:min-h-[500px]' : 'min-h-[80px] md:min-h-[110px]'} ${!isCurrentMonth ? 'bg-zinc-50/50 dark:bg-[#121826]/50' : 'bg-transparent'} ${today ? 'bg-orange-50/30 dark:bg-orange-500/[0.02]' : ''}`}
+                                // Minskade min-h värden för att slippa scrolla i onödan
+                                className={`min-w-0 flex flex-col transition-all border-b border-zinc-200 dark:border-white/5 ${viewMode === 'WEEK' ? 'min-h-[350px] md:min-h-[500px]' : 'min-h-[80px] md:min-h-[110px]'} ${!isCurrentMonth ? 'bg-zinc-50/50 dark:bg-[#121826]/50' : 'bg-transparent'} ${today ? 'bg-orange-50/30 dark:bg-orange-500/[0.02]' : ''}`}
                             >
                                 {/* Dag-Header */}
                                 <div className={`p-2 md:p-4 border-b border-zinc-200 dark:border-white/5 transition-colors ${today ? 'bg-orange-100/50 dark:bg-orange-500/10' : 'bg-zinc-50/80 dark:bg-[#1a2235]/50'}`}>
@@ -165,10 +169,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                     className="p-1.5 md:p-3 space-y-2 flex-1 relative cursor-crosshair group/area" 
                                     onClick={() => setView('NEW_JOB', { job: { datum: `${dStr}T08:00`, status: 'BOKAD' } })}
                                 >
-                                    {jobs.map(job => {
-                                        // Generera kundens initialer för mobilen
-                                        const initials = job.kundnamn ? job.kundnamn.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : '??';
-
+                                    {displayJobs.map(job => {
                                         return (
                                             <div 
                                                 key={job.id} 
@@ -178,10 +179,14 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                 onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} 
                                                 className="group relative bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 p-1.5 md:p-3 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all cursor-grab active:cursor-grabbing shadow-sm hover:shadow-md overflow-hidden rounded-lg md:rounded-xl"
                                             >
-                                                {/* Accent Line */}
-                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-400 to-orange-600 opacity-80"></div>
+                                                {/* Dynamisk accent-linje baserad på status */}
+                                                <div className={`absolute left-0 top-0 bottom-0 w-1 opacity-80 bg-gradient-to-b ${
+                                                    job.status === 'KLAR' ? 'from-emerald-400 to-emerald-600' : 
+                                                    job.status === 'OFFERERAD' ? 'from-blue-400 to-blue-600' : 
+                                                    'from-orange-400 to-orange-600'
+                                                }`}></div>
                                                 
-                                                {/* --- MOBIL VY: Endast Initialer & Tid (Kompakt och snyggt) --- */}
+                                                {/* --- MOBIL VY: Multiline och extremt kompakt --- */}
                                                 <div className="md:hidden flex flex-col justify-start pl-1 gap-[2px]">
                                                     <span className="text-[7.5px] font-bold text-zinc-900 dark:text-white uppercase leading-[8.5px] line-clamp-2 break-all">
                                                         {job.kundnamn}
@@ -209,9 +214,23 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                             </div>
                                         );
                                     })}
+
+                                    {/* Visa "+X fler"-knapp om det finns dolda jobb i månadsvyn */}
+                                    {viewMode === 'MONTH' && extraCount > 0 && (
+                                        <button 
+                                            onClick={(e) => { 
+                                                e.stopPropagation(); 
+                                                setCurrentDate(date); 
+                                                setViewMode('WEEK'); 
+                                            }}
+                                            className="w-full mt-1 py-1 text-[9px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-white/5 hover:bg-orange-500/10 hover:text-orange-500 rounded-md transition-all border border-transparent hover:border-orange-500/20"
+                                        >
+                                            +{extraCount} fler
+                                        </button>
+                                    )}
                                     
                                     {/* Subtil hover-effekt för att lägga till på tomma dagar */}
-                                    {jobs.length === 0 && (
+                                    {allDayJobs.length === 0 && (
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/area:opacity-100 transition-opacity pointer-events-none">
                                             <SafeIcon name="plus" size={24} className="text-zinc-300 dark:text-zinc-600" />
                                         </div>
