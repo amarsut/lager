@@ -37,11 +37,15 @@ window.Badge = React.memo(({ status }) => {
     );
 });
 
-// --- WIDGET 3: LIVE VÄDERPROGNOS (SMHI SNOW1g) ---
-window.WeatherWidget = React.memo(() => {
+// --- WIDGET: AKTIVITET (12 MÅN) & VÄDER (COMBINED) ---
+window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
+    const [showWeather, setShowWeather] = React.useState(false);
+    const [hoveredIdx, setHoveredIdx] = React.useState(null);
+
+    // -- VÄDER DATA --
     const [weatherData, setWeatherData] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState(false);
+    const [loadingWeather, setLoadingWeather] = React.useState(true);
+    const [weatherError, setWeatherError] = React.useState(false);
 
     React.useEffect(() => {
         const lon = "13.3034";
@@ -87,7 +91,7 @@ window.WeatherWidget = React.memo(() => {
 
                 const days = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
                 
-                const formattedData = dailyData.slice(0, 7).map((day, index) => {
+                const formattedData = dailyData.slice(0, 5).map((day, index) => {
                     const date = new Date(day.time);
                     const temp = day.data?.air_temperature !== undefined && day.data?.air_temperature !== 9999 
                         ? `${Math.round(day.data.air_temperature)}°` 
@@ -105,11 +109,10 @@ window.WeatherWidget = React.memo(() => {
                 });
 
                 setWeatherData(formattedData);
-                setLoading(false);
+                setLoadingWeather(false);
             } catch (err) {
-                console.error("Fel vid hämtning av väderdata:", err);
-                setError(true);
-                setLoading(false);
+                setWeatherError(true);
+                setLoadingWeather(false);
             }
         };
 
@@ -118,45 +121,183 @@ window.WeatherWidget = React.memo(() => {
         return () => clearInterval(interval);
     }, []);
 
-    React.useEffect(() => {
-        if (!loading && !error && window.lucide) {
-            window.lucide.createIcons();
+    // -- CHART DATA --
+    const chartData = React.useMemo(() => {
+        const now = new Date();
+        const data = [];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+        
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            data.push({ month: monthNames[d.getMonth()], count: 0 });
         }
-    }, [weatherData, loading, error]);
+        
+        allJobs.forEach(job => {
+            if (!job.datum || job.deleted) return;
+            const jd = new Date(job.datum);
+            const diffMonths = (now.getFullYear() - jd.getFullYear()) * 12 + now.getMonth() - jd.getMonth();
+            if (diffMonths >= 0 && diffMonths < 12) {
+                data[11 - diffMonths].count++;
+            }
+        });
+        
+        const max = Math.max(...data.map(d => d.count), 5);
+        return { data, max };
+    }, [allJobs]);
+
+    const { data, max } = chartData;
+    
+    // Algoritm för en mjuk Bezier-kurva med marginal för SVG boxen
+    const points = data.map((d, i) => ({ 
+        x: (i / 11) * 100, 
+        y: 90 - (d.count / max) * 75 
+    })); 
+    
+    let linePath = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i === 0 ? 0 : i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2 === points.length ? i + 1 : i + 2];
+        
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        
+        linePath += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+    
+    const areaPath = `${linePath} L 100,100 L 0,100 Z`;
+    const totalJobs = data.reduce((sum, d) => sum + d.count, 0);
+
+    React.useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+    }, [showWeather, weatherData]);
 
     return (
-        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-5 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-sky-500/10 transition-all duration-300 flex flex-col justify-between min-h-[140px] bg-[radial-gradient(#00000008_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:12px_12px]">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-sky-500/10 blur-3xl rounded-full pointer-events-none transition-all duration-500 group-hover:bg-sky-500/20"></div>
+        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-5 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 flex flex-col min-h-[170px] justify-between">
             
-            <div className="relative z-10 flex items-center justify-between mb-3">
-                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2 group-hover:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors">
-                    <window.Icon name="cloud-sun" size={12} className="text-sky-500 group-hover:scale-110 transition-transform" /> Väder (7d)
+            <div className={`absolute right-0 top-0 w-32 h-32 blur-3xl rounded-full pointer-events-none transition-colors duration-500 ${showWeather ? 'bg-sky-500/10 group-hover:bg-sky-500/20' : 'bg-orange-500/5 group-hover:bg-orange-500/10'}`}></div>
+            
+            {/* HEADER MED VÄXEL-KNAPP */}
+            <div className="relative z-10 flex items-center justify-between mb-2">
+                <div className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${showWeather ? 'text-sky-500' : 'text-orange-500 dark:text-orange-400'}`}>
+                    <window.Icon name={showWeather ? "cloud-sun" : "activity"} size={12} /> 
+                    {showWeather ? 'Prognos Eslöv' : 'Uppdrag (12 Mån)'}
                 </div>
-                <span className="text-[8px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2 py-0.5 rounded-md border border-sky-200/50 dark:border-sky-500/20 uppercase tracking-widest flex items-center gap-1 shadow-sm">
-                    {loading ? <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span> : null}
-                    Eslöv
-                </span>
+                
+                <button 
+                    onClick={() => setShowWeather(!showWeather)} 
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg border shadow-sm transition-all active:scale-90 ${showWeather ? 'bg-orange-50 text-orange-500 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20' : 'bg-sky-50 text-sky-500 border-sky-200 dark:bg-sky-500/10 dark:border-sky-500/20'}`}
+                    title={showWeather ? 'Visa Diagram' : 'Visa Väder'}
+                >
+                    <window.Icon name={showWeather ? "activity" : "cloud-sun"} size={12} />
+                </button>
             </div>
 
-            <div className="relative z-10 flex items-end justify-between gap-1 w-full mt-auto min-h-[40px]">
-                {loading ? (
-                    <div className="w-full text-center text-[10px] text-zinc-400 uppercase tracking-widest py-2">Hämtar data...</div>
-                ) : error ? (
-                    <div className="w-full text-center text-[10px] text-red-400 uppercase tracking-widest font-bold py-2">Kunde inte nå SMHI</div>
+            {/* INNEHÅLL */}
+            <div className="relative z-10 flex-1 flex flex-col w-full">
+                {showWeather ? (
+                    /* --- VÄDER VY --- */
+                    <div className="flex items-end justify-between gap-1 w-full h-full pb-1 animate-in fade-in zoom-in-95 duration-300 mt-2">
+                        {loadingWeather ? (
+                            <div className="w-full text-center text-[10px] text-zinc-400 uppercase tracking-widest py-4">Hämtar data...</div>
+                        ) : weatherError ? (
+                            <div className="w-full text-center text-[10px] text-red-400 uppercase tracking-widest py-4">Kunde inte nå SMHI</div>
+                        ) : (
+                            weatherData.map((w, i) => (
+                                <div key={i} className="flex flex-col items-center justify-end flex-1 cursor-default group/day">
+                                    <span className={`text-[8px] font-bold uppercase tracking-widest mb-1.5 transition-all ${i === 0 ? 'text-sky-500' : 'text-zinc-400 group-hover/day:text-zinc-800 dark:group-hover/day:text-zinc-100 group-hover/day:-translate-y-0.5'}`}>
+                                        {w.day}
+                                    </span>
+                                    <div className="transition-transform duration-300 group-hover/day:scale-125 group-hover/day:-translate-y-1">
+                                        <window.Icon name={w.icon} size={16} className={`mb-1.5 ${i === 0 ? 'text-sky-500 drop-shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`} />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-zinc-900 dark:text-white leading-none transition-transform duration-300 group-hover/day:scale-110">
+                                        {w.temp}
+                                    </span>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 ) : (
-                    weatherData.map((w, i) => (
-                        <div key={i} className="flex flex-col items-center justify-end flex-1 group/day cursor-default">
-                            <span className={`text-[8px] font-bold uppercase tracking-widest mb-1.5 transition-all duration-300 ${i === 0 ? 'text-sky-500' : 'text-zinc-400 group-hover/day:text-zinc-800 dark:group-hover/day:text-zinc-100 group-hover/day:-translate-y-0.5'}`}>
-                                {w.day}
-                            </span>
-                            <div className="transition-transform duration-300 group-hover/day:scale-125 group-hover/day:-translate-y-1">
-                                <window.Icon name={w.icon} size={16} className={`mb-1.5 ${i === 0 ? 'text-sky-500 drop-shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`} />
-                            </div>
-                            <span className="text-[11px] font-bold text-zinc-900 dark:text-white leading-none transition-transform duration-300 group-hover/day:scale-110">
-                                {w.temp}
-                            </span>
+                    /* --- DIAGRAM VY (PRO-VERSION) --- */
+                    <div className="flex flex-col flex-1 animate-in fade-in zoom-in-95 duration-300 h-full" onMouseLeave={() => setHoveredIdx(null)}>
+                        <div className="text-3xl sm:text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                            {totalJobs} <span className="text-[12px] sm:text-sm font-bold text-zinc-400 uppercase tracking-widest ml-0.5">st</span>
                         </div>
-                    ))
+
+                        <div className="relative w-full flex-1 mt-3 min-h-[65px]">
+                            
+                            {/* Stödlinjer i bakgrunden (Grid) */}
+                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-4 opacity-[0.15] dark:opacity-10">
+                                <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
+                                <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
+                                <div className="w-full h-px border-t border-zinc-500"></div>
+                            </div>
+
+                            <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pb-4 overflow-visible" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#f97316" stopOpacity="0.3" />
+                                        <stop offset="100%" stopColor="#f97316" stopOpacity="0.0" />
+                                    </linearGradient>
+                                </defs>
+                                
+                                {/* Area & Linje */}
+                                <path d={areaPath} fill="url(#chartGradient)" />
+                                <path d={linePath} fill="none" stroke="#f97316" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+
+                                {/* Hårkors och aktiva noder vid hover */}
+                                {points.map((p, i) => (
+                                    <g key={i} className={`transition-opacity duration-200 ${hoveredIdx === i ? 'opacity-100' : 'opacity-0'}`}>
+                                        <line x1={p.x} y1={p.y} x2={p.x} y2="100" stroke="#f97316" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" className="opacity-50" />
+                                        <circle cx={p.x} cy={p.y} r="3" fill="#182032" stroke="#f97316" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                        <circle cx={p.x} cy={p.y} r="6" fill="#f97316" fillOpacity="0.2" vectorEffect="non-scaling-stroke" />
+                                    </g>
+                                ))}
+                            </svg>
+
+                            {/* Osynligt lager för att fånga muspekaren per månad */}
+                            <div className="absolute inset-0 flex pb-4 z-20">
+                                {data.map((d, i) => {
+                                    // Snygg positionering av tooltip i ändarna för att inte hamna utanför
+                                    let tooltipAlign = "-translate-x-1/2";
+                                    if (i === 0) tooltipAlign = "translate-x-0";
+                                    if (i === 11) tooltipAlign = "-translate-x-full";
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="flex-1 h-full cursor-crosshair relative"
+                                            onMouseEnter={() => setHoveredIdx(i)}
+                                            onTouchStart={() => setHoveredIdx(i)}
+                                        >
+                                            {hoveredIdx === i && (
+                                                <div 
+                                                    className={`absolute top-[-25px] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-2 py-1 rounded-lg shadow-xl pointer-events-none whitespace-nowrap z-30 flex items-center gap-1.5 animate-in zoom-in-95 duration-100 ${tooltipAlign}`} 
+                                                    style={{ left: i === 0 ? '0' : i === 11 ? '100%' : '50%' }}
+                                                >
+                                                    <span className="font-mono font-bold text-[12px] leading-none">{d.count}</span>
+                                                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 pt-[1px]">{d.month}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            {/* X-axel Etiketter */}
+                            <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] font-bold uppercase tracking-widest text-zinc-400 px-0.5">
+                                {data.map((d, i) => (
+                                    <span key={i} className={`transition-colors duration-200 ${hoveredIdx === i ? 'text-orange-500 scale-110' : ([0, 3, 6, 9, 11].includes(i) ? 'opacity-100' : 'opacity-0')}`}>
+                                        {d.month}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>
@@ -1085,7 +1226,7 @@ window.DashboardView = React.memo(({
                                 </div>
                             </div>
 
-                            <window.WeatherWidget />
+                            <window.ActivityAndWeatherWidget allJobs={allJobs} />
                         </>
                     )}
                 </div>
