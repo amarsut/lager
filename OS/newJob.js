@@ -31,18 +31,15 @@ const SectionHeader = ({ title, sub, icon }) => (
     </div>
 );
 
-// --- NY RICH TEXT EDITOR KOMPONENT ---
 const RichNoteEditor = ({ value, onChange }) => {
     const editorRef = React.useRef(null);
 
-    // Formaterar texten
     const format = (command, val = null) => {
         document.execCommand(command, false, val);
         editorRef.current.focus();
         onChange(editorRef.current.innerHTML);
     };
 
-    // Infoga snygg länk
     const insertLink = () => {
         const url = prompt('1. Klistra in webbadressen (t.ex. https://...):');
         if (!url) return;
@@ -52,19 +49,16 @@ const RichNoteEditor = ({ value, onChange }) => {
         format('insertHTML', linkHTML);
     };
 
-    // Tidsstämpel
     const insertTimestamp = () => {
         const time = new Date().toLocaleString('sv-SE', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'short' });
         format('insertHTML', `<br/><strong style="color: #f97316;">[${time}]</strong> `);
     };
 
-    // Diagnosmall
     const insertTemplate = () => {
         const template = `<br/><strong>• Kundens felbeskrivning:</strong> <br/><strong>• Verkstadens diagnos:</strong> <br/><strong>• Åtgärd/Reservdelar:</strong> <br/>`;
         format('insertHTML', template);
     };
 
-    // Gör länkar klickbara direkt i editorn!
     const handleEditorClick = (e) => {
         const link = e.target.closest('a');
         if (link) {
@@ -75,7 +69,6 @@ const RichNoteEditor = ({ value, onChange }) => {
     return (
         <div className="w-full bg-zinc-50 dark:bg-[#1a2235] focus-within:bg-white dark:focus-within:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 rounded-xl shadow-sm transition-all overflow-hidden flex flex-col focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10">
             
-            {/* Verktygsfält (Anpassat för mobil) */}
             <div className="flex flex-wrap items-center gap-1.5 p-2 border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/50 dark:bg-[#182032]/50">
                 <button type="button" onClick={() => format('bold')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Fetstil">
                     <SafeIcon name="bold" size={14} />
@@ -103,7 +96,6 @@ const RichNoteEditor = ({ value, onChange }) => {
                 </button>
             </div>
 
-            {/* Skrivytan (Växer automatiskt) */}
             <div className="relative">
                 {!value && (
                     <div className="absolute top-3 left-3 text-zinc-400/70 font-mono text-[12px] pointer-events-none">
@@ -128,7 +120,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = React.useState({
         kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
-        datum: today, tid: '08:00', kundpris: '100', kommentar: ''
+        datum: today, tid: '16:30', kundpris: '100', kommentar: ''
     });
     
     const emptyExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }, { desc: '', amount: '' }];
@@ -137,11 +129,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [suggestions, setSuggestions] = React.useState([]);
     const [regnrSuggestions, setRegnrSuggestions] = React.useState([]);
     const [oilLiters, setOilLiters] = React.useState(4.3);
-    const [isTrodoMenuOpen, setIsTrodoMenuOpen] = React.useState(false);
     
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
-    const [trodoPrices, setTrodoPrices] = React.useState(null);
-    const [isFetchingParts, setIsFetchingParts] = React.useState(false);
 
     React.useEffect(() => {
         const cleanReg = formData.regnr?.toUpperCase().trim();
@@ -173,38 +162,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     }, [formData.regnr]);
 
     React.useEffect(() => {
-        const handleTrodoMsg = (e) => {
-            if (e.data && e.data.source === 'Trodo_Extension') {
-                setTrodoPrices(e.data.data);
-                setExpenses(prev => {
-                    const newExpenses = [...prev];
-                    let i = 0;
-                    Object.entries(e.data.data).forEach(([part, info]) => {
-                        if(info.price !== '0' && i < 3) {
-                            const inkopspris = parseFloat(info.price);
-                            const kundpris = (inkopspris * 1.4).toFixed(0); 
-                            while (i < 3 && newExpenses[i].desc !== '') i++;
-                            if (i < 3) {
-                                newExpenses[i] = { desc: `${part} (${info.brand})`, amount: kundpris };
-                            }
-                        }
-                    });
-                    return newExpenses;
-                });
-            }
-        };
-        window.addEventListener('message', handleTrodoMsg);
-        return () => window.removeEventListener('message', handleTrodoMsg);
-    }, []);
-
-    React.useEffect(() => {
         const loadExistingJob = async () => {
             if (editingJob) {
                 setFormData(prev => ({ 
                     ...prev,
                     ...editingJob, 
                     datum: editingJob.datum ? editingJob.datum.split('T')[0] : '',
-                    tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '08:00' 
+                    tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '16:30' 
                 }));
                 
                 if (editingJob.utgifter && editingJob.utgifter.length > 0) {
@@ -240,7 +204,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                 setFormData({
                     kundnamn: prefill, regnr: '', paket: 'Standard', status: 'BOKAD',
-                    datum: today, tid: '08:00', kundpris: '100', kommentar: ''
+                    datum: today, tid: '16:30', kundpris: '100', kommentar: ''
                 });
                 setExpenses(emptyExpenses);
                 setOilLiters(4.3);
@@ -456,17 +420,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const finalPriceNum = parseFloat(formData.kundpris) || 0;
     const laborTotal = Math.max(0, finalPriceNum - partsTotal);
 
-    React.useEffect(() => {
-        const handleTrodoMsg = (e) => {
-            if (e.data && e.data.source === 'Trodo_Extension') {
-                setTrodoPrices(e.data.data);
-                setIsFetchingParts(false);
-            }
-        };
-        window.addEventListener('message', handleTrodoMsg);
-        return () => window.removeEventListener('message', handleTrodoMsg);
-    }, [emptyExpenses]);
-
     const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-lg lg:rounded-xl shadow-sm";
     const sectionCardClasses = "bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow";
 
@@ -560,30 +513,40 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </div>
 
                     {fetchedCarInfo && (
-                        <div className="bg-orange-50/30 dark:bg-[#1a2235]/40 border border-orange-200/50 dark:border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300 relative z-30">
+                        <div className="bg-zinc-50/80 dark:bg-[#1a2235]/40 border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300 relative z-30">
                             
-                            <div className="flex items-center justify-between mb-4 border-b border-orange-200/50 dark:border-orange-500/20 pb-2">
-                                <div className="text-[10px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-widest flex items-center gap-2">
-                                    <SafeIcon name="database" size={12} /> Teknisk Fordonsdata
+                            {/* Rubrik / Bilmodell */}
+                            <div className="mb-4 pb-3 border-b border-zinc-200/80 dark:border-white/5">
+                                <div className="text-[9px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-[0.15em] flex items-center gap-1.5 mb-1">
+                                    <SafeIcon name="database" size={10} /> Teknisk Fordonsdata
                                 </div>
-                                {fetchedCarInfo.bilmodell && (
-                                    <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase truncate max-w-[200px]">
+                                {fetchedCarInfo.bilmodell ? (
+                                    <div className="text-sm md:text-base font-black text-zinc-900 dark:text-white uppercase tracking-wide">
                                         {fetchedCarInfo.bilmodell}
+                                    </div>
+                                ) : (
+                                    <div className="text-sm md:text-base font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide italic">
+                                        Inget fordonsnamn hittades
                                     </div>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2 mb-2">
+                            {/* Data-rutor */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                                 {[
-                                    { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016' },
-                                    { id: 'motorkod', label: 'Motorkod', val: fetchedCarInfo.motorkod, ph: 'CFGB' },
-                                    { id: 'oljevolym', label: 'Oljevolym', val: fetchedCarInfo.oljevolym, ph: '4.7 l' }
+                                    { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016', icon: 'calendar', mono: false },
+                                    { id: 'motorkod', label: 'Motorkod', val: fetchedCarInfo.motorkod, ph: 'CFGB', icon: 'cpu', mono: true },
+                                    { id: 'oljevolym', label: 'Oljevolym', val: fetchedCarInfo.oljevolym, ph: '4.7 l', icon: 'droplet', mono: false },
+                                    { id: 'miltal', label: 'Miltal', val: fetchedCarInfo.miltal, ph: '12 500 mil', icon: 'navigation', mono: false }
                                 ].map((f, i) => (
-                                    <div key={i} className="bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center relative group focus-within:border-orange-500 transition-colors">
-                                        <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">{f.label}</div>
+                                    <div key={i} className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 focus-within:bg-white dark:focus-within:bg-[#1f2940] focus-within:shadow-[0_0_10px_rgba(249,115,22,0.1)] transition-all">
+                                        <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                            <SafeIcon name={f.icon} size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
+                                            {f.label}
+                                        </div>
                                         <input 
                                             type="text" 
-                                            className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
+                                            className={`w-full text-[12px] bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate text-zinc-900 dark:text-white ${f.mono ? 'font-mono font-bold tracking-wider' : 'font-medium'}`}
                                             placeholder={f.ph}
                                             value={f.val || ''}
                                             onChange={(e) => handleSpecChange(f.id, e.target.value)}
@@ -591,34 +554,20 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         />
                                     </div>
                                 ))}
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-2">
-                                <div className="col-span-2 bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
-                                    <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">
+
+                                {/* Chassinummer (Full bredd) */}
+                                <div className="col-span-2 md:col-span-4 bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center group focus-within:border-orange-500/50 focus-within:bg-white dark:focus-within:bg-[#1f2940] focus-within:shadow-[0_0_10px_rgba(249,115,22,0.1)] transition-all">
+                                    <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                        <SafeIcon name="hash" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
                                         Chassinummer (VIN)
                                     </div>
                                     <input 
                                         type="text" 
-                                        className="w-full text-[12px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.15em] uppercase"
+                                        className="w-full text-[13px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.2em] uppercase"
                                         placeholder="WBA00000000000000"
                                         value={fetchedCarInfo.vin || ''}
                                         onChange={(e) => handleSpecChange('vin', e.target.value.toUpperCase())}
                                         onBlur={(e) => saveSpec('vin', e.target.value)}
-                                    />
-                                </div>
-                                
-                                <div className="col-span-1 bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
-                                    <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">
-                                        Miltal
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        className="w-full text-[11px] font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate"
-                                        placeholder="12 500 mil"
-                                        value={fetchedCarInfo.miltal || ''}
-                                        onChange={(e) => handleSpecChange('miltal', e.target.value)}
-                                        onBlur={(e) => saveSpec('miltal', e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -779,7 +728,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         <SafeIcon name="shopping-cart" size={10} />Reservdelar & Material
                                     </label>
                                     <div className="flex gap-2">
-
                                         <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 shadow-sm">
                                             <SafeIcon name="plus" size={10} /> Lägg till
                                         </button>
@@ -808,7 +756,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </div>
                                     ))}
                                 </div>
-                                
                             </div>
                         </div>
                     </div>
