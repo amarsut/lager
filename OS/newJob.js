@@ -18,19 +18,20 @@ const InputWrapper = ({ label, icon, children }) => (
     </div>
 );
 
-const handleEditorClick = (e) => {
-    const link = e.target.closest('a'); // Kollar om klicket träffade en <a>-tagg
-    if (link) {
-        // Välj en av dessa två lösningar:
-        
-        // ALTERNATIV 1: Öppna alltid länken vid klick (Enklast & snabbast)
-        window.open(link.href, '_blank');
-        
-        // ALTERNATIV 2: Kräver att man håller in Ctrl/Cmd (Mer standard i textredigerare)
-        // if (e.ctrlKey || e.metaKey) window.open(link.href, '_blank');
-    }
-};
+const SectionHeader = ({ title, sub, icon }) => (
+    <div className="flex items-start gap-2.5 mb-4 lg:mb-5 pb-2.5 lg:pb-3 border-b border-zinc-200/50 dark:border-white/5">
+        <div className="mt-1 h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
+        <div>
+            <div className="flex items-center gap-1.5">
+                <SafeIcon name={icon} size={14} className="text-zinc-400 dark:text-zinc-500" />
+                <h3 className="text-[12px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
+            </div>
+            {sub && <p className="text-[9px] font-medium uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 mt-0.5">{sub}</p>}
+        </div>
+    </div>
+);
 
+// --- NY RICH TEXT EDITOR KOMPONENT ---
 const RichNoteEditor = ({ value, onChange }) => {
     const editorRef = React.useRef(null);
 
@@ -47,28 +48,35 @@ const RichNoteEditor = ({ value, onChange }) => {
         if (!url) return;
         const text = prompt('2. Vad ska länken heta? (t.ex. "Länk till Vattenpump"):') || url;
         
-        // Skapar en klickbar länk som öppnas i ny flik, med din blåa färg
-        const linkHTML = `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold;">${text}</a>`;
+        const linkHTML = `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold; cursor: pointer;">${text}</a>`;
         format('insertHTML', linkHTML);
     };
 
-    // Bonus: Tidsstämpel
+    // Tidsstämpel
     const insertTimestamp = () => {
         const time = new Date().toLocaleString('sv-SE', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'short' });
         format('insertHTML', `<br/><strong style="color: #f97316;">[${time}]</strong> `);
     };
 
-    // Bonus: Diagnosmall
+    // Diagnosmall
     const insertTemplate = () => {
         const template = `<br/><strong>• Kundens felbeskrivning:</strong> <br/><strong>• Verkstadens diagnos:</strong> <br/><strong>• Åtgärd/Reservdelar:</strong> <br/>`;
         format('insertHTML', template);
     };
 
+    // Gör länkar klickbara direkt i editorn!
+    const handleEditorClick = (e) => {
+        const link = e.target.closest('a');
+        if (link) {
+            window.open(link.href, '_blank');
+        }
+    };
+
     return (
         <div className="w-full bg-zinc-50 dark:bg-[#1a2235] focus-within:bg-white dark:focus-within:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 rounded-xl shadow-sm transition-all overflow-hidden flex flex-col focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10">
             
-            {/* Verktygsfält */}
-            <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/50 dark:bg-[#182032]/50">
+            {/* Verktygsfält (Anpassat för mobil) */}
+            <div className="flex flex-wrap items-center gap-1.5 p-2 border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/50 dark:bg-[#182032]/50">
                 <button type="button" onClick={() => format('bold')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Fetstil">
                     <SafeIcon name="bold" size={14} />
                 </button>
@@ -85,19 +93,18 @@ const RichNoteEditor = ({ value, onChange }) => {
                     <SafeIcon name="link" size={12} /> Länk
                 </button>
                 
-                <div className="w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
+                <div className="hidden sm:block w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
                 
                 <button type="button" onClick={insertTimestamp} className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
                     <SafeIcon name="clock" size={12} /> Logg
                 </button>
                 <button type="button" onClick={insertTemplate} className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
-                    <SafeIcon name="file-text" size={12} /> Felsökningsmall
+                    <SafeIcon name="file-text" size={12} /> <span className="hidden sm:inline">Felsöknings</span>Mall
                 </button>
             </div>
 
             {/* Skrivytan (Växer automatiskt) */}
             <div className="relative">
-                {/* Fallback-text om det är tomt */}
                 {!value && (
                     <div className="absolute top-3 left-3 text-zinc-400/70 font-mono text-[12px] pointer-events-none">
                         Skriv dina anteckningar här...
@@ -107,7 +114,6 @@ const RichNoteEditor = ({ value, onChange }) => {
                     ref={editorRef}
                     contentEditable
                     onClick={handleEditorClick}
-                    // Uppdaterar React-state när man klickar ur (blur) för att undvika att markören hoppar när man skriver
                     onBlur={(e) => onChange(e.currentTarget.innerHTML)} 
                     dangerouslySetInnerHTML={{ __html: value }}
                     className="p-3 min-h-[100px] text-[13px] leading-relaxed text-zinc-900 dark:text-white outline-none cursor-text"
@@ -118,24 +124,11 @@ const RichNoteEditor = ({ value, onChange }) => {
     );
 };
 
-const SectionHeader = ({ title, sub, icon }) => (
-    <div className="flex items-start gap-2.5 mb-4 lg:mb-5 pb-2.5 lg:pb-3 border-b border-zinc-200/50 dark:border-white/5">
-        <div className="mt-1 h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
-        <div>
-            <div className="flex items-center gap-1.5">
-                <SafeIcon name={icon} size={14} className="text-zinc-400 dark:text-zinc-500" />
-                <h3 className="text-[12px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
-            </div>
-            {sub && <p className="text-[9px] font-medium uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 mt-0.5">{sub}</p>}
-        </div>
-    </div>
-);
-
 window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = React.useState({
         kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
-        datum: '', tid: '16:00', kundpris: '100', kommentar: ''
+        datum: today, tid: '08:00', kundpris: '100', kommentar: ''
     });
     
     const emptyExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }, { desc: '', amount: '' }];
@@ -150,17 +143,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [trodoPrices, setTrodoPrices] = React.useState(null);
     const [isFetchingParts, setIsFetchingParts] = React.useState(false);
 
-    // --- LIVE-SYNK MED DATABASEN (Single Source of Truth) ---
     React.useEffect(() => {
         const cleanReg = formData.regnr?.toUpperCase().trim();
         if (!cleanReg || cleanReg.length < 5 || !window.db) return;
 
-        // Vi sätter upp en prenumeration på just detta regnr i cachen.
-        // När Radarn har skrapat klart och sparar i db, uppdateras detta formulär direkt!
         const unsubscribe = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(doc => {
             if (doc.exists) {
                 const specs = doc.data();
-                
                 setFetchedCarInfo(prev => ({
                     regnr: cleanReg,
                     bilmodell: specs.model || prev?.bilmodell || "",
@@ -169,39 +158,31 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     oljevolym: specs.oil ? specs.oil.replace(' l', '') : (prev?.oljevolym || ""),
                     årsmodell: specs.year || prev?.årsmodell || "",
                     vin: specs.vin || prev?.vin || "",
-                    isNewData: false // Behöver inte autosparas igen, datan kommer ju FRÅN databasen
+                    isNewData: false
                 }));
 
-                // Om vi nyss fick in oljevolym via radarn, uppdatera priskalkylen
                 if (specs.oil) {
                     let oljaNum = parseFloat(specs.oil.toString().replace(',', '.').replace(/[^0-9.]/g, ''));
                     if (!isNaN(oljaNum) && oljaNum > 0) {
                         setOilLiters(oljaNum);
-                        // updateOilLogic(oljaNum) körs separat när oilLiters ändras i UI
                     }
                 }
             }
         });
-
         return () => unsubscribe();
     }, [formData.regnr]);
 
-    // LYSSNA EFTER PRISER FRÅN TRODO-SKRAPAN
     React.useEffect(() => {
         const handleTrodoMsg = (e) => {
             if (e.data && e.data.source === 'Trodo_Extension') {
                 setTrodoPrices(e.data.data);
-                
-                // LÄGGER IN PRISERNA AUTOMATISKT I UTGIFTERNA (med 40% påslag)
                 setExpenses(prev => {
                     const newExpenses = [...prev];
                     let i = 0;
                     Object.entries(e.data.data).forEach(([part, info]) => {
                         if(info.price !== '0' && i < 3) {
                             const inkopspris = parseFloat(info.price);
-                            const kundpris = (inkopspris * 1.4).toFixed(0); // 40% marginal till kunden
-                            
-                            // Letar upp en tom rad, eller skriver över
+                            const kundpris = (inkopspris * 1.4).toFixed(0); 
                             while (i < 3 && newExpenses[i].desc !== '') i++;
                             if (i < 3) {
                                 newExpenses[i] = { desc: `${part} (${info.brand})`, amount: kundpris };
@@ -216,7 +197,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         return () => window.removeEventListener('message', handleTrodoMsg);
     }, []);
 
-    // Ladda in befintligt jobb
     React.useEffect(() => {
         const loadExistingJob = async () => {
             if (editingJob) {
@@ -254,14 +234,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         isNewData: false
                     });
                 }
-
             } else {
                 const prefill = window.prefillName || ''; 
                 window.prefillName = null;
 
                 setFormData({
                     kundnamn: prefill, regnr: '', paket: 'Standard', status: 'BOKAD',
-                    datum: '', tid: '16:30', kundpris: '100', kommentar: ''
+                    datum: today, tid: '08:00', kundpris: '100', kommentar: ''
                 });
                 setExpenses(emptyExpenses);
                 setOilLiters(4.3);
@@ -271,7 +250,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             }
         };
         loadExistingJob();
-    }, [editingJob]);
+    }, [editingJob, today]);
 
     const updateOilLogic = React.useCallback((liters) => {
         const l = parseFloat(liters) || 0;
@@ -408,7 +387,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
     };
 
-    // --- FUNKTIONER FÖR ATT REDIGERA DATA DIREKT I RUTAN ---
     const handleSpecChange = (key, value) => {
         setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
     };
@@ -478,43 +456,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const finalPriceNum = parseFloat(formData.kundpris) || 0;
     const laborTotal = Math.max(0, finalPriceNum - partsTotal);
 
-    // --- FUNKTIONER FÖR TRODO AUTOMATISERING ---
-    const fetchPartsFromTrodo = (parts) => {
-        if (!formData.regnr) return alert("Skriv in ett regnr först!");
-        setIsFetchingParts(true);
-
-        // 1. Skicka uppdraget till Tilläggets bakgrundsminne (Chrome Storage)
-        window.postMessage({
-            action: 'SET_TRODO_MISSION',
-            regnr: formData.regnr.trim(),
-            parts: parts
-        }, '*');
-
-        // 2. Öppna fönstret - Tillägget tar automatiskt över när sidan laddas!
-        const w = 450, h = 550;
-        const left = (window.screen.width / 2) - (w / 2);
-        const top = (window.screen.height / 2) - (h / 2);
-        window.open('https://www.trodo.se/', `Trodo_${Date.now()}`, `width=${w},height=${h},left=${left},top=${top}`);
-    };
-
     React.useEffect(() => {
         const handleTrodoMsg = (e) => {
             if (e.data && e.data.source === 'Trodo_Extension') {
                 setTrodoPrices(e.data.data);
                 setIsFetchingParts(false);
-                
-                // TIPS: Avkommentera nedan om du vill att priserna ska matas in direkt i utgiftsraderna med 40% påslag!
-                /*
-                const newExpenses = [...emptyExpenses];
-                let i = 0;
-                Object.entries(e.data.data).forEach(([part, info]) => {
-                    if(info.price !== '0' && i < 3) {
-                        newExpenses[i] = { desc: `${part} (${info.brand})`, amount: (parseFloat(info.price) * 1.4).toFixed(0) };
-                        i++;
-                    }
-                });
-                setExpenses(newExpenses);
-                */
             }
         };
         window.addEventListener('message', handleTrodoMsg);
@@ -601,20 +547,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         type="button"
                                         onClick={() => {
                                             if(!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                            // ÄNDRING: Vi anropar nu den smarta radarn istället för Car.info!
                                             if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'SMART_SEARCH');
                                         }}
                                         className="shrink-0 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 hover:border-orange-200 dark:hover:border-orange-500/30 text-zinc-500 px-3 rounded-lg flex items-center justify-center transition-all"
                                         title="Smart Sökning (Hämtar all tillgänglig fordonsdata)"
                                     >
-                                        <window.Icon name="zap" size={16} /> {/* Bytte ikon till zap (blixt) för att matcha Smart Sök */}
+                                        <window.Icon name="zap" size={16} /> 
                                     </button>
                                 </div>
                             </InputWrapper>
                         </FormRow>
                     </div>
 
-                    {/* REDIGERBAR FORDONS-GRID (2-VÄGS SYNK) */}
                     {fetchedCarInfo && (
                         <div className="bg-orange-50/30 dark:bg-[#1a2235]/40 border border-orange-200/50 dark:border-orange-500/20 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300 relative z-30">
                             
@@ -629,7 +573,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 )}
                             </div>
 
-                            {/* Rad 1: 3 Kolumner */}
                             <div className="grid grid-cols-3 gap-2 mb-2">
                                 {[
                                     { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016' },
@@ -650,7 +593,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 ))}
                             </div>
                             
-                            {/* Rad 2: Chassinummer & Miltal */}
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="col-span-2 bg-white dark:bg-[#182032] border border-orange-100 dark:border-white/5 rounded-lg p-2 shadow-sm flex flex-col justify-center group focus-within:border-orange-500 transition-colors">
                                     <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-0.5">
@@ -705,16 +647,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         <FormRow>
                             <div className="space-y-3">
                                 <InputWrapper label="Servicepaket" icon="layers">
-                                    <div className="relative">
-                                        <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className={`${inputClasses} appearance-none cursor-pointer pr-10`}>
-                                            <option value="Standard">Standard</option>
-                                            <option value="Oljebyte">Oljebyte</option>
-                                            <option value="Hjulskifte">Hjulskifte</option>
-                                            <option value="Felsökning">Felsökning</option>
-                                        </select>
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                                            <SafeIcon name="chevron-down" size={14} />
-                                        </div>
+                                    <div className="flex bg-zinc-100 dark:bg-[#1a2235] p-1 rounded-xl border border-zinc-200/80 dark:border-white/5 w-full overflow-x-auto custom-scrollbar">
+                                        {['Standard', 'Oljebyte', 'Hjulskifte', 'Felsökning'].map(pkg => (
+                                            <button
+                                                key={pkg} 
+                                                type="button" 
+                                                onClick={() => handlePackageChange(pkg)}
+                                                className={`flex-1 min-w-[70px] py-2 px-1 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${formData.paket === pkg ? 'bg-white dark:bg-[#25324d] shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                                            >
+                                                {pkg}
+                                            </button>
+                                        ))}
                                     </div>
                                 </InputWrapper>
                                 
@@ -737,7 +680,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 className="shrink-0 px-5 bg-orange-500 text-white rounded-lg flex items-center justify-center transition-all active:scale-95 shadow-sm group border border-transparent"
                                                 title="Hämta Oljevolym"
                                             >
-                                                {/* Knivskarp inline-SVG (Droppe) */}
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
                                                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                                                 </svg>
@@ -837,65 +779,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         <SafeIcon name="shopping-cart" size={10} />Reservdelar & Material
                                     </label>
                                     <div className="flex gap-2">
-                                        
-                                        {/* --- DYNAMISK TRODO MENY (Kategori-länkar) --- */}
-                                        <div className="relative group/trodo">
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setIsTrodoMenuOpen(!isTrodoMenuOpen)}
-                                                className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 uppercase px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 border border-blue-200/50 dark:border-blue-500/20 shadow-sm"
-                                            >
-                                                <window.Icon name="search" size={10} className="text-blue-500" /> 
-                                                Trodo Sök
-                                                <window.Icon name={isTrodoMenuOpen ? "chevron-up" : "chevron-down"} size={10} className="opacity-70 ml-0.5" />
-                                            </button>
 
-                                            {isTrodoMenuOpen && (
-                                                <>
-                                                    <div className="fixed inset-0 z-40" onClick={() => setIsTrodoMenuOpen(false)}></div>
-                                                    <div className="absolute top-full right-0 mt-1.5 w-48 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right">
-                                                        {[
-                                                            { name: 'Båda (Olja + Luft)', parts: ['Oljefilter', 'Luftfilter'], highlight: true },
-                                                            { name: 'Oljefilter', parts: ['Oljefilter'] },
-                                                            { name: 'Luftfilter', parts: ['Luftfilter'] },
-                                                            { name: 'Kupéfilter', parts: ['Kupéfilter'] },
-                                                            { name: 'Bränslefilter', parts: ['Bränslefilter'] },
-                                                            { name: 'Tändstift', parts: ['Tändstift'] },
-                                                            { name: 'Bromsbelägg fram', parts: ['Bromsbelägg fram'] },
-                                                            { name: 'Bromsskivor fram', parts: ['Bromsskivor fram'] }
-                                                        ].map(item => (
-                                                            <button
-                                                                key={item.name}
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                                    setIsTrodoMenuOpen(false);
-                                                                    
-                                                                    // THE NUCLEAR OPTION: Skicka uppdraget till Tilläggets bakgrundsminne!
-                                                                    window.postMessage({
-                                                                        action: 'SET_TRODO_MISSION',
-                                                                        regnr: formData.regnr.trim(),
-                                                                        parts: item.parts
-                                                                    }, '*');
-                                                                    
-                                                                    const w = 450, h = 550;
-                                                                    const left = (window.screen.width / 2) - (w / 2);
-                                                                    const top = (window.screen.height / 2) - (h / 2);
-                                                                    
-                                                                    // Öppna bara en helt vanlig, ren Trodo-sida. Tillägget tar över!
-                                                                    window.open('https://www.trodo.se/', `Trodo_${Date.now()}`, `width=${w},height=${h},left=${left},top=${top}`);
-                                                                }}
-                                                                className={`w-full text-left px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${item.highlight ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10' : 'text-zinc-600 dark:text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400'}`}
-                                                            >
-                                                                + {item.name}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 shadow-sm">
+                                        <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 shadow-sm">
                                             <SafeIcon name="plus" size={10} /> Lägg till
                                         </button>
                                     </div>
@@ -923,45 +808,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </div>
                                     ))}
                                 </div>
-
-                                {/* --- TRODO AUTOMATISERING UI --- */}
-                                <div className="bg-zinc-50 dark:bg-[#1a2235]/40 border border-zinc-200/80 dark:border-white/5 rounded-xl p-4 shadow-sm mt-4 transition-all">
-                                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-3 flex items-center gap-2">
-                                        <SafeIcon name="shopping-cart" size={12} /> Autopriser Grossist
-                                    </div>
-
-                                    {/* RESULTAT-VISNING */}
-                                    {isFetchingParts && (
-                                        <div className="text-[10px] font-bold tracking-widest text-blue-500 animate-pulse flex items-center gap-2 uppercase">
-                                            <SafeIcon name="loader" size={12} className="animate-spin" /> Hämtar priser...
-                                        </div>
-                                    )}
-                                    
-                                    {trodoPrices && !isFetchingParts && (
-                                        <div className="bg-white dark:bg-[#0f1522] rounded-lg p-2 border border-zinc-200 dark:border-white/5 space-y-1">
-                                            {Object.entries(trodoPrices).map(([part, info]) => (
-                                                <a 
-                                                    key={part} 
-                                                    href={info.url || '#'} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    className="flex justify-between items-center text-[12px] group hover:bg-zinc-50 dark:hover:bg-white/5 p-2 rounded-lg transition-all cursor-pointer no-underline"
-                                                >
-                                                    <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                                                        {part} 
-                                                        <span className="text-zinc-400 text-[10px] font-normal italic">({info.brand})</span>
-                                                        {info.url && <SafeIcon name="external-link" size={10} className="text-zinc-300 dark:text-zinc-600 group-hover:text-blue-500 transition-colors" />}
-                                                    </span>
-                                                    <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
-                                                        {info.price === '0' ? 'Visa på Trodo' : `${info.price} kr`}
-                                                    </span>
-                                                </a>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                {/* --- SLUT TRODO UI --- */}
-
+                                
                             </div>
                         </div>
                     </div>
@@ -970,18 +817,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     <div className={`relative z-10 ${sectionCardClasses}`}>
                         <SectionHeader title="Arbetsanteckningar" sub="Mekanikerns anteckningar och felkoder" icon="terminal" />
                         <InputWrapper label="Egna Noteringar" icon="file-text">
-                            <div className="relative">
-                                <div className="absolute top-3 left-3 text-zinc-400 font-mono text-[12px] pointer-events-none">&gt;_</div>
-                                <RichNoteEditor 
-                                    value={formData.kommentar} 
-                                    onChange={(newHTML) => setFormData(p => ({ ...p, kommentar: newHTML }))} 
-                                />
-                            </div>
+                            <RichNoteEditor 
+                                value={formData.kommentar} 
+                                onChange={(newHTML) => setFormData(p => ({ ...p, kommentar: newHTML }))} 
+                            />
                         </InputWrapper>
                     </div>
 
                     {/* KNAPPAR */}
-                    <div className="pt-2 pb-0 flex flex-col sm:flex-row gap-2.5 items-center justify-end">
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5 items-center justify-end">
                         <button 
                             type="button" 
                             onClick={() => window.history.back()} 
