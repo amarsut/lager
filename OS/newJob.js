@@ -18,6 +18,106 @@ const InputWrapper = ({ label, icon, children }) => (
     </div>
 );
 
+const handleEditorClick = (e) => {
+    const link = e.target.closest('a'); // Kollar om klicket träffade en <a>-tagg
+    if (link) {
+        // Välj en av dessa två lösningar:
+        
+        // ALTERNATIV 1: Öppna alltid länken vid klick (Enklast & snabbast)
+        window.open(link.href, '_blank');
+        
+        // ALTERNATIV 2: Kräver att man håller in Ctrl/Cmd (Mer standard i textredigerare)
+        // if (e.ctrlKey || e.metaKey) window.open(link.href, '_blank');
+    }
+};
+
+const RichNoteEditor = ({ value, onChange }) => {
+    const editorRef = React.useRef(null);
+
+    // Formaterar texten
+    const format = (command, val = null) => {
+        document.execCommand(command, false, val);
+        editorRef.current.focus();
+        onChange(editorRef.current.innerHTML);
+    };
+
+    // Infoga snygg länk
+    const insertLink = () => {
+        const url = prompt('1. Klistra in webbadressen (t.ex. https://...):');
+        if (!url) return;
+        const text = prompt('2. Vad ska länken heta? (t.ex. "Länk till Vattenpump"):') || url;
+        
+        // Skapar en klickbar länk som öppnas i ny flik, med din blåa färg
+        const linkHTML = `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold;">${text}</a>`;
+        format('insertHTML', linkHTML);
+    };
+
+    // Bonus: Tidsstämpel
+    const insertTimestamp = () => {
+        const time = new Date().toLocaleString('sv-SE', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'short' });
+        format('insertHTML', `<br/><strong style="color: #f97316;">[${time}]</strong> `);
+    };
+
+    // Bonus: Diagnosmall
+    const insertTemplate = () => {
+        const template = `<br/><strong>• Kundens felbeskrivning:</strong> <br/><strong>• Verkstadens diagnos:</strong> <br/><strong>• Åtgärd/Reservdelar:</strong> <br/>`;
+        format('insertHTML', template);
+    };
+
+    return (
+        <div className="w-full bg-zinc-50 dark:bg-[#1a2235] focus-within:bg-white dark:focus-within:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 rounded-xl shadow-sm transition-all overflow-hidden flex flex-col focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10">
+            
+            {/* Verktygsfält */}
+            <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/50 dark:bg-[#182032]/50">
+                <button type="button" onClick={() => format('bold')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Fetstil">
+                    <SafeIcon name="bold" size={14} />
+                </button>
+                <button type="button" onClick={() => format('italic')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Kursiv">
+                    <SafeIcon name="italic" size={14} />
+                </button>
+                <button type="button" onClick={() => format('insertUnorderedList')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Punktlista">
+                    <SafeIcon name="list" size={14} />
+                </button>
+                
+                <div className="w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
+                
+                <button type="button" onClick={insertLink} className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" title="Infoga klickbar länk">
+                    <SafeIcon name="link" size={12} /> Länk
+                </button>
+                
+                <div className="w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
+                
+                <button type="button" onClick={insertTimestamp} className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
+                    <SafeIcon name="clock" size={12} /> Logg
+                </button>
+                <button type="button" onClick={insertTemplate} className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
+                    <SafeIcon name="file-text" size={12} /> Felsökningsmall
+                </button>
+            </div>
+
+            {/* Skrivytan (Växer automatiskt) */}
+            <div className="relative">
+                {/* Fallback-text om det är tomt */}
+                {!value && (
+                    <div className="absolute top-3 left-3 text-zinc-400/70 font-mono text-[12px] pointer-events-none">
+                        Skriv dina anteckningar här...
+                    </div>
+                )}
+                <div
+                    ref={editorRef}
+                    contentEditable
+                    onClick={handleEditorClick}
+                    // Uppdaterar React-state när man klickar ur (blur) för att undvika att markören hoppar när man skriver
+                    onBlur={(e) => onChange(e.currentTarget.innerHTML)} 
+                    dangerouslySetInnerHTML={{ __html: value }}
+                    className="p-3 min-h-[100px] text-[13px] leading-relaxed text-zinc-900 dark:text-white outline-none cursor-text"
+                    style={{ whiteSpace: 'pre-wrap' }}
+                />
+            </div>
+        </div>
+    );
+};
+
 const SectionHeader = ({ title, sub, icon }) => (
     <div className="flex items-start gap-2.5 mb-4 lg:mb-5 pb-2.5 lg:pb-3 border-b border-zinc-200/50 dark:border-white/5">
         <div className="mt-1 h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
@@ -872,11 +972,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         <InputWrapper label="Egna Noteringar" icon="file-text">
                             <div className="relative">
                                 <div className="absolute top-3 left-3 text-zinc-400 font-mono text-[12px] pointer-events-none">&gt;_</div>
-                                <textarea 
+                                <RichNoteEditor 
                                     value={formData.kommentar} 
-                                    onChange={e => setFormData(p => ({ ...p, kommentar: e.target.value }))} 
-                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-3 pl-8 font-mono text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300 min-h-[80px] lg:min-h-[100px] outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all resize-y rounded-xl shadow-sm" 
-                                    placeholder="Skriv dina anteckningar här..." 
+                                    onChange={(newHTML) => setFormData(p => ({ ...p, kommentar: newHTML }))} 
                                 />
                             </div>
                         </InputWrapper>
