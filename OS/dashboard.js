@@ -19,6 +19,16 @@ const formatDate = (dateStr) => {
     return `${targetDate.getDate()} ${months[targetDate.getMonth()]}`;
 };
 
+// Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
+const stripHtml = (html) => {
+    if (!html) return '';
+    // Ersätt radbrytningar med mellanslag så att inte texten klibbar ihop
+    const cleanText = String(html)
+        .replace(/<br\s*[\/]?>/gi, " ")
+        .replace(/<[^>]*>?/gm, ''); // Strippar alla HTML-taggar
+    return cleanText.trim();
+};
+
 // 2. PREMIUM STATUS BADGE
 window.Badge = React.memo(({ status }) => {
     const s = (status || 'BOKAD').toUpperCase();
@@ -639,7 +649,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         {job.kommentar && (
                             <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-snug flex items-start gap-1.5 font-medium">
                                 <window.Icon name="message-square" size={10} className="shrink-0 mt-[2px] opacity-70" />
-                                {job.kommentar}
+                                {stripHtml(job.kommentar)} {/* <-- ÄNDRAT HÄR */}
                             </span>
                         )}
                     </div>
@@ -1406,7 +1416,7 @@ window.DashboardView = React.memo(({
                                                                 {job.kommentar && (
                                                                     <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 italic truncate max-w-[140px]">
                                                                         <window.Icon name="message-square" size={10} className="shrink-0" />
-                                                                        <span className="truncate">{job.kommentar}</span>
+                                                                        <span className="truncate">{stripHtml(job.kommentar)}</span> {/* <-- ÄNDRAT HÄR */}
                                                                     </div>
                                                                 )}
                                                             </div>
