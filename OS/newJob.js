@@ -36,14 +36,22 @@ const RichNoteEditor = ({ value, onChange }) => {
 
     const format = (command, val = null) => {
         document.execCommand(command, false, val);
-        editorRef.current.focus();
-        onChange(editorRef.current.innerHTML);
+        if (editorRef.current) {
+            editorRef.current.focus();
+            onChange(editorRef.current.innerHTML);
+        }
     };
 
     const insertLink = () => {
-        const url = prompt('1. Klistra in webbadressen (t.ex. https://...):');
+        // 1. Kolla om användaren redan har markerat text
+        const selection = window.getSelection();
+        const selectedText = selection.toString();
+
+        const url = prompt('Klistra in webbadressen (t.ex. https://...):');
         if (!url) return;
-        const text = prompt('2. Vad ska länken heta? (t.ex. "Länk till Vattenpump"):') || url;
+        
+        // 2. Om text är markerad, använd den. Annars fråga vad länken ska heta.
+        const text = selectedText || prompt('Vad ska länken heta?', url) || url;
         
         const linkHTML = `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold; cursor: pointer;">${text}</a>`;
         format('insertHTML', linkHTML);
@@ -51,7 +59,8 @@ const RichNoteEditor = ({ value, onChange }) => {
 
     const insertTimestamp = () => {
         const time = new Date().toLocaleString('sv-SE', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'short' });
-        format('insertHTML', `<br/><strong style="color: #f97316;">[${time}]</strong> `);
+        // Tog bort <br/> så den inte tvingar fram en ny rad. Skjuter in ett mellanslag efter så man kan fortsätta skriva.
+        format('insertHTML', `<strong style="color: #f97316;">[${time}]</strong>&nbsp;`);
     };
 
     const insertTemplate = () => {
@@ -66,32 +75,38 @@ const RichNoteEditor = ({ value, onChange }) => {
         }
     };
 
+    // Hjälpfunktion: Förhindrar att knapparna stjäl fokus från textrutan när man klickar på dem
+    const keepFocus = (e) => {
+        e.preventDefault(); 
+    };
+
     return (
         <div className="w-full bg-zinc-50 dark:bg-[#1a2235] focus-within:bg-white dark:focus-within:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 rounded-xl shadow-sm transition-all overflow-hidden flex flex-col focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10">
             
             <div className="flex flex-wrap items-center gap-1.5 p-2 border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/50 dark:bg-[#182032]/50">
-                <button type="button" onClick={() => format('bold')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Fetstil">
+                {/* VIKTIGT: onMouseDown={keepFocus} är tillagt på alla knappar! */}
+                <button type="button" onMouseDown={keepFocus} onClick={() => format('bold')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Fetstil">
                     <SafeIcon name="bold" size={14} />
                 </button>
-                <button type="button" onClick={() => format('italic')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Kursiv">
+                <button type="button" onMouseDown={keepFocus} onClick={() => format('italic')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Kursiv">
                     <SafeIcon name="italic" size={14} />
                 </button>
-                <button type="button" onClick={() => format('insertUnorderedList')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Punktlista">
+                <button type="button" onMouseDown={keepFocus} onClick={() => format('insertUnorderedList')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Punktlista">
                     <SafeIcon name="list" size={14} />
                 </button>
                 
                 <div className="w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
                 
-                <button type="button" onClick={insertLink} className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" title="Infoga klickbar länk">
+                <button type="button" onMouseDown={keepFocus} onClick={insertLink} className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" title="Markera text och klicka för att infoga länk">
                     <SafeIcon name="link" size={12} /> Länk
                 </button>
                 
                 <div className="hidden sm:block w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
                 
-                <button type="button" onClick={insertTimestamp} className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
+                <button type="button" onMouseDown={keepFocus} onClick={insertTimestamp} className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
                     <SafeIcon name="clock" size={12} /> Logg
                 </button>
-                <button type="button" onClick={insertTemplate} className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
+                <button type="button" onMouseDown={keepFocus} onClick={insertTemplate} className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
                     <SafeIcon name="file-text" size={12} /> <span className="hidden sm:inline">Felsöknings</span>Mall
                 </button>
             </div>
@@ -108,7 +123,7 @@ const RichNoteEditor = ({ value, onChange }) => {
                     onClick={handleEditorClick}
                     onBlur={(e) => onChange(e.currentTarget.innerHTML)} 
                     dangerouslySetInnerHTML={{ __html: value }}
-                    className="p-3 min-h-[100px] text-[13px] leading-relaxed text-zinc-900 dark:text-white outline-none cursor-text"
+                    className="p-3 min-h-[100px] text-[13px] leading-relaxed text-zinc-900 dark:text-white outline-none cursor-text [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1 [&_li]:mb-1 [&_li]:marker:text-orange-500"
                     style={{ whiteSpace: 'pre-wrap' }}
                 />
             </div>
