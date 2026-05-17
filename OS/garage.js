@@ -13,6 +13,18 @@ const getBrand = (t) => {
 window.VEHICLE_BRANDS = BRANDS;
 window.getVehicleBrand = getBrand;
 
+// Tar bort HTML från rich text-anteckningar
+const stripHtml = (html) => {
+    if (!html) return '';
+    const text = String(html).replace(/<br\s*[\/]?>/gi, " ").replace(/<\/p>/gi, " ");
+    if (typeof document !== 'undefined') {
+        const tmp = document.createElement("DIV");
+        tmp.innerHTML = text;
+        return (tmp.textContent || tmp.innerText || "").trim();
+    }
+    return text.replace(/<[^>]*>?/gm, '').trim(); 
+};
+
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const s = size; const c = className;
     switch (name) {
@@ -128,8 +140,21 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const filteredHistory = v.history.filter(j => {
         if (!histQ) return true;
         const q = histQ.toLowerCase();
-        return (j.kundnamn||'').toLowerCase().includes(q) || (j.kommentar||'').toLowerCase().includes(q) || (j.datum||'').includes(q);
-    }).sort((a,b)=>b.datum.localeCompare(a.datum));
+        // Sök i den städade texten, inte i HTML-taggarna!
+        const cleanKommentar = stripHtml(j.kommentar || '').toLowerCase();
+        return (j.kundnamn||'').toLowerCase().includes(q) || cleanKommentar.includes(q) || (j.datum||'').includes(q);
+    }).sort((a, b) => {
+        // 1. Prioritet: Jobbet vi precis klickade in från i Dashboarden (highlightId) ska alltid ligga absolut högst upp
+        if (a.id === highlightId) return -1;
+        if (b.id === highlightId) return 1;
+        
+        // 2. Prioritet: Jobb som helt saknar datum (Oplanerade/Väntande) läggs näst högst upp
+        if (!a.datum && b.datum) return -1;
+        if (a.datum && !b.datum) return 1;
+        
+        // 3. Prioritet: Vanlig sortering där nyaste datumet ligger överst
+        return (b.datum || '').localeCompare(a.datum || '');
+    });
 
     return (
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-200">
@@ -341,7 +366,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                             {j.kommentar && (
                                                 <div className="mt-2.5 pt-2 border-t border-zinc-100 dark:border-white/5">
                                                     <p className={`text-[11px] leading-snug line-clamp-2 italic ${isHighlighted ? 'text-orange-800 dark:text-orange-200/80' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                                                        {j.kommentar}
+                                                        {stripHtml(j.kommentar)}
                                                     </p>
                                                 </div>
                                             )}
