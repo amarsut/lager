@@ -481,6 +481,8 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const vehicleDisplay = job.regnr || job.bilmodell || '-';
     const isReg = vehicleDisplay.length <= 8 && /\d/.test(vehicleDisplay);
     const price = parseInt(job.kundpris) || 0;
+    const paid = parseInt(job.betaltBelopp) || 0;
+    const remaining = Math.max(0, price - paid);
 
     const handleCopy = (e) => {
         e.stopPropagation();
@@ -656,12 +658,27 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     
                     <div className="shrink-0 text-right">
                         {price > 0 ? (
-                            // ÄNDRING: Ligger nu på samma rad med texten "kr"
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-[18px] font-black text-zinc-900 dark:text-white leading-none tracking-tight">
-                                    {price.toLocaleString('sv-SE')}
-                                </span> 
-                                <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">kr</span>
+                            <div className="flex flex-col items-end">
+                                {/* Visar delbetalning/skuld ENDAST när status är FAKTURERAS */}
+                                {job.status === 'FAKTURERAS' && paid > 0 ? (
+                                    <>
+                                        <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest mb-0.5">{paid.toLocaleString('sv-SE')} kr</span>
+                                        <div className="flex items-baseline gap-1 text-orange-500">
+                                            <span className="text-[18px] font-black leading-none tracking-tight">
+                                                {remaining.toLocaleString('sv-SE')}
+                                            </span> 
+                                            <span className="text-[11px] font-bold uppercase tracking-widest">kr</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* För ALLA andra statusar (inkl. KLAR), visa originalpriset */
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-[18px] font-black leading-none tracking-tight text-zinc-900 dark:text-white">
+                                            {price.toLocaleString('sv-SE')}
+                                        </span> 
+                                        <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">kr</span>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <span className="text-[9px] font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded-md uppercase tracking-widest">Ej prissatt</span>
@@ -1057,16 +1074,21 @@ window.DashboardView = React.memo(({
 
     const invoiceStats = React.useMemo(() => {
         if (activeFilter !== 'FAKTURERAS') return { total: 0, topCustomers: [] };
-        let total = 0;
+        let totalRemaining = 0;
         const customers = {};
         filteredJobs.forEach(job => {
             const price = parseInt(job.kundpris) || 0;
-            total += price;
-            const name = job.kundnamn || 'Okänd kund';
-            customers[name] = (customers[name] || 0) + price;
+            const paid = parseInt(job.betaltBelopp) || 0;
+            const remaining = Math.max(0, price - paid); // Subtrahera avdraget
+
+            if (remaining > 0) { // Visa enbart kunder som faktiskt har skuld kvar
+                totalRemaining += remaining;
+                const name = job.kundnamn || 'Okänd kund';
+                customers[name] = (customers[name] || 0) + remaining;
+            }
         });
         return {
-            total,
+            total: totalRemaining,
             topCustomers: Object.entries(customers).sort((a, b) => b[1] - a[1])
         };
     }, [filteredJobs, activeFilter]);
@@ -1366,6 +1388,8 @@ window.DashboardView = React.memo(({
                                             const isReg = regDisplay.length <= 8 && /\d/.test(regDisplay);
                                             const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
                                             const price = parseInt(job.kundpris) || 0;
+                                            const paid = parseInt(job.betaltBelopp) || 0;
+                                            const remaining = Math.max(0, price - paid);
                                             
                                             const isWaiting = !job.datum;
                                             const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader;
@@ -1482,8 +1506,23 @@ window.DashboardView = React.memo(({
                                                         </td>
 
                                                         <td className="px-4 py-4 align-middle text-right">
-                                                            <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                                                {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                            <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
+                                                                {/* Visar delbetalning/skuld ENDAST när status är FAKTURERAS */}
+                                                                {job.status === 'FAKTURERAS' && paid > 0 ? (
+                                                                    <>
+                                                                        <span className="text-[10px] text-emerald-500 font-bold font-sans tracking-widest uppercase mb-1">
+                                                                             {paid.toLocaleString('sv-SE')} kr
+                                                                        </span>
+                                                                        <div className="text-orange-500">
+                                                                            {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    /* För ALLA andra statusar (inkl. KLAR), visa originalpriset */
+                                                                    <div className="text-zinc-700 dark:text-zinc-200">
+                                                                        {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </td>
 
