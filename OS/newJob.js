@@ -135,7 +135,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = React.useState({
         kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
-        datum: today, tid: '16:30', kundpris: '100', kommentar: ''
+        datum: today, tid: '16:30', kundpris: '100', kommentar: '', betaltBelopp: ''
     });
     
     const emptyExpenses = [{ desc: '', amount: '' }, { desc: '', amount: '' }, { desc: '', amount: '' }];
@@ -182,6 +182,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 setFormData(prev => ({ 
                     ...prev,
                     ...editingJob, 
+                    betaltBelopp: editingJob.betaltBelopp || '',
                     datum: editingJob.datum ? editingJob.datum.split('T')[0] : '',
                     tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '16:30' 
                 }));
@@ -394,7 +395,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             const finalRegnr = formData.regnr.toUpperCase().trim();
             
             const data = { 
-                ...formData, 
+                ...formData,
+                betaltBelopp: parseInt(formData.betaltBelopp) || 0, 
                 regnr: finalRegnr, 
                 datum: formData.datum ? `${formData.datum}T${formData.tid}` : '', 
                 oljevolym: oilLiters,
@@ -434,6 +436,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const partsTotal = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
     const finalPriceNum = parseFloat(formData.kundpris) || 0;
     const laborTotal = Math.max(0, finalPriceNum - partsTotal);
+
+    // Hitta historik automatiskt baserat på Reg.nr eller Kundnamn
+    const historyJobs = React.useMemo(() => {
+        let matches = [];
+        if (formData.regnr && formData.regnr.length >= 5) {
+            matches = allJobs.filter(j => j.regnr === formData.regnr && j.id !== (editingJob ? editingJob.id : null));
+        } else if (formData.kundnamn && formData.kundnamn.length > 2) {
+            matches = allJobs.filter(j => j.kundnamn.toLowerCase() === formData.kundnamn.toLowerCase() && j.id !== (editingJob ? editingJob.id : null));
+        }
+        return matches.sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
+    }, [formData.regnr, formData.kundnamn, allJobs, editingJob]);
 
     const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-lg lg:rounded-xl shadow-sm";
     const sectionCardClasses = "bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow";
@@ -686,55 +699,114 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
                             
-                            <div className="bg-zinc-50 dark:bg-[#1a2235]/50 p-4 lg:p-5 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col justify-center relative overflow-hidden group">
+                            {/* VÄNSTER KOLUMN: PRIS & SAMMANFATTNING */}
+                            <div className="bg-zinc-50 dark:bg-[#1a2235]/50 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col relative overflow-hidden group h-full shadow-sm hover:shadow-md transition-shadow">
                                 <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all group-focus-within:bg-orange-500/10"></div>
                                 
-                                <InputWrapper label="Totalpris (inkl. moms)" icon="dollar-sign">
-                                    <div className="mt-1 flex items-baseline relative z-10">
-                                        <input 
-                                            type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} 
-                                            className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl md:text-5xl font-light tracking-tighter outline-none focus:text-orange-500 transition-colors" 
-                                            placeholder="0" 
-                                        />
-                                        <span className="text-lg font-bold text-zinc-400 dark:text-zinc-500 ml-2">SEK</span>
-                                    </div>
-                                </InputWrapper>
-
-                                <div className="mt-4 pt-3 border-t border-zinc-200/80 dark:border-white/10 flex flex-col gap-2.5 relative z-10 animate-in fade-in duration-300">
-                                    
-                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                                        <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                                            <SafeIcon name="box" size={10} /> Reservdelar
-                                        </span>
-                                        <span className="text-zinc-700 dark:text-zinc-300">{partsTotal.toLocaleString()} kr</span>
-                                    </div>
-                                    
-                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                                        <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                                            <SafeIcon name="tool" size={10} /> Arbetskostnad
-                                        </span>
-                                        
-                                        <div 
-                                            className="flex items-center gap-1.5 bg-zinc-100/80 dark:bg-white/5 focus-within:bg-white dark:focus-within:bg-[#1f2940] px-2 py-1 rounded-md border border-transparent focus-within:border-orange-500/50 focus-within:shadow-[0_0_10px_rgba(249,115,22,0.2)] transition-all cursor-text group/input" 
-                                            onClick={(e) => e.currentTarget.querySelector('input').focus()}
-                                        >
-                                            <SafeIcon name="edit-2" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within/input:text-orange-500 transition-colors" />
-                                            
+                                {/* ÖVRE DELEN (Paddad yta) */}
+                                <div className="p-4 lg:p-5 flex-1 flex flex-col justify-center relative z-10">
+                                    <InputWrapper label="Totalpris (inkl. moms)" icon="dollar-sign">
+                                        <div className="mt-1 flex items-baseline relative z-10">
                                             <input 
-                                                type="number" 
-                                                value={laborTotal === 0 && finalPriceNum === 0 ? '' : laborTotal} 
-                                                onChange={e => {
-                                                    const newLabor = parseFloat(e.target.value) || 0;
-                                                    setFormData(p => ({ ...p, kundpris: (newLabor + partsTotal).toString() }));
-                                                }}
-                                                className={`w-12 bg-transparent outline-none text-right font-mono text-[12px] ${laborTotal > 0 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-zinc-500 dark:text-zinc-400 font-bold'}`}
-                                                placeholder="0"
+                                                type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} 
+                                                className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl md:text-5xl font-light tracking-tighter outline-none focus:text-orange-500 transition-colors" 
+                                                placeholder="0" 
                                             />
-                                            <span className={`text-[8px] ${laborTotal > 0 ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-zinc-400'}`}>kr</span>
+                                            <span className="text-lg font-bold text-zinc-400 dark:text-zinc-500 ml-2">SEK</span>
+                                        </div>
+                                    </InputWrapper>
+
+                                    {/* DETALJER (Reservdelar, Arbete, Delbetalt) */}
+                                    <div className="mt-5 pt-4 border-t border-zinc-200/80 dark:border-white/10 flex flex-col gap-2">
+                                        
+                                        {/* 1. RESERVDELAR */}
+                                        <div className="flex justify-between items-center group/row">
+                                            <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-[#1f2940] flex items-center justify-center shrink-0">
+                                                    <SafeIcon name="box" size={12} className="text-zinc-400 dark:text-zinc-500" />
+                                                </div>
+                                                Reservdelar
+                                            </div>
+                                            
+                                            {/* Osynlig box för att linjera exakt med input-fälten under */}
+                                            <div className="flex items-center justify-end gap-1.5 px-2 py-1.5 w-[100px]">
+                                                <span className="text-[13px] font-mono font-bold text-zinc-700 dark:text-zinc-300">{partsTotal.toLocaleString()}</span>
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">kr</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* 2. ARBETSKOSTNAD */}
+                                        <div className="flex justify-between items-center group/row">
+                                            <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-[#1f2940] flex items-center justify-center shrink-0">
+                                                    <SafeIcon name="arrow-up" size={12} className="text-zinc-400 dark:text-zinc-500 group-focus-within/row:text-orange-500 transition-colors" />
+                                                </div>
+                                                Arbetskostnad
+                                            </div>
+                                            
+                                            <div 
+                                                className="flex items-center gap-1.5 bg-white dark:bg-[#1f2940] px-2 py-1.5 w-[100px] rounded-md border border-zinc-200 dark:border-white/10 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10 transition-all cursor-text shadow-sm" 
+                                                onClick={(e) => e.currentTarget.querySelector('input').focus()}
+                                            >
+                                                <input 
+                                                    type="number" 
+                                                    value={laborTotal === 0 && finalPriceNum === 0 ? '' : laborTotal} 
+                                                    onChange={e => {
+                                                        const newLabor = parseFloat(e.target.value) || 0;
+                                                        setFormData(p => ({ ...p, kundpris: (newLabor + partsTotal).toString() }));
+                                                    }}
+                                                    className={`w-full bg-transparent outline-none text-right font-mono text-[13px] ${laborTotal > 0 ? 'text-zinc-900 dark:text-white font-black' : 'text-zinc-500 dark:text-zinc-400 font-bold'}`}
+                                                    placeholder="0"
+                                                />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">kr</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Mjuk avskiljare innan betalning */}
+                                        <div className="w-full border-t border-dashed border-zinc-200/80 dark:border-white/10 my-1"></div>
+
+                                        {/* 3. FÖRSKOTT / DELBETALT */}
+                                        <div className="flex justify-between items-center group/row">
+                                            <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">
+                                                <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                                    <SafeIcon name="arrow-down" size={12} className="text-emerald-500 dark:text-emerald-400 group-focus-within/row:scale-110 transition-transform" />
+                                                </div>
+                                                Delbetalt
+                                            </div>
+                                            
+                                            <div 
+                                                className="flex items-center gap-1 bg-white dark:bg-[#1f2940] px-2 py-1.5 w-[100px] rounded-md border border-emerald-200 dark:border-emerald-500/30 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 transition-all cursor-text shadow-sm" 
+                                                onClick={(e) => e.currentTarget.querySelector('input').focus()}
+                                            >
+                                                <SafeIcon name="minus" size={10} className="text-emerald-400 shrink-0" />
+                                                <input 
+                                                    type="number" 
+                                                    value={formData.betaltBelopp || ''} 
+                                                    onChange={e => setFormData(p => ({ ...p, betaltBelopp: e.target.value }))}
+                                                    className="w-full bg-transparent outline-none text-right font-mono text-[13px] text-emerald-600 dark:text-emerald-400 font-black placeholder:text-emerald-300 dark:placeholder:text-emerald-700"
+                                                    placeholder="0"
+                                                />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/70">kr</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                {/* NEDRE DELEN: KVAR ATT BETALA (Fyller hela bredden i botten) */}
+                                {parseFloat(formData.betaltBelopp) > 0 && (
+                                    <div className="bg-orange-50/80 dark:bg-orange-500/10 border-t border-orange-200/60 dark:border-orange-500/20 p-4 lg:px-5 flex justify-between items-center animate-in slide-in-from-bottom-4 fade-in duration-300">
+                                        <span className="text-[11px] text-orange-800 dark:text-orange-300 uppercase tracking-widest font-black flex items-center gap-1.5">
+                                            <SafeIcon name="pie-chart" size={12} className="text-orange-500" /> Kvar att fakturera
+                                        </span>
+                                        <div className="flex items-baseline gap-1 text-orange-600 dark:text-orange-400">
+                                            <span className="text-[22px] font-black tracking-tight leading-none">
+                                                {Math.max(0, (parseFloat(formData.kundpris) || 0) - parseFloat(formData.betaltBelopp)).toLocaleString('sv-SE')}
+                                            </span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest ml-0.5">kr</span>
                                         </div>
                                     </div>
-
-                                </div>
+                                )}
                             </div>
 
                             <div className="space-y-3">
@@ -752,20 +824,39 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
                                     {expenses.map((ex, i) => (
                                         <div key={i} className="flex gap-2 items-center group/row">
-                                            <input 
-                                                placeholder="Artikel/Delnamn" value={ex.desc} onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
-                                                className="flex-1 bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
-                                            />
-                                            <div className="relative w-24">
+                                            {/* Artikelnamn med inbyggd ikon */}
+                                            <div className="flex-1 relative flex items-center">
+                                                <div className="absolute left-3 text-zinc-400 dark:text-zinc-500 pointer-events-none group-focus-within/row:text-orange-500 transition-colors">
+                                                    <SafeIcon name="tag" size={12} />
+                                                </div>
                                                 <input 
-                                                    placeholder="0" type="number" 
+                                                    placeholder="Artikel / Tjänst" 
+                                                    value={ex.desc} 
+                                                    onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
+                                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 py-2.5 pl-8 pr-3 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                />
+                                            </div>
+
+                                            {/* Pris med inbyggt "kr" i fältet */}
+                                            <div className="relative w-28 shrink-0 flex items-center">
+                                                <input 
+                                                    placeholder="0" 
+                                                    type="number" 
+                                                    onFocus={(e) => e.target.select()}
                                                     value={ex.amount} 
                                                     onChange={e => handleExpenseAmountChange(i, e.target.value)} 
-                                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2 pr-6 text-[12px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                    className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 py-2.5 pl-3 pr-7 text-[12px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
                                                 />
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-zinc-400 font-bold">kr</span>
+                                                <span className="absolute right-3 text-[9px] text-zinc-400 font-bold uppercase tracking-widest pointer-events-none">kr</span>
                                             </div>
-                                            <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1.5 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-lg shrink-0">
+
+                                            {/* Snyggare papperskorg */}
+                                            <button 
+                                                type="button" 
+                                                onClick={() => removeExpenseRow(i)} 
+                                                className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-all p-2.5 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-xl shrink-0 active:scale-95"
+                                                title="Ta bort rad"
+                                            >
                                                 <SafeIcon name="trash-2" size={14} />
                                             </button>
                                         </div>
