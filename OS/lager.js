@@ -1,11 +1,10 @@
 // lager.js
 
-// --- Huvudikoner från systemet (Stabilt renderade med keys) ---
+// --- Huvudikoner från systemet ---
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     if (!window.Icon) return null;
     return (
         <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
-            {/* Nyckeln (key) tvingar React att hålla isär ikonerna vid snabba om-renderingar */}
             <window.Icon name={name} size={size} key={name + size} />
         </span>
     );
@@ -53,7 +52,6 @@ const LagerIcon = ({ category, name, size = 32, className = "" }) => {
 
 // --- Hjälpfunktioner ---
 const generateTrodoLink = (f) => f ? `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
-const generateThansenLink = (f) => f ? `https://www.thansen.se/search/?query=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
 
 // --- STABIL MODAL (Redigering & Ny Artikel) ---
 const LagerItemModal = ({ item, onClose }) => {
@@ -95,25 +93,22 @@ const LagerItemModal = ({ item, onClose }) => {
         }
     };
 
-    const InputClass = "w-full bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-[13px] text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner";
-    const LabelClass = "block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1";
+    const InputClass = "w-full bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner";
+    const LabelClass = "block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1.5 ml-1";
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
-            {/* Oskarp bakgrund - Ligger tryggt under själva formuläret */}
             <div className="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" onClick={onClose}></div>
             
-            {/* Modalen */}
             <div className="relative w-full max-w-2xl bg-white dark:bg-[#182032] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-white/10 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                 
-                {/* Swipe-indikator mobil */}
                 <div className="w-full flex justify-center pt-3 pb-2 sm:hidden bg-zinc-50 dark:bg-[#1a2235]">
                     <div className="w-12 h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full"></div>
                 </div>
 
                 <div className="px-6 py-5 flex justify-between items-center bg-zinc-50/80 dark:bg-[#1a2235]/50 border-b border-zinc-200/80 dark:border-white/5 relative overflow-hidden">
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-200/50 dark:border-orange-500/20 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center shadow-md">
                             <SafeIcon name={isNew ? "plus" : "edit-2"} size={20} />
                         </div>
                         <div>
@@ -168,9 +163,8 @@ const LagerItemModal = ({ item, onClose }) => {
 
                     <div className="px-6 py-5 border-t border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-[#1a2235]/50 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
                         {!isNew ? (
-                            <button type="button" onClick={handleDelete} className="h-12 px-5 flex items-center justify-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-95 shadow-sm">
-                                <SafeIcon name="trash-2" size={16} className="mr-2" />
-                                <span className="text-[11px] font-bold uppercase tracking-widest">Radera</span>
+                            <button type="button" onClick={handleDelete} className="h-12 px-5 flex items-center justify-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-95 shadow-sm font-bold uppercase tracking-widest text-[11px]">
+                                <SafeIcon name="trash-2" size={16} className="mr-2" /> Radera
                             </button>
                         ) : <div className="hidden sm:block"></div>}
                         
@@ -178,7 +172,7 @@ const LagerItemModal = ({ item, onClose }) => {
                             <button type="button" onClick={onClose} className="flex-1 sm:w-32 h-12 text-[11px] font-bold text-zinc-600 dark:text-zinc-300 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all uppercase tracking-widest active:scale-95 shadow-sm">
                                 Avbryt
                             </button>
-                            <button type="submit" className="flex-1 sm:w-40 h-12 text-[11px] font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 border border-emerald-400/50 rounded-xl shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest">
+                            <button type="submit" className="flex-1 sm:w-40 h-12 text-[11px] font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 border border-orange-400/50 rounded-xl shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest">
                                 <SafeIcon name="check" size={16} /> Spara
                             </button>
                         </div>
@@ -189,12 +183,12 @@ const LagerItemModal = ({ item, onClose }) => {
     );
 };
 
-// --- HUVUDVY FÖR LAGER ---
+// --- HUVUDVY FÖR LAGER (Sök- & Identifieringsfokus) ---
 window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
-    const [activeCat, setActiveCat] = React.useState("Service"); // Rätt standardläge!
-    const [stockFilter, setStockFilter] = React.useState("inStock"); // Rätt standardläge!
+    const [activeCat, setActiveCat] = React.useState("Service");
+    const [stockFilter, setStockFilter] = React.useState("all");
     const [editingItem, setEditingItem] = React.useState(null); 
     const [sortBy, setSortBy] = React.useState("name_asc");
     const [copiedId, setCopiedId] = React.useState(null);
@@ -207,7 +201,6 @@ window.LagerView = ({ allJobs = [] }) => {
         return () => unsub();
     }, []);
 
-    // Tvinga ikoner att laddas in när items ritas om (Löser buggen där ikoner försvinner)
     React.useEffect(() => {
         if (window.lucide) {
             setTimeout(() => window.lucide.createIcons(), 50);
@@ -247,11 +240,9 @@ window.LagerView = ({ allJobs = [] }) => {
     const filteredItems = React.useMemo(() => {
         let res = [...items];
 
-        // 1. Lagerstatus (Det nya filtret)
         if (stockFilter === 'inStock') res = res.filter(i => (parseInt(i.quantity)||0) > 0);
         if (stockFilter === 'outOfStock') res = res.filter(i => (parseInt(i.quantity)||0) <= 0);
 
-        // 2. Kategori
         if (activeCat !== 'Alla') {
             if (keywords.includes(activeCat)) {
                 res = res.filter(i => (i.name || "").toUpperCase().includes(activeCat));
@@ -260,7 +251,6 @@ window.LagerView = ({ allJobs = [] }) => {
             }
         }
 
-        // 3. Sökning
         if (search) {
             const term = search.toLowerCase().replace(/\s+/g, '');
             res = res.filter(i => 
@@ -270,7 +260,6 @@ window.LagerView = ({ allJobs = [] }) => {
             );
         }
 
-        // 4. Sortering
         res.sort((a,b) => {
             if(sortBy === "name_asc") return (a.name||"").localeCompare(b.name||"");
             if(sortBy === "price_asc") return (parseInt(a.price)||0) - (parseInt(b.price)||0);
@@ -282,276 +271,256 @@ window.LagerView = ({ allJobs = [] }) => {
         return res;
     }, [items, search, activeCat, stockFilter, sortBy]);
 
-    const totalValue = items.reduce((sum, item) => sum + ((parseInt(item.price) || 0) * (parseInt(item.quantity) || 0)), 0);
-    const outOfStock = items.filter(i => (parseInt(i.quantity) || 0) <= 0).length;
-    const totalCount = items.length;
-
     const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra Märken'];
 
-    // VIKTIGT: Modalen är nu UTANFÖR den animerade containern
+    // Render-funktioner för att hålla koden DRY och hantera Desktop/Mobil layouter perfekt
+    const renderStepper = (item, qty, inStock) => (
+        <div className="flex items-center bg-white dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-lg p-0.5 shadow-sm" onClick={e => e.stopPropagation()}>
+            <button onClick={(e) => quickAdjustStock(e, item, -1)} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-400 hover:bg-zinc-100 dark:hover:bg-[#1a2235] hover:text-zinc-900 dark:hover:text-white rounded-md transition-all active:scale-95"><SafeIcon name="minus" size={14} /></button>
+            <div className="w-10 sm:w-12 text-center"><span className={`text-[14px] sm:text-[15px] font-black font-mono leading-none ${inStock ? 'text-zinc-900 dark:text-white' : 'text-red-500'}`}>{qty}</span></div>
+            <button onClick={(e) => quickAdjustStock(e, item, 1)} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-400 hover:bg-zinc-100 dark:hover:bg-[#1a2235] hover:text-zinc-900 dark:hover:text-white rounded-md transition-all active:scale-95"><SafeIcon name="plus" size={14} /></button>
+        </div>
+    );
+
+    const renderPrice = (item) => (
+        <div className="flex flex-col justify-center items-end">
+            <div className="text-[15px] sm:text-[16px] font-bold font-mono text-zinc-900 dark:text-white leading-none">{(parseInt(item.price)||0).toLocaleString()}</div>
+            <div className="text-[9px] font-bold text-zinc-400 uppercase mt-0.5 tracking-widest">SEK</div>
+        </div>
+    );
+
+    const renderActions = (item) => (
+        <div className="flex items-center gap-1.5 shrink-0">
+            <a href={generateTrodoLink(item.service_filter || item.name)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-[#0f1522] text-zinc-400 hover:bg-[#0066cc] hover:text-white hover:border-transparent flex items-center justify-center transition-all shadow-sm active:scale-95 border border-zinc-200/50 dark:border-white/5"><SafeIcon name="external-link" size={14} /></a>
+            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-[#0f1522] text-zinc-400 hover:bg-orange-500 hover:text-white hover:border-transparent flex items-center justify-center transition-all shadow-sm active:scale-95 border border-zinc-200/50 dark:border-white/5"><SafeIcon name="edit-2" size={14} /></button>
+        </div>
+    );
+
     return (
         <>
-            <div className="relative max-w-[1400px] w-full animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0">
-                
+            <div className="relative max-w-[1400px] w-[calc(100%+2rem)] -ml-4 sm:w-full sm:ml-0 animate-in fade-in slide-in-from-left-4 duration-700 pb-32 lg:pb-12">
                 <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
                 {/* --- HEADER --- */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6 px-4 pt-5 lg:px-0 lg:pt-0">
-                    <div className="flex items-center gap-4 md:gap-5">
+                {/* Minskade px-4 till px-1.5 på mobilen för att utnyttja skärmbredden bättre */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-4 px-1.5 sm:px-4 pt-4 lg:px-0 lg:pt-0">
+                    <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
                         <div className="relative group cursor-default shrink-0">
                             <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <SafeIcon name="layers" size={28} />
+                            <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-3xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <SafeIcon name="search" size={24} className="md:w-[28px] md:h-[28px]" />
                             </div>
                         </div>
                         <div className="flex flex-col">
                             <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
-                                LOKALT<span className="text-zinc-400 dark:text-zinc-500 font-light">LAGER</span>
+                                ARTIKEL<span className="text-zinc-400 dark:text-zinc-500 font-light">SÖK</span>
                             </h1>
-                            <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                                Produktdatabas // Komponenter
+                            <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 sm:mt-2 flex items-center gap-1.5 sm:gap-2">
+                                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                Identifiering & Saldo // BMG
                             </p>
                         </div>
                     </div>
-
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 z-10 w-full lg:w-auto">
-                        <div className="relative group flex-1 lg:w-80">
-                            <input 
-                                type="text" 
-                                placeholder="SÖK I LAGRET..." 
-                                className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/10 focus:border-orange-500 p-4 pl-12 pr-10 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-2xl shadow-sm focus:ring-4 focus:ring-orange-500/10"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                            <SafeIcon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                            {search && (
-                                <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors bg-zinc-100 dark:bg-white/5 p-1 rounded-md">
-                                    <SafeIcon name="x" size={12} />
-                                </button>
-                            )}
-                            {!search && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:block">
-                                    <kbd className="px-1.5 py-0.5 text-[9px] font-sans font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded text-center">⌘K</kbd>
-                                </div>
-                            )}
-                        </div>
-                        <button onClick={() => setEditingItem({})} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold text-[13px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] border border-orange-400/50 active:scale-95 transition-all rounded-2xl h-[48px] px-8 flex items-center justify-center gap-2 shrink-0">
-                            <SafeIcon name="plus" size={16} /> Ny Artikel
-                        </button>
-                    </div>
                 </div>
 
-                <div className="px-3 sm:px-4 lg:px-0 space-y-6">
+                {/* --- MAIN CONTENT WRAPPER --- */}
+                {/* Minskade px-3 till px-1.5 på mobilen */}
+                <div className="px-1.5 sm:px-4 lg:px-0 space-y-3 sm:space-y-4">
                     
-                    {/* --- KPI CARDS --- */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden group col-span-2 md:col-span-1">
-                            <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full pointer-events-none transition-colors group-hover:bg-emerald-500/10"></div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <SafeIcon name="dollar-sign" size={12} className="text-emerald-500" /> Totalt Lagervärde
+                    {/* --- CONTROL BAR --- */}
+                    <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-xl sm:rounded-2xl p-1.5 sm:p-3 shadow-sm flex flex-col lg:flex-row gap-2 sm:gap-3 lg:items-center justify-between mb-3 lg:mb-6">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-1">
+                            {/* Sökning */}
+                            <div className="relative group flex-1 lg:max-w-md">
+                                <input 
+                                    type="text" placeholder="Sök artikelnamn, OEN-nummer..." 
+                                    className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 focus:border-orange-500 p-2.5 sm:p-3 pl-9 sm:pl-11 pr-8 text-[12px] sm:text-[13px] font-medium text-zinc-900 dark:text-white outline-none w-full transition-all rounded-lg sm:rounded-xl focus:ring-2 focus:ring-orange-500/10 shadow-inner"
+                                    value={search} onChange={(e) => setSearch(e.target.value)}
+                                />
+                                <SafeIcon name="search" size={14} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                                {search && (
+                                    <button onClick={() => setSearch('')} className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors bg-white dark:bg-[#1a2235] p-1 rounded-md shadow-sm">
+                                        <SafeIcon name="x" size={12} />
+                                    </button>
+                                )}
                             </div>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-3xl sm:text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                    {totalValue.toLocaleString('sv-SE')}
-                                </span>
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase">kr</span>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden group">
-                            <div className="absolute right-0 top-0 w-24 h-24 bg-blue-500/5 blur-2xl rounded-full pointer-events-none transition-colors group-hover:bg-blue-500/10"></div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <SafeIcon name="package" size={12} className="text-blue-500" /> Unika Artiklar
-                            </div>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-3xl sm:text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                    {totalCount}
-                                </span>
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase">st</span>
-                            </div>
-                        </div>
 
-                        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden group">
-                            <div className={`absolute right-0 top-0 w-24 h-24 blur-2xl rounded-full pointer-events-none transition-colors ${outOfStock > 0 ? 'bg-red-500/10 group-hover:bg-red-500/20' : 'bg-zinc-500/5 group-hover:bg-zinc-500/10'}`}></div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <SafeIcon name="alert-circle" size={12} className={outOfStock > 0 ? "text-red-500" : "text-zinc-500"} /> Slutsålda
-                            </div>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className={`text-3xl sm:text-4xl font-light tracking-tighter leading-none ${outOfStock > 0 ? 'text-red-500 font-bold animate-pulse' : 'text-zinc-900 dark:text-white'}`}>
-                                    {outOfStock}
-                                </span>
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase">st</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* --- FILTRERING OCH SORTERING (Kompakt layout för mobilen) --- */}
-                    <div className="flex flex-col gap-2.5 sm:gap-3 py-1">
-                        
-                        {/* Rad 1 på mobil: Dropdowns */}
-                        <div className="flex gap-2 sm:gap-3">
+                            {/* Kategori Dropdown */}
                             <select 
                                 value={activeCat} onChange={(e) => setActiveCat(e.target.value)}
-                                className="flex-1 lg:hidden bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] py-2.5 px-3 rounded-xl text-[11px] sm:text-[12px] font-bold uppercase tracking-widest outline-none text-zinc-700 dark:text-zinc-300 shadow-sm"
+                                className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 py-2.5 sm:py-3 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-widest outline-none text-zinc-700 dark:text-zinc-300 shadow-inner lg:w-48"
                             >
                                 <option value="Alla">Alla Kategorier</option>
                                 {mainCats.map(c => <option key={c} value={c}>{c}</option>)}
-                                {subFilters.map(c => <option key={c} value={c}>{c}</option>)}
+                                <optgroup label="Snabblänkar">
+                                    {subFilters.map(c => <option key={c} value={c}>{c}</option>)}
+                                </optgroup>
                             </select>
 
-                            <select 
-                                value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                                className="flex-1 lg:w-48 lg:flex-none bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] py-2.5 px-3 rounded-xl text-[11px] sm:text-[12px] font-bold uppercase tracking-widest outline-none text-zinc-700 dark:text-zinc-300 shadow-sm"
-                            >
-                                <option value="name_asc">Sortera: A-Ö</option>
-                                <option value="price_asc">Lägst pris</option>
-                                <option value="price_desc">Högst pris</option>
-                                <option value="stock_desc">Mest i lager</option>
-                            </select>
-                        </div>
-
-                        {/* Desktop: Horizontell kategori */}
-                        <div className="hidden lg:flex overflow-x-auto custom-scrollbar gap-2 pb-2 -mb-2">
-                            {['Alla', ...mainCats, ...subFilters].map(cat => {
-                                const isActive = activeCat === cat;
-                                return (
+                            {/* Lagerstatus Filter */}
+                            <div className="flex bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-lg sm:rounded-xl p-1 shadow-inner h-[38px] sm:h-[46px] lg:h-auto">
+                                {[
+                                    { id: 'all', label: 'Alla' },
+                                    { id: 'inStock', label: 'I lager' },
+                                    { id: 'outOfStock', label: 'Slut' }
+                                ].map(f => (
                                     <button 
-                                        key={cat} onClick={() => setActiveCat(cat)} 
-                                        className={`px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border ${isActive ? 'bg-white dark:bg-[#25324d] text-zinc-900 dark:text-white border-zinc-200 dark:border-white/10 shadow-sm' : 'bg-transparent text-zinc-500 border-transparent hover:bg-white/50 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                                        key={f.id} onClick={() => setStockFilter(f.id)} 
+                                        className={`px-2 sm:px-4 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all rounded-[6px] sm:rounded-lg flex-1 lg:flex-none ${stockFilter === f.id ? 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                                     >
-                                        {cat}
+                                        {f.label}
                                     </button>
-                                );
-                            })}
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Rad 2 på mobil: Lagerstatus Toggle */}
-                        <div className="flex bg-white dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] rounded-xl p-1 shadow-sm w-full lg:w-auto">
-                            {[
-                                { id: 'all', label: 'Alla' },
-                                { id: 'inStock', label: 'I lager' },
-                                { id: 'outOfStock', label: 'Slutsålt' }
-                            ].map(f => (
-                                <button 
-                                    key={f.id}
-                                    onClick={() => setStockFilter(f.id)} 
-                                    className={`flex-1 px-4 py-2.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all ${stockFilter === f.id ? 'bg-zinc-100 dark:bg-[#1a2235] text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5'}`}
-                                >
-                                    {f.label}
-                                </button>
-                            ))}
-                        </div>
+                        {/* Ny Artikel Knapp */}
+                        <button onClick={() => setEditingItem({})} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[10px] sm:text-[11px] uppercase tracking-widest shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] border border-orange-400/50 active:scale-95 transition-all rounded-lg sm:rounded-xl h-[38px] sm:h-[46px] lg:h-[42px] px-4 sm:px-6 flex items-center justify-center gap-1.5 shrink-0">
+                            <SafeIcon name="plus" size={14} /> Ny Artikel
+                        </button>
                     </div>
 
-                    {/* --- LISTAN --- */}
-                    <div className="space-y-3 sm:space-y-4 pb-12">
+                    {/* --- ENTERPRISE GRID (Huvudlista) --- */}
+                    {/* Minskad gap mellan korten på mobil från gap-3 till gap-2 för en tajtare känsla */}
+                    <div className="flex flex-col gap-2 sm:gap-3 lg:gap-0 lg:bg-white/90 lg:dark:bg-[#182032]/90 lg:border lg:border-zinc-200/80 lg:dark:border-white/5 lg:rounded-2xl lg:shadow-sm overflow-hidden">
+                        
+                        {/* Tabell-Header (Endast Desktop, använder strikt Grid) */}
+                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_260px_130px_100px_90px] gap-4 px-6 py-3.5 bg-zinc-100/50 dark:bg-[#121826]/80 border-b border-zinc-200/80 dark:border-white/5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 items-center">
+                            <div className="pl-2">Artikel & Info</div>
+                            <div>Specifikation</div>
+                            <div className="text-center">Lagersaldo</div>
+                            <div className="text-right pr-4">Á-Pris</div>
+                            <div className="text-right pr-1">Åtgärd</div>
+                        </div>
+
+                        {/* Resultat */}
                         {filteredItems.length === 0 ? (
-                            <div className="p-16 text-center bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-3xl shadow-sm">
-                                <SafeIcon name="search" size={40} className="text-zinc-300 dark:text-zinc-600 mb-4 mx-auto opacity-50" />
-                                <h3 className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Inga artiklar hittades</h3>
+                            <div className="p-16 text-center bg-white dark:bg-[#182032] rounded-xl sm:rounded-2xl lg:rounded-none shadow-sm lg:shadow-none">
+                                <SafeIcon name="search" size={48} className="text-zinc-300 dark:text-zinc-600 mb-4 mx-auto opacity-50" />
+                                <h3 className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Inga artiklar hittades</h3>
                             </div>
                         ) : (
-                            filteredItems.map(item => {
+                            filteredItems.map((item) => {
                                 const qty = parseInt(item.quantity) || 0;
                                 const inStock = qty > 0;
+                                const lowStock = qty > 0 && qty <= 2;
                                 
-                                return (
-                                    <div key={item.id} className="group bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-3.5 sm:p-5 flex flex-col lg:flex-row lg:items-center relative gap-4 sm:gap-6 shadow-sm hover:shadow-md hover:border-orange-500/30 transition-all overflow-hidden cursor-pointer" onClick={() => setEditingItem(item)}>
-                                        
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-zinc-50/50 dark:to-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                let statusColor = "bg-emerald-500";
+                                if (!inStock) statusColor = "bg-red-500 animate-pulse";
+                                else if (lowStock) statusColor = "bg-yellow-500";
 
-                                        {/* Ikon Box */}
-                                        <div className="flex items-center gap-4 lg:w-1/4">
-                                            <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl shrink-0 border transition-colors relative ${inStock ? 'bg-zinc-50 dark:bg-[#121826] border-zinc-200 dark:border-white/10' : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'}`}>
-                                                {!inStock && (
-                                                    <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-[#182032] flex items-center justify-center animate-pulse"></div>
-                                                )}
-                                                <LagerIcon category={item.category} name={item.name} size={32} className={inStock ? "" : "text-red-500 opacity-80"} />
-                                            </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <h3 className="text-[14px] sm:text-[15px] font-black text-zinc-900 dark:text-white leading-tight truncate group-hover:text-orange-500 transition-colors">
-                                                    {item.name}
-                                                </h3>
-                                                <div className="flex items-center gap-2 mt-1.5">
-                                                    <button 
-                                                        onClick={(e) => handleCopyId(e, item.service_filter, item.id)}
-                                                        className={`text-[9px] font-mono px-2 py-0.5 rounded-md border transition-all flex items-center gap-1.5 ${copiedId === item.id ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-zinc-100 dark:bg-black/30 text-zinc-500 dark:text-zinc-400 border-zinc-200/50 dark:border-white/5 hover:text-orange-500'}`}
-                                                    >
-                                                        <SafeIcon name={copiedId === item.id ? "check" : "hash"} size={10} />
-                                                        {item.service_filter || 'SAKNAS'}
-                                                    </button>
+                                return (
+                                    <div 
+                                        key={item.id} 
+                                        onClick={() => setEditingItem(item)}
+                                        className="group bg-white dark:bg-[#182032] lg:bg-transparent border border-zinc-200/80 lg:border-x-0 lg:border-t-0 lg:border-b dark:border-white/5 rounded-xl sm:rounded-2xl lg:rounded-none shadow-sm lg:shadow-none hover:bg-zinc-50 dark:hover:bg-[#1f2940]/40 transition-all cursor-pointer relative"
+                                    >
+                                        
+                                        {/* --- DESKTOP VIEW (Grid) --- */}
+                                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_260px_130px_100px_90px] gap-4 px-6 py-3.5 items-center">
+                                            
+                                            {/* Col 1: Icon & Text */}
+                                            <div className="flex items-center gap-4 min-w-0 pr-4">
+                                                <div className="relative shrink-0">
+                                                    <div className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-[2.5px] border-white dark:border-[#182032] ${statusColor} z-10`}></div>
+                                                    <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white dark:bg-[#121826] border border-zinc-200/80 dark:border-white/10 shadow-sm transition-colors group-hover:border-orange-500/30">
+                                                        <LagerIcon category={item.category} name={item.name} size={24} className={inStock ? "text-zinc-700 dark:text-zinc-200" : "text-zinc-400 opacity-50"} />
+                                                    </div>
                                                 </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <h3 className="text-[13px] font-black text-zinc-900 dark:text-white leading-tight truncate group-hover:text-orange-500 transition-colors">
+                                                        {item.name}
+                                                    </h3>
+                                                    <div className="mt-1 flex items-center gap-2">
+                                                        <div 
+                                                            onClick={(e) => handleCopyId(e, item.service_filter, item.id)}
+                                                            className={`text-[11px] font-mono font-bold tracking-widest flex items-center gap-1.5 w-max px-2 py-0.5 rounded border transition-all shadow-sm ${copiedId === item.id ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-white dark:bg-[#121826] text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-white/10 hover:border-orange-300 hover:text-orange-500'}`}
+                                                        >
+                                                            <SafeIcon name={copiedId === item.id ? "check" : "hash"} size={10} />
+                                                            {item.service_filter || 'SAKNAS'}
+                                                        </div>
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 bg-zinc-100 dark:bg-[#0f1522] px-1.5 py-0.5 rounded border border-zinc-200/50 dark:border-white/5">
+                                                            {item.category}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Col 2: Spec */}
+                                            <div className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium truncate" title={item.notes}>
+                                                {item.notes || '-'}
+                                            </div>
+
+                                            {/* Col 3: Stepper */}
+                                            <div className="flex items-center justify-center">
+                                                {renderStepper(item, qty, inStock)}
+                                            </div>
+
+                                            {/* Col 4: Price */}
+                                            <div className="flex items-center justify-end pr-4">
+                                                {renderPrice(item)}
+                                            </div>
+
+                                            {/* Col 5: Actions */}
+                                            <div className="flex items-center justify-end">
+                                                {renderActions(item)}
                                             </div>
                                         </div>
 
-                                        {/* Egenskaper */}
-                                        <div className="lg:w-1/3 flex flex-col justify-center">
-                                            <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 flex items-center gap-1.5">
-                                                <SafeIcon name="tag" size={10} /> {item.category}
+                                        {/* --- MOBILE VIEW (Flex Column) --- */}
+                                        <div className="lg:hidden flex flex-col p-3 sm:p-4 gap-2.5">
+                                            {/* Top Row: Icon + Texts */}
+                                            <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                                                <div className="relative shrink-0">
+                                                    <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-[2px] border-white dark:border-[#182032] ${statusColor} z-10`}></div>
+                                                    <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-[#121826] border border-zinc-200/80 dark:border-white/10 shadow-sm">
+                                                        <LagerIcon category={item.category} name={item.name} size={26} className={inStock ? "text-zinc-700 dark:text-zinc-200" : "text-zinc-400 opacity-50"} />
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col min-w-0 flex-1 pt-0.5">
+                                                    <h3 className="text-[14px] sm:text-[15px] font-black text-zinc-900 dark:text-white leading-tight truncate">
+                                                        {item.name}
+                                                    </h3>
+                                                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                                        <div 
+                                                            onClick={(e) => handleCopyId(e, item.service_filter, item.id)}
+                                                            className={`text-[11px] sm:text-[12px] font-mono font-bold tracking-wider flex items-center gap-1.5 w-max px-2 py-0.5 rounded border transition-colors shadow-sm ${copiedId === item.id ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'}`}
+                                                        >
+                                                            <SafeIcon name={copiedId === item.id ? "check" : "hash"} size={10} />
+                                                            {item.service_filter || 'SAKNAS'}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            {item.notes ? (
-                                                <div className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium truncate" title={item.notes}>
+
+                                            {/* Middle Row: Notes */}
+                                            {item.notes && (
+                                                <div className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-[#0f1522] p-2 sm:p-2.5 rounded-lg border border-zinc-100 dark:border-white/5 line-clamp-2">
                                                     {item.notes}
                                                 </div>
-                                            ) : (
-                                                <div className="text-[12px] text-zinc-400 italic opacity-50">Ingen beskrivning</div>
                                             )}
-                                        </div>
 
-                                        {/* Lager & Pris Container */}
-                                        <div className="flex items-center justify-between lg:justify-end flex-1 gap-4 lg:gap-8 pt-3 border-t border-zinc-100 dark:border-white/5 lg:border-t-0 lg:pt-0">
-                                            
-                                            {/* Stepper för antal */}
-                                            <div className="flex items-center bg-zinc-100/80 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/5 rounded-xl p-1 shadow-inner h-[42px]" onClick={e => e.stopPropagation()}>
-                                                <button onClick={(e) => quickAdjustStock(e, item, -1)} className="w-10 h-full flex items-center justify-center text-zinc-500 hover:bg-white dark:hover:bg-[#1a2235] hover:text-zinc-900 dark:hover:text-white rounded-lg transition-all shadow-sm active:scale-95">
-                                                    <SafeIcon name="minus" size={14} />
-                                                </button>
-                                                <div className="w-10 sm:w-12 h-full flex flex-col items-center justify-center">
-                                                    <span className={`text-[15px] font-black font-mono leading-none ${inStock ? 'text-zinc-900 dark:text-white' : 'text-red-500'}`}>{qty}</span>
+                                            {/* Bottom Row: Controls */}
+                                            <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-white/5 w-full mt-0.5">
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    {renderStepper(item, qty, inStock)}
                                                 </div>
-                                                <button onClick={(e) => quickAdjustStock(e, item, 1)} className="w-10 h-full flex items-center justify-center text-zinc-500 hover:bg-white dark:hover:bg-[#1a2235] hover:text-zinc-900 dark:hover:text-white rounded-lg transition-all shadow-sm active:scale-95">
-                                                    <SafeIcon name="plus" size={14} />
-                                                </button>
-                                            </div>
-
-                                            {/* Pris */}
-                                            <div className="text-right flex flex-col justify-center min-w-[70px] sm:min-w-[80px]">
-                                                <div className="text-xl sm:text-2xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                                    {(parseInt(item.price)||0).toLocaleString()}
+                                                <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                                                    {renderPrice(item)}
+                                                    {renderActions(item)}
                                                 </div>
-                                                <div className="text-[9px] font-bold text-zinc-400 uppercase mt-1 tracking-widest">SEK / ST</div>
                                             </div>
                                         </div>
 
-                                        {/* Svävande Actions (Hover på Desktop) */}
-                                        <div className="hidden lg:flex absolute right-4 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 items-center gap-2 bg-gradient-to-l from-white via-white to-transparent dark:from-[#182032] dark:via-[#182032] pl-12 h-full top-0">
-                                            <a href={generateTrodoLink(item.service_filter || item.name)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-10 h-10 rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 flex items-center justify-center text-[#0066cc] dark:text-[#3399ff] hover:bg-[#0066cc] hover:text-white transition-all shadow-sm" title="Sök på Trodo">
-                                                <SafeIcon name="external-link" size={16} />
-                                            </a>
-                                            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="w-10 h-10 rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all shadow-sm" title="Redigera Artikel">
-                                                <SafeIcon name="edit-2" size={16} />
-                                            </button>
-                                        </div>
-
-                                        {/* Mobile Actions */}
-                                        <div className="lg:hidden flex gap-2 w-full pt-3 border-t border-zinc-100 dark:border-white/5">
-                                            <a href={generateTrodoLink(item.service_filter || item.name)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex-1 py-2.5 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200/50 dark:border-white/10 flex items-center justify-center text-[10px] font-bold text-[#0066cc] dark:text-[#3399ff] uppercase tracking-widest gap-2 active:scale-95 transition-all">
-                                                <SafeIcon name="external-link" size={12} /> Trodo
-                                            </a>
-                                            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="flex-1 py-2.5 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200/50 dark:border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest gap-2 active:scale-95 transition-all">
-                                                <SafeIcon name="edit-2" size={12} /> Redigera
-                                            </button>
-                                        </div>
                                     </div>
                                 );
                             })
                         )}
                     </div>
+
                 </div>
             </div>
             
-            {/* Modal ligger nu helt separat från huvudcontainern! */}
             {editingItem && <LagerItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
         </>
     );
