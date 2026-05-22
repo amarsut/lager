@@ -73,7 +73,7 @@ const LagerItemModal = ({ item, onClose }) => {
             if (isNew) {
                 await window.db.collection("lager").add(dataToSave);
             } else {
-                await window.db.collection("lager").doc(item.id).update(dataToSave);
+                await window.db.collection("lager").doc(String(item.id)).update(dataToSave);
             }
             onClose();
         } catch (err) {
@@ -85,7 +85,7 @@ const LagerItemModal = ({ item, onClose }) => {
     const handleDelete = async () => {
         if (!isNew && confirm("Är du säker på att du vill radera denna artikel permanent?")) {
             try {
-                await window.db.collection("lager").doc(item.id).delete();
+                await window.db.collection("lager").doc(String(item.id)).delete();
                 onClose();
             } catch (err) {
                 console.error("Fel vid radering:", err);
@@ -212,7 +212,7 @@ window.LagerView = ({ allJobs = [] }) => {
         const currentQty = parseInt(item.quantity) || 0;
         const newQty = Math.max(0, currentQty + amount);
         try {
-            await window.db.collection("lager").doc(item.id).update({ quantity: newQty });
+            await window.db.collection("lager").doc(String(item.id)).update({ quantity: newQty });
         } catch (err) {
             console.error("Fel vid uppdatering av saldo", err);
         }
@@ -304,20 +304,20 @@ window.LagerView = ({ allJobs = [] }) => {
                 {/* --- HEADER --- */}
                 {/* Minskade px-4 till px-1.5 på mobilen för att utnyttja skärmbredden bättre */}
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-4 px-1.5 sm:px-4 pt-4 lg:px-0 lg:pt-0">
-                    <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
+                    <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-3xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <SafeIcon name="search" size={24} className="md:w-[28px] md:h-[28px]" />
+                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <SafeIcon name="search" size={20} className="md:w-6 md:h-6" />
                             </div>
                         </div>
                         <div className="flex flex-col">
-                            <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
                                 ARTIKEL<span className="text-zinc-400 dark:text-zinc-500 font-light">SÖK</span>
                             </h1>
-                            <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 sm:mt-2 flex items-center gap-1.5 sm:gap-2">
-                                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                                Identifiering & Saldo // BMG
+                            <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                Identifiering & Saldo
                             </p>
                         </div>
                     </div>
