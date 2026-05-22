@@ -449,20 +449,20 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
             {/* HEADER (Huvudvy) */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6 px-4 pt-5 lg:px-0 lg:pt-0">
-                <div className="flex items-center gap-4 md:gap-5">
+                <div className="flex items-center gap-3 md:gap-4">
                     <div className="relative group cursor-default shrink-0">
-                        <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                        <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl flex items-center justify-center text-white shadow-xl border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                            <SafeIcon name="users" size={28} />
+                        <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                        <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                            <SafeIcon name="users" size={20} className="md:w-6 md:h-6" />
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
                             KUND<span className="text-zinc-400 dark:text-zinc-500 font-light">REGISTER</span>
                         </h1>
-                        <p className="text-[10px] md:text-[11px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                            Totalt: {customerData.length} Kunder // Värde: {(totalDatabaseValue / 1000).toFixed(1)}k SEK
+                        <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                            Totalt: {customerData.length} Kunder
                         </p>
                     </div>
                 </div>
