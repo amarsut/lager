@@ -143,34 +143,41 @@ window.ReferenceView = ({ setView }) => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-zinc-50/50 dark:bg-transparent text-zinc-900 dark:text-zinc-100 transition-colors duration-300 pb-20 md:pb-6">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
             
-            {/* --- DRIVE HEADER --- (Ändrat sticky till relative md:sticky) */}
-            <div className="relative md:sticky top-0 z-40 bg-white/80 dark:bg-[#121826]/80 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 px-4 py-4 md:px-8 mb-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl"> {/* Borttaget mx-auto för vänsterställning */}
-                    
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
+
+            <div className="px-4 pt-4 lg:px-0 lg:pt-0"> {/* Upplinjering! */}
+                {/* TOP HEADER */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-zinc-200/50 dark:border-white/5 gap-4">
                     {/* Titel & Logotyp */}
-                    <div className="flex items-center gap-4">
-                        <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-lg shadow-orange-500/20 shrink-0">
-                            <IconFolder size={24} />
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="relative group cursor-default shrink-0">
+                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <IconFolder size={20} className="md:w-6 md:h-6" />
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white tracking-tight leading-tight">
-                                Workspace
+                        <div className="flex flex-col">
+                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                WORK<span className="text-zinc-400 dark:text-zinc-500 font-light">SPACE</span>
                             </h1>
-                            <div className="flex items-center gap-3 mt-1">
+                            <div className="flex items-center gap-2 mt-1">
                                 <button 
                                     onClick={() => setActiveTab('ALLA')}
-                                    className={`text-[12px] font-semibold tracking-wide uppercase transition-colors ${activeTab === 'ALLA' ? 'text-orange-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
+                                    className={`text-[9px] md:text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center gap-1.5 ${activeTab === 'ALLA' ? 'text-orange-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                                 >
+                                    {activeTab === 'ALLA' && <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>}
                                     Min Enhet
                                 </button>
                                 <span className="text-zinc-300 dark:text-zinc-600">•</span>
                                 <button 
                                     onClick={() => setActiveTab('FAVORITER')}
-                                    className={`text-[12px] font-semibold tracking-wide uppercase flex items-center gap-1 transition-colors ${activeTab === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
+                                    className={`text-[9px] md:text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center gap-1.5 ${activeTab === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
                                 >
-                                    <IconStar size={12} filled={activeTab === 'FAVORITER'} /> Bokmärken
+                                    {activeTab === 'FAVORITER' && <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>}
+                                    <IconStar size={10} filled={activeTab === 'FAVORITER'} /> Bokmärken
                                 </button>
                             </div>
                         </div>
