@@ -466,27 +466,31 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const sectionCardClasses = "bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow";
 
     return (
-        <div className="relative max-w-4xl ml-0 animate-in fade-in slide-in-from-left-4 duration-700 w-full">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
             
-            <div className="absolute top-0 left-[-10%] w-[80%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+            <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-3 md:pb-4 border-b border-zinc-200 dark:border-white/5 gap-3 md:gap-4 pt-2 lg:pt-0 px-4 lg:px-0">
-                <div className="flex items-center gap-3 md:gap-4">
-                    <div className="relative group cursor-default shrink-0">
-                        <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                        <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                            <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="md:w-6 md:h-6" />
+            {/* --- UNIFORM MOBIL WRAPPER --- */}
+            <div className="px-4 pt-4 lg:px-0 lg:pt-0 flex flex-col h-full">
+                
+                {/* HEADER */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-200/50 dark:border-white/5 gap-4">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="relative group cursor-default shrink-0">
+                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="md:w-6 md:h-6" />
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                            {editingJob ? 'UPPDATERA' : 'NYTT'} <span className="text-zinc-400 dark:text-zinc-500 font-light">UPPDRAG</span>
-                        </h1>
-                        <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                            {editingJob ? 'Redigera arbetsorder' : 'Skapa arbetsorder'}
-                        </p>
+                        <div className="flex flex-col">
+                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                {editingJob ? 'UPPDATERA' : 'NYTT'} <span className="text-zinc-400 dark:text-zinc-500 font-light">UPPDRAG</span>
+                            </h1>
+                            <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                {editingJob ? 'Redigera arbetsorder' : 'Skapa arbetsorder'}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
