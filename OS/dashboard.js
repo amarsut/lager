@@ -1133,13 +1133,15 @@ window.DashboardView = React.memo(({
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
-            
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            <div className="px-4 pt-4 lg:px-0 lg:pt-0">
-                {/* HEADER */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-zinc-200/50 dark:border-white/5 gap-4">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block transition-all duration-700"></div>
+
+            {/* --- DESKTOP VY (VIKTIGT: "hidden lg:flex" döljer detta på mobil) --- */}
+            <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
+                
+                {/* HEADER - DATOR */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 pt-4 lg:pt-0">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative group cursor-default shrink-0">
                             <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
