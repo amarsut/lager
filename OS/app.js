@@ -398,12 +398,13 @@ const App = () => {
                             return (
                                 <div key={item.id} 
                                     onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
-                                    // Hover-färgerna är nu låsta till hover:bg-white/[0.05] och hover:text-white
-                                    className={`flex items-center px-6 py-4 cursor-pointer transition-all duration-300 group relative ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${isActive ? 'bg-orange-500/10 text-orange-500' : 'text-zinc-500 hover:text-white hover:bg-white/[0.05]'}`}>                                
+                                    className={`flex items-center px-6 py-4 cursor-pointer transition-all duration-300 group relative ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06] shadow-sm' : 'hover:bg-white/[0.03]'}`}>                                
                                     
-                                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)] animate-in fade-in duration-300"></div>}
+                                    {/* Aktiv linje (Orange) som växer fram */}
+                                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-orange-500 rounded-r-full shadow-[0_0_12px_rgba(249,115,22,0.8)] transition-all duration-300 ${isActive ? 'h-8 opacity-100' : 'h-0 opacity-0 group-hover:h-4 group-hover:opacity-50'}`}></div>
 
-                                    <div className={`relative flex items-center justify-center transition-transform duration-300 ${isActive ? '' : 'group-hover:translate-x-1'}`}>
+                                    {/* Ikon */}
+                                    <div className={`relative flex items-center justify-center transition-all duration-300 z-10 ${isActive ? 'text-orange-500 drop-shadow-sm scale-110' : 'text-zinc-400 group-hover:text-orange-400 group-hover:translate-x-1'}`}>
                                         <window.Icon name={item.icon} size={18} />
                                         {item.id === 'CHAT' && hasUnread && (
                                             <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
@@ -412,7 +413,13 @@ const App = () => {
                                             </span>
                                         )}
                                     </div>
-                                    {sidebarOpen && <span className={`ml-4 text-[12px] font-medium transition-transform duration-300 ${isActive ? '' : 'group-hover:translate-x-1'}`}>{item.label.replace('_', ' ')}</span>}
+                                    
+                                    {/* Text */}
+                                    {sidebarOpen && (
+                                        <span className={`ml-4 text-[13px] font-bold tracking-wide transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-zinc-300 group-hover:text-white group-hover:translate-x-1'}`}>
+                                            {item.label.replace('_', ' ')}
+                                        </span>
+                                    )}
                                 </div>
                             );
                         })}
