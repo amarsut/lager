@@ -72,6 +72,7 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
     const [sortMode, setSortMode] = React.useState('revenue'); 
     const [logSearch, setLogSearch] = React.useState('');
     const [visibleCount, setVisibleCount] = React.useState(20);
+    const [viewMode, setViewMode] = React.useState('GRID'); // Nytt state för tabell/kortvy
     
     // Limits
     const [showAllVehicles, setShowAllVehicles] = React.useState(false);
@@ -187,8 +188,6 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
     const visibleCustomers = customerData.slice(0, visibleCount);
     const hasMore = visibleCount < customerData.length;
     
-    const totalDatabaseValue = customerData.reduce((sum, c) => sum + c.totalSpent, 0);
-
     // --- NY, SLEEK RANK BADGE ---
     const RankBadge = ({ rank }) => {
         const styles = {
@@ -206,7 +205,9 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
         );
     };
 
-    // --- DETALJVY FÖR SPECIFIK KUND ---
+    // ==========================================
+    // DETALJVY FÖR SPECIFIK KUND (BEVARAD!)
+    // ==========================================
     if (selectedCustomer) {
         const loyaltyScore = Math.min(100, (selectedCustomer.missionCount * 5));
         const daysSinceLast = Math.floor((new Date() - new Date(selectedCustomer.lastSeen)) / (1000 * 60 * 60 * 24));
@@ -441,14 +442,15 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
         );
     }
 
-    // --- HUVUDLISTA MED KUNDER (Listvyn) ---
+    // ==========================================
+    // HUVUDLISTA MED KUNDER (Nu med GRID/TABLE)
+    // ==========================================
     return (
-        <div className="relative max-w-[1400px] w-full animate-in fade-in slide-in-from-left-4 duration-700 pb-0 ml-0">
-            {/* Background Glow */}
+        <div className="relative max-w-[1400px] w-full animate-in fade-in slide-in-from-left-4 duration-700 pb-32 lg:pb-12 ml-0">
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            {/* HEADER (Huvudvy) */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6 px-4 pt-5 lg:px-0 lg:pt-0">
+            {/* HEADER - MATCHAD MED LAGER.JS */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-4 px-1.5 sm:px-4 pt-4 lg:px-0 lg:pt-0">
                 <div className="flex items-center gap-3 md:gap-4">
                     <div className="relative group cursor-default shrink-0">
                         <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
@@ -466,64 +468,69 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                         </p>
                     </div>
                 </div>
-
-                {/* FILTERS & SEARCH */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 z-10 w-full lg:w-auto">
-                    <div className="flex bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl p-1 border border-zinc-200/80 dark:border-white/10 rounded-2xl shadow-sm">
-                        {[
-                            { id: 'revenue', icon: 'dollar-sign', text: 'Omsättn.' },
-                            { id: 'count', icon: 'hash', text: 'Besök' },
-                            { id: 'recent', icon: 'clock', text: 'Senaste' }
-                        ].map(m => (
-                            <button 
-                                key={m.id}
-                                onClick={() => setSortMode(m.id)}
-                                className={`py-3 px-4 transition-all flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl text-[10px] font-bold uppercase tracking-widest ${sortMode === m.id ? 'bg-zinc-100 dark:bg-[#25324d] text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
-                                title={m.text}
-                            >
-                                <SafeIcon name={m.icon} size={14} />
-                                <span className="hidden md:inline">{m.text}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="relative group flex-1 lg:w-80">
-                        <input 
-                            type="text" 
-                            placeholder="SÖK KUND ELLER REGNR..." 
-                            className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/10 focus:border-orange-500 p-4 pl-12 pr-10 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-2xl shadow-sm focus:ring-4 focus:ring-orange-500/10"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <SafeIcon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                        {searchQuery && (
-                            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors bg-zinc-100 dark:bg-white/5 p-1 rounded-md">
-                                <SafeIcon name="x" size={12} />
-                            </button>
-                        )}
-                    </div>
-                </div>
             </div>
 
-            {/* KUNDLISTAN */}
-            <div className="bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl rounded-3xl shadow-sm border border-zinc-200/80 dark:border-white/5 overflow-hidden flex flex-col mx-4 lg:mx-0 mb-12 relative">
-                
-                {/* Desktop Header */}
-                <div className="hidden lg:flex items-center px-8 py-5 bg-zinc-50/80 dark:bg-white/5 border-b border-zinc-200/80 dark:border-white/10 text-[10px] uppercase tracking-widest font-bold text-zinc-400 dark:text-zinc-500">
-                    <div className="w-[35%] pl-2">Kund & Klassificering</div>
-                    <div className="w-[20%]">Uppdrag & Fordon</div>
-                    <div className="w-[20%] text-right">Omsättning</div>
-                    <div className="w-[25%] text-right pr-4">Aktivitet & Åtgärd</div>
+            {/* KONTROLLPANEL (Samma gränssnitt som lager.js) */}
+            <div className="px-1.5 sm:px-4 lg:px-0 space-y-3 sm:space-y-4">
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-xl sm:rounded-2xl p-1.5 sm:p-3 shadow-sm flex flex-col lg:flex-row gap-2 sm:gap-3 lg:items-center justify-between mb-3 lg:mb-6">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-1">
+                        
+                        {/* SÖKRUTA */}
+                        <div className="relative group flex-1 lg:max-w-md">
+                            <input 
+                                type="text" placeholder="SÖK KUND ELLER REGNR..." 
+                                className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 focus:border-orange-500 p-2.5 sm:p-3 pl-9 sm:pl-11 pr-8 text-[12px] sm:text-[13px] font-medium text-zinc-900 dark:text-white outline-none w-full transition-all rounded-lg sm:rounded-xl focus:ring-2 focus:ring-orange-500/10 shadow-inner uppercase tracking-widest placeholder:text-zinc-400"
+                                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <SafeIcon name="search" size={14} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                            {searchQuery && (
+                                <button onClick={() => setSearchQuery('')} className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors bg-white dark:bg-[#1a2235] p-1 rounded-md shadow-sm">
+                                    <SafeIcon name="x" size={12} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* VY OCH SORTERING */}
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 p-1 rounded-lg sm:rounded-xl shadow-inner h-[38px] sm:h-[46px] lg:h-auto">
+                                <button onClick={() => setViewMode('GRID')} className={`w-8 sm:w-10 h-full flex items-center justify-center rounded-[6px] sm:rounded-lg transition-colors ${viewMode === 'GRID' ? 'bg-white dark:bg-[#1a2235] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`} title="Kortvy">
+                                    <SafeIcon name="layout-grid" size={16} />
+                                </button>
+                                <button onClick={() => setViewMode('TABLE')} className={`w-8 sm:w-10 h-full flex items-center justify-center rounded-[6px] sm:rounded-lg transition-colors ${viewMode === 'TABLE' ? 'bg-white dark:bg-[#1a2235] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`} title="Tabellvy">
+                                    <SafeIcon name="list" size={16} />
+                                </button>
+                            </div>
+
+                            <select 
+                                value={sortMode} onChange={(e) => setSortMode(e.target.value)}
+                                className="flex-1 lg:w-48 bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 py-2.5 sm:py-3 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-widest outline-none text-zinc-700 dark:text-zinc-300 shadow-inner h-[38px] sm:h-[46px] lg:h-auto"
+                            >
+                                <option value="revenue">Omsättning</option>
+                                <option value="count">Besök</option>
+                                <option value="recent">Senaste</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* LÄGG TILL KNAPP */}
+                    <button 
+                        onClick={() => setView('NEW_JOB', { job: { jobbtyp: 'STANDARD' } })}
+                        className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[10px] sm:text-[11px] uppercase tracking-widest shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] border border-orange-400/50 active:scale-95 transition-all rounded-lg sm:rounded-xl h-[38px] sm:h-[46px] lg:h-[42px] px-4 sm:px-6 flex items-center justify-center gap-1.5 shrink-0"
+                    >
+                        <SafeIcon name="plus" size={14} /> Ny Kund / Jobb
+                    </button>
                 </div>
 
-                <div className="flex flex-col relative divide-y divide-zinc-100 dark:divide-white/5">
+                {/* INNEHÅLL */}
+                <div className="flex flex-col relative">
                     {customerData.length === 0 ? (
-                        <div className="p-20 text-center text-zinc-400 uppercase tracking-widest text-[11px] font-bold">
+                        <div className="p-16 text-center bg-white dark:bg-[#182032] rounded-xl sm:rounded-2xl lg:rounded-none shadow-sm lg:shadow-none border border-zinc-200/80 dark:border-white/5">
                             <SafeIcon name="users" size={48} className="mb-4 opacity-20 mx-auto" />
-                            Inga kunder hittades
+                            <h3 className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Inga kunder hittades</h3>
                         </div>
-                    ) : (
-                        <>
+                    ) : viewMode === 'GRID' ? (
+                        /* GRID / KORT-VY (Standard) */
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 pb-6">
                             {visibleCustomers.map((customer, i) => {
                                 const initials = customer.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
                                 const avatarTheme = getAvatarTheme(customer.name);
@@ -534,122 +541,186 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                     <div 
                                         key={i} 
                                         onClick={() => { setSelectedCustomer(customer); setShowAllVehicles(false); }}
-                                        className="group flex flex-col lg:flex-row lg:items-center justify-between p-4 lg:px-8 lg:py-5 bg-transparent hover:bg-zinc-50/80 dark:hover:bg-white/[0.02] cursor-pointer transition-all duration-300"
+                                        className="group bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-xl sm:rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer relative hover:border-orange-500/50"
                                     >
-                                        {/* --- DESKTOP ROW --- */}
-                                        
-                                        {/* Kolumn 1: Kund (Avatar + Namn + Rank) */}
-                                        <div className="hidden lg:flex items-center gap-4 w-[35%] min-w-0 pr-4">
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-[13px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
-                                                {initials}
-                                            </div>
-                                            <div className="flex flex-col min-w-0 gap-1.5">
-                                                <span className="text-[15px] font-black text-zinc-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
-                                                    {customer.name}
-                                                </span>
-                                                <div className="flex items-center">
-                                                    <RankBadge rank={customer.rank} />
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3 min-w-0 pr-2">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-[13px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
+                                                    {initials}
                                                 </div>
+                                                <div className="flex flex-col min-w-0 gap-1">
+                                                    <span className="text-[14px] sm:text-[15px] font-black text-zinc-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
+                                                        {customer.name}
+                                                    </span>
+                                                    <div className="flex items-center">
+                                                        <RankBadge rank={customer.rank} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0 bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/5 rounded-lg px-2 py-1">
+                                                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                                                <span className="text-[10px] font-bold text-zinc-900 dark:text-white">{daysSinceLast} <span className="text-zinc-400 font-normal uppercase">D</span></span>
                                             </div>
                                         </div>
 
-                                        {/* Kolumn 2: Uppdrag & Fordon */}
-                                        <div className="hidden lg:flex w-[20%] flex-col justify-center">
-                                            <div className="flex items-baseline gap-1.5 mb-1">
-                                                <span className="text-[15px] font-bold text-zinc-700 dark:text-zinc-200">{customer.missionCount}</span>
-                                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Besök</span>
+                                        <div className="grid grid-cols-2 gap-2 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3 border border-zinc-100 dark:border-white/5 mb-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-[15px] font-light tracking-tighter text-zinc-900 dark:text-white leading-none mb-1">
+                                                    {customer.totalSpent >= 10000 ? `${(customer.totalSpent / 1000).toFixed(1)}k` : customer.totalSpent.toLocaleString('sv-SE')}
+                                                </span>
+                                                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Omsätt. (kr)</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-zinc-500">
+                                            <div className="flex flex-col pl-3 border-l border-zinc-200/80 dark:border-white/5">
+                                                <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-none mb-1">{customer.missionCount}</span>
+                                                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Antal Besök</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between border-t border-zinc-100 dark:border-white/5 pt-3">
+                                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                                                 <SafeIcon name="truck" size={12} className="opacity-70" />
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">{customer.vehicles.size} Fordon</span>
+                                                <span>{customer.vehicles.size} Fordon</span>
                                             </div>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setEditingJob(null); window.prefillName = customer.name; setView('NEW_JOB'); }}
+                                                className="bg-white dark:bg-[#1a2235] text-orange-500 hover:bg-orange-500 hover:text-white px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-white/10 hover:border-orange-500 transition-all shadow-sm active:scale-95 flex items-center gap-1"
+                                            >
+                                                <SafeIcon name="plus" size={12} /> Nytt Jobb
+                                            </button>
                                         </div>
-
-                                        {/* Kolumn 3: Omsättning */}
-                                        <div className="hidden lg:flex w-[20%] justify-end items-center pr-8">
-                                            <div className="flex items-baseline gap-1.5">
-                                                <span className="text-[20px] font-light tracking-tighter text-zinc-900 dark:text-white group-hover:scale-105 transition-transform origin-right">
-                                                    {customer.totalSpent.toLocaleString('sv-SE')}
-                                                </span>
-                                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Kolumn 4: Status & Hover Action */}
-                                        <div className="hidden lg:flex w-[25%] justify-end items-center relative">
-                                            <div className="flex flex-col items-end transition-all duration-300 absolute right-4 group-hover:opacity-0 group-hover:translate-x-4 group-hover:pointer-events-none">
-                                                <div className="flex items-baseline gap-1.5 mb-1">
-                                                    <span className="text-[14px] font-bold text-zinc-700 dark:text-zinc-200">{daysSinceLast}</span>
-                                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Dagar sen</span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-zinc-300 dark:bg-zinc-600'}`}></span>
-                                                    <span className={`text-[9px] font-bold uppercase tracking-widest ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'}`}>{isActive ? 'Aktiv Kund' : 'Inaktiv'}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Hover Action Button (Smooth Slide In) */}
-                                            <div className="absolute right-4 transition-all duration-300 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 flex items-center">
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); setEditingJob(null); window.prefillName = customer.name; setView('NEW_JOB'); }}
-                                                    className="bg-white dark:bg-[#25324d] text-orange-500 hover:bg-orange-500 hover:text-white px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-white/10 hover:border-orange-500 transition-all shadow-sm flex items-center gap-2 active:scale-95"
-                                                >
-                                                    <SafeIcon name="plus" size={14} /> Nytt Uppdrag
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* --- MOBILE ROW --- */}
-                                        <div className="lg:hidden flex flex-col gap-4 w-full">
-                                            <div className="flex items-center justify-between w-full">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-[13px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
-                                                        {initials}
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0 gap-1.5">
-                                                        <span className="text-[15px] font-black text-zinc-900 dark:text-white truncate">
-                                                            {customer.name}
-                                                        </span>
-                                                        <div className="flex items-center gap-2">
-                                                            <RankBadge rank={customer.rank} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <SafeIcon name="chevron-right" size={20} className="text-zinc-300 dark:text-zinc-600 group-hover:text-orange-500 shrink-0" />
-                                            </div>
-                                            
-                                            {/* 3-Kolumns Stats Grid på Mobil */}
-                                            <div className="grid grid-cols-3 gap-2 bg-zinc-50 dark:bg-black/20 p-3.5 rounded-2xl border border-zinc-200/80 dark:border-white/5">
-                                                <div className="flex flex-col items-center justify-center border-r border-zinc-200/80 dark:border-white/5">
-                                                    <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-none mb-1">{customer.missionCount}</span>
-                                                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Besök</span>
-                                                </div>
-                                                <div className="flex flex-col items-center justify-center border-r border-zinc-200/80 dark:border-white/5">
-                                                    <span className="text-[15px] font-light tracking-tighter text-zinc-900 dark:text-white leading-none mb-1">{(customer.totalSpent / 1000).toFixed(1)}k</span>
-                                                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Omsätt.</span>
-                                                </div>
-                                                <div className="flex flex-col items-center justify-center min-w-0 px-1">
-                                                    <div className="flex items-center gap-1.5 leading-none mb-1">
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                                                        <span className="text-[15px] font-bold text-zinc-900 dark:text-white">{daysSinceLast}</span>
-                                                    </div>
-                                                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Dagar sen</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 );
                             })}
-                            
-                            {hasMore && (
-                                <div className="flex justify-center p-8 bg-zinc-50/50 dark:bg-black/10">
-                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3.5 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-[#25324d] hover:border-orange-500/50 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm transition-all flex items-center gap-2 active:scale-95">
-                                        Ladda in fler kunder <span className="opacity-50 font-medium">({customerData.length - visibleCount} kvar)</span>
-                                    </button>
-                                </div>
-                            )}
-                        </>
+                        </div>
+                    ) : (
+                        /* TABLE / LIST-VY (Din gamla vy, förfinad) */
+                        <div className="bg-white/90 dark:bg-[#182032]/90 lg:backdrop-blur-2xl rounded-xl sm:rounded-3xl shadow-sm border border-zinc-200/80 dark:border-white/5 overflow-hidden flex flex-col mx-0 mb-12 relative">
+                            {/* TABLE VIEW HEADER */}
+                            <div className="hidden lg:flex items-center px-8 py-5 bg-zinc-50/80 dark:bg-white/5 border-b border-zinc-200/80 dark:border-white/10 text-[10px] uppercase tracking-widest font-bold text-zinc-400 dark:text-zinc-500">
+                                <div className="w-[35%] pl-2">Kund & Klassificering</div>
+                                <div className="w-[20%]">Uppdrag & Fordon</div>
+                                <div className="w-[20%] text-right">Omsättning</div>
+                                <div className="w-[25%] text-right pr-4">Aktivitet & Åtgärd</div>
+                            </div>
+                            <div className="flex flex-col relative divide-y divide-zinc-100 dark:divide-white/5">
+                                {visibleCustomers.map((customer, i) => {
+                                    const initials = customer.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                                    const avatarTheme = getAvatarTheme(customer.name);
+                                    const daysSinceLast = Math.floor((new Date() - new Date(customer.lastSeen)) / (1000 * 60 * 60 * 24));
+                                    const isActive = daysSinceLast < 60;
+
+                                    return (
+                                        <div 
+                                            key={i} 
+                                            onClick={() => { setSelectedCustomer(customer); setShowAllVehicles(false); }}
+                                            className="group flex flex-col lg:flex-row lg:items-center justify-between p-4 lg:px-8 lg:py-5 bg-transparent hover:bg-zinc-50/80 dark:hover:bg-white/[0.02] cursor-pointer transition-all duration-300"
+                                        >
+                                            <div className="hidden lg:flex items-center gap-4 w-[35%] min-w-0 pr-4">
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-[13px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
+                                                    {initials}
+                                                </div>
+                                                <div className="flex flex-col min-w-0 gap-1.5">
+                                                    <span className="text-[15px] font-black text-zinc-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
+                                                        {customer.name}
+                                                    </span>
+                                                    <div className="flex items-center">
+                                                        <RankBadge rank={customer.rank} />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="hidden lg:flex w-[20%] flex-col justify-center">
+                                                <div className="flex items-baseline gap-1.5 mb-1">
+                                                    <span className="text-[15px] font-bold text-zinc-700 dark:text-zinc-200">{customer.missionCount}</span>
+                                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Besök</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-zinc-500">
+                                                    <SafeIcon name="truck" size={12} className="opacity-70" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">{customer.vehicles.size} Fordon</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="hidden lg:flex w-[20%] justify-end items-center pr-8">
+                                                <div className="flex items-baseline gap-1.5">
+                                                    <span className="text-[20px] font-light tracking-tighter text-zinc-900 dark:text-white group-hover:scale-105 transition-transform origin-right">
+                                                        {customer.totalSpent.toLocaleString('sv-SE')}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="hidden lg:flex w-[25%] justify-end items-center relative">
+                                                <div className="flex flex-col items-end transition-all duration-300 absolute right-4 group-hover:opacity-0 group-hover:translate-x-4 group-hover:pointer-events-none">
+                                                    <div className="flex items-baseline gap-1.5 mb-1">
+                                                        <span className="text-[14px] font-bold text-zinc-700 dark:text-zinc-200">{daysSinceLast}</span>
+                                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Dagar sen</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-zinc-300 dark:bg-zinc-600'}`}></span>
+                                                        <span className={`text-[9px] font-bold uppercase tracking-widest ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'}`}>{isActive ? 'Aktiv Kund' : 'Inaktiv'}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="absolute right-4 transition-all duration-300 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 flex items-center">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); setEditingJob(null); window.prefillName = customer.name; setView('NEW_JOB'); }}
+                                                        className="bg-white dark:bg-[#25324d] text-orange-500 hover:bg-orange-500 hover:text-white px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-white/10 hover:border-orange-500 transition-all shadow-sm flex items-center gap-2 active:scale-95"
+                                                    >
+                                                        <SafeIcon name="plus" size={14} /> Nytt Uppdrag
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* MOBILE VIEW FOR TABLE */}
+                                            <div className="lg:hidden flex flex-col gap-4 w-full">
+                                                <div className="flex items-center justify-between w-full">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-[13px] font-bold shrink-0 border shadow-sm ${avatarTheme}`}>
+                                                            {initials}
+                                                        </div>
+                                                        <div className="flex flex-col min-w-0 gap-1.5">
+                                                            <span className="text-[15px] font-black text-zinc-900 dark:text-white truncate">
+                                                                {customer.name}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <RankBadge rank={customer.rank} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <SafeIcon name="chevron-right" size={20} className="text-zinc-300 dark:text-zinc-600 group-hover:text-orange-500 shrink-0" />
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-3 gap-2 bg-zinc-50 dark:bg-black/20 p-3.5 rounded-2xl border border-zinc-200/80 dark:border-white/5">
+                                                    <div className="flex flex-col items-center justify-center border-r border-zinc-200/80 dark:border-white/5">
+                                                        <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-none mb-1">{customer.missionCount}</span>
+                                                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Besök</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-center justify-center border-r border-zinc-200/80 dark:border-white/5">
+                                                        <span className="text-[15px] font-light tracking-tighter text-zinc-900 dark:text-white leading-none mb-1">{(customer.totalSpent / 1000).toFixed(1)}k</span>
+                                                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Omsätt.</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-center justify-center min-w-0 px-1">
+                                                        <div className="flex items-center gap-1.5 leading-none mb-1">
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                                                            <span className="text-[15px] font-bold text-zinc-900 dark:text-white">{daysSinceLast}</span>
+                                                        </div>
+                                                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Dagar sen</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {hasMore && (
+                        <div className="flex justify-center p-6 lg:p-8">
+                            <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3.5 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-[#25324d] hover:border-orange-500/50 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm transition-all flex items-center gap-2 active:scale-95 w-full sm:w-auto justify-center">
+                                Ladda in fler kunder <span className="opacity-50 font-medium">({customerData.length - visibleCount} kvar)</span>
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
