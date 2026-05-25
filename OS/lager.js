@@ -188,7 +188,7 @@ window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
     const [activeCat, setActiveCat] = React.useState("Service");
-    const [stockFilter, setStockFilter] = React.useState("all");
+    const [stockFilter, setStockFilter] = React.useState("inStock");
     const [editingItem, setEditingItem] = React.useState(null); 
     const [sortBy, setSortBy] = React.useState("name_asc");
     const [copiedId, setCopiedId] = React.useState(null);
