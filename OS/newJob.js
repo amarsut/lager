@@ -312,7 +312,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     };
 
     const handleNameChange = (val) => {
-        setFormData(p => ({ ...p, kundnamn: val }));
+        const upperVal = val.toUpperCase(); // Konvertera omedelbart till stora bokstäver
+        setFormData(p => ({ ...p, kundnamn: upperVal }));
+        
         if (val.length > 1) {
             const matches = allJobs.filter(j => j.kundnamn.toLowerCase().includes(val.toLowerCase())).map(j => j.kundnamn);
             setSuggestions([...new Set(matches)].slice(0, 5));
