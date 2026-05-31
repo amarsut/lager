@@ -158,6 +158,43 @@ const LagerItemModal = ({ item, onClose }) => {
                                 <label className={LabelClass}>Egenskaper / Specifikation</label>
                                 <textarea rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className={`${InputClass} resize-none`} placeholder="Placering: Bakaxel. Passar VAG plattform..." />
                             </div>
+                            
+                            {/* NYTT: TRANSAKTIONSHISTORIK FÖR SPÅRBARHET (Visas ALLTID nu) */}
+                            {!isNew && (
+                                <div className="col-span-2 mt-4 pt-5 border-t border-zinc-200/80 dark:border-white/5">
+                                    <label className={`${LabelClass} flex items-center gap-2 mb-3`}>
+                                        <SafeIcon name="history" size={12} className="text-orange-500" /> Transaktionshistorik
+                                    </label>
+                                    
+                                    {item?.history && item.history.length > 0 ? (
+                                        <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                                            {[...item.history].sort((a,b) => new Date(b.date) - new Date(a.date)).map((log, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-white dark:bg-[#121826] p-3 rounded-xl border border-zinc-200/80 dark:border-white/5 shadow-sm hover:border-orange-500/30 transition-colors">
+                                                    <div className="flex items-center gap-3.5">
+                                                        <div className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-200/50 dark:border-orange-500/20 shadow-sm">
+                                                            <SafeIcon name="arrow-up-right" size={14} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-wider">{log.regnr}</div>
+                                                            <div className="text-[10px] text-zinc-500 mt-0.5">{log.kundnamn} • {log.date ? log.date.split('T')[0] : ''}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-[14px] font-black font-mono text-red-500 dark:text-red-400 shrink-0">
+                                                        -{log.qty} st
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6 bg-zinc-50/50 dark:bg-[#121826]/50 rounded-xl border border-zinc-200/50 dark:border-white/5 border-dashed">
+                                            <div className="w-10 h-10 mx-auto rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-2">
+                                                <SafeIcon name="inbox" size={16} className="text-zinc-400" />
+                                            </div>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Inga transaktioner registrerade</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -183,13 +220,250 @@ const LagerItemModal = ({ item, onClose }) => {
     );
 };
 
+
+// --- KOPPLA ARTIKEL TILL UPPDRAG (MED LOGGNING) ---
+const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
+    const [qty, setQty] = React.useState(1);
+    const [search, setSearch] = React.useState('');
+    const [selectedJob, setSelectedJob] = React.useState(null);
+    const [isSaving, setIsSaving] = React.useState(false);
+    
+    // NYTT: Toggle för att bestämma om arbetsordern ska uppdateras (Avstängd som standard)
+    const [syncToJob, setSyncToJob] = React.useState(false);
+
+    const activeJobs = React.useMemo(() => {
+        let jobs = allJobs.filter(j => j.status !== 'FAKTURERAS' && !j.deleted);
+        if (search) {
+            const s = search.toLowerCase();
+            jobs = jobs.filter(j => (j.regnr||'').toLowerCase().includes(s) || (j.kundnamn||'').toLowerCase().includes(s));
+        }
+        return jobs.sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
+    }, [allJobs, search]);
+
+    const handleLink = async (e) => {
+        e.preventDefault();
+        
+        if (!selectedJob) return alert("Välj en arbetsorder först.");
+        
+        if (!selectedJob.id || !item.id) {
+            return alert("Kunde inte hitta ett giltigt ID för ordern eller reservdelen.");
+        }
+        
+        setIsSaving(true);
+        try {
+            const jobIdStr = String(selectedJob.id).trim();
+            const itemIdStr = String(item.id).trim();
+
+            const jobRef = window.db.collection('jobs').doc(jobIdStr);
+            const partRef = window.db.collection('lager').doc(itemIdStr);
+
+            await window.db.runTransaction(async (t) => {
+                const jobDoc = await t.get(jobRef);
+                const partDoc = await t.get(partRef);
+                
+                if(!jobDoc.exists || !partDoc.exists) throw new Error("Dokument hittades inte i databasen.");
+
+                const jData = jobDoc.data();
+                const pData = partDoc.data();
+
+                // 1. Dra av saldo i lagret
+                const currentQty = parseInt(pData.quantity) || 0;
+                const newQty = Math.max(0, currentQty - qty);
+
+                // 2. Skapa kvitto för historiken (Loggas ALLTID, oavsett toggle)
+                const currentHistory = pData.history || [];
+                const logEntry = {
+                    date: new Date().toISOString(),
+                    action: 'KOPPLAD',
+                    qty: qty,
+                    regnr: jData.regnr || 'SAKNAS',
+                    jobId: jobIdStr,
+                    kundnamn: jData.kundnamn || 'Okänd'
+                };
+
+                t.update(partRef, { 
+                    quantity: newQty,
+                    history: [...currentHistory, logEntry] 
+                });
+
+                // 3. UPPGRADERING: Uppdatera bara arbetsordern om användaren aktivt har valt det
+                if (syncToJob) {
+                    let utgifter = jData.utgifter || [];
+                    let added = false;
+                    const partTotalCost = (parseFloat(pData.price) || 0) * qty;
+                    
+                    // Gör det tydligt att det rör sig om flera delar om qty > 1
+                    const descName = qty > 1 ? `${qty}x ${pData.name}` : pData.name;
+                    
+                    utgifter = utgifter.map(u => {
+                        if (!added && (!u.namn || u.namn.trim() === '')) {
+                            added = true;
+                            // Sätter qty till 1 i arbetsordern eftersom priset redan är multiplicerat
+                            return { namn: descName, kostnad: String(partTotalCost), qty: 1, partId: itemIdStr, deducted: true };
+                        }
+                        return u;
+                    });
+                    
+                    if (!added) {
+                        utgifter.push({ namn: descName, kostnad: String(partTotalCost), qty: 1, partId: itemIdStr, deducted: true });
+                    }
+
+                    const currentPrice = parseFloat(jData.kundpris) || 0;
+                    t.update(jobRef, {
+                        utgifter: utgifter,
+                        kundpris: String(currentPrice + partTotalCost)
+                    });
+                }
+            });
+
+            onClose();
+        } catch (err) {
+            console.error("Fel vid koppling:", err);
+            alert("Något gick fel vid kopplingen av artikeln. Kontrollera webbläsarens logg.");
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" onClick={onClose}></div>
+            
+            <div className="relative w-full max-w-lg bg-white dark:bg-[#182032] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-white/10 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                
+                <div className="px-5 py-4 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50/50 dark:bg-[#1a2235]/50">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-200/50 dark:border-orange-500/20">
+                            <SafeIcon name="link" size={18} />
+                        </div>
+                        <div>
+                            <h2 className="text-[14px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">Koppla Artikel</h2>
+                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest">Välj var reservdelen har monterats</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 bg-white dark:bg-[#121826] rounded-lg shadow-sm border border-zinc-200 dark:border-white/10 active:scale-95">
+                        <SafeIcon name="x" size={14} />
+                    </button>
+                </div>
+
+                <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+                    
+                    <div className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 rounded-xl p-4 mb-5 flex gap-4 items-center shadow-inner">
+                        <div className="w-12 h-12 bg-white dark:bg-[#182032] rounded-lg flex items-center justify-center shadow-sm border border-zinc-200 dark:border-white/5 shrink-0">
+                            <LagerIcon category={item.category} name={item.name} size={24} className="text-zinc-600 dark:text-zinc-300" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="text-[13px] font-black text-zinc-900 dark:text-white truncate">{item.name}</div>
+                            <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{item.service_filter || 'SAKNAS'}</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                            <div className="text-[13px] font-black font-mono text-zinc-900 dark:text-white">{item.price} kr</div>
+                            <div className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">{(parseInt(item.quantity)||0)} i lager</div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-5 pb-5 border-b border-zinc-100 dark:border-white/5">
+                        <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center gap-2">
+                            <SafeIcon name="layers" size={12} className="text-zinc-400" /> Antal att koppla
+                        </label>
+                        <div className="flex items-center bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 rounded-lg p-1 shadow-sm">
+                            <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-[#1a2235] rounded-md transition-colors"><SafeIcon name="minus" size={14} /></button>
+                            <span className="w-12 text-center text-[15px] font-black font-mono text-zinc-900 dark:text-white">{qty}</span>
+                            <button type="button" onClick={() => setQty(qty + 1)} className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-[#1a2235] rounded-md transition-colors"><SafeIcon name="plus" size={14} /></button>
+                        </div>
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center gap-2 mb-2">
+                            <SafeIcon name="search" size={12} className="text-zinc-400" /> Välj Arbetsorder
+                        </label>
+                        <input 
+                            type="text" 
+                            placeholder="Sök regnr eller kundnamn..." 
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-[12px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 transition-all shadow-inner"
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto custom-scrollbar pr-1 mb-5">
+                        {activeJobs.length === 0 ? (
+                            <div className="text-center text-[10px] text-zinc-400 uppercase tracking-widest py-8">Inga aktiva jobb hittades</div>
+                        ) : (
+                            activeJobs.map(job => (
+                                <div 
+                                    key={job.id} 
+                                    onClick={() => setSelectedJob(job)}
+                                    className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-center group ${selectedJob?.id === job.id ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-500 shadow-sm' : 'bg-white dark:bg-[#121826] border-zinc-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/40'}`}
+                                >
+                                    <div className="flex gap-3 items-center min-w-0">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${selectedJob?.id === job.id ? 'bg-orange-500 text-white border-orange-500' : 'bg-zinc-50 dark:bg-[#1a2235] text-zinc-400 border-zinc-200 dark:border-white/10'}`}>
+                                            <SafeIcon name={selectedJob?.id === job.id ? "check" : "car"} size={14} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className={`font-black font-mono tracking-widest text-[13px] truncate ${selectedJob?.id === job.id ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white'}`}>{job.regnr || 'Inget Regnr'}</div>
+                                            <div className="text-[10px] text-zinc-500 truncate mt-0.5">{job.kundnamn} • {job.datum ? job.datum.split('T')[0] : 'Obokad'}</div>
+                                        </div>
+                                    </div>
+                                    {window.Badge && <div className="shrink-0 scale-90 origin-right"><window.Badge status={job.status} /></div>}
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* NYTT: Toggle för att Bokföra på Arbetsorder */}
+                    <div 
+                        onClick={() => setSyncToJob(!syncToJob)}
+                        className={`p-3 sm:p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${syncToJob ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500/50 shadow-sm' : 'bg-zinc-50 dark:bg-[#0f1522] border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 shadow-inner'}`}
+                    >
+                        <div className="flex gap-3 items-center">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${syncToJob ? 'bg-emerald-500 text-white shadow-md' : 'bg-white dark:bg-[#182032] text-zinc-400 border border-zinc-200 dark:border-white/10'}`}>
+                                <SafeIcon name="file-text" size={16} />
+                            </div>
+                            <div>
+                                <div className={`text-[12px] font-black uppercase tracking-widest transition-colors ${syncToJob ? 'text-emerald-700 dark:text-emerald-400' : 'text-zinc-900 dark:text-white'}`}>
+                                    Bokför på Arbetsorder
+                                </div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5">
+                                    {syncToJob ? 'Materialkostnad läggs automatiskt till på kundfakturan' : 'Endast lagersaldo och historik uppdateras'}
+                                </div>
+                            </div>
+                        </div>
+                        {/* iOS-liknande switch */}
+                        <div className={`w-11 h-6 rounded-full transition-colors relative flex items-center shrink-0 ${syncToJob ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-white/10'}`}>
+                            <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all shadow-sm ${syncToJob ? 'left-6' : 'left-1'}`} />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div className="px-5 py-4 border-t border-zinc-100 dark:border-white/5 bg-zinc-50/80 dark:bg-[#1a2235]/50 flex gap-3 z-10">
+                    <button onClick={onClose} className="flex-1 h-12 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 rounded-xl text-[11px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest hover:bg-zinc-50 active:scale-95 transition-all shadow-sm">
+                        Avbryt
+                    </button>
+                    <button 
+                        onClick={handleLink}
+                        disabled={!selectedJob || isSaving}
+                        className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-orange-400/50 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                        {isSaving ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="check" size={14} />}
+                        Slutför
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    );
+};
+
+
 // --- HUVUDVY FÖR LAGER (Sök- & Identifieringsfokus) ---
 window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
-    const [activeCat, setActiveCat] = React.useState("Service");
+    const [activeCat, setActiveCat] = React.useState("Alla");
     const [stockFilter, setStockFilter] = React.useState("inStock");
     const [editingItem, setEditingItem] = React.useState(null); 
+    const [linkingItem, setLinkingItem] = React.useState(null);
     const [sortBy, setSortBy] = React.useState("name_asc");
     const [copiedId, setCopiedId] = React.useState(null);
 
@@ -273,7 +547,6 @@ window.LagerView = ({ allJobs = [] }) => {
 
     const mainCats = ['Service', 'Motor/Chassi', 'Bromsar', 'Andra Märken'];
 
-    // Render-funktioner för att hålla koden DRY och hantera Desktop/Mobil layouter perfekt
     const renderStepper = (item, qty, inStock) => (
         <div className="flex items-center bg-white dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-lg p-0.5 shadow-sm" onClick={e => e.stopPropagation()}>
             <button onClick={(e) => quickAdjustStock(e, item, -1)} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-zinc-400 hover:bg-zinc-100 dark:hover:bg-[#1a2235] hover:text-zinc-900 dark:hover:text-white rounded-md transition-all active:scale-95"><SafeIcon name="minus" size={14} /></button>
@@ -291,8 +564,11 @@ window.LagerView = ({ allJobs = [] }) => {
 
     const renderActions = (item) => (
         <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={(e) => { e.stopPropagation(); setLinkingItem(item); }} title="Koppla artikel till uppdrag" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 dark:hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95 border border-orange-200/50 dark:border-orange-500/20">
+                <SafeIcon name="link" size={14} />
+            </button>
             <a href={generateTrodoLink(item.service_filter || item.name)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-[#0f1522] text-zinc-400 hover:bg-[#0066cc] hover:text-white hover:border-transparent flex items-center justify-center transition-all shadow-sm active:scale-95 border border-zinc-200/50 dark:border-white/5"><SafeIcon name="external-link" size={14} /></a>
-            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-[#0f1522] text-zinc-400 hover:bg-orange-500 hover:text-white hover:border-transparent flex items-center justify-center transition-all shadow-sm active:scale-95 border border-zinc-200/50 dark:border-white/5"><SafeIcon name="edit-2" size={14} /></button>
+            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-[#0f1522] text-zinc-400 hover:bg-zinc-800 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 flex items-center justify-center transition-all shadow-sm active:scale-95 border border-zinc-200/50 dark:border-white/5"><SafeIcon name="edit-2" size={14} /></button>
         </div>
     );
 
@@ -302,7 +578,6 @@ window.LagerView = ({ allJobs = [] }) => {
                 <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
                 {/* --- HEADER --- */}
-                {/* Minskade px-4 till px-1.5 på mobilen för att utnyttja skärmbredden bättre */}
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-4 px-1.5 sm:px-4 pt-4 lg:px-0 lg:pt-0">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative group cursor-default shrink-0">
@@ -324,13 +599,11 @@ window.LagerView = ({ allJobs = [] }) => {
                 </div>
 
                 {/* --- MAIN CONTENT WRAPPER --- */}
-                {/* Minskade px-3 till px-1.5 på mobilen */}
                 <div className="px-1.5 sm:px-4 lg:px-0 space-y-3 sm:space-y-4">
                     
                     {/* --- CONTROL BAR --- */}
                     <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-xl sm:rounded-2xl p-1.5 sm:p-3 shadow-sm flex flex-col lg:flex-row gap-2 sm:gap-3 lg:items-center justify-between mb-3 lg:mb-6">
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-1">
-                            {/* Sökning */}
                             <div className="relative group flex-1 lg:max-w-md">
                                 <input 
                                     type="text" placeholder="Sök artikelnamn, OEN-nummer..." 
@@ -345,7 +618,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                 )}
                             </div>
 
-                            {/* Kategori Dropdown */}
                             <select 
                                 value={activeCat} onChange={(e) => setActiveCat(e.target.value)}
                                 className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 py-2.5 sm:py-3 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-widest outline-none text-zinc-700 dark:text-zinc-300 shadow-inner lg:w-48"
@@ -357,7 +629,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                 </optgroup>
                             </select>
 
-                            {/* Lagerstatus Filter */}
                             <div className="flex bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 rounded-lg sm:rounded-xl p-1 shadow-inner h-[38px] sm:h-[46px] lg:h-auto">
                                 {[
                                     { id: 'all', label: 'Alla' },
@@ -374,18 +645,15 @@ window.LagerView = ({ allJobs = [] }) => {
                             </div>
                         </div>
 
-                        {/* Ny Artikel Knapp */}
                         <button onClick={() => setEditingItem({})} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[10px] sm:text-[11px] uppercase tracking-widest shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] border border-orange-400/50 active:scale-95 transition-all rounded-lg sm:rounded-xl h-[38px] sm:h-[46px] lg:h-[42px] px-4 sm:px-6 flex items-center justify-center gap-1.5 shrink-0">
                             <SafeIcon name="plus" size={14} /> Ny Artikel
                         </button>
                     </div>
 
                     {/* --- ENTERPRISE GRID (Huvudlista) --- */}
-                    {/* Minskad gap mellan korten på mobil från gap-3 till gap-2 för en tajtare känsla */}
                     <div className="flex flex-col gap-2 sm:gap-3 lg:gap-0 lg:bg-white/90 lg:dark:bg-[#182032]/90 lg:border lg:border-zinc-200/80 lg:dark:border-white/5 lg:rounded-2xl lg:shadow-sm overflow-hidden">
                         
-                        {/* Tabell-Header (Endast Desktop, använder strikt Grid) */}
-                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_260px_130px_100px_90px] gap-4 px-6 py-3.5 bg-zinc-100/50 dark:bg-[#121826]/80 border-b border-zinc-200/80 dark:border-white/5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 items-center">
+                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_260px_130px_100px_130px] gap-4 px-6 py-3.5 bg-zinc-100/50 dark:bg-[#121826]/80 border-b border-zinc-200/80 dark:border-white/5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 items-center">
                             <div className="pl-2">Artikel & Info</div>
                             <div>Specifikation</div>
                             <div className="text-center">Lagersaldo</div>
@@ -393,7 +661,6 @@ window.LagerView = ({ allJobs = [] }) => {
                             <div className="text-right pr-1">Åtgärd</div>
                         </div>
 
-                        {/* Resultat */}
                         {filteredItems.length === 0 ? (
                             <div className="p-16 text-center bg-white dark:bg-[#182032] rounded-xl sm:rounded-2xl lg:rounded-none shadow-sm lg:shadow-none">
                                 <SafeIcon name="search" size={48} className="text-zinc-300 dark:text-zinc-600 mb-4 mx-auto opacity-50" />
@@ -416,10 +683,8 @@ window.LagerView = ({ allJobs = [] }) => {
                                         className="group bg-white dark:bg-[#182032] lg:bg-transparent border border-zinc-200/80 lg:border-x-0 lg:border-t-0 lg:border-b dark:border-white/5 rounded-xl sm:rounded-2xl lg:rounded-none shadow-sm lg:shadow-none hover:bg-zinc-50 dark:hover:bg-[#1f2940]/40 transition-all cursor-pointer relative"
                                     >
                                         
-                                        {/* --- DESKTOP VIEW (Grid) --- */}
-                                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_260px_130px_100px_90px] gap-4 px-6 py-3.5 items-center">
-                                            
-                                            {/* Col 1: Icon & Text */}
+                                        {/* --- DESKTOP VIEW --- */}
+                                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_260px_130px_100px_130px] gap-4 px-6 py-3.5 items-center">
                                             <div className="flex items-center gap-4 min-w-0 pr-4">
                                                 <div className="relative shrink-0">
                                                     <div className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-[2.5px] border-white dark:border-[#182032] ${statusColor} z-10`}></div>
@@ -446,30 +711,25 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 </div>
                                             </div>
 
-                                            {/* Col 2: Spec */}
                                             <div className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium truncate" title={item.notes}>
                                                 {item.notes || '-'}
                                             </div>
 
-                                            {/* Col 3: Stepper */}
                                             <div className="flex items-center justify-center">
                                                 {renderStepper(item, qty, inStock)}
                                             </div>
 
-                                            {/* Col 4: Price */}
                                             <div className="flex items-center justify-end pr-4">
                                                 {renderPrice(item)}
                                             </div>
 
-                                            {/* Col 5: Actions */}
                                             <div className="flex items-center justify-end">
                                                 {renderActions(item)}
                                             </div>
                                         </div>
 
-                                        {/* --- MOBILE VIEW (Flex Column) --- */}
+                                        {/* --- MOBILE VIEW --- */}
                                         <div className="lg:hidden flex flex-col p-3 sm:p-4 gap-2.5">
-                                            {/* Top Row: Icon + Texts */}
                                             <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                                                 <div className="relative shrink-0">
                                                     <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-[2px] border-white dark:border-[#182032] ${statusColor} z-10`}></div>
@@ -493,14 +753,12 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 </div>
                                             </div>
 
-                                            {/* Middle Row: Notes */}
                                             {item.notes && (
                                                 <div className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-[#0f1522] p-2 sm:p-2.5 rounded-lg border border-zinc-100 dark:border-white/5 line-clamp-2">
                                                     {item.notes}
                                                 </div>
                                             )}
 
-                                            {/* Bottom Row: Controls */}
                                             <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-white/5 w-full mt-0.5">
                                                 <div className="flex items-center gap-2 sm:gap-3">
                                                     {renderStepper(item, qty, inStock)}
@@ -522,6 +780,7 @@ window.LagerView = ({ allJobs = [] }) => {
             </div>
             
             {editingItem && <LagerItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
+            {linkingItem && <LagerLinkJobModal item={linkingItem} allJobs={allJobs} onClose={() => setLinkingItem(null)} />}
         </>
     );
 };
