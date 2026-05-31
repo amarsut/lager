@@ -147,11 +147,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     }); 
 
     React.useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = 'auto'; };
-    }, []);
-
-    React.useEffect(() => {
         if (!v.regnr || !window.db) return;
         const u1 = window.db.collection('vehicleSpecs').doc(v.regnr).onSnapshot(d => {
             if (d.exists) {
@@ -348,10 +343,28 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             {showAllSpecs ? 'Göm specifikationer' : 'Visa mer fordonsdata'}
                             <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
                         </button>
+
+                        {/* --- INFLYTTAD ACTION HUB --- */}
+                        <div className="pt-4 mt-2 border-t border-zinc-200 dark:border-white/5 space-y-2">
+                            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-purple-50 dark:hover:bg-purple-500/15 text-zinc-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-300 border border-zinc-200 dark:border-white/5 hover:border-purple-300 dark:hover:border-purple-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
+                                    <SafeIcon name="shield" size={12} className="text-purple-500 dark:text-purple-400 group-hover:rotate-180 transition-transform duration-500" /> TS
+                                </button>
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-orange-50 dark:hover:bg-orange-500/15 text-zinc-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-300 border border-zinc-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
+                                    <SafeIcon name="droplet" size={12} className="text-orange-500 dark:text-orange-400 group-hover:rotate-180 transition-transform duration-500" /> Olja
+                                </button>
+                                <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-blue-50 dark:hover:bg-blue-500/15 text-zinc-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-300 border border-zinc-200 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
+                                    <SafeIcon name="external-link" size={12} className="text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" /> <span className="hidden sm:inline">Oljemag.</span><span className="sm:hidden">OM</span>
+                                </button>
+                                <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
+                                    <img src="https://www.etka.com/etkaportal/static/icons/logo.5feba87b.svg" alt="ETKA" className="h-3 opacity-60 dark:opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all dark:invert-0 invert" /> ETKA
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Sektion: Historik Tidslinje (Full bredd, minskad luft) */}
-                    <div className="px-3 sm:px-5 pb-8"> {/* pb-8 eftersom vi har en sticky action bar i botten */}
+                    <div className="px-3 sm:px-5 pb-24">
                         
                         <div className="sticky top-0 bg-zinc-50/95 dark:bg-slate-800/95 backdrop-blur-md z-20 py-3 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
                             <div className="text-[10px] font-black text-zinc-500 dark:text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5 pl-2 sm:pl-0">
@@ -396,30 +409,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 
                 {/* STICKY BOTTOM ACTION BAR (Ligger alltid i botten) */}
                 <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-white/5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shrink-0 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-                    
-                    {/* Rad 1: Snabblänkar & Verktyg */}
-                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-2.5">
-                        <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-purple-50 dark:hover:bg-purple-500/15 text-zinc-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-300 border border-zinc-200 dark:border-white/5 hover:border-purple-300 dark:hover:border-purple-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
-                            <SafeIcon name="shield" size={12} className="text-purple-500 dark:text-purple-400 group-hover:rotate-180 transition-transform duration-500" /> TS
-                        </button>
-                        <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-orange-50 dark:hover:bg-orange-500/15 text-zinc-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-300 border border-zinc-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
-                            <SafeIcon name="droplet" size={12} className="text-orange-500 dark:text-orange-400 group-hover:rotate-180 transition-transform duration-500" /> Olja
-                        </button>
-                        <button 
-                            onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')}
-                            className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-blue-50 dark:hover:bg-blue-500/15 text-zinc-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-300 border border-zinc-200 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group"
-                        >
-                            <SafeIcon name="external-link" size={12} className="text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" /> <span className="hidden sm:inline">Oljemag.</span><span className="sm:hidden">OM</span>
-                        </button>
-                        <button 
-                            // ETKA Kopierar VIN istället för Regnr om det finns
-                            onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} 
-                            className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group"
-                        >
-                            <img src="https://www.etka.com/etkaportal/static/icons/logo.5feba87b.svg" alt="ETKA" className="h-3 opacity-60 dark:opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all dark:invert-0 invert" />
-                            ETKA
-                        </button>
-                    </div>
 
                     {/* Rad 2: Smart Sök */}
                     <button 
