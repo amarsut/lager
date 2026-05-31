@@ -11,22 +11,22 @@ const getBrand = (t) => {
 
 const StatCard = ({ icon, label, val, highlight }) => {
     const displayVal = val || '-';
-    let colorClass = 'text-emerald-600 dark:text-emerald-400';
-    let borderGlow = 'border-zinc-200 dark:border-white/5 hover:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-400/5';
-    let bgClass = 'bg-white dark:bg-slate-700/30';
+    let colorClass = 'text-orange-500 dark:text-orange-400';
+    let borderGlow = 'border-zinc-200 dark:border-white/5 hover:border-orange-500/30 hover:bg-orange-50 dark:hover:bg-orange-500/5';
+    let bgClass = 'bg-white dark:bg-[#1a2235]';
     
     if (highlight) {
         colorClass = 'text-red-500 dark:text-red-400';
-        borderGlow = 'border-red-200 dark:border-red-400/30 hover:border-red-300 dark:hover:border-red-400/50 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)] dark:shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]';
-        bgClass = 'bg-red-50 dark:bg-red-500/5';
+        borderGlow = 'border-red-200 dark:border-red-500/30 hover:border-red-300 dark:hover:border-red-500/20 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)]';
+        bgClass = 'bg-red-50 dark:bg-red-500/10';
     }
 
     return (
-        <div className={`${bgClass} backdrop-blur-md rounded-xl p-3.5 flex flex-col gap-1.5 transition-all duration-300 border ${borderGlow} group hover:-translate-y-0.5 shadow-sm`}>
-            <div className={`text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-slate-400 flex items-center gap-1.5`}>
-                <SafeIcon name={icon} size={10} className={colorClass} /> {label}
+        <div className={`${bgClass} rounded-xl p-3.5 flex flex-col gap-1.5 transition-all duration-300 border ${borderGlow} group shadow-sm hover:shadow-md`}>
+            <div className={`text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5`}>
+                <SafeIcon name={icon} size={12} className={colorClass} /> {label}
             </div>
-            <div className={`text-[13px] font-bold tracking-wide truncate ${val ? 'text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white transition-colors' : 'text-zinc-400 dark:text-slate-500'}`} title={displayVal}>
+            <div className={`text-[13px] font-bold tracking-wide truncate ${val ? 'text-zinc-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors' : 'text-zinc-400 dark:text-zinc-600'}`} title={displayVal}>
                 {displayVal}
             </div>
         </div>
@@ -37,52 +37,48 @@ const TimelineItem = ({ j, isHighlighted, isLast, setView, onClose }) => {
     const isKlar = ['KLAR', 'FAKTURERAS'].includes(j.status);
     
     return (
-        <div className="relative pl-7 sm:pl-8 pb-3 group">
-            {/* Tidslinjen - Nu perfekt centrerad och ENSAM */}
-            <div className="absolute left-[13px] sm:left-[15px] top-[26px] bottom-[-14px] w-[2px] bg-zinc-200 dark:bg-white/5 group-last:bg-transparent transition-colors"></div>
-            {isHighlighted && <div className="absolute left-[13px] sm:left-[15px] top-[26px] bottom-[-14px] w-[2px] bg-orange-500/40 z-0 group-last:bg-transparent"></div>}
+        <div className="relative pl-8 pb-4 group">
+            {/* Tidslinjen - Perfekt centrerad */}
+            <div className="absolute left-[15px] top-[28px] bottom-[-16px] w-[2px] bg-zinc-200 dark:bg-white/10 group-last:bg-transparent transition-colors"></div>
+            {isHighlighted && <div className="absolute left-[15px] top-[28px] bottom-[-16px] w-[2px] bg-gradient-to-b from-orange-500 to-transparent z-0 group-last:bg-transparent"></div>}
             
-            {/* Pricken med Radar-puls för aktivt val */}
-            <div className="absolute left-[9px] sm:left-[11px] top-6 flex items-center justify-center">
-                {isHighlighted && <div className="absolute w-6 h-6 rounded-full bg-orange-500/20 animate-pulse z-0"></div>}
-                <div className={`relative w-2.5 h-2.5 rounded-full border-[2px] border-zinc-50 dark:border-slate-800 z-10 transition-all duration-300 ${isHighlighted ? 'bg-orange-500 ring-2 ring-orange-500/40 scale-110' : (isKlar ? 'bg-emerald-500' : 'bg-zinc-400 dark:bg-slate-500')}`}></div>
+            {/* Tidslinje-nod */}
+            <div className="absolute left-[11px] top-6 flex items-center justify-center">
+                {isHighlighted && <div className="absolute w-6 h-6 rounded-full bg-orange-500/20 animate-[ping_2s_ease-in-out_infinite] z-0"></div>}
+                <div className={`relative w-2.5 h-2.5 rounded-full border-[2px] border-zinc-50 dark:border-slate-800 z-10 transition-all duration-300 ${isHighlighted ? 'bg-orange-500 ring-4 ring-orange-500/20 scale-125' : (isKlar ? 'bg-emerald-500 border-emerald-100 dark:border-emerald-900' : 'bg-zinc-300 dark:bg-zinc-600')}`}></div>
             </div>
 
-            {/* Kortet - Med horisontell hover (translate-x-1) istället för translate-y */}
+            {/* Kortet - Horisontell hover för taktil känsla */}
             <div 
-                onClick={() => {
-                    setView('NEW_JOB', { job: j });
-                    if (window.innerWidth < 1024) onClose();
-                }} 
-                className={`cursor-pointer rounded-xl p-4 transition-all duration-300 relative z-10 ${
+                onClick={() => { setView('NEW_JOB', { job: j }); if (window.innerWidth < 1024) onClose(); }} 
+                className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 relative z-10 block w-full ${
                     isHighlighted 
-                    ? 'bg-orange-50/80 dark:bg-slate-700/60 border border-orange-500 shadow-md translate-x-1' 
-                    : 'bg-white dark:bg-slate-700/30 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-slate-700/50 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow hover:translate-x-1'
+                    ? 'bg-orange-50/80 dark:bg-orange-500/10 border-2 border-orange-400 dark:border-orange-500 shadow-md translate-x-1.5' 
+                    : 'bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/10 hover:border-zinc-300 dark:hover:border-white/20 shadow-sm hover:shadow hover:translate-x-1.5'
                 }`}
             >
-                <div className="flex justify-between items-start mb-2.5">
-                    <div className={`flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-widest ${isHighlighted ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-slate-400'}`}>
-                        <SafeIcon name="calendar" size={10} className={isHighlighted ? "text-orange-500 dark:text-orange-400" : "text-zinc-400 dark:text-slate-500"} />
-                        {j.datum ? j.datum.split('T')[0] : 'Inväntar'}
+                <div className="flex justify-between items-start mb-3">
+                    <div className={`flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-widest ${isHighlighted ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                        <SafeIcon name="calendar" size={12} className={isHighlighted ? "text-orange-500 dark:text-orange-400" : "text-zinc-400 dark:text-zinc-500"} />
+                        {j.datum ? j.datum.split('T')[0] : 'Inväntar Datum'}
                     </div>
-                    {/* Skarpare Badges */}
                     {window.Badge ? <window.Badge status={j.status} /> : (
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm ${isKlar ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30' : 'bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30'}`}>{j.status}</span>
+                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-sm ${isKlar ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20'}`}>{j.status}</span>
                     )}
                 </div>
                 
                 <div className="flex justify-between items-end gap-3 mb-1">
-                    <div className="text-[13px] font-black uppercase tracking-tight truncate text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white transition-colors">
+                    <div className="text-[14px] font-black uppercase tracking-tight truncate text-zinc-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                         {j.kundnamn}
                     </div>
-                    <div className="font-mono text-[14px] font-black shrink-0 leading-none text-zinc-800 dark:text-slate-200">
-                        {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[9px] text-zinc-500 dark:text-slate-500 font-sans uppercase tracking-widest">kr</span>
+                    <div className="font-mono text-[15px] font-black shrink-0 leading-none text-zinc-900 dark:text-white">
+                        {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans uppercase tracking-widest ml-0.5">kr</span>
                     </div>
                 </div>
 
                 {j.kommentar && (
                     <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-white/5">
-                        <p className="text-[11px] leading-relaxed line-clamp-3 italic text-zinc-600 dark:text-slate-400 group-hover:text-zinc-800 dark:group-hover:text-slate-300 transition-colors">
+                        <p className="text-[12px] leading-relaxed line-clamp-2 italic text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">
                             {stripHtml(j.kommentar)}
                         </p>
                     </div>
@@ -139,7 +135,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
-    const [showAllSpecs, setShowAllSpecs] = React.useState(false); // NEW: State för "Visa mer"
+    const [showAllSpecs, setShowAllSpecs] = React.useState(false);
     const tStart = React.useRef(null);
 
     React.useEffect(() => {
@@ -188,11 +184,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         window.db && window.db.collection('vehicleSpecs').doc(v.regnr).set({ brand_manual: val }, { merge: true });
     };
 
-    const saveSpec = (id, val) => {
-        if(!window.db) return;
-        window.db.collection('vehicleSpecs').doc(v.regnr).set({ [id]: val, updatedAt: new Date().toISOString() }, { merge: true });
-    };
-
     const copyRegClick = () => {
         if(navigator.clipboard) {
             navigator.clipboard.writeText(v.regnr);
@@ -238,153 +229,144 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
     return (
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-300">
-            {/* BACKDROP - Massivt djup */}
-            <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-[2px] cursor-default" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-default transition-opacity" onClick={onClose}></div>
             
-            {/* SIDEBAR - Anpassar sig till Ljust/Mörkt tema */}
             <div 
                 onTouchStart={handleTouchStart} 
                 onTouchEnd={handleTouchEnd} 
-                className="relative w-full sm:w-[480px] h-full bg-zinc-50 dark:bg-slate-800 text-zinc-900 dark:text-slate-200 shadow-[-30px_0_60px_-15px_rgba(0,0,0,0.4)] flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-white/10"
+                className="relative w-full sm:w-[500px] h-full bg-zinc-50 dark:bg-[#0f1522] text-zinc-900 dark:text-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-white/10"
             >
-                {/* HEADER (Sticky) */}
-                <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 p-5 shrink-0 z-30 flex justify-between items-start relative overflow-hidden shadow-sm">
-                    {/* Subtil glöd i toppen (syns mest i mörkt läge) */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 dark:bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+                {/* HEADER */}
+                <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 p-6 shrink-0 z-30 relative overflow-hidden shadow-sm">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
-                    <div className="flex items-center gap-4 min-w-0 relative z-10">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-zinc-100 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 flex items-center justify-center relative overflow-hidden group shadow-sm shrink-0">
-                            <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full" onChange={changeBrand} value={brand||""}>
-                                <option value="">...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
-                            </select>
-                            {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-6 h-6 sm:w-7 sm:h-7 object-contain z-10 opacity-80 dark:invert pointer-events-none"/> : <SafeIcon name="car" size={24} className="text-zinc-400 dark:text-slate-400 z-10"/>}
-                            <div className="absolute inset-0 bg-white/80 dark:bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none"><SafeIcon name="edit" size={16} className="text-orange-500 dark:text-white"/></div>
-                        </div>
-                        
-                        <div className="flex flex-col justify-center min-w-0">
-                            <div className="flex items-center gap-3 mb-1">
-                                <h2 onClick={copyRegClick} className="text-2xl sm:text-3xl font-black font-mono tracking-tight uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors drop-shadow-sm">
-                                    {v.regnr}
-                                </h2>
-                                {regCopied && <span className="text-[9px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 px-2 py-0.5 rounded-md font-bold tracking-widest uppercase animate-in fade-in zoom-in">Kopierad</span>}
+                    <div className="flex justify-between items-start relative z-10">
+                        <div className="flex items-center gap-4 min-w-0">
+                            {/* Märkeslogotypen i en premium box */}
+                            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 flex items-center justify-center relative overflow-hidden group shadow-sm shrink-0 hover:border-orange-500/50 transition-colors">
+                                <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full" onChange={changeBrand} value={brand||""}>
+                                    <option value="">Välj Mårke...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
+                                </select>
+                                {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-8 h-8 object-contain z-10 opacity-80 dark:invert pointer-events-none group-hover:scale-110 transition-transform"/> : <SafeIcon name="car" size={24} className="text-zinc-400 z-10"/>}
+                                <div className="absolute inset-0 bg-white/90 dark:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+                                    <SafeIcon name="edit" size={16} className="text-orange-500"/>
+                                </div>
                             </div>
-                            <span className="text-[11px] font-bold text-zinc-500 dark:text-slate-300 uppercase tracking-widest truncate w-full">
-                                {specs.model || v.model || 'Okänd Modell'}
-                            </span>
-                            {v.customer && v.customer !== 'Okänd' && (
-                                <span className="text-[10px] font-medium text-zinc-400 dark:text-slate-500 uppercase tracking-wider mt-0.5 truncate w-full flex items-center">
-                                    <SafeIcon name="user" size={10} className="mr-1.5 opacity-70" />
-                                    {v.customer}
+                            
+                            <div className="flex flex-col justify-center min-w-0">
+                                <div className="flex items-center gap-3">
+                                    <h2 onClick={copyRegClick} className="text-3xl font-black font-mono tracking-tight uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors">
+                                        {v.regnr}
+                                    </h2>
+                                    {regCopied && <span className="text-[9px] bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 px-2 py-0.5 rounded-md font-bold tracking-widest uppercase animate-in fade-in zoom-in">Kopierad</span>}
+                                </div>
+                                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-1.5 truncate w-full">
+                                    {specs.model || v.model || 'Okänd Modell'}
                                 </span>
-                            )}
+                                {v.customer && v.customer !== 'Okänd' && (
+                                    <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5 truncate w-full flex items-center">
+                                        <SafeIcon name="user" size={10} className="mr-1.5 opacity-70" /> {v.customer}
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-2 shrink-0 relative z-10">
-                        <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-transparent hover:border-orange-200 dark:hover:border-orange-500/30 transition-all active:scale-95">
-                            <SafeIcon name="plus" size={16} />
-                        </button>
-                        <button onClick={onClose} title="Stäng" className="w-9 h-9 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-300 dark:hover:border-white/20 transition-all active:scale-95">
-                            <SafeIcon name="x" size={16} />
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete på detta fordon" className="w-10 h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-200/50 dark:border-orange-500/20 transition-all active:scale-95 shadow-sm">
+                                <SafeIcon name="plus" size={18} />
+                            </button>
+                            <button onClick={onClose} title="Stäng panel" className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all active:scale-95 shadow-sm">
+                                <SafeIcon name="x" size={18} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* SCROLLBART INNEHÅLL */}
+                {/* INNEHÅLL */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                     
-                    {/* Sektion: Teknisk Data (Visa Mer-funktion) */}
-                    <div className="p-4 sm:p-5 space-y-3">
-                        <div className="grid grid-cols-2 gap-2.5">
-                            {/* Alltid synliga */}
-                            <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
-                            <StatCard icon="droplet" label="Oljevolym" val={specs.oil} />
+                    {/* SEKTION: DIAGNOSTIK & DATA */}
+                    <div className="p-6">
+                        {/* Gruppering av Teknisk data för ett renare uttryck */}
+                        <div className="bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5 rounded-2xl p-4 shadow-sm mb-6">
                             
-                            {/* Fälls ut vid "Visa mer" */}
-                            {showAllSpecs && (
-                                <>
-                                    <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
-                                    <StatCard icon="navigation" label="Miltal" val={specs.mileage} />
-                                    <StatCard icon="activity" label="Status" val={specs.ts_status || '-'} highlight={(specs.ts_status||'').toLowerCase().includes('avställd')} />
-                                    <StatCard icon="check-circle" label="Besiktigad" val={specs.ts_inspection || '-'} />
-                                    <StatCard icon="settings" label="Växellåda" val={specs.ts_gearbox || '-'} />
-                                    <StatCard icon="zap" label="Drivmedel" val={specs.ts_fuel || '-'} />
-                                </>
-                            )}
-                        </div>
-
-                        {/* Terminal-VIN (Alltid synlig, anpassad för ljust/mörkt) */}
-                        <div 
-                            onClick={copyVinClick}
-                            title="Kopiera Chassinummer"
-                            className={`group cursor-pointer rounded-xl p-3.5 sm:p-4 flex items-center justify-between transition-all duration-500 relative overflow-hidden ${vinCopied ? 'bg-emerald-50 dark:bg-emerald-500/20 ring-1 ring-emerald-500/60' : 'bg-white dark:bg-slate-900/40 ring-1 ring-zinc-200 dark:ring-white/10 hover:bg-zinc-50 dark:hover:bg-slate-900/60 shadow-sm'}`}
-                        >
-                            <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px] pointer-events-none"></div>
-                            <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/10 to-transparent translate-x-[-100%] transition-transform duration-700 ${vinCopied ? 'translate-x-[100%]' : ''}`}></div>
-                            
-                            <div className="flex flex-col min-w-0 relative z-10">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
-                                    <SafeIcon name="fingerprint" size={10} /> CHASSINUMMER (VIN)
-                                </span>
-                                <span className={`font-mono text-[13px] sm:text-[14px] font-medium tracking-[0.25em] truncate transition-colors ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : specs.vin ? 'text-zinc-900 dark:text-slate-200 group-hover:text-orange-500' : 'text-zinc-400 dark:text-slate-500'}`}>
-                                    {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
-                                </span>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
+                                <StatCard icon="droplet" label="Oljevolym" val={specs.oil} />
+                                {showAllSpecs && (
+                                    <>
+                                        <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
+                                        <StatCard icon="navigation" label="Miltal" val={specs.mileage} />
+                                        <StatCard icon="activity" label="Status" val={specs.ts_status || '-'} highlight={(specs.ts_status||'').toLowerCase().includes('avställd')} />
+                                        <StatCard icon="check-circle" label="Besiktigad" val={specs.ts_inspection || '-'} />
+                                    </>
+                                )}
                             </div>
-                            <div className={`shrink-0 relative z-10 transition-all duration-300 ${vinCopied ? 'text-emerald-500 scale-110' : specs.vin ? 'text-zinc-400 dark:text-slate-400 group-hover:text-orange-500' : 'opacity-0'}`}>
-                                <SafeIcon name={vinCopied ? "check" : "copy"} size={16} />
+
+                            <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full py-2 flex justify-center items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-orange-500 transition-colors mb-3">
+                                {showAllSpecs ? 'Göm Specifikationer' : 'Visa Fler Specifikationer'} <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
+                            </button>
+
+                            {/* Premium VIN "Terminal" */}
+                            <div 
+                                onClick={copyVinClick}
+                                title="Kopiera Chassinummer"
+                                className={`group cursor-pointer rounded-xl p-4 flex items-center justify-between transition-all duration-300 relative overflow-hidden ${vinCopied ? 'bg-emerald-50 dark:bg-emerald-500/20 ring-2 ring-emerald-500/50' : 'bg-white dark:bg-[#0f1522] border border-zinc-200 dark:border-[#2a3441] shadow-inner hover:border-orange-500/50'}`}
+                            >
+                                <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px] pointer-events-none"></div>
+                                <div className="flex flex-col min-w-0 relative z-10">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1 flex items-center gap-1.5">
+                                        <SafeIcon name="fingerprint" size={12} /> CHASSINUMMER (VIN)
+                                    </span>
+                                    <span className={`font-mono text-[14px] font-black tracking-[0.2em] truncate transition-colors ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : specs.vin ? 'text-zinc-900 dark:text-white group-hover:text-orange-500' : 'text-zinc-400 dark:text-zinc-600'}`}>
+                                        {vinCopied ? 'KOPIERAD TILL URKLIPP' : (specs.vin || 'SAKNAS')}
+                                    </span>
+                                </div>
+                                <div className={`shrink-0 relative z-10 transition-all duration-300 ${vinCopied ? 'text-emerald-500 scale-110' : specs.vin ? 'text-zinc-400 group-hover:text-orange-500' : 'opacity-0'}`}>
+                                    <SafeIcon name={vinCopied ? "check" : "copy"} size={18} />
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Visa mer/mindre knapp */}
-                        <button 
-                            onClick={() => setShowAllSpecs(!showAllSpecs)}
-                            className="w-full py-1.5 flex justify-center items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-orange-500 dark:text-slate-400 dark:hover:text-orange-400 transition-colors"
-                        >
-                            {showAllSpecs ? 'Göm specifikationer' : 'Visa mer fordonsdata'}
-                            <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
-                        </button>
-
-                        {/* --- INFLYTTAD ACTION HUB --- */}
-                        <div className="pt-4 mt-2 border-t border-zinc-200 dark:border-white/5 space-y-2">
-                            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-purple-50 dark:hover:bg-purple-500/15 text-zinc-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-300 border border-zinc-200 dark:border-white/5 hover:border-purple-300 dark:hover:border-purple-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
-                                    <SafeIcon name="shield" size={12} className="text-purple-500 dark:text-purple-400 group-hover:rotate-180 transition-transform duration-500" /> TS
+                            {/* Action Hub - Integrerad med teknisk data */}
+                            <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-zinc-200 dark:border-white/5">
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="h-12 flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#1a2235] hover:bg-purple-50 dark:hover:bg-purple-500/10 text-zinc-600 dark:text-zinc-300 hover:text-purple-600 dark:hover:text-purple-400 border border-zinc-200 dark:border-white/5 hover:border-purple-300 dark:hover:border-purple-500/30 rounded-xl transition-all group shadow-sm">
+                                    <SafeIcon name="shield" size={16} className="text-purple-500 dark:text-purple-400 group-hover:scale-110 transition-transform" />
+                                    <span className="text-[8px] font-bold uppercase tracking-widest">Transport.</span>
                                 </button>
-                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-orange-50 dark:hover:bg-orange-500/15 text-zinc-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-300 border border-zinc-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
-                                    <SafeIcon name="droplet" size={12} className="text-orange-500 dark:text-orange-400 group-hover:rotate-180 transition-transform duration-500" /> Olja
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="h-12 flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#1a2235] hover:bg-orange-50 dark:hover:bg-orange-500/10 text-zinc-600 dark:text-zinc-300 hover:text-orange-600 dark:hover:text-orange-400 border border-zinc-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 rounded-xl transition-all group shadow-sm">
+                                    <SafeIcon name="droplet" size={16} className="text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
+                                    <span className="text-[8px] font-bold uppercase tracking-widest">Oljeinfo</span>
                                 </button>
-                                <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-blue-50 dark:hover:bg-blue-500/15 text-zinc-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-300 border border-zinc-200 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/30 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
-                                    <SafeIcon name="external-link" size={12} className="text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" /> <span className="hidden sm:inline">Oljemag.</span><span className="sm:hidden">OM</span>
+                                <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="h-12 flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#1a2235] hover:bg-blue-50 dark:hover:bg-blue-500/10 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 border border-zinc-200 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/30 rounded-xl transition-all group shadow-sm">
+                                    <SafeIcon name="external-link" size={16} className="text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                                    <span className="text-[8px] font-bold uppercase tracking-widest">Oljemag.</span>
                                 </button>
-                                <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all group">
-                                    <img src="https://www.etka.com/etkaportal/static/icons/logo.5feba87b.svg" alt="ETKA" className="h-3 opacity-60 dark:opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all dark:invert-0 invert" /> ETKA
+                                <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="h-12 flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#1a2235] hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-xl transition-all group shadow-sm">
+                                    <img src="https://www.etka.com/etkaportal/static/icons/logo.5feba87b.svg" alt="ETKA" className="h-4 opacity-60 dark:opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all dark:invert-0 invert" />
+                                    <span className="text-[8px] font-bold uppercase tracking-widest">ETKA</span>
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Sektion: Historik Tidslinje (Full bredd, minskad luft) */}
-                    <div className="px-3 sm:px-5 pb-24">
-                        
-                        <div className="sticky top-0 bg-zinc-50/95 dark:bg-slate-800/95 backdrop-blur-md z-20 py-3 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
-                            <div className="text-[10px] font-black text-zinc-500 dark:text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5 pl-2 sm:pl-0">
-                                <SafeIcon name="clock" size={12} className="text-orange-500 dark:text-orange-400" /> Historik
+                        {/* SEKTION: HISTORIK */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.15em] flex items-center gap-2">
+                                <SafeIcon name="layers" size={16} className="text-orange-500" /> Historik & Uppdrag
                             </div>
-                            
-                            <div className="relative group w-32 sm:w-40">
+                            <div className="relative group w-40">
                                 <input 
                                     type="text" 
-                                    placeholder="SÖK I HISTORIK..." 
+                                    placeholder="SÖK HISTORIK..." 
                                     value={histQ}
                                     onChange={(e) => setHistQ(e.target.value)}
-                                    className="w-full bg-white dark:bg-slate-900/50 border border-zinc-200 dark:border-white/10 rounded-lg py-1.5 pl-7 pr-3 text-[9px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest outline-none focus:border-orange-500 shadow-sm transition-all"
+                                    className="w-full bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 rounded-xl py-2 pl-8 pr-3 text-[10px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest outline-none focus:border-orange-500 shadow-sm transition-all placeholder:text-zinc-400"
                                 />
-                                <SafeIcon name="search" size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-slate-500 group-focus-within:text-orange-500 transition-colors" />
+                                <SafeIcon name="search" size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
                             </div>
                         </div>
 
                         {filteredHistory.length > 0 ? (
-                            <div className="mt-3 flex flex-col ml-0 sm:ml-1"> {/* Tillsammans med TimelineItem bygger detta den perfekta linjen */}
+                            <div className="flex flex-col ml-1 pb-24">
                                 {filteredHistory.map((j, idx) => (
                                     <TimelineItem 
                                         key={j.id || idx} 
@@ -397,29 +379,26 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-12 text-center flex flex-col items-center">
-                                <div className="w-12 h-12 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-3 shadow-sm border border-zinc-200 dark:border-transparent">
-                                    <SafeIcon name="inbox" size={20} className="text-zinc-400 dark:text-slate-600" />
+                            <div className="py-16 text-center flex flex-col items-center">
+                                <div className="w-16 h-16 bg-zinc-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4 border border-zinc-200 dark:border-transparent">
+                                    <SafeIcon name="inbox" size={24} className="text-zinc-400" />
                                 </div>
-                                <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 dark:text-slate-500">Ingen historik hittades</span>
+                                <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Ingen historik hittades</span>
                             </div>
                         )}
                     </div>
                 </div>
                 
-                {/* STICKY BOTTOM ACTION BAR (Ligger alltid i botten) */}
-                <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-white/5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shrink-0 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-
-                    {/* Rad 2: Smart Sök */}
+                {/* STICKY BOTTOM ACTION BAR */}
+                <div className="p-5 border-t border-zinc-200 dark:border-white/5 bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl shrink-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
                     <button 
                         onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')}
-                        className="w-full bg-orange-50 dark:bg-white/5 border border-orange-200 dark:border-orange-500/20 py-3 rounded-xl flex items-center justify-center gap-2 hover:border-orange-400 dark:hover:border-orange-500/40 hover:bg-orange-100 dark:hover:bg-orange-500/10 text-orange-600 dark:text-orange-400 transition-all group shadow-sm active:scale-95 min-w-0"
+                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_12px_25px_-4px_rgba(249,115,22,0.6)]"
                     >
-                        <SafeIcon name="zap" size={16} className="text-orange-500 group-hover:scale-110 transition-transform shrink-0" />
-                        <span className="text-[11px] font-black uppercase tracking-widest truncate">Smart Sökning</span>
+                        <SafeIcon name="zap" size={16} className="text-white" />
+                        <span className="text-[12px] font-black uppercase tracking-widest">Kör Smart Sökning</span>
                     </button>
                 </div>
-
             </div>
         </div>
     );
