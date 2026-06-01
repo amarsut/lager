@@ -660,7 +660,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         {price > 0 ? (
                             <div className="flex flex-col items-end">
                                 {/* Visar delbetalning/skuld ENDAST när status är FAKTURERAS */}
-                                {job.status === 'FAKTURERAS' && paid > 0 ? (
+                                {paid > 0 ? (
                                     <>
                                         <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest mb-0.5">{paid.toLocaleString('sv-SE')} kr</span>
                                         <div className="flex items-baseline gap-1 text-orange-500">
@@ -1510,11 +1510,11 @@ window.DashboardView = React.memo(({
                                                         <td className="px-4 py-4 align-middle text-right">
                                                             <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
                                                                 {/* Visar delbetalning/skuld ENDAST när status är FAKTURERAS */}
-                                                                {job.status === 'FAKTURERAS' && paid > 0 ? (
-                                                                    <>
-                                                                        <span className="text-[10px] text-emerald-500 font-bold font-sans tracking-widest uppercase mb-1">
-                                                                             {paid.toLocaleString('sv-SE')} kr
-                                                                        </span>
+                                                                {paid > 0 ? (
+                                                                <>
+                                                                    <span className="text-[10px] text-emerald-500 font-bold font-sans tracking-widest uppercase mb-1">
+                                                                        {paid.toLocaleString('sv-SE')} kr
+                                                                    </span>
                                                                         <div className="text-orange-500">
                                                                             {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
                                                                         </div>
