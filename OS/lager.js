@@ -53,14 +53,127 @@ const LagerIcon = ({ category, name, size = 32, className = "" }) => {
 // --- Hjälpfunktioner ---
 const generateTrodoLink = (f) => f ? `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
 
+// --- NY SKANNER MODAL FÖR BÅDE MOBIL & DATOR ---
+const LagerScannerModal = ({ items, onOpenItem, onAddNewWithCode, onClose }) => {
+    const [scannedCode, setScannedCode] = React.useState('');
+    const [scanError, setScanError] = React.useState('');
+    const inputRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (inputRef.current) inputRef.current.focus();
+    }, []);
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        // Här kan ett externt bibliotek kopplas på i framtiden för att tolka bilden (t.ex. html5-qrcode)
+        alert(`Bild mottagen: ${file.name}\n(Här kan ett system för bildtolkning kopplas in i framtiden)`);
+    };
+
+    const handleCodeSubmit = (e) => {
+        e.preventDefault();
+        const cleanCode = scannedCode.trim().toUpperCase();
+        if (!cleanCode) return;
+
+        // Sök efter exakt matchning i lagret baserat på service_filter (Art.nummer)
+        const foundItem = items.find(i => (i.service_filter || '').toUpperCase().replace(/[^A-Z0-9]/g, '') === cleanCode.replace(/[^A-Z0-9]/g, ''));
+
+        if (foundItem) {
+            onOpenItem(foundItem);
+            onClose();
+        } else {
+            setScanError(`Ingen träff i lagret för "${cleanCode}"`);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+            <div className="relative w-full max-w-md bg-white dark:bg-[#182032] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 p-6 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+                
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 border border-orange-200 dark:border-orange-500/20 flex items-center justify-center shadow-sm">
+                            <SafeIcon name="scan" size={20} />
+                        </div>
+                        <div>
+                            <h2 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest">Skanna Artikel</h2>
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Kamera eller Manuell inmatning</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-[#121826] rounded-lg border border-zinc-200 dark:border-white/10">
+                        <SafeIcon name="x" size={14} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleCodeSubmit} className="space-y-5">
+                    
+                    {/* Knappen som utnyttjar mobilens kamera via 'capture' attributet */}
+                    <label className="relative h-40 bg-zinc-100 dark:bg-[#0f1522] rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 overflow-hidden flex flex-col items-center justify-center text-center p-4 group cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                        />
+                        <SafeIcon name="camera" size={32} className="text-zinc-400 group-hover:text-orange-500 transition-colors mb-2" />
+                        <span className="text-[12px] text-zinc-700 dark:text-zinc-300 font-bold uppercase tracking-widest">
+                            Öppna Kamera / Välj Fil
+                        </span>
+                        <span className="text-[9px] text-zinc-500 mt-2 max-w-[80%] leading-relaxed">
+                            På mobilen öppnas kameran automatiskt. På datorn öppnas filväljaren.
+                        </span>
+                    </label>
+
+                    <div className="relative">
+                        <input
+                            ref={inputRef}
+                            type="text" value={scannedCode}
+                            onChange={e => { setScannedCode(e.target.value); setScanError(''); }}
+                            className="w-full bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-center text-sm font-mono font-bold tracking-widest text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-inner"
+                            placeholder="Skriv art. nummer eller skanna streckkod..."
+                        />
+                    </div>
+
+                    {scanError && (
+                        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-center animate-in fade-in zoom-in-95 duration-200">
+                            <p className="text-xs font-bold text-red-600 dark:text-red-400 mb-3">{scanError}</p>
+                            <div className="flex gap-2">
+                                <a
+                                    href={generateTrodoLink(scannedCode)} target="_blank" rel="noopener noreferrer"
+                                    className="flex-1 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-50 border border-zinc-200 dark:border-white/10 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                                >
+                                    <SafeIcon name="external-link" size={12} /> Sök Trodo
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={() => { onAddNewWithCode(scannedCode.toUpperCase()); onClose(); }}
+                                    className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-md transition-all"
+                                >
+                                    <SafeIcon name="plus" size={12} /> Lägg till
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <button type="submit" className="w-full h-12 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-md flex items-center justify-center gap-2 transition-all">
+                        <SafeIcon name="search" size={14} /> Sök i databas
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 // --- STABIL MODAL (Redigering & Ny Artikel) ---
-const LagerItemModal = ({ item, onClose }) => {
+const LagerItemModal = ({ item, defaultCode = '', onClose }) => {
     const [formData, setFormData] = React.useState({
         name: item?.name || '',
         price: item?.price || '',
         category: item?.category || 'Service',
         quantity: item?.quantity || '',
-        service_filter: item?.service_filter || '',
+        service_filter: item?.service_filter || defaultCode || '',
         notes: item?.notes || ''
     });
 
@@ -159,7 +272,6 @@ const LagerItemModal = ({ item, onClose }) => {
                                 <textarea rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className={`${InputClass} resize-none`} placeholder="Placering: Bakaxel. Passar VAG plattform..." />
                             </div>
                             
-                            {/* NYTT: TRANSAKTIONSHISTORIK FÖR SPÅRBARHET (Visas ALLTID nu) */}
                             {!isNew && (
                                 <div className="col-span-2 mt-4 pt-5 border-t border-zinc-200/80 dark:border-white/5">
                                     <label className={`${LabelClass} flex items-center gap-2 mb-3`}>
@@ -228,7 +340,6 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
     const [selectedJob, setSelectedJob] = React.useState(null);
     const [isSaving, setIsSaving] = React.useState(false);
     
-    // NYTT: Toggle för att bestämma om arbetsordern ska uppdateras (Avstängd som standard)
     const [syncToJob, setSyncToJob] = React.useState(false);
 
     const activeJobs = React.useMemo(() => {
@@ -266,11 +377,9 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                 const jData = jobDoc.data();
                 const pData = partDoc.data();
 
-                // 1. Dra av saldo i lagret
                 const currentQty = parseInt(pData.quantity) || 0;
                 const newQty = Math.max(0, currentQty - qty);
 
-                // 2. Skapa kvitto för historiken (Loggas ALLTID, oavsett toggle)
                 const currentHistory = pData.history || [];
                 const logEntry = {
                     date: new Date().toISOString(),
@@ -286,19 +395,16 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                     history: [...currentHistory, logEntry] 
                 });
 
-                // 3. UPPGRADERING: Uppdatera bara arbetsordern om användaren aktivt har valt det
                 if (syncToJob) {
                     let utgifter = jData.utgifter || [];
                     let added = false;
                     const partTotalCost = (parseFloat(pData.price) || 0) * qty;
                     
-                    // Gör det tydligt att det rör sig om flera delar om qty > 1
                     const descName = qty > 1 ? `${qty}x ${pData.name}` : pData.name;
                     
                     utgifter = utgifter.map(u => {
                         if (!added && (!u.namn || u.namn.trim() === '')) {
                             added = true;
-                            // Sätter qty till 1 i arbetsordern eftersom priset redan är multiplicerat
                             return { namn: descName, kostnad: String(partTotalCost), qty: 1, partId: itemIdStr, deducted: true };
                         }
                         return u;
@@ -410,7 +516,6 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                         )}
                     </div>
 
-                    {/* NYTT: Toggle för att Bokföra på Arbetsorder */}
                     <div 
                         onClick={() => setSyncToJob(!syncToJob)}
                         className={`p-3 sm:p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${syncToJob ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500/50 shadow-sm' : 'bg-zinc-50 dark:bg-[#0f1522] border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 shadow-inner'}`}
@@ -428,7 +533,6 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                                 </div>
                             </div>
                         </div>
-                        {/* iOS-liknande switch */}
                         <div className={`w-11 h-6 rounded-full transition-colors relative flex items-center shrink-0 ${syncToJob ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-white/10'}`}>
                             <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all shadow-sm ${syncToJob ? 'left-6' : 'left-1'}`} />
                         </div>
@@ -456,16 +560,20 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
 };
 
 
-// --- HUVUDVY FÖR LAGER (Sök- & Identifieringsfokus) ---
+// --- HUVUDVY FÖR LAGER ---
 window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
-    const [activeCat, setActiveCat] = React.useState("Alla");
+    const [activeCat, setActiveCat] = React.useState("Service"); 
     const [stockFilter, setStockFilter] = React.useState("inStock");
     const [editingItem, setEditingItem] = React.useState(null); 
     const [linkingItem, setLinkingItem] = React.useState(null);
     const [sortBy, setSortBy] = React.useState("name_asc");
     const [copiedId, setCopiedId] = React.useState(null);
+
+    // NYTT: State för att hantera Skannermodalen
+    const [isScannerOpen, setIsScannerOpen] = React.useState(false);
+    const [scannedDefaultCode, setScannedDefaultCode] = React.useState('');
 
     React.useEffect(() => {
         if (!window.db) return;
@@ -604,18 +712,34 @@ window.LagerView = ({ allJobs = [] }) => {
                     {/* --- CONTROL BAR --- */}
                     <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-xl sm:rounded-2xl p-1.5 sm:p-3 shadow-sm flex flex-col lg:flex-row gap-2 sm:gap-3 lg:items-center justify-between mb-3 lg:mb-6">
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-1">
+                            
+                            {/* NYTT: SÖKFÄLTET MED SKANNERKNAPP */}
                             <div className="relative group flex-1 lg:max-w-md">
                                 <input 
                                     type="text" placeholder="Sök artikelnamn, OEN-nummer..." 
-                                    className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 focus:border-orange-500 p-2.5 sm:p-3 pl-9 sm:pl-11 pr-8 text-[12px] sm:text-[13px] font-medium text-zinc-900 dark:text-white outline-none w-full transition-all rounded-lg sm:rounded-xl focus:ring-2 focus:ring-orange-500/10 shadow-inner"
+                                    className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200/80 dark:border-white/10 focus:border-orange-500 p-2.5 sm:p-3 pl-9 sm:pl-11 pr-16 text-[12px] sm:text-[13px] font-medium text-zinc-900 dark:text-white outline-none w-full transition-all rounded-lg sm:rounded-xl focus:ring-2 focus:ring-orange-500/10 shadow-inner"
                                     value={search} onChange={(e) => setSearch(e.target.value)}
                                 />
                                 <SafeIcon name="search" size={14} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                                {search && (
-                                    <button onClick={() => setSearch('')} className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors bg-white dark:bg-[#1a2235] p-1 rounded-md shadow-sm">
-                                        <SafeIcon name="x" size={12} />
+                                
+                                <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                    <button 
+                                        onClick={() => setIsScannerOpen(true)} 
+                                        className="text-zinc-400 hover:text-orange-500 transition-colors bg-white dark:bg-[#1a2235] p-1.5 rounded-md shadow-sm border border-zinc-200/80 dark:border-white/5 active:scale-95" 
+                                        title="Skanna"
+                                    >
+                                        <SafeIcon name="scan" size={14} />
                                     </button>
-                                )}
+                                    {search && (
+                                        <button 
+                                            onClick={() => setSearch('')} 
+                                            className="text-zinc-400 hover:text-red-500 transition-colors bg-white dark:bg-[#1a2235] p-1.5 rounded-md shadow-sm border border-zinc-200/80 dark:border-white/5 active:scale-95" 
+                                            title="Rensa sökning"
+                                        >
+                                            <SafeIcon name="x" size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <select 
@@ -779,7 +903,17 @@ window.LagerView = ({ allJobs = [] }) => {
                 </div>
             </div>
             
-            {editingItem && <LagerItemModal item={editingItem} onClose={() => setEditingItem(null)} />}
+            {/* NYTT: Laddar Skannermodalen om den är aktiv */}
+            {isScannerOpen && (
+                <LagerScannerModal 
+                    items={items}
+                    onOpenItem={(item) => { setScannedDefaultCode(''); setEditingItem(item); }}
+                    onAddNewWithCode={(code) => { setScannedDefaultCode(code); setEditingItem({}); }}
+                    onClose={() => setIsScannerOpen(false)}
+                />
+            )}
+
+            {editingItem && <LagerItemModal item={editingItem} defaultCode={scannedDefaultCode} onClose={() => { setEditingItem(null); setScannedDefaultCode(''); }} />}
             {linkingItem && <LagerLinkJobModal item={linkingItem} allJobs={allJobs} onClose={() => setLinkingItem(null)} />}
         </>
     );
