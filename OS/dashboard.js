@@ -649,10 +649,13 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                         </span>
                         {job.kommentar && (
-                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-snug flex items-start gap-1.5 font-medium">
-                                <window.Icon name="message-square" size={10} className="shrink-0 mt-[2px] opacity-70" />
-                                {stripHtml(job.kommentar)} {/* <-- ÄNDRAT HÄR */}
-                            </span>
+                            /* NYTT: Separerad flex-behållare och text-behållare för att line-clamp ska fungera */
+                            <div className="flex items-start gap-1.5 mt-1 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                                <window.Icon name="message-square" size={10} className="shrink-0 mt-[2.5px] opacity-70" />
+                                <span className="line-clamp-4 leading-snug whitespace-normal break-words">
+                                    {stripHtml(job.kommentar)}
+                                </span>
+                            </div>
                         )}
                     </div>
                     
@@ -1434,15 +1437,31 @@ window.DashboardView = React.memo(({
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-4 align-middle">
+                                                        <td className="px-4 py-4 align-middle relative">
                                                             <div className="flex flex-col min-w-0">
                                                                 <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
                                                                     {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                                                                 </span>
+                                                                
                                                                 {job.kommentar && (
-                                                                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 italic truncate max-w-[140px]">
-                                                                        <window.Icon name="message-square" size={10} className="shrink-0" />
-                                                                        <span className="truncate">{stripHtml(job.kommentar)}</span> {/* <-- ÄNDRAT HÄR */}
+                                                                    <div className="relative group/note cursor-help mt-1 w-fit">
+                                                                        {/* Den klippta, synliga texten */}
+                                                                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[140px]">
+                                                                            <window.Icon name="message-square" size={10} className="shrink-0" />
+                                                                            <span className="truncate">{stripHtml(job.kommentar)}</span>
+                                                                        </div>
+                                                                        
+                                                                        {/* PREMIUM HOVER-RUTA (Dyker upp över tabellen) */}
+                                                                        <div className="absolute left-[-10px] top-[-10px] w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)] rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-top-left">
+                                                                            <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
+                                                                                <div className="shrink-0 mt-[2px] text-orange-500">
+                                                                                    <window.Icon name="message-square" size={14} />
+                                                                                </div>
+                                                                                <div className="whitespace-normal leading-relaxed break-words">
+                                                                                    {stripHtml(job.kommentar)}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1689,6 +1708,33 @@ window.DashboardView = React.memo(({
                             </div>
                         </div>
                         
+                    </div>
+                )}
+
+                {/* --- NYTT: SÖKBAR FÖR MOBIL I "ALLA"-VYN --- */}
+                {['ALLA', 'BOKAD', 'KLAR'].includes(activeFilter) && (
+                    <div className="px-3 mt-3 mb-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="relative group">
+                            <input 
+                                type="text" 
+                                placeholder="SÖK I ALLA UPPDRAG..." 
+                                className="bg-white dark:bg-[#1a2235] border border-zinc-200/80 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-3.5 pl-11 pr-11 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-2xl shadow-sm"
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                            />
+                            <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
+                            
+                            {/* Rensa-knapp (visas bara om man har skrivit något) */}
+                            {globalSearch && (
+                                <button 
+                                    onClick={() => setGlobalSearch('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-red-500 bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-xl transition-all active:scale-95"
+                                    title="Rensa sökning"
+                                >
+                                    <window.Icon name="x" size={14} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
 
