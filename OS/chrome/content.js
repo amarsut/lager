@@ -80,6 +80,18 @@ class RadarWidget {
             
             .os-radar-wrapper.shrunk .os-radar-content { display: none !important; }
             .os-radar-wrapper.shrunk #os-min-btn { display: none !important; }
+
+            .os-radar-wrapper.captcha-mode { 
+                background-color: transparent !important; 
+                backdrop-filter: blur(0px) !important; 
+                pointer-events: none !important; 
+            }
+            .os-radar-wrapper.captcha-mode .os-radar-box { 
+                top: 10%; 
+                transform: translate(-50%, 0) scale(1); 
+                pointer-events: none !important; 
+                box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            }
             
             #os-min-btn:hover { background: rgba(255,255,255,0.1); color: #fff !important; }
         `;
@@ -133,6 +145,18 @@ class RadarWidget {
             this.wrapper.classList.remove('shrunk');
             this.isMinimized = false;
             chrome.storage.local.set({ 'os_radar_minimized': false });
+        }
+    }
+
+    setCaptchaMode(active) {
+        if (this.wrapper) {
+            if (active) {
+                this.wrapper.classList.add('captcha-mode');
+                // Stanna animationen tillfälligt så den inte är distraherande
+                this.stopAnimation(); 
+            } else {
+                this.wrapper.classList.remove('captcha-mode');
+            }
         }
     }
 
@@ -434,16 +458,19 @@ if (window.location.hostname.includes('transportstyrelsen.se')) {
                 if (visibleText.includes('robot') || visibleText.includes('säkerhetskontroll') || visibleText.includes('captcha')) {
                     if (!captchaMode) {
                         captchaMode = true;
-                        widget.updateText('Manuell Captcha krävs!');
-                        widget.shrink(); 
+                        widget.updateText('Kräver manuell Captcha. Lös i fönstret!');
                         
-                        const w = 500, h = 650;
+                        // Aktivera det nya Captcha-läget istället för shrink()
+                        widget.setCaptchaMode(true);
+
+                        const w = 500, h = 750; // Ökade höjden lite för att ge Captchan mer utrymme
                         const left = (window.screen.availWidth / 2) - (w / 2);
                         const top = (window.screen.availHeight / 2) - (h / 2);
                         window.moveTo(left, top);
+                        window.resizeTo(w, h); // Tvinga rätt storlek om fönstret är för litet
                         window.focus();
                     }
-                    return; // Avbryt inte loopen, utan pausa inmatningen tills användaren löst det
+                    return; // Pausar inmatningen tills användaren löst det
                 }
 
                 // 3. ÄR VI PÅ RESULTATSIDAN? (Sök i råtexten oavsett om menyerna är stängda)
@@ -451,7 +478,10 @@ if (window.location.hostname.includes('transportstyrelsen.se')) {
                     clearInterval(masterLoop);
                     captchaMode = false;
                     
+                    // Återställ UI:t till det normala stadiet för att indikera att det laddar
                     widget.wrapper.classList.remove('shrunk');
+                    widget.setCaptchaMode(false); 
+                    
                     widget.updateText('Träff! Fäller ut dolda menyer...');
                     
                     // Brute-force: Fäll ut alla dragspelsmenyer på sidan
