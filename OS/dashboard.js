@@ -22,10 +22,9 @@ const formatDate = (dateStr) => {
 // Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
 const stripHtml = (html) => {
     if (!html) return '';
-    // Ersätt radbrytningar med mellanslag så att inte texten klibbar ihop
     const cleanText = String(html)
         .replace(/<br\s*[\/]?>/gi, " ")
-        .replace(/<[^>]*>?/gm, ''); // Strippar alla HTML-taggar
+        .replace(/<[^>]*>?/gm, ''); 
     return cleanText.trim();
 };
 
@@ -36,7 +35,7 @@ window.Badge = React.memo(({ status }) => {
         'BOKAD': { bg: 'bg-orange-50/80 dark:bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-200/60 dark:border-orange-500/20', dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]' },
         'OFFERERAD': { bg: 'bg-blue-50/80 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200/60 dark:border-blue-500/20', dot: 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]' },
         'KLAR': { bg: 'bg-emerald-50/80 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200/60 dark:border-emerald-500/20', dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' },
-        'FAKTURERAS': { bg: 'bg-zinc-100/80 dark:bg-white/5', text: 'text-zinc-600 dark:text-zinc-300', border: 'border-zinc-200/80 dark:border-white/10', dot: 'bg-zinc-400' },
+        'FAKTURERAS': { bg: 'bg-zinc-100/80 dark:bg-white/10', text: 'text-zinc-600 dark:text-zinc-300', border: 'border-zinc-200/80 dark:border-white/10', dot: 'bg-zinc-400' },
     };
     const style = config[s] || config['BOKAD'];
     return (
@@ -157,7 +156,6 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
 
     const { data, max } = chartData;
     
-    // Algoritm för en mjuk Bezier-kurva med marginal för SVG boxen
     const points = data.map((d, i) => ({ 
         x: (i / 11) * 100, 
         y: 90 - (d.count / max) * 75 
@@ -186,7 +184,7 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
     }, [showWeather, weatherData]);
 
     return (
-        <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-5 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 flex flex-col min-h-[170px] justify-between">
+        <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-5 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-orange-500/5 dark:hover:shadow-[0_10px_40px_rgba(249,115,22,0.1)] transition-all duration-300 flex flex-col min-h-[170px] justify-between">
             
             <div className={`absolute right-0 top-0 w-32 h-32 blur-3xl rounded-full pointer-events-none transition-colors duration-500 ${showWeather ? 'bg-sky-500/10 group-hover:bg-sky-500/20' : 'bg-orange-500/5 group-hover:bg-orange-500/10'}`}></div>
             
@@ -199,7 +197,7 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                 
                 <button 
                     onClick={() => setShowWeather(!showWeather)} 
-                    className={`w-7 h-7 flex items-center justify-center rounded-lg border shadow-sm transition-all active:scale-90 ${showWeather ? 'bg-orange-50 text-orange-500 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20' : 'bg-sky-50 text-sky-500 border-sky-200 dark:bg-sky-500/10 dark:border-sky-500/20'}`}
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg border shadow-sm transition-all active:scale-90 ${showWeather ? 'bg-orange-50 text-orange-500 border-orange-200 dark:bg-sky-500/10 dark:border-sky-500/20 dark:text-sky-400' : 'bg-sky-50 text-sky-500 border-sky-200 dark:bg-orange-500/10 dark:border-orange-500/20 dark:text-orange-400'}`}
                     title={showWeather ? 'Visa Diagram' : 'Visa Väder'}
                 >
                     <window.Icon name={showWeather ? "activity" : "cloud-sun"} size={12} />
@@ -240,8 +238,7 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
 
                         <div className="relative w-full flex-1 mt-3 min-h-[65px]">
                             
-                            {/* Stödlinjer i bakgrunden (Grid) */}
-                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-4 opacity-[0.15] dark:opacity-10">
+                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-4 opacity-[0.15] dark:opacity-20">
                                 <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
                                 <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
                                 <div className="w-full h-px border-t border-zinc-500"></div>
@@ -255,24 +252,20 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                                     </linearGradient>
                                 </defs>
                                 
-                                {/* Area & Linje */}
                                 <path d={areaPath} fill="url(#chartGradient)" />
                                 <path d={linePath} fill="none" stroke="#f97316" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
 
-                                {/* Hårkors och aktiva noder vid hover */}
                                 {points.map((p, i) => (
                                     <g key={i} className={`transition-opacity duration-200 ${hoveredIdx === i ? 'opacity-100' : 'opacity-0'}`}>
                                         <line x1={p.x} y1={p.y} x2={p.x} y2="100" stroke="#f97316" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" className="opacity-50" />
-                                        <circle cx={p.x} cy={p.y} r="3" fill="#182032" stroke="#f97316" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                        <circle cx={p.x} cy={p.y} r="3" fill="#1e293b" stroke="#f97316" strokeWidth="2" vectorEffect="non-scaling-stroke" />
                                         <circle cx={p.x} cy={p.y} r="6" fill="#f97316" fillOpacity="0.2" vectorEffect="non-scaling-stroke" />
                                     </g>
                                 ))}
                             </svg>
 
-                            {/* Osynligt lager för att fånga muspekaren per månad */}
                             <div className="absolute inset-0 flex pb-4 z-20">
                                 {data.map((d, i) => {
-                                    // Snygg positionering av tooltip i ändarna för att inte hamna utanför
                                     let tooltipAlign = "-translate-x-1/2";
                                     if (i === 0) tooltipAlign = "translate-x-0";
                                     if (i === 11) tooltipAlign = "-translate-x-full";
@@ -298,7 +291,6 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                                 })}
                             </div>
                             
-                            {/* X-axel Etiketter */}
                             <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] font-bold uppercase tracking-widest text-zinc-400 px-0.5">
                                 {data.map((d, i) => (
                                     <span key={i} className={`transition-colors duration-200 ${hoveredIdx === i ? 'text-orange-500 scale-110' : ([0, 3, 6, 9, 11].includes(i) ? 'opacity-100' : 'opacity-0')}`}>
@@ -378,7 +370,7 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
 });
 
 const getAvatarTheme = (name) => {
-    if (!name) return 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-[#182032] dark:text-zinc-400 dark:border-white/5';
+    if (!name) return 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-[#1e293b] dark:text-zinc-300 dark:border-white/10';
     const themes = [
         'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
         'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
@@ -444,19 +436,13 @@ window.CustomerAvatar = React.memo(({ job }) => {
             </div>
             
             {brand ? (
-                /* ÄNDRING: 
-                   - w-[22px] och h-[22px] är ändrat till w-[26px] h-[26px]
-                   - p-[4px] är ändrat till p-[3px] (gör att själva bilden får ta mer plats)
-                   - positionen är ändrad till -bottom-2 -right-2
-                */
-                <div className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-white dark:bg-[#182032] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center p-[3px] overflow-hidden animate-in zoom-in duration-300 z-20">
+                <div className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-white dark:bg-[#1e293b] rounded-full border border-zinc-200 dark:border-white/10 shadow-sm flex items-center justify-center p-[3px] overflow-hidden animate-in zoom-in duration-300 z-20">
                     <img src={`https://cdn.simpleicons.org/${brand}`} className="w-full h-full object-contain opacity-80 dark:invert transition-opacity hover:opacity-100" alt={brand} onError={(e) => e.target.style.display = 'none'} />
                 </div>
             ) : 
             hasDbData ? (
-                /* ÄNDRING: Samma storleksändringar för den allmänna bil-ikonen (fallback) */
-                <div title="Fordonsteknisk data hittad, men okänt märke" className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-zinc-100 dark:bg-[#1a2235] rounded-full border border-zinc-200 dark:border-[#2a3441] shadow-sm flex items-center justify-center overflow-hidden animate-in zoom-in duration-300 z-20 text-zinc-400">
-                    <window.Icon name="car" size={14} /> {/* Ikonen är också lite större (size 14 istället för 12) */}
+                <div title="Fordonsteknisk data hittad, men okänt märke" className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-zinc-100 dark:bg-[#1e293b] rounded-full border border-zinc-200 dark:border-white/10 shadow-sm flex items-center justify-center overflow-hidden animate-in zoom-in duration-300 z-20 text-zinc-400">
+                    <window.Icon name="car" size={14} /> 
                 </div>
             ) : null}
         </div>
@@ -495,22 +481,19 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     return (
         <div
             onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id, job) : null}
-            // Tunnare ram (border-2) och skarpare hörn (rounded-2xl)
-            className={`w-full relative active:scale-[0.97] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border-2 rounded-2xl
+            className={`w-full relative active:scale-[0.97] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border rounded-2xl
                 ${isDone ? 'opacity-60 grayscale-[0.2] border-zinc-200 dark:border-white/5' : 
                   isUrgentDate ? 'border-orange-300 dark:border-orange-500/50 shadow-[0_4px_15px_-3px_rgba(249,115,22,0.1)]' : 
-                  'border-zinc-200 dark:border-[#2a3441] shadow-[0_4px_10px_-3px_rgba(0,0,0,0.05)]'}
+                  'border-zinc-200 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}
             `}
         >
-            {/* Kortets bakgrund */}
             <div className={`absolute inset-0 transition-colors duration-300 ${
                 isUrgentDate && !isDone 
-                ? 'bg-gradient-to-b from-orange-50 to-white dark:from-orange-500/10 dark:to-[#182032]' 
-                : 'bg-white dark:bg-[#182032]'
+                ? 'bg-gradient-to-b from-orange-50 to-white dark:from-orange-500/10 dark:to-[#1e293b]' 
+                : 'bg-white dark:bg-[#1e293b]'
             }`}></div>
 
             <div className="p-4 relative z-10">
-                {/* HEADER I KORTET */}
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
                         <window.CustomerAvatar job={job} />
@@ -518,26 +501,24 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             <div className="text-[15px] font-black tracking-tight truncate leading-tight text-zinc-900 dark:text-white group-hover:text-orange-500 transition-colors">
                                 {job.kundnamn}
                             </div>
-                            <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 flex items-center gap-1 mt-0.5">
-                                <span className="bg-zinc-100 dark:bg-white/5 px-1.5 py-0.5 rounded text-[9px]">#{job.id.substring(0, 6)}</span>
+                            <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                                <span className="bg-zinc-100 dark:bg-black/30 px-1.5 py-0.5 rounded text-[9px]">#{job.id.substring(0, 6)}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 relative z-30">
-                        {/* Data-badge direkt bredvid Status */}
                         <window.VehicleDataIcon job={job} isDesktop={false} />
                         <window.Badge status={job.status} />
                         
                         <div className="relative">
-                            <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full active:scale-90 -mr-2">
+                            <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full active:scale-90 -mr-2">
                                 <window.Icon name="more-horizontal" size={18} />
                             </button>
-                            {/* Menyn */}
                             {menuOpen && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#1f2940]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-100 dark:border-white/10 z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-100 dark:border-white/10 z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right">
                                         {job.status !== 'KLAR' && (
                                             <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-3 rounded-xl transition-colors">
                                                 <window.Icon name="check-circle" size={16} className="text-emerald-500" /> Markera klar
@@ -557,12 +538,10 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                {/* INFO BUBBLOR (Delade lådor som du ville ha det) */}
                 <div className="flex items-stretch gap-2 mb-4">
-                    {/* Fordon */}
-                        <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
-                            <div className="flex items-center justify-between mb-2">
-                            <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <div className="flex-1 bg-zinc-50/90 dark:bg-black/20 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                 <window.Icon name="car" size={10} /> Fordon
                             </span>
                         </div>
@@ -572,32 +551,26 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             className={`inline-flex items-center rounded-md border shadow-sm overflow-hidden h-[28px] relative transition-all duration-300 active:scale-95 cursor-pointer
                                 ${copied 
                                     ? 'border-emerald-400 ring-2 ring-emerald-400/20 dark:border-emerald-500 dark:ring-emerald-500/20' 
-                                    : isReg ? 'border-zinc-300 dark:border-[#2a3441]' : 'border-transparent'
+                                    : isReg ? 'border-zinc-300 dark:border-white/10' : 'border-transparent'
                                 }`}
                         >
                             {isReg ? (
                                 <>
-                                    <div className="w-[16px] bg-[#003399] h-full flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
+                                    <div className="w-[16px] bg-[#003399] h-full flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
                                         <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
                                         <span className="text-[7px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                     </div>
                                     
-                                    {/* Mjuk grön bakgrund vid kopiering - "relative" tillagt för att hålla ikonen på plats */}
-                                    <div className={`flex h-full items-center justify-center px-2.5 w-full relative transition-colors duration-300 ${copied ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'bg-white dark:bg-[#1a2235]'}`}>
-                                        
-                                        {/* Texten ligger alltid i mitten och ändrar bara färg */}
+                                    <div className={`flex h-full items-center justify-center px-2.5 w-full relative transition-colors duration-300 ${copied ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'bg-white dark:bg-[#1e293b]'}`}>
                                         <span className={`font-mono font-bold text-[14px] tracking-[0.1em] leading-none mt-[1px] transition-colors duration-300 ${copied ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
                                             {vehicleDisplay}
                                         </span>
-
-                                        {/* Ikonen svävar fritt till höger så texten slipper hoppa */}
                                         <div className={`absolute right-1.5 transition-all duration-300 ${copied ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
                                             <window.Icon name="check" size={12} className="text-emerald-500" />
                                         </div>
                                     </div>
                                 </>
                             ) : (
-                                // Samma princip för bilar som saknar reg-nummer
                                 <div className={`relative flex items-center justify-center px-2 py-1 rounded w-full transition-colors duration-300 ${copied ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20' : 'text-zinc-800 dark:text-zinc-300'}`}>
                                     <span className="font-mono font-bold text-[13px] uppercase leading-none mt-[1px]">
                                         {vehicleDisplay}
@@ -610,9 +583,8 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         </div>
                     </div>
 
-                    {/* Datum */}
-                    <div className="flex-1 bg-zinc-50/90 dark:bg-[#0f1522]/50 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
-                        <span className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <div className="flex-1 bg-zinc-50/90 dark:bg-black/20 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
+                        <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
                             <window.Icon name="calendar" size={10} /> {job.datum ? 'Tid & Datum' : 'Status'}
                         </span>
                         {job.datum ? (
@@ -627,13 +599,12 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                     <span className={`text-[13px] font-black uppercase leading-none truncate ${!isDone && isUrgentDate ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white'}`}>
                                         {dateString}
                                     </span>
-                                    <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                    <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                        {job.datum.split('T')[1]}
                                     </span>
                                 </div>
                             </div>
                         ) : (
-                            /* NY PREMIUM PLACEHOLDER: Snygg mjuk badge istället för streckad låda */
                             <div className="inline-flex items-center gap-1.5 mt-auto w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
                                  <window.Icon name="clock" size={10} className="text-zinc-400" />
                                  <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
@@ -642,14 +613,12 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                {/* FOOTER I KORTET */}
                 <div className="flex items-end justify-between gap-4 mt-2">
                     <div className="flex-1 min-w-0">
                         <span className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-tight block truncate">
                             {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                         </span>
                         {job.kommentar && (
-                            /* NYTT: Separerad flex-behållare och text-behållare för att line-clamp ska fungera */
                             <div className="flex items-start gap-1.5 mt-1 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
                                 <window.Icon name="message-square" size={10} className="shrink-0 mt-[2.5px] opacity-70" />
                                 <span className="line-clamp-4 leading-snug whitespace-normal break-words">
@@ -662,7 +631,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     <div className="shrink-0 text-right">
                         {price > 0 ? (
                             <div className="flex flex-col items-end">
-                                {/* Visar delbetalning/skuld ENDAST när status är FAKTURERAS */}
                                 {paid > 0 ? (
                                     <>
                                         <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest mb-0.5">{paid.toLocaleString('sv-SE')} kr</span>
@@ -674,7 +642,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                         </div>
                                     </>
                                 ) : (
-                                    /* För ALLA andra statusar (inkl. KLAR), visa originalpriset */
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-[18px] font-black leading-none tracking-tight text-zinc-900 dark:text-white">
                                             {price.toLocaleString('sv-SE')}
@@ -855,7 +822,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-2 lg:mb-8">
             
-            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group/widget relative overflow-hidden bg-[radial-gradient(#00000008_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:12px_12px]">
+            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col justify-between group/widget relative overflow-hidden bg-[radial-gradient(#00000008_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:12px_12px]">
                 <div className="absolute right-0 bottom-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all duration-500 group-hover/widget:bg-orange-500/10"></div>
 
                 <div className="flex justify-between items-start mb-6 relative z-10">
@@ -873,8 +840,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                 </div>
                 
                 <div className="flex items-end justify-between h-32 gap-3 mt-auto pt-4 relative z-10">
-                    {/* Referenslinjer */}
-                    <div className="absolute inset-0 flex flex-col justify-between pt-4 pb-8 pointer-events-none px-2 opacity-20 dark:opacity-10 z-0">
+                    <div className="absolute inset-0 flex flex-col justify-between pt-4 pb-8 pointer-events-none px-2 opacity-20 dark:opacity-20 z-0">
                         <div className="w-full border-b border-dashed border-zinc-800 dark:border-white"></div>
                         <div className="w-full border-b border-dashed border-zinc-800 dark:border-white"></div>
                         <div className="w-full border-b border-zinc-800 dark:border-white"></div>
@@ -890,13 +856,13 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                                 <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-l-transparent border-r-transparent border-t-zinc-900 dark:border-t-white -mt-[1px]"></div>
                             </div>
 
-                            <div className="w-full max-w-[36px] h-full bg-zinc-100/80 dark:bg-white/5 rounded-xl flex items-end overflow-hidden p-1 relative shadow-inner">
+                            <div className="w-full max-w-[36px] h-full bg-zinc-100/80 dark:bg-white/5 rounded-xl flex items-end overflow-hidden p-1 relative shadow-inner border border-transparent dark:border-white/5">
                                 <div 
-                                    className={`w-full rounded-lg transition-all duration-1000 ease-out bg-gradient-to-t ${day.isToday || day.count > 0 ? day.colorClass : 'from-zinc-300 to-zinc-200 dark:from-zinc-700 dark:to-zinc-600'} group-hover:brightness-110`}
+                                    className={`w-full rounded-lg transition-all duration-1000 ease-out bg-gradient-to-t ${day.isToday || day.count > 0 ? day.colorClass : 'from-zinc-300 to-zinc-200 dark:from-[#2a3441] dark:to-[#1e293b]'} group-hover:brightness-110`}
                                     style={{ height: day.height }}
                                 ></div>
                             </div>
-                            <span className={`text-[10px] font-bold uppercase tracking-widest mt-3 transition-colors ${day.isToday ? 'text-orange-500' : 'text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200'}`}>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest mt-3 transition-colors ${day.isToday ? 'text-orange-500' : 'text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`}>
                                 {day.label}
                             </span>
                         </div>
@@ -904,7 +870,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                 </div>
             </div>
 
-            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden flex flex-col min-h-[220px]">
+            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden flex flex-col min-h-[220px]">
                 
                 <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-100 dark:bg-white/5">
                     <div 
@@ -919,7 +885,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                             Mina Uppgifter
                         </h3>
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
+                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold">
                                 {completedTasks} av {tasks.length} Klara
                             </span>
                             {completedTasks > 0 && (
@@ -947,7 +913,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                             <div className="flex items-start gap-3 min-w-0 flex-1">
                                 <div 
                                     onClick={() => toggleTask(task.id, task.done)}
-                                    className={`mt-[2px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'border-zinc-300 dark:border-zinc-600 bg-white/50 dark:bg-transparent text-transparent hover:border-orange-500 hover:shadow-sm'}`}
+                                    className={`mt-[2px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'border-zinc-300 dark:border-white/20 bg-white/50 dark:bg-black/20 text-transparent hover:border-orange-500 hover:shadow-sm'}`}
                                 >
                                     <window.Icon name="check" size={12} className={`transition-transform duration-300 ${task.done ? 'scale-100' : 'scale-0 opacity-0'}`} />
                                 </div>
@@ -956,7 +922,6 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                                     <span className={`transition-colors duration-500 ${task.done ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-200'}`}>
                                         <window.TaskFormatter text={task.text} isDone={task.done} />
                                     </span>
-                                    {/* Mjuk animerad överstrykning */}
                                     <div className={`absolute left-0 top-1/2 h-[1.5px] bg-zinc-400 dark:bg-zinc-500 transition-all duration-300 ease-out origin-left ${task.done ? 'w-full opacity-100 scale-x-100' : 'w-0 opacity-0 scale-x-0'}`}></div>
                                 </div>
                             </div>
@@ -978,7 +943,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
                         placeholder="Skriv ny uppgift..."
-                        className="flex-1 bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-[12px] text-zinc-900 dark:text-white outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 dark:focus:border-orange-500/50 transition-all placeholder:text-zinc-400"
+                        className="flex-1 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-[12px] text-zinc-900 dark:text-white outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-zinc-400"
                     />
                     <button 
                         type="submit" 
@@ -1082,9 +1047,9 @@ window.DashboardView = React.memo(({
         filteredJobs.forEach(job => {
             const price = parseInt(job.kundpris) || 0;
             const paid = parseInt(job.betaltBelopp) || 0;
-            const remaining = Math.max(0, price - paid); // Subtrahera avdraget
+            const remaining = Math.max(0, price - paid);
 
-            if (remaining > 0) { // Visa enbart kunder som faktiskt har skuld kvar
+            if (remaining > 0) { 
                 totalRemaining += remaining;
                 const name = job.kundnamn || 'Okänd kund';
                 customers[name] = (customers[name] || 0) + remaining;
@@ -1137,14 +1102,11 @@ window.DashboardView = React.memo(({
     return (
         <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
 
-            {/* Ambient Background Glow */}
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block transition-all duration-700"></div>
 
-            {/* --- DESKTOP VY (VIKTIGT: "hidden lg:flex" döljer detta på mobil) --- */}
             <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
                 
-                {/* HEADER - DATOR */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5 gap-4 pt-4 lg:pt-0">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative group cursor-default shrink-0">
                             <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
@@ -1166,13 +1128,13 @@ window.DashboardView = React.memo(({
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
-                            className="group w-64 bg-white/50 dark:bg-[#121826] border border-zinc-200 dark:border-[#1a2235] text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white dark:hover:bg-[#182032] hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-sm"
+                            className="group w-64 bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-lg"
                         >
                             <div className="flex items-center gap-2">
-                                <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-500 group-hover:text-orange-500 group-hover:rotate-12 transition-all duration-300" />
+                                <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-400 group-hover:text-orange-500 group-hover:rotate-12 transition-all duration-300" />
                                 <span className="text-[12px] font-bold tracking-widest uppercase">Sök i systemet...</span>
                             </div>
-                            <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-black/50 border border-zinc-200 dark:border-[#1a2235] px-1.5 py-0.5 rounded-md shadow-sm">⌘K</span>
+                            <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-400 bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-md shadow-sm">⌘K</span>
                         </button>
                         <button onClick={() => setView('NEW_JOB')} className="group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white border border-orange-400/50 h-[46px] px-8 rounded-xl flex items-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_12px_25px_-4px_rgba(249,115,22,0.6)] hover:-translate-y-0.5 transition-all duration-300 active:scale-95 active:translate-y-0">
                             <span className="text-[12px] font-black uppercase tracking-widest">Nytt Uppdrag</span>
@@ -1183,9 +1145,8 @@ window.DashboardView = React.memo(({
 
                 <window.DashboardWidgets allJobs={allJobs} />
 
-                {/* DYNAMISK TOP-GRID (Desktop) */}
                 <div className="grid grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-emerald-500/10"></div>
                         <window.Icon name="check-circle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-emerald-500/10 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500" />
                         <div className="relative z-10">
@@ -1194,7 +1155,6 @@ window.DashboardView = React.memo(({
                             </div>
                             <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span></div>
                             
-                            {/* Trendindikator Placeholder */}
                             {stats30Days > 0 && (
                                 <div className="mt-4 text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <window.Icon name="trending-up" size={10} /> +12% vs förra veckan
@@ -1204,21 +1164,21 @@ window.DashboardView = React.memo(({
                     </div>
 
                     {activeFilter === 'FAKTURERAS' ? (
-                        <div className="col-span-2 bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm hover:shadow-md relative overflow-hidden flex items-center justify-between group animate-in fade-in slide-in-from-right-4 duration-500 transition-all">
+                        <div className="col-span-2 bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden flex items-center justify-between group animate-in fade-in slide-in-from-right-4 duration-500 transition-all">
                             <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
                             <window.Icon name="file-text" size={120} className="absolute -right-4 -bottom-8 text-zinc-100 dark:text-white/[0.02] group-hover:text-orange-500/10 group-hover:scale-105 transition-all duration-700" />
                             
                             <div className="relative z-10 flex flex-col justify-center">
-                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
+                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
                                     <window.Icon name="pie-chart" size={12} className="text-orange-500" /> Att Fakturera
                                 </div>
                                 <div className="text-5xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-xl font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest ml-1">kr</span>
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-xl font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">kr</span>
                                 </div>
                             </div>
 
-                            <div className="relative z-10 flex flex-col justify-center flex-1 max-w-sm pl-8 ml-8 border-l border-zinc-200 dark:border-white/5">
-                                <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+                            <div className="relative z-10 flex flex-col justify-center flex-1 max-w-sm pl-8 ml-8 border-l border-zinc-200 dark:border-white/10">
+                                <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-3 flex items-center justify-between">
                                     <span>Berörda Kunder ({invoiceStats.topCustomers.length})</span>
                                 </div>
                                 <div className="space-y-2.5">
@@ -1230,7 +1190,7 @@ window.DashboardView = React.memo(({
                                                     <span className="truncate pr-2">{name}</span>
                                                     <span className="font-mono text-zinc-500 dark:text-zinc-400 shrink-0">{amount.toLocaleString('sv-SE')} kr</span>
                                                 </div>
-                                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden">
+                                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
                                                     <div className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${percentage}%` }}></div>
                                                 </div>
                                             </div>
@@ -1246,7 +1206,7 @@ window.DashboardView = React.memo(({
                         </div>
                     ) : (
                         <>
-                            <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-3xl border border-zinc-200/80 dark:border-white/5 p-6 shadow-sm relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
+                            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
                                 <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-blue-500/10"></div>
                                 <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500" />
                                 <div className="relative z-10">
@@ -1269,19 +1229,18 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="flex flex-col flex-1 pb-10 relative">
-                    {/* STICKY FLIKAR PÅ DESKTOP */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 sticky top-0 z-20 bg-zinc-50/90 dark:bg-[#0f1522]/90 backdrop-blur-md pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 sticky top-0 z-20 bg-zinc-50/90 dark:bg-[#09090b]/90 backdrop-blur-md pt-2">
                         <div className="flex space-x-2">
                             {filters.map(f => (
                                 <button 
                                     key={f} 
                                     data-tab={f} 
                                     onClick={() => setActiveFilter(f)} 
-                                    className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100/50 dark:hover:bg-white/5 rounded-t-lg'}`}
+                                    className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-white/5 rounded-t-lg'}`}
                                 >
                                     {f}
                                     {(statusCounts[f] || 0) > 0 && (
-                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] transition-colors ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>
+                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] transition-colors ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
                                             {statusCounts[f]}
                                         </span>
                                     )}
@@ -1292,19 +1251,16 @@ window.DashboardView = React.memo(({
                             ))}
                         </div>
 
-                        {/* UPPDATERAD SÖKRUTA */}
                         <div className="relative group mb-2 sm:mb-0 shrink-0">
                             <input 
                                 type="text" 
                                 placeholder="SÖK I LISTAN..." 
-                                className="bg-white dark:bg-[#1a2235] border border-zinc-200/80 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-2.5 pl-10 pr-10 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-xl shadow-sm"
+                                className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-2.5 pl-10 pr-10 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-xl shadow-sm"
                                 value={globalSearch}
                                 onChange={(e) => setGlobalSearch(e.target.value)}
                             />
-                            {/* Förstoringsglaset */}
                             <window.Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
                             
-                            {/* Visar antingen ett kryss eller en "⌘F" hint */}
                             {globalSearch ? (
                                 <button 
                                     onClick={() => setGlobalSearch('')}
@@ -1321,12 +1277,11 @@ window.DashboardView = React.memo(({
                         </div>
                     </div>
 
-                    <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl rounded-b-3xl shadow-sm border border-t-0 border-zinc-200/80 dark:border-white/5 overflow-hidden flex flex-col min-h-[500px]">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-b-3xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col min-h-[500px]">
                         <div className="flex-1 overflow-auto custom-scrollbar">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-zinc-50/80 dark:bg-white/5 text-zinc-500 dark:text-zinc-500 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200 dark:border-white/10">
+                                <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200 dark:border-white/10">
                                     <tr>
-                                        {/* Justerade gap och items-center för perfekt linjering i header */}
                                         <th className="pl-8 pr-4 py-4 w-[25%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
                                             <div className="flex items-center gap-1.5">
                                                 Kund
@@ -1372,7 +1327,7 @@ window.DashboardView = React.memo(({
                                         <tr>
                                             <td colSpan="7" className="py-32 text-center">
                                                 <div className="flex flex-col items-center justify-center text-zinc-400">
-                                                    <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center">
+                                                    <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center">
                                                         <window.Icon name="inbox" size={32} className="opacity-50" />
                                                     </div>
                                                     <span className="text-[14px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest mb-1">Inga uppdrag hittades</span>
@@ -1402,8 +1357,6 @@ window.DashboardView = React.memo(({
 
                                             return (
                                                 <React.Fragment key={job.id}>
-                                                    
-                                                    {/* NY AVDELARE DATOR: Premium gradient-linje & solid pill */}
                                                     {showWaitingHeader && (
                                                         <tr>
                                                             <td colSpan="7" className="py-8 relative">
@@ -1411,7 +1364,7 @@ window.DashboardView = React.memo(({
                                                                     <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
                                                                 </div>
                                                                 <div className="relative flex justify-center">
-                                                                    <span className="bg-zinc-50 dark:bg-[#1a2235] px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-2 rounded-full border border-zinc-200/80 dark:border-white/5 shadow-sm">
+                                                                    <span className="bg-zinc-50 dark:bg-[#1a2235] px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 shadow-sm">
                                                                         <window.Icon name="inbox" size={14} className="text-zinc-400" />
                                                                         Oplanerade Uppdrag
                                                                     </span>
@@ -1422,7 +1375,7 @@ window.DashboardView = React.memo(({
 
                                                     <tr 
                                                         onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                        className={`group transition-colors duration-200 cursor-pointer relative bg-transparent hover:bg-zinc-50/80 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
+                                                        className={`group transition-colors duration-200 cursor-pointer relative bg-transparent hover:bg-zinc-50 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
                                                     >
                                                         <td className="pl-7 pr-4 py-4 align-middle relative">
                                                             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
@@ -1445,14 +1398,12 @@ window.DashboardView = React.memo(({
                                                                 
                                                                 {job.kommentar && (
                                                                     <div className="relative group/note cursor-help mt-1 w-fit">
-                                                                        {/* Den klippta, synliga texten */}
                                                                         <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[140px]">
                                                                             <window.Icon name="message-square" size={10} className="shrink-0" />
                                                                             <span className="truncate">{stripHtml(job.kommentar)}</span>
                                                                         </div>
                                                                         
-                                                                        {/* PREMIUM HOVER-RUTA (Dyker upp över tabellen) */}
-                                                                        <div className="absolute left-[-10px] top-[-10px] w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)] rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-top-left">
+                                                                        <div className="absolute left-[-10px] top-[-10px] w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-top-left">
                                                                             <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
                                                                                 <div className="shrink-0 mt-[2px] text-orange-500">
                                                                                     <window.Icon name="message-square" size={14} />
@@ -1470,7 +1421,7 @@ window.DashboardView = React.memo(({
                                                         <td className="px-4 py-4 align-middle">
                                                             <div 
                                                                 onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
-                                                                className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-[#1a2235] border-zinc-200 dark:border-[#2a3441]' : 'bg-transparent border-transparent'} transition-all`}
+                                                                className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-black/20 border-zinc-200 dark:border-white/10' : 'bg-transparent border-transparent'} transition-all`}
                                                             >
                                                                 {copiedRegId === job.id && (
                                                                     <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
@@ -1479,7 +1430,7 @@ window.DashboardView = React.memo(({
                                                                 )}
                                                                 {isReg ? (
                                                                     <>
-                                                                        <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-[#2a3441]">
+                                                                        <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
                                                                             <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
                                                                             <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                                                         </div>
@@ -1514,7 +1465,6 @@ window.DashboardView = React.memo(({
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                /* NY PREMIUM PLACEHOLDER DATORN: Matchar mobilen perfekt */
                                                                 <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
                                                                      <window.Icon name="clock" size={10} className="text-zinc-400" />
                                                                      <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
@@ -1528,7 +1478,6 @@ window.DashboardView = React.memo(({
 
                                                         <td className="px-4 py-4 align-middle text-right">
                                                             <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
-                                                                {/* Visar delbetalning/skuld ENDAST när status är FAKTURERAS */}
                                                                 {paid > 0 ? (
                                                                 <>
                                                                     <span className="text-[10px] text-emerald-500 font-bold font-sans tracking-widest uppercase mb-1">
@@ -1539,7 +1488,6 @@ window.DashboardView = React.memo(({
                                                                         </div>
                                                                     </>
                                                                 ) : (
-                                                                    /* För ALLA andra statusar (inkl. KLAR), visa originalpriset */
                                                                     <div className="text-zinc-700 dark:text-zinc-200">
                                                                         {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
                                                                     </div>
@@ -1551,14 +1499,14 @@ window.DashboardView = React.memo(({
                                                             <window.VehicleDataIcon job={job} isDesktop={true} />
                                                             <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 ease-out flex justify-end items-center gap-2 relative z-10 scale-95 group-hover:scale-100">
                                                                 {job.status !== 'KLAR' && (
-                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 shadow-sm transition-all hover:scale-110 active:scale-95">
                                                                         <window.Icon name="check" size={16} />
                                                                     </button>
                                                                 )}
-                                                                <button onClick={() => setView('NEW_JOB', { job: job })} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                <button onClick={() => setView('NEW_JOB', { job: job })} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 shadow-sm transition-all hover:scale-110 active:scale-95">
                                                                     <window.Icon name="edit-2" size={16} />
                                                                 </button>
-                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 shadow-sm transition-all hover:scale-110 active:scale-95">
                                                                     <window.Icon name="trash" size={16} />
                                                                 </button>
                                                             </div>
@@ -1573,8 +1521,8 @@ window.DashboardView = React.memo(({
                             </table>
                             
                             {hasMore && (
-                                <div className="flex justify-center p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02]">
-                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 hover:border-orange-500/30 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
+                                <div className="flex justify-center p-6 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-black/20">
+                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3 bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 hover:border-orange-500/30 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
                                         Ladda in fler <span className="opacity-50 font-medium">({sortedAndFilteredJobs.length - visibleCount} kvar)</span>
                                     </button>
                                 </div>
@@ -1585,14 +1533,13 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            {/* --- MOBILE VY --- */}
             <div
-                className="lg:hidden flex flex-col min-h-screen bg-zinc-50/50 dark:bg-[#0f1522] touch-pan-y transition-colors duration-500"
+                className="lg:hidden flex flex-col min-h-screen bg-zinc-50/50 dark:bg-[#09090b] touch-pan-y transition-colors duration-500"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
-                <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
+                <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
                     
-                    <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/5">
+                    <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                         
                         <div className="flex items-center gap-4">
                             <div className="relative group cursor-default shrink-0">
@@ -1615,13 +1562,13 @@ window.DashboardView = React.memo(({
                         <div className="flex items-center gap-2">
                             <button 
                                 onClick={() => setShowMobileWidgets(!showMobileWidgets)} 
-                                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${showMobileWidgets ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 dark:hover:text-white border-transparent dark:border-white/5'}`}
+                                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${showMobileWidgets ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 dark:hover:text-white border-transparent dark:border-white/10'}`}
                             >
                                 <window.Icon name={showMobileWidgets ? "chevron-up" : "layout-dashboard"} size={18} />
                             </button>
                             <button 
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
-                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/5 active:scale-90"
+                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/10 active:scale-90"
                             >
                                 <window.Icon name="search" size={18} />
                             </button>
@@ -1639,46 +1586,43 @@ window.DashboardView = React.memo(({
                             const isActive = activeFilter === f;
                             const count = statusCounts[f] || 0;
                             return (
-                                <button key={f} data-tab={f} onClick={() => { setActiveFilter(f); setShowMobileWidgets(false); }} className={`py-3 px-1 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-500 border-transparent'}`}>
+                                <button key={f} data-tab={f} onClick={() => { setActiveFilter(f); setShowMobileWidgets(false); }} className={`py-3 px-1 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-400 border-transparent'}`}>
                                     {f}
-                                    {count > 0 && <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>{count}</span>}
+                                    {count > 0 && <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>{count}</span>}
                                 </button>
                             );
                         })}
                     </div>
 
                     {showMobileWidgets && (
-                        <div className="absolute top-full left-0 right-0 bg-zinc-50/95 dark:bg-[#0f1522]/95 backdrop-blur-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-b border-zinc-200 dark:border-white/10 p-4 pt-5 animate-in slide-in-from-top-2 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar z-50">
+                        <div className="absolute top-full left-0 right-0 bg-zinc-50/95 dark:bg-[#09090b]/95 backdrop-blur-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-b border-zinc-200 dark:border-white/10 p-4 pt-5 animate-in slide-in-from-top-2 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar z-50">
                             <window.DashboardWidgets allJobs={allJobs} />
                         </div>
                     )}
                 </div>
 
                 {activeFilter === 'FAKTURERAS' && invoiceStats.total > 0 && (
-                    <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#1e293b]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
                         
-                        {/* Övre summeringen */}
                         <div className="flex items-center justify-between relative z-10">
                             <div>
-                                <h3 className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                <h3 className="text-[9px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                     <window.Icon name="pie-chart" size={10} className="text-orange-500" /> Att Fakturera
                                 </h3>
                                 <div className="text-2xl font-light text-zinc-900 dark:text-white tracking-tighter leading-none">
-                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest ml-0.5">kr</span>
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-0.5">kr</span>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <span className="text-[10px] font-medium bg-zinc-50 dark:bg-black/30 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 dark:border-white/5 flex items-center gap-1.5">
+                                <span className="text-[10px] font-medium bg-zinc-50 dark:bg-black/30 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 dark:border-white/10 flex items-center gap-1.5">
                                     <window.Icon name="users" size={10} /> {invoiceStats.topCustomers.length} Kunder
                                 </span>
                             </div>
                         </div>
 
-                        {/* NY DEL: Kund-översikt för mobil */}
-                        <div className="relative z-10 mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
+                        <div className="relative z-10 mt-4 pt-4 border-t border-zinc-100 dark:border-white/10">
                             <div className="space-y-3.5">
-                                {/* Visar de 5 största kunderna på mobilen för att spara plats */}
                                 {invoiceStats.topCustomers.slice(0, 5).map(([name, amount], idx) => {
                                     const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
                                     return (
@@ -1689,7 +1633,7 @@ window.DashboardView = React.memo(({
                                                     {amount.toLocaleString('sv-SE')} <span className="text-[9px] text-zinc-400 font-sans tracking-widest">kr</span>
                                                 </span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden">
+                                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
                                                 <div 
                                                     className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" 
                                                     style={{ width: `${percentage}%` }}
@@ -1699,7 +1643,6 @@ window.DashboardView = React.memo(({
                                     );
                                 })}
                                 
-                                {/* Om det finns fler än 5 kunder, visa hur många som är dolda */}
                                 {invoiceStats.topCustomers.length > 5 && (
                                     <div className="text-[10px] font-bold uppercase tracking-widest text-center text-zinc-400 dark:text-zinc-500 pt-1">
                                         + {invoiceStats.topCustomers.length - 5} fler kunder
@@ -1711,20 +1654,18 @@ window.DashboardView = React.memo(({
                     </div>
                 )}
 
-                {/* --- NYTT: SÖKBAR FÖR MOBIL I "ALLA"-VYN --- */}
                 {['ALLA', 'BOKAD', 'KLAR'].includes(activeFilter) && (
                     <div className="px-3 mt-3 mb-1 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="relative group">
                             <input 
                                 type="text" 
                                 placeholder="SÖK I ALLA UPPDRAG..." 
-                                className="bg-white dark:bg-[#1a2235] border border-zinc-200/80 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-3.5 pl-11 pr-11 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-2xl shadow-sm"
+                                className="bg-white dark:bg-[#1e293b] border border-zinc-200/80 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-3.5 pl-11 pr-11 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-2xl shadow-sm"
                                 value={globalSearch}
                                 onChange={(e) => setGlobalSearch(e.target.value)}
                             />
                             <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
                             
-                            {/* Rensa-knapp (visas bara om man har skrivit något) */}
                             {globalSearch && (
                                 <button 
                                     onClick={() => setGlobalSearch('')}
@@ -1743,7 +1684,6 @@ window.DashboardView = React.memo(({
                         <>
                             {(() => {
                                 let lastDate = null;
-                                // Räkna ut hur många jobb som väntar på tid
                                 const waitingJobsCount = visibleJobs.filter(j => !j.datum).length;
 
                                 return visibleJobs.map((job, index) => { 
@@ -1752,32 +1692,28 @@ window.DashboardView = React.memo(({
                                     const showHeader = currentDate !== lastDate;
                                     lastDate = currentDate;
 
-                                    // SPECIAL-RENDERING FÖR OBOKADE JOBB
                                     if (isWaiting) {
                                         return (
                                             <React.Fragment key={job.id}>
                                                 {showHeader && (
                                                     <div className={`${index === 0 ? 'mt-4' : 'mt-8'} mb-6 px-4 flex justify-center relative animate-in fade-in duration-300`}>
-                                                        {/* Mjuk gradient-linje istället för streckad */}
                                                         <div className="absolute inset-0 flex items-center px-6" aria-hidden="true">
                                                             <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
                                                         </div>
-                                                        {/* Solid och elegant knapp */}
                                                         <button 
                                                             onClick={() => setShowWaitingJobs(!showWaitingJobs)}
-                                                            className="relative bg-white dark:bg-[#1a2235] px-5 py-2 rounded-full border border-zinc-200 dark:border-white/5 shadow-sm flex items-center gap-2.5 hover:border-orange-500 hover:text-orange-500 text-zinc-600 dark:text-zinc-300 transition-all active:scale-95 z-10"
+                                                            className="relative bg-white dark:bg-[#1e293b] px-5 py-2 rounded-full border border-zinc-200 dark:border-white/10 shadow-sm flex items-center gap-2.5 hover:border-orange-500 hover:text-orange-500 text-zinc-600 dark:text-zinc-300 transition-all active:scale-95 z-10"
                                                         >
                                                             <window.Icon name="inbox" size={14} className={showWaitingJobs ? 'text-orange-500' : 'text-zinc-400'} />
                                                             <span className="text-[10px] font-bold uppercase tracking-widest mt-[1px] flex items-center gap-1.5">
                                                                 Oplanerade
-                                                                <span className="bg-zinc-100 dark:bg-white/5 text-zinc-500 px-1.5 py-0.5 rounded-md text-[9px]">{waitingJobsCount}</span>
+                                                                <span className="bg-zinc-100 dark:bg-white/5 text-zinc-400 px-1.5 py-0.5 rounded-md text-[9px]">{waitingJobsCount}</span>
                                                             </span>
                                                             <window.Icon name="chevron-down" size={14} className={`transition-transform duration-300 ${showWaitingJobs ? 'rotate-180 text-orange-500' : 'text-zinc-400'}`} />
                                                         </button>
                                                     </div>
                                                 )}
                                                 
-                                                {/* Rendera endast kortet om rutan är utfälld */}
                                                 {showWaitingJobs && (
                                                     <div className="animate-in slide-in-from-top-2 fade-in duration-300">
                                                         <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
@@ -1787,7 +1723,6 @@ window.DashboardView = React.memo(({
                                         );
                                     }
 
-                                    // STANDARD-RENDERING FÖR BOKADE JOBB
                                     return (
                                         <React.Fragment key={job.id}>
                                             {showHeader && (
@@ -1806,7 +1741,7 @@ window.DashboardView = React.memo(({
                             
                             {hasMore && (
                                 <div className="mt-2 mb-6 px-1">
-                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/5 hover:border-orange-500/50 text-zinc-700 dark:text-zinc-300 hover:text-orange-500 text-[12px] font-bold uppercase tracking-widest rounded-2xl shadow-sm active:scale-95 transition-all">
+                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-orange-500/50 text-zinc-700 dark:text-zinc-300 hover:text-orange-500 text-[12px] font-bold uppercase tracking-widest rounded-2xl shadow-lg active:scale-95 transition-all">
                                         Ladda in fler ({sortedAndFilteredJobs.length - visibleCount} kvar)
                                     </button>
                                 </div>
@@ -1814,8 +1749,8 @@ window.DashboardView = React.memo(({
                         </>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-24 text-zinc-400">
-                        <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center">
-                            <window.Icon name="inbox" size={32} className="opacity-50" />
+                        <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-[#1e293b] flex items-center justify-center shadow-lg">
+                            <window.Icon name="inbox" size={32} className="opacity-50 text-zinc-400" />
                         </div>
                         <span className="text-[14px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest mb-1">Inga uppdrag hittades</span>
                         <span className="text-[11px] text-zinc-400">Prova att ändra sökning eller byta flik.</span>
