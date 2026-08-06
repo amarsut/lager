@@ -47,6 +47,10 @@ window.StatisticsView = ({ allJobs }) => {
     const [selectedYear, setSelectedYear] = React.useState(currentYear);
     const [brandMap, setBrandMap] = React.useState({});
     const [hoveredMonth, setHoveredMonth] = React.useState(null);
+    
+    // State för den utfällbara tabellen
+    const [expandedMonth, setExpandedMonth] = React.useState(null);
+    const tableRef = React.useRef(null);
 
     React.useEffect(() => {
         if (window.db) {
@@ -82,6 +86,7 @@ window.StatisticsView = ({ allJobs }) => {
         let monthlyActualRev = Array(12).fill(0);
         let monthlyBookedRev = Array(12).fill(0);
         let monthlyCounts = Array(12).fill(0);
+        let monthlyJobs = Array.from({ length: 12 }, () => []);
         
         let packageCount = {}, customerRev = {}, brandRev = {}, completedJobsCount = 0;
         let bestMonth = { index: -1, revenue: 0 };
@@ -106,6 +111,7 @@ window.StatisticsView = ({ allJobs }) => {
                 if (isDone) monthlyActualRev[monthIdx] += price;
                 else monthlyBookedRev[monthIdx] += price;
                 monthlyCounts[monthIdx] += 1;
+                monthlyJobs[monthIdx].push(j);
             }
 
             if (isDone) {
@@ -134,6 +140,9 @@ window.StatisticsView = ({ allJobs }) => {
             if (rev > bestMonth.revenue) bestMonth = { index: i, revenue: rev };
         });
 
+        // Sortera månadens jobb med nyast först
+        monthlyJobs.forEach(monthArr => monthArr.sort((a, b) => b.datum.localeCompare(a.datum)));
+
         let trend = prevActualRevenue > 0 ? Math.round(((actualRevenue - prevActualRevenue) / prevActualRevenue) * 100) : (actualRevenue > 0 ? 100 : 0);
 
         const maxMonthRevenue = Math.max(...monthlyActualRev.map((val, i) => val + monthlyBookedRev[i]), 1);
@@ -146,7 +155,7 @@ window.StatisticsView = ({ allJobs }) => {
 
         return { 
             availableYears, totalBookedValue, actualRevenue, prevActualRevenue, trend,
-            monthlyActualRev, monthlyBookedRev, monthlyCounts, maxMonthRevenue, 
+            monthlyActualRev, monthlyBookedRev, monthlyCounts, monthlyJobs, maxMonthRevenue, 
             topPackages, topCustomers, topBrands, totalJobs: jobsForYear.length, 
             completedJobsCount, avgPrice, completionRate, bestMonth, pipeline
         };
@@ -154,16 +163,24 @@ window.StatisticsView = ({ allJobs }) => {
 
     React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
+    const handleChartClick = (index) => {
+        setExpandedMonth(expandedMonth === index ? null : index);
+        if (tableRef.current && expandedMonth !== index) {
+            setTimeout(() => {
+                tableRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+    };
+
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
     const fullMonths = ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'];
 
     return (
-        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-8 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
             
-            {/* Ambient Background Glow (Samma som de andra sidorna) */}
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            <div className="px-4 pt-4 lg:px-0 lg:pt-0"> {/* Denna container linjerar upp headern */}
+            <div className="px-4 pt-4 lg:px-0 lg:pt-0">
                 {/* HEADER */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-zinc-200/50 dark:border-white/5 gap-4">
                     <div className="flex items-center gap-3 md:gap-4">
@@ -188,7 +205,7 @@ window.StatisticsView = ({ allJobs }) => {
                 <div className="flex items-center bg-zinc-100/50 dark:bg-[#121826]/80 p-1 rounded-xl sm:rounded-2xl border border-zinc-200/50 dark:border-white/5 backdrop-blur-md overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {stats.availableYears.map(year => (
                         <button 
-                            key={year} onClick={() => setSelectedYear(year)}
+                            key={year} onClick={() => { setSelectedYear(year); setExpandedMonth(null); }}
                             className={`py-2 px-4 sm:px-5 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl transition-all whitespace-nowrap ${selectedYear === year ? 'bg-white dark:bg-[#1f2940] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                         >
                             {year}
@@ -197,8 +214,8 @@ window.StatisticsView = ({ allJobs }) => {
                 </div>
             </div>
 
-            {/* TOP KPI ROW (4 Cards) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4">
+            {/* TOP KPI ROW */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 mt-4 lg:mt-0">
                 <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-sm relative overflow-hidden group">
                     <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-all"></div>
                     <div className="flex justify-between items-start mb-2 sm:mb-4 relative z-10">
@@ -272,7 +289,7 @@ window.StatisticsView = ({ allJobs }) => {
                 </div>
             </div>
 
-            {/* MIDDLE ROW */}
+            {/* CHART & INSIGHTS ROW */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 mb-4">
                 
                 {/* CHART */}
@@ -308,14 +325,15 @@ window.StatisticsView = ({ allJobs }) => {
                                 const actPct = total === 0 ? 0 : (actual / total) * 100;
                                 const bkdPct = total === 0 ? 0 : (booked / total) * 100;
                                 const isHovered = hoveredMonth === i;
+                                const isActive = expandedMonth === i;
 
                                 return (
                                     <div 
                                         key={i} 
-                                        className="flex-1 flex flex-col justify-end items-center h-full relative group cursor-crosshair z-10"
+                                        className="flex-1 flex flex-col justify-end items-center h-full relative group cursor-pointer z-10"
                                         onMouseEnter={() => setHoveredMonth(i)}
                                         onMouseLeave={() => setHoveredMonth(null)}
-                                        onClick={() => setHoveredMonth(i === hoveredMonth ? null : i)}
+                                        onClick={() => handleChartClick(i)}
                                     >
                                         <div className={`absolute -top-14 sm:-top-16 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-xl pointer-events-none transition-all duration-200 z-50 flex flex-col min-w-[100px] sm:min-w-[120px] items-center text-center ${isHovered ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95'}`}>
                                             <div className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5 sm:mb-1">{fullMonths[i]}</div>
@@ -325,7 +343,7 @@ window.StatisticsView = ({ allJobs }) => {
                                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 sm:w-3 sm:h-3 bg-zinc-900 dark:bg-white rotate-45"></div>
                                         </div>
 
-                                        <div className="w-full max-w-[32px] sm:max-w-[44px] rounded-t-lg sm:rounded-t-xl bg-zinc-100 dark:bg-[#1a2235] flex flex-col justify-end overflow-hidden transition-all duration-500 group-hover:ring-2 group-hover:ring-zinc-300 dark:group-hover:ring-white/20" style={{ height: `${heightPct}%` }}>
+                                        <div className={`w-full max-w-[32px] sm:max-w-[44px] rounded-t-lg sm:rounded-t-xl bg-zinc-100 dark:bg-[#1a2235] flex flex-col justify-end overflow-hidden transition-all duration-300 group-hover:brightness-110 ${isActive ? 'ring-2 ring-orange-500' : 'group-hover:ring-2 group-hover:ring-zinc-300 dark:group-hover:ring-white/20'}`} style={{ height: `${heightPct}%` }}>
                                             {bkdPct > 0 && (
                                                 <div className="w-full bg-orange-400/50 transition-all duration-300" style={{ height: `${bkdPct}%` }}></div>
                                             )}
@@ -333,7 +351,7 @@ window.StatisticsView = ({ allJobs }) => {
                                                 <div className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 transition-all duration-300" style={{ height: `${actPct}%` }}></div>
                                             )}
                                         </div>
-                                        <div className={`mt-2 sm:mt-3 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest transition-colors duration-300 ${isHovered ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
+                                        <div className={`mt-2 sm:mt-3 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest transition-colors duration-300 ${isHovered || isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
                                             {month}
                                         </div>
                                     </div>
@@ -385,7 +403,120 @@ window.StatisticsView = ({ allJobs }) => {
                 </div>
             </div>
 
-            {/* BOTTOM ROW */}
+            {/* EXPANDABLE MONTHLY TABLE */}
+            <div ref={tableRef} className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm mb-4">
+                <SectionHeader title="Ekonomisk Månadsöversikt" sub="Omsättning & detaljer per månad" icon="table" color="emerald" />
+                
+                <div className="flex flex-col gap-3 mt-4">
+                    {/* Table Header (Desktop only) */}
+                    <div className="hidden sm:flex items-center justify-between px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 border-b border-zinc-100 dark:border-white/5">
+                        <div className="w-1/4">Månad</div>
+                        <div className="w-1/5 text-right">Omsättning (Klar)</div>
+                        <div className="w-1/5 text-right">Bokat Värde</div>
+                        <div className="w-1/5 text-right">Snitt / Jobb</div>
+                        <div className="w-12"></div>
+                    </div>
+
+                    {months.map((month, i) => {
+                        const actual = stats.monthlyActualRev[i];
+                        const booked = stats.monthlyBookedRev[i];
+                        const count = stats.monthlyCounts[i];
+                        const jobs = stats.monthlyJobs[i];
+                        const isExpanded = expandedMonth === i;
+
+                        // Dölj månader helt om de saknar aktivitet för året
+                        if (count === 0 && actual === 0 && booked === 0) return null;
+
+                        const completedJobs = jobs.filter(j => ['KLAR', 'FAKTURERAS'].includes(j.status));
+                        const avg = actual > 0 && completedJobs.length > 0 ? Math.round(actual / completedJobs.length) : 0;
+
+                        return (
+                            <div key={month} className={`flex flex-col border transition-all duration-300 ${isExpanded ? 'border-orange-500/50 shadow-md rounded-2xl bg-white dark:bg-[#1e293b]' : 'border-zinc-200/80 dark:border-white/5 rounded-xl bg-zinc-50 dark:bg-[#121826] hover:border-zinc-300 dark:hover:border-white/20'}`}>
+                                
+                                {/* Summary Row */}
+                                <button onClick={() => setExpandedMonth(isExpanded ? null : i)} className="flex items-center justify-between p-4 sm:px-5 w-full text-left focus:outline-none group">
+                                    <div className="w-full sm:w-1/4 flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-orange-500 text-white shadow-sm' : 'bg-white dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10 group-hover:text-orange-500'}`}>
+                                            <SafeIcon name="calendar" size={16} />
+                                        </div>
+                                        <div>
+                                            <div className="text-[13px] font-black uppercase tracking-widest text-zinc-900 dark:text-white leading-none">{fullMonths[i]}</div>
+                                            <div className="text-[10px] font-bold text-zinc-500 mt-1">{count} registrerade jobb</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="hidden sm:block w-1/5 text-right">
+                                        <div className="text-[15px] font-mono font-black text-emerald-600 dark:text-emerald-400">{actual > 0 ? actual.toLocaleString() : '-'} <span className="text-[10px] font-sans text-zinc-500">kr</span></div>
+                                    </div>
+                                    <div className="hidden sm:block w-1/5 text-right">
+                                        <div className="text-[14px] font-mono font-bold text-zinc-500 dark:text-zinc-400">{booked > 0 ? booked.toLocaleString() : '-'} <span className="text-[10px] font-sans text-zinc-500">kr</span></div>
+                                    </div>
+                                    <div className="hidden sm:block w-1/5 text-right">
+                                        <div className="text-[14px] font-mono font-bold text-zinc-700 dark:text-zinc-300">{avg > 0 ? avg.toLocaleString() : '-'} <span className="text-[10px] font-sans text-zinc-500">kr</span></div>
+                                    </div>
+
+                                    <div className="w-12 flex justify-end">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isExpanded ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-500' : 'bg-transparent text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white'}`}>
+                                            <SafeIcon name="chevron-down" size={18} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Expanded Details */}
+                                {isExpanded && (
+                                    <div className="p-4 sm:p-5 border-t border-zinc-100 dark:border-white/5 bg-white dark:bg-[#182032] rounded-b-2xl animate-in slide-in-from-top-2 fade-in duration-200">
+                                        <div className="flex flex-col gap-2">
+                                            {jobs.map(job => {
+                                                const d = new Date(job.datum);
+                                                const price = parseInt(job.kundpris) || 0;
+                                                const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+                                                return (
+                                                    <div key={job.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-[#121826]/50 hover:bg-zinc-100 dark:hover:bg-[#1a2235] transition-colors gap-3">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-lg bg-white dark:bg-black/20 flex flex-col items-center justify-center border border-zinc-200/50 dark:border-white/5 shrink-0 shadow-sm">
+                                                                <span className="text-[13px] font-black text-zinc-900 dark:text-white leading-none">{d.getDate()}</span>
+                                                                <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500">{months[d.getMonth()]}</span>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-[12px] font-bold text-zinc-900 dark:text-white">{job.kundnamn}</div>
+                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                    <span className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold text-zinc-600 dark:text-zinc-300">
+                                                                        {job.regnr || job.bilmodell || 'Okänt'}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[150px]">
+                                                                        {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center justify-between sm:justify-end gap-4 pl-14 sm:pl-0">
+                                                            <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-md border ${
+                                                                isDone
+                                                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20'
+                                                                : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200/50 dark:border-orange-500/20'
+                                                            }`}>
+                                                                {job.status || 'BOKAD'}
+                                                            </span>
+                                                            <div className="text-right min-w-[70px]">
+                                                                <div className="text-[13px] font-mono font-black text-zinc-900 dark:text-white leading-none">
+                                                                    {price > 0 ? price.toLocaleString() : '-'}
+                                                                </div>
+                                                                <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">kr</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
+
+            {/* BOTTOM ROW (Topkunder, Tjänster, Fordon) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
                 
                 {/* TOP CUSTOMERS */}
