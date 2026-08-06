@@ -1040,6 +1040,28 @@ window.DashboardView = React.memo(({
         }).length;
     }, [allJobs]);
 
+    const revenue30Days = React.useMemo(() => {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return allJobs.reduce((sum, j) => {
+            if (j.status === 'KLAR' && j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted) {
+                return sum + (parseInt(j.kundpris) || 0);
+            }
+            return sum;
+        }, 0);
+    }, [allJobs]);
+
+    const nextUpcomingJob = React.useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = allJobs.filter(j => {
+            if (!j.datum || j.status === 'KLAR' || j.deleted) return false;
+            const d = new Date(j.datum);
+            return d >= today;
+        }).sort((a, b) => a.datum.localeCompare(b.datum));
+        return upcoming.length > 0 ? upcoming[0] : null;
+    }, [allJobs]);
+
     const invoiceStats = React.useMemo(() => {
         if (activeFilter !== 'FAKTURERAS') return { total: 0, topCustomers: [] };
         let totalRemaining = 0;
@@ -1146,20 +1168,33 @@ window.DashboardView = React.memo(({
                 <window.DashboardWidgets allJobs={allJobs} />
 
                 <div className="grid grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-emerald-500/10"></div>
                         <window.Icon name="check-circle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-emerald-500/10 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500" />
-                        <div className="relative z-10">
-                            <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                <window.Icon name="bar-chart-2" size={12} /> Utförda (30d)
-                            </div>
-                            <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span></div>
-                            
-                            {stats30Days > 0 && (
-                                <div className="mt-4 text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <window.Icon name="trending-up" size={10} /> +12% vs förra veckan
+                        
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div>
+                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    <window.Icon name="bar-chart-2" size={12} /> Utförda (30d)
                                 </div>
-                            )}
+                                <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                    {stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                </div>
+                            </div>
+                            
+                            {/* NYTT: Omsättning & Snitt */}
+                            <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5 flex items-center justify-between">
+                                <div>
+                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Omsättning</div>
+                                    <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">{revenue30Days.toLocaleString('sv-SE')} kr</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Snitt / bil</div>
+                                    <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">
+                                        {stats30Days > 0 ? Math.round(revenue30Days / stats30Days).toLocaleString('sv-SE') : 0} kr
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1206,20 +1241,39 @@ window.DashboardView = React.memo(({
                         </div>
                     ) : (
                         <>
-                            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
+                            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
                                 <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-blue-500/10"></div>
                                 <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500" />
-                                <div className="relative z-10">
-                                    <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
-                                        <window.Icon name="clock" size={12} /> Kommande (7d)
-                                    </div>
-                                    <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">{statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span></div>
-                                    
-                                    {statsNext7Days > 0 && (
-                                        <div className="mt-4 text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-500/10 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <window.Icon name="trending-down" size={10} /> -5% vs förra veckan
+                                
+                                <div className="relative z-10 flex flex-col h-full">
+                                    <div>
+                                        <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                                            <window.Icon name="clock" size={12} /> Kommande (7d)
                                         </div>
-                                    )}
+                                        <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                            {statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* NYTT: Nästa uppdrag */}
+                                    <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5">
+                                        <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-1.5">Nästa i kalendern</div>
+                                        {nextUpcomingJob ? (
+                                            <div className="flex items-center justify-between bg-zinc-50/80 dark:bg-black/20 rounded-lg p-2 border border-zinc-200/50 dark:border-white/5 shadow-sm">
+                                                <div className="flex flex-col min-w-0 pr-2">
+                                                    <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 truncate leading-tight">{nextUpcomingJob.kundnamn}</span>
+                                                    <span className="text-[9px] text-zinc-500 font-mono font-medium mt-0.5">{nextUpcomingJob.regnr || nextUpcomingJob.bilmodell || 'Inget fordon'}</span>
+                                                </div>
+                                                <div className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-500/20 px-2 py-1 rounded border border-blue-200/50 dark:border-blue-500/20 shrink-0">
+                                                    {formatDate(nextUpcomingJob.datum)}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] text-zinc-500 italic flex items-center gap-1.5 h-[34px]">
+                                                <window.Icon name="calendar-off" size={12} /> Helt ledigt
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
