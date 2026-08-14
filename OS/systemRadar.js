@@ -152,9 +152,7 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
 
             const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== '' && v !== null && v !== undefined && v !== 'SAKNAS'));
 
-            // ==========================================
-            // NYTT: Visa BARA popup-widgeten om det är en aktiv live-sökning!
-            // ==========================================
+            // Spärren som hindrar zombiekorten från att dyka upp!
             if (!fordonData.silentSync) {
                 setRadars(prev => {
                     const existing = prev.find(r => r.regnr === regnr);
@@ -167,7 +165,6 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
                 });
             }
 
-            // Datan sparas ALLTID till databasen, oavsett om widgeten visas eller inte
             if (regnr && window.db && Object.keys(cleanData).length > 0) {
                 cleanData.updatedAt = new Date().toISOString();
                 try { await window.db.collection('vehicleSpecs').doc(regnr).set(cleanData, { merge: true }); } catch(e) {}
