@@ -152,16 +152,22 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
 
             const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== '' && v !== null && v !== undefined && v !== 'SAKNAS'));
 
-            setRadars(prev => {
-                const existing = prev.find(r => r.regnr === regnr);
-                if (existing) {
-                    return prev.map(r => r.regnr === regnr ? {
-                        ...r, status: 'success', data: { ...(r.data || {}), ...cleanData }, isMinimized: false
-                    } : r);
-                } 
-                return [...prev.map(r => ({...r, isMinimized: true})), { regnr, status: 'success', data: cleanData, isMinimized: false }];
-            });
+            // ==========================================
+            // NYTT: Visa BARA popup-widgeten om det är en aktiv live-sökning!
+            // ==========================================
+            if (!fordonData.silentSync) {
+                setRadars(prev => {
+                    const existing = prev.find(r => r.regnr === regnr);
+                    if (existing) {
+                        return prev.map(r => r.regnr === regnr ? {
+                            ...r, status: 'success', data: { ...(r.data || {}), ...cleanData }, isMinimized: false
+                        } : r);
+                    } 
+                    return [...prev.map(r => ({...r, isMinimized: true})), { regnr, status: 'success', data: cleanData, isMinimized: false }];
+                });
+            }
 
+            // Datan sparas ALLTID till databasen, oavsett om widgeten visas eller inte
             if (regnr && window.db && Object.keys(cleanData).length > 0) {
                 cleanData.updatedAt = new Date().toISOString();
                 try { await window.db.collection('vehicleSpecs').doc(regnr).set(cleanData, { merge: true }); } catch(e) {}
