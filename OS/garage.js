@@ -628,31 +628,79 @@ window.GarageView = ({ allJobs, setView }) => {
 
 window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
     const [d, setD] = React.useState(null);
+
     React.useEffect(() => {
         if(!regnr || !window.db) return;
-        window.db.collection('jobs').where('regnr','==',regnr).get().then(s => {
-            const j = s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>!x.deleted).sort((a,b)=>(b.datum||'').localeCompare(a.datum||''));
+
+        // Skapa en flagga för att undvika memory leaks
+        let isMounted = true;
+
+        // 1. Hämta all jobbhistorik (precis som innan)
+        window.db.collection('jobs').where('regnr','==',regnr).get().then(async (s) => {
+            if (!isMounted) return;
+            
+            const j = s.docs.map(doc=>({id:doc.id,...doc.data()})).filter(x=>!x.deleted).sort((a,b)=>(b.datum||'').localeCompare(a.datum||''));
+            
+            let baseData = {
+                regnr: regnr,
+                model: 'Okänd',
+                customer: '-',
+                lastVisit: null,
+                visitCount: 0,
+                totalRevenue: 0,
+                history: [],
+                brand_manual: null,
+                latestSpecs: {}
+            };
+
             if(j.length){ 
                 const l=j[0]; 
-                setD({
-                    regnr:regnr,
-                    model:l.bilmodell||'Okänd',
-                    customer:l.kundnamn||'Okänd',
-                    lastVisit:l.datum,
-                    visitCount:j.length,
-                    totalRevenue:j.reduce((s,x)=>s+(parseInt(x.kundpris)||0),0),
-                    history:j,
-                    brand_manual:l.brand_manual,
+                baseData = {
+                    ...baseData,
+                    model: l.bilmodell || 'Okänd',
+                    customer: l.kundnamn || 'Okänd',
+                    lastVisit: l.datum,
+                    visitCount: j.length,
+                    totalRevenue: j.reduce((sum,x)=>sum+(parseInt(x.kundpris)||0),0),
+                    history: j,
+                    brand_manual: l.brand_manual,
                     latestSpecs: {
                         engine: l.motorkod || '',
                         oil: l.oljevolym ? (l.oljevolym.toString().includes('l') ? l.oljevolym : `${l.oljevolym} l`) : '',
                         mileage: l.miltal || '',
                         year: l.årsmodell || ''
                     }
-                }); 
+                }; 
             }
-            else setD({regnr:regnr,model:'Okänd',customer:'-',lastVisit:null,visitCount:0,totalRevenue:0,history:[],brand_manual:null});
+
+            // 2. NYTT: Hämta dessutom den dagsfärska datan från vehicleSpecs!
+            try {
+                const specDoc = await window.db.collection('vehicleSpecs').doc(regnr).get();
+                if (specDoc.exists && isMounted) {
+                    const specs = specDoc.data();
+                    
+                    // Skriv över med den nyaste datan från radarn
+                    if (specs.model) baseData.model = specs.model;
+                    if (specs.brand_manual) baseData.brand_manual = specs.brand_manual;
+                    
+                    baseData.latestSpecs = {
+                        ...baseData.latestSpecs,
+                        engine: specs.engine || baseData.latestSpecs.engine || '',
+                        oil: specs.oil || baseData.latestSpecs.oil || '',
+                        mileage: specs.mileage || baseData.latestSpecs.mileage || '',
+                        year: specs.year || baseData.latestSpecs.year || '',
+                        vin: specs.vin || ''
+                    };
+                }
+            } catch (err) {
+                console.error("Kunde inte hämta färsk vehicleSpecs data:", err);
+            }
+
+            if (isMounted) setD(baseData);
         });
+
+        return () => { isMounted = false; };
     }, [regnr]);
+
     return d ? <VehicleProfile v={d} highlightId={highlightId} onClose={onClose} setView={setView}/> : null;
 };
