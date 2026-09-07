@@ -356,9 +356,7 @@ const App = () => {
             <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
                 {/* DYNAMISK SIDEBAR */}
-                {/* DYNAMISK SIDEBAR (Alltid mörk, oavsett tema) */}
-                {/* DYNAMISK SIDEBAR (Låst till Alltid Mörk) */}
-                <aside className={`fixed lg:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl lg:shadow-none select-none group/sidebar`}>
+                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
                     
                     <div className={`h-20 flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} border-b border-white/5 overflow-hidden shrink-0`}>
                         <div className="flex items-center gap-3.5">
