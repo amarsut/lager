@@ -220,7 +220,7 @@ const App = () => {
         setView(newView);
         setViewParams(params);
         if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
-        if (window.innerWidth < 1024) setSidebarOpen(false);
+        if (window.innerWidth < 768) setSidebarOpen(false);
         setGlobalVehicle(null);
         
         // Auto-scroll till toppen vid vy-byte
@@ -255,7 +255,7 @@ const App = () => {
             const validViews = ['DASHBOARD', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE'];
             if (hash && validViews.includes(hash)) {
                 setView(hash);
-                if (window.innerWidth < 1024) setSidebarOpen(false);
+                if (window.innerWidth < 768) setSidebarOpen(false);
                 setGlobalVehicle(null);
             }
         };
