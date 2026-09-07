@@ -57,7 +57,7 @@ window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH', forceScrape 
         let pings = 0;
         const pingInterval = setInterval(() => {
             if (popup && !popup.closed) {
-                popup.postMessage({ action: finalTarget, regnr: cleanReg }, '*');
+                popup.postMessage({ action: finalTarget, regnr: cleanReg, silentClose: true }, '*');
             } else {
                 clearInterval(pingInterval);
             }
