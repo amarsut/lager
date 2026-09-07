@@ -383,7 +383,7 @@ const App = () => {
                         {sidebarOpen && (
                             <button 
                                 onClick={() => { triggerHaptic(); setSidebarOpen(false); }} 
-                                className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
+                                className="hidden md:flex w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
                             >
                                 <window.Icon name="chevron-left" size={18} />
                             </button>
@@ -466,8 +466,8 @@ const App = () => {
                     </div>
                 </aside>
 
-                {sidebarOpen && window.innerWidth < 1024 && (
-                    <div onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190] lg:hidden animate-in fade-in duration-300"></div>
+                {sidebarOpen && window.innerWidth < 768 && (
+                    <div onClick={() => { triggerHaptic(); setSidebarOpen(false); }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190] md:hidden animate-in fade-in duration-300"></div>
                 )}
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
@@ -509,8 +509,7 @@ const App = () => {
                     </div>
 
                     {/* Mobila Bottenmenyn (Förfinad Glassmorphism) */}
-                    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">
-                        {[
+                        <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">                        {[
                             { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt', param: { job: null } },
