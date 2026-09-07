@@ -85,7 +85,7 @@ const App = () => {
     const [editingJob, setEditingJob] = useState(null);
     const [allLagerItems, setAllLagerItems] = useState([]);
     const [allNotes, setAllNotes] = useState([]);
-    const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') !== 'light'); 
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') === 'dark');
     const [isNightLight, setIsNightLight] = useState(() => localStorage.getItem('sys_nightlight') === 'true');
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
