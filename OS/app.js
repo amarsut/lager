@@ -78,7 +78,7 @@ const App = () => {
     const [appReady, setAppReady] = useState(false);
     const [view, setView] = useState('DASHBOARD');
     const [viewParams, setViewParams] = useState(null);
-    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
+    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1300);
     const [activeFilter, setActiveFilter] = useState('BOKAD');
     const [globalSearch, setGlobalSearch] = useState('');
     const [allJobs, setAllJobs] = useState([]);
