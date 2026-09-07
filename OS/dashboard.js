@@ -619,11 +619,30 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                         </span>
                         {job.kommentar && (
-                            <div className="flex items-start gap-1.5 mt-1 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
-                                <window.Icon name="message-square" size={10} className="shrink-0 mt-[2.5px] opacity-70" />
-                                <span className="line-clamp-4 leading-snug whitespace-normal break-words">
-                                    {stripHtml(job.kommentar)}
-                                </span>
+                            <div 
+                                className="relative group/note cursor-pointer mt-1 w-fit"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onTouchStart={(e) => e.stopPropagation()}
+                                onTouchEnd={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-start gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                                    <window.Icon name="message-square" size={10} className="shrink-0 mt-[2.5px] opacity-70" />
+                                    <span className="line-clamp-4 leading-snug whitespace-normal break-words">
+                                        {stripHtml(job.kommentar)}
+                                    </span>
+                                </div>
+                                
+                                {/* Svävande Tooltip (visas vid tryck på mobil) */}
+                                <div className="absolute left-0 bottom-full mb-2 w-max min-w-[250px] max-w-[320px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-bottom-left">
+                                    <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
+                                        <div className="shrink-0 mt-[2px] text-orange-500">
+                                            <window.Icon name="message-square" size={14} />
+                                        </div>
+                                        <div className="whitespace-normal leading-relaxed break-words">
+                                            {stripHtml(job.kommentar)}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -1451,7 +1470,12 @@ window.DashboardView = React.memo(({
                                                                 </span>
                                                                 
                                                                 {job.kommentar && (
-                                                                    <div className="relative group/note cursor-help mt-1 w-fit">
+                                                                    <div 
+                                                                        className="relative group/note cursor-pointer mt-1 w-fit"
+                                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                                        onTouchStart={(e) => e.stopPropagation()}
+                                                                        onTouchEnd={(e) => e.stopPropagation()}
+                                                                    >
                                                                         <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[140px]">
                                                                             <window.Icon name="message-square" size={10} className="shrink-0" />
                                                                             <span className="truncate">{stripHtml(job.kommentar)}</span>
