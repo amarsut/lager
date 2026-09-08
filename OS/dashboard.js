@@ -1,34 +1,19 @@
 // dashboard.js
 
-const formatDate = (dateStr) => {
-    if (!dateStr) return null;
+const formatTime = (dateStr) => {
+    if (!dateStr) return "";
     const targetDate = new Date(dateStr);
-    const today = new Date();
-    targetDate.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    const diffTime = targetDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const currentYear = new Date().getFullYear();
     
-    if (diffDays === 0) return "IDAG";
-    if (diffDays === 1) return "IMORGON";
-    if (diffDays === -1) return "IGÅR";
-    if (diffDays >= 2 && diffDays <= 7) {
-        const weekDays = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORSDAG', 'FREDAG', 'LÖRDAG'];
-        return weekDays[targetDate.getDay()];
+    // Dölj tiden om datumet inte tillhör innevarande år
+    if (targetDate.getFullYear() !== currentYear) {
+        return "";
     }
     
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
-    
-    // Hämta årtalen för att jämföra
-    const targetYear = targetDate.getFullYear();
-    const currentYear = today.getFullYear();
-    
-    // Om årtalet inte är det nuvarande året, lägg till det i strängen
-    if (targetYear !== currentYear) {
-        return `${targetDate.getDate()} ${months[targetDate.getMonth()]}, ${targetYear}`;
-    }
-    
-    return `${targetDate.getDate()} ${months[targetDate.getMonth()]}`;
+    // Returnera tiden som HH:MM
+    const hours = String(targetDate.getHours()).padStart(2, '0');
+    const minutes = String(targetDate.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 };
 
 // Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
