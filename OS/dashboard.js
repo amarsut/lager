@@ -13,6 +13,34 @@ const formatTime = (dateStr) => {
     return dateStr.split('T')[1].substring(0, 5); 
 };
 
+// Din befintliga formatTime ligger här ovanför...
+
+// Lägg till denna funktion som saknades:
+const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const targetDate = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+
+    if (isSameDay(targetDate, today)) return "IDAG";
+    if (isSameDay(targetDate, tomorrow)) return "IMORGON";
+
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
+    const day = targetDate.getDate();
+    const month = months[targetDate.getMonth()];
+    
+    // Om det är föregående/kommande år (ex: "28 AUG, 2024")
+    if (targetDate.getFullYear() !== today.getFullYear()) {
+        return `${day} ${month}, ${targetDate.getFullYear()}`;
+    }
+    
+    // Innevarande år (ex: "28 AUG")
+    return `${day} ${month}`;
+};
+
 // Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
 const stripHtml = (html) => {
     if (!html) return '';
