@@ -1633,10 +1633,7 @@ window.DashboardView = React.memo(({
                 </div>
             </div>
 
-            <div
-                className="lg:hidden flex flex-col min-h-screen bg-zinc-50/50 dark:bg-[#09090b] touch-pan-y transition-colors duration-500"
-                onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
-            >
+            <div className="lg:hidden flex flex-col min-h-[100dvh] bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
                 <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
                     <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                         
