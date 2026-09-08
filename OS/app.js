@@ -61,6 +61,7 @@ const SplashScreen = memo(() => (
 // Fast Navigations-data för att undvika re-renders
 const NAV_ITEMS = [
     { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
+    { id: 'PROGNOS', icon: 'inbox', label: 'Prognos' }, // <-- NY RAD
     { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
     { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
     { id: 'LAGER', icon: 'package', label: 'Lager' },
@@ -252,7 +253,7 @@ const App = () => {
     useEffect(() => {
         const syncWithUrl = () => {
             const hash = window.location.hash.replace('#', '').toUpperCase();
-            const validViews = ['DASHBOARD', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE'];
+            const validViews = ['DASHBOARD', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE']; // <-- UPPDATERAD RAD            
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 768) setSidebarOpen(false);
@@ -495,8 +496,9 @@ const App = () => {
                         </>
                     )}
 
-                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
+                    <div className={`flex-1 overflow-auto lg:p-8 space-y-6 pb-24 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && window.DashboardView && <window.DashboardView allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} />}
+                        {view === 'PROGNOS' && window.PrognosView && <window.PrognosView allJobs={allJobs} setView={navigateTo} />} {/* <-- NY RAD */}
                         {view === 'NEW_JOB' && window.NewJobView && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
                         {view === 'GARAGE' && window.GarageView && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'LAGER' && window.LagerView && <window.LagerView allJobs={allJobs} />} 
