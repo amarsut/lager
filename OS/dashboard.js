@@ -8,6 +8,7 @@ const formatDate = (dateStr) => {
     today.setHours(0, 0, 0, 0);
     const diffTime = targetDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
     if (diffDays === 0) return "IDAG";
     if (diffDays === 1) return "IMORGON";
     if (diffDays === -1) return "IGÅR";
@@ -15,7 +16,18 @@ const formatDate = (dateStr) => {
         const weekDays = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORSDAG', 'FREDAG', 'LÖRDAG'];
         return weekDays[targetDate.getDay()];
     }
+    
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
+    
+    // Hämta årtalen för att jämföra
+    const targetYear = targetDate.getFullYear();
+    const currentYear = today.getFullYear();
+    
+    // Om årtalet inte är det nuvarande året, lägg till det i strängen
+    if (targetYear !== currentYear) {
+        return `${targetDate.getDate()} ${months[targetDate.getMonth()]}, ${targetYear}`;
+    }
+    
     return `${targetDate.getDate()} ${months[targetDate.getMonth()]}`;
 };
 
