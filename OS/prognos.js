@@ -155,7 +155,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         return results;
     }, [allJobs]);
 
-    // FIXEN LIGGER HÄR: Låser fast ikonladdningen så den inte körs av misstag varje sekund!
+    // Låser fast ikonladdningen så den inte körs av misstag varje sekund!
     React.useEffect(() => {
         if (window.lucide) window.lucide.createIcons();
     }, [feedData]); 
@@ -184,8 +184,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                         const commentText = stripHtml(job.kommentar);
                         const exactDate = job.datum ? job.datum.split('T')[0] : '';
                         
-                        let descText = `utförde ${paketName} för ${item.monthsSinceJob} mån sedan`;
-                        if (item.monthsSinceJob === 0) descText = `utförde ${paketName} nyligen`;
+                        let timeText = item.monthsSinceJob === 0 ? "nyligen" : `${item.monthsSinceJob} mån sedan`;
 
                         return (
                             <div 
@@ -193,22 +192,22 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                 onClick={() => openProfile(item.regnr, job.id)}
                                 className="bg-white dark:bg-[#182032] p-5 sm:p-6 rounded-2xl shadow-sm border border-zinc-200/80 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-md transition-all cursor-pointer group"
                             >
-                                <div className="text-[13px] sm:text-[14px] text-zinc-800 dark:text-zinc-200 leading-relaxed font-medium">
-                                    <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <span className="font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">{item.regnr}</span> {descText}. 
+                                <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+                                    <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <strong className="font-mono font-bold tracking-widest text-zinc-800 dark:text-zinc-200">{item.regnr}</strong> utförde {paketName} för <strong className="text-zinc-900 dark:text-white font-bold">{timeText}</strong>. 
                                     Rekommenderar {item.isMileageUrgent ? 'pga miltal' : 'enligt serviceintervall'}: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span>.
                                 </div>
                                 
-                                <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
+                                <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-white/5 flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
                                         <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                                             <SafeIcon name="calendar" size={12} /> {exactDate}
                                         </div>
                                         <div className="text-[9px] font-bold text-zinc-400 group-hover:text-orange-500 uppercase tracking-widest transition-colors flex items-center gap-1">
-                                            Öppna kvitto <SafeIcon name="chevron-right" size={10} />
+                                            ÖPPNA KVITTO <SafeIcon name="chevron-right" size={10} />
                                         </div>
                                     </div>
                                     {commentText && (
-                                        <div className="text-[11px] sm:text-[12px] text-zinc-600 dark:text-zinc-400 italic leading-relaxed mt-1">
+                                        <div className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 italic leading-relaxed mt-1.5">
                                             "{commentText}"
                                         </div>
                                     )}
