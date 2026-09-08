@@ -1,19 +1,16 @@
 // dashboard.js
 
 const formatTime = (dateStr) => {
-    if (!dateStr) return "";
-    const targetDate = new Date(dateStr);
-    const currentYear = new Date().getFullYear();
+    if (!dateStr || !dateStr.includes('T')) return "";
+    const currentYear = new Date().getFullYear().toString();
     
-    // Dölj tiden om datumet inte tillhör innevarande år
-    if (targetDate.getFullYear() !== currentYear) {
+    // Om datumet inte börjar med innevarande år, returnera ingenting
+    if (!dateStr.startsWith(currentYear)) {
         return "";
     }
     
-    // Returnera tiden som HH:MM
-    const hours = String(targetDate.getHours()).padStart(2, '0');
-    const minutes = String(targetDate.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
+    // Annars, plocka ut HH:MM (exakt som den gjorde tidigare, men säkrare)
+    return dateStr.split('T')[1].substring(0, 5); 
 };
 
 // Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
