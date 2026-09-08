@@ -597,7 +597,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                         {dateString}
                                     </span>
                                     <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                                       {job.datum.split('T')[1]}
+                                       {formatTime(job.datum)}
                                     </span>
                                 </div>
                             </div>
@@ -1299,8 +1299,8 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="flex flex-col flex-1 pb-10 relative">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 sticky top-0 z-20 bg-zinc-50/90 dark:bg-[#09090b]/90 backdrop-blur-md pt-2">
-                        <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 pt-2 bg-transparent">
+                    <div className="flex space-x-2">
                             {filters.map(f => (
                                 <button 
                                     key={f} 
@@ -1535,7 +1535,7 @@ window.DashboardView = React.memo(({
                                                                             {dateText}
                                                                         </span>
                                                                         <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                                                                            {job.datum.split('T')[1]}
+                                                                            {formatTime(job.datum)}
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -1612,8 +1612,7 @@ window.DashboardView = React.memo(({
                 className="lg:hidden flex flex-col min-h-screen bg-zinc-50/50 dark:bg-[#09090b] touch-pan-y transition-colors duration-500"
                 onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
             >
-                <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 sticky top-0 z-40 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
-                    
+                <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
                     <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                         
                         <div className="flex items-center gap-4">
