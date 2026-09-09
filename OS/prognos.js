@@ -1,4 +1,4 @@
-// prognos.js - Visuell Hierarki för Rekommendationer
+// prognos.js - Komplett och vänsterställd vy
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -28,6 +28,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         const now = new Date();
         const results = {
+            OLD_OVERDUE: [],
             LAST_MONTH: [],  
             THIS_MONTH: [],  
             NEXT_MONTH: [],  
@@ -39,6 +40,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             
             // Sortera: Nyaste jobbet ligger först
             vehicle.jobs.sort((a,b) => (new Date(b.datum).getTime() || 0) - (new Date(a.datum).getTime() || 0));
+
+            // Filtrera Såld/Skrotad
+            const latestJob = vehicle.jobs[0];
+            const latestStr = (String(latestJob.paket || '') + ' ' + String(latestJob.kommentar || '')).toLowerCase();
+            if (latestStr.includes('såld') || latestStr.includes('skrotad') || latestStr.includes('ägarbyte')) {
+                return; 
+            }
 
             // --- SMART MILTALS-EXTRAHERING ---
             const getKm = (j) => {
@@ -119,7 +127,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             // SMART TILLÄGGS-KOLL MED INTERVALLER
             const checkAddon = (name, lastObj, years, warnIfMissing = false) => {
                 if (!lastObj) {
-                    // Använder * istället för (?) om historik saknas
                     if (warnIfMissing) needs.push(`${name}*`);
                     return;
                 }
@@ -142,14 +149,18 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             checkAddon('Luftfilter', lastAirDate, 6, true);
             checkAddon('Bränslefilter', lastFuelDate, 6, true);
             
+            // Får inga stjärnor om de saknas
             checkAddon('Haldex', lastHaldexDate, 3, false);
             checkAddon('Tändstift', lastSparkPlugDate, 4, false);
 
-            // Självrensande: Över 14 månader försenad = Raderas från vyn
+            const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
+            if (daysSinceLastContact > 1095) return; 
+
+            // Månadsberäkning baserad 100% på tid
             const monthDiff = getMonthDiff(earliestDueDate, now);
             let bucket = '';
 
-            if (monthDiff < -1) return;
+            if (monthDiff < -1) bucket = 'OLD_OVERDUE';
             else if (monthDiff === -1) bucket = 'LAST_MONTH';
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
             else if (monthDiff === 1) bucket = 'NEXT_MONTH';
@@ -173,6 +184,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         // Sortera listorna
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
+        results.OLD_OVERDUE.sort(sortByDate);
         results.LAST_MONTH.sort(sortByDate);
         results.THIS_MONTH.sort(sortByDate);
         results.NEXT_MONTH.sort(sortByDate);
