@@ -1,4 +1,4 @@
-// prognos.js - Strikt Serviceflöde med Kompakt "Frysbox" för äldre missar
+// prognos.js - Strikt Serviceflöde med Alla Äldre som Etiketter
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -28,7 +28,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         const now = new Date();
         const results = {
-            OLD_OVERDUE: [], // Den nya frysboxen (upp till 6 mån försenade)
+            OLD_OVERDUE: [], // Alla som är äldre än 14 månader samlas här som etiketter
             LAST_MONTH: [],  
             THIS_MONTH: [],  
             NEXT_MONTH: [],  
@@ -135,11 +135,8 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             const monthDiff = getMonthDiff(earliestDueDate, now);
             let bucket = '';
 
-            // HÄR LIGGER DIN NYA LOGIK FÖR ÄLDRE FÖRSENADE
-            // Om monthDiff är mellan -2 och -7 hamnar de i "frysboxen" (OLD_OVERDUE).
-            // Passerar den -7 (mer än 19 mån sedan service) raderas den helt från listan.
-            if (monthDiff < -7) return; 
-            else if (monthDiff < -1) bucket = 'OLD_OVERDUE'; 
+            // ÄNDRING HÄR: Allt som är äldre än 1 månad försenat blir nu till etiketter i OLD_OVERDUE
+            if (monthDiff < -1) bucket = 'OLD_OVERDUE'; 
             else if (monthDiff === -1) bucket = 'LAST_MONTH';
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
             else if (monthDiff === 1) bucket = 'NEXT_MONTH';
@@ -250,7 +247,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 <div className="flex items-center gap-4 mb-5">
                     <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
                     <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                        ÄLDRE FÖRSENADE (MAX 6 MÅN KVAR)
+                        ÄLDRE FÖRSENADE (VÄNTANDE PÅ UPPDATERING)
                     </span>
                     <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
                 </div>
