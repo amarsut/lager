@@ -1,4 +1,4 @@
-// prognos.js - Strikt Serviceflöde med Alla Äldre som Etiketter
+// prognos.js - Strikt Flöde med Smart Tidsbuffert & Historik-koll
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -28,7 +28,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         const now = new Date();
         const results = {
-            OLD_OVERDUE: [], // Alla som är äldre än 14 månader samlas här som etiketter
             LAST_MONTH: [],  
             THIS_MONTH: [],  
             NEXT_MONTH: [],  
@@ -40,13 +39,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             
             // Sortera: Nyaste jobbet ligger först
             vehicle.jobs.sort((a,b) => (new Date(b.datum).getTime() || 0) - (new Date(a.datum).getTime() || 0));
-
-            // Filtrera Såld/Skrotad
-            const latestJob = vehicle.jobs[0];
-            const latestStr = (String(latestJob.paket || '') + ' ' + String(latestJob.kommentar || '')).toLowerCase();
-            if (latestStr.includes('såld') || latestStr.includes('skrotad') || latestStr.includes('ägarbyte')) {
-                return; 
-            }
 
             // --- SMART MILTALS-EXTRAHERING ---
             const getKm = (j) => {
@@ -83,7 +75,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
             let lastOilDate = null, lastBrakeDate = null, lastCabinDate = null, lastAirDate = null;
 
-            // --- STENHÅRD PAKET-LÄSNING ---
+            // --- STENHÅRD PAKET-LÄSNING BÅKÅT I TIDEN ---
             vehicle.jobs.forEach(j => {
                 const p = String(j.paket || '').toLowerCase().trim();
                 const c = String(j.kommentar || '').toLowerCase();
@@ -94,6 +86,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                     lastOilDate = { date: d, km: km, job: j };
                 }
                 
+                // Letar efter första bästa gången dessa nämndes i historiken
                 if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
                 if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
                 if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
@@ -115,11 +108,23 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 }
             }
 
+            // SMART TILLÄGGS-KOLL (Tidsmaskin + Buffert)
             const checkAddon = (name, lastObj, years) => {
-                if (!lastObj) return;
+                if (!lastObj) {
+                    // Om det ALDRIG gjorts i vår historik, lägg till med ett litet frågetecken
+                    needs.push(`${name} (?)`);
+                    return;
+                }
+
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
-                if (dueDate <= earliestDueDate) {
+                
+                // Vi bygger in en "Merförsäljnings-buffert" på 3 månader. 
+                // Går filtret ut strax efter servicen? Då tar vi det nu.
+                let bufferedDueDate = new Date(earliestDueDate);
+                bufferedDueDate.setMonth(bufferedDueDate.getMonth() + 3);
+
+                if (dueDate <= bufferedDueDate) {
                     needs.push(name);
                 }
             };
@@ -128,15 +133,12 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             checkAddon('Kupéfilter', lastCabinDate, 2);
             checkAddon('Luft/Bränsle-filter', lastAirDate, 3);
 
-            const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
-            if (daysSinceLastContact > 1095) return; 
-
             // Månadsberäkning baserad 100% på tid
             const monthDiff = getMonthDiff(earliestDueDate, now);
             let bucket = '';
 
-            // ÄNDRING HÄR: Allt som är äldre än 1 månad försenat blir nu till etiketter i OLD_OVERDUE
-            if (monthDiff < -1) bucket = 'OLD_OVERDUE'; 
+            // Självrensande: Över 14 månader försenad = Raderas från vyn
+            if (monthDiff < -1) return;
             else if (monthDiff === -1) bucket = 'LAST_MONTH';
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
             else if (monthDiff === 1) bucket = 'NEXT_MONTH';
@@ -158,12 +160,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             }
         });
 
+        // Sortera listorna
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
-        results.OLD_OVERDUE.sort(sortByDate);
         results.LAST_MONTH.sort(sortByDate);
         results.THIS_MONTH.sort(sortByDate);
         results.NEXT_MONTH.sort(sortByDate);
         
+        // Klipper kommande listan till exakt de 5 närmaste
         results.UPCOMING.sort(sortByDate);
         results.UPCOMING = results.UPCOMING.slice(0, 5);
 
@@ -213,7 +216,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                 <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
                                     <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> utförde oljebyte för <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>. 
                                     <br className="hidden sm:block" />
-                                    Rekommenderar enligt serviceintervall: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span><span className="text-orange-600/70 font-bold">{mileageText}</span>.
+                                    Rekommenderar enligt historik: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span><span className="text-orange-600/70 font-bold">{mileageText}</span>.
                                 </div>
                                 
                                 <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
@@ -239,41 +242,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         );
     };
 
-    // Ny kompakt komponent för frysboxen
-    const CompactOldSection = ({ items }) => {
-        if (items.length === 0) return null;
-        return (
-            <div className="mb-10 animate-in fade-in duration-500">
-                <div className="flex items-center gap-4 mb-5">
-                    <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
-                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                        ÄLDRE FÖRSENADE (VÄNTANDE PÅ UPPDATERING)
-                    </span>
-                    <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2.5 justify-center">
-                    {items.map((item, i) => (
-                        <div 
-                            key={item.id + i} 
-                            onClick={() => openProfile(item.regnr, item.referenceJob.id)}
-                            title={`${item.customer} - ${item.monthsSinceJob} mån sedan`}
-                            className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 px-3 py-2 rounded-lg shadow-sm flex items-center gap-2.5 cursor-pointer hover:border-orange-500 hover:shadow-md transition-all hover:-translate-y-0.5 group"
-                        >
-                            <span className="font-mono text-xs font-black tracking-widest text-zinc-800 dark:text-zinc-200 group-hover:text-orange-500 transition-colors">
-                                {item.regnr}
-                            </span>
-                            <div className="w-[1px] h-3 bg-zinc-200 dark:bg-zinc-700"></div>
-                            <span className="text-[10px] font-bold text-zinc-400">
-                                {item.monthsSinceJob} mån
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
     const totalLeads = feedData.LAST_MONTH.length + feedData.THIS_MONTH.length + feedData.NEXT_MONTH.length + feedData.UPCOMING.length;
 
     return (
@@ -291,15 +259,12 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             <div className="flex-1 overflow-y-auto overscroll-none custom-scrollbar p-4 md:p-6 lg:p-8 pb-32 relative">
                 <div className="w-full max-w-4xl mx-auto">
                     
-                    {totalLeads === 0 && feedData.OLD_OVERDUE.length === 0 && (
+                    {totalLeads === 0 && (
                         <div className="py-20 text-center text-zinc-400 flex flex-col items-center">
                             <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
                             <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Kön är tom! Endast bilar med paketet "Oljebyte" visas.</span>
                         </div>
                     )}
-
-                    {/* Frysboxen renderas högst upp som små pill-knappar */}
-                    <CompactOldSection items={feedData.OLD_OVERDUE} />
 
                     <ListSection title="FÖRRA MÅNADEN" items={feedData.LAST_MONTH} />
                     <ListSection title="DENNA MÅNAD" items={feedData.THIS_MONTH} />
