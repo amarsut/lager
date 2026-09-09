@@ -1,4 +1,4 @@
-// prognos.js - Strikt Tidsstyrt Serviceflöde med Miltals-indikation
+// prognos.js - Strikt Tidsstyrt Serviceflöde (Alltid 5 kommande)
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -42,15 +42,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             vehicle.jobs.sort((a,b) => (new Date(b.datum).getTime() || 0) - (new Date(a.datum).getTime() || 0));
 
             // --- SMART MILTALS-EXTRAHERING ---
-            // Letar enbart efter "12345km" eller "12345 km" i kommentarerna som du skrev
             const getKm = (j) => {
                 const match = String(j.kommentar || '').match(/(\d+)\s*km/i);
                 if (match) return parseInt(match[1], 10);
                 
-                // Fallback om du använt standardmiltalsfältet tidigare
                 if (j.miltal) {
                     let m = parseInt(String(j.miltal).replace(/[^0-9]/g, ''));
-                    if (m < 50000 && m > 0) return m * 10; // Tolka som mil
+                    if (m < 50000 && m > 0) return m * 10;
                     return m;
                 }
                 return 0;
@@ -62,7 +60,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 .sort((a,b) => b.date.getTime() - a.date.getTime());
 
             let estMileage = 0;
-            let kmPerDay = 41; // Snitt 15000 km/år -> ~41 km/dag
+            let kmPerDay = 41;
 
             if (validMilJobs.length >= 2) {
                 let j1 = validMilJobs[0], j2 = validMilJobs[validMilJobs.length - 1];
@@ -85,18 +83,15 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 const d = new Date(j.datum);
                 const km = getKm(j);
                 
-                // ENDAST godkänt om rullgardinen är exakt satt till "Oljebyte"
                 if (p === 'oljebyte' && !lastOilDate) {
                     lastOilDate = { date: d, km: km, job: j };
                 }
                 
-                // Tilläggen kollar vi fortfarande efter
                 if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
                 if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
                 if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
             });
 
-            // Om kunden ALDRIG har ett jobb med paketet "Oljebyte", hoppa över bilen helt.
             if (!lastOilDate) return;
 
             const needs = ['Oljebyte/Inspektion'];
@@ -106,7 +101,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             earliestDueDate.setFullYear(earliestDueDate.getFullYear() + 1);
             let referenceJob = lastOilDate.job; 
 
-            // Miltal (15000 km = 1500 mil) ger endast en text-indikation, det ändrar INTE datumet
             let hasMileageWarning = false;
             if (estMileage > 0 && lastOilDate.km > 0) {
                 if (estMileage - lastOilDate.km >= 15000) {
@@ -118,7 +112,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 if (!lastObj) return;
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
-                // Inkludera tillägget om det har passerat (eller löper ut samtidigt som) oljebytet
                 if (dueDate <= earliestDueDate) {
                     needs.push(name);
                 }
@@ -128,7 +121,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             checkAddon('Kupéfilter', lastCabinDate, 2);
             checkAddon('Luft/Bränsle-filter', lastAirDate, 3);
 
-            // Ta bort bilar vi inte sett till på över 3 år
             const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
             if (daysSinceLastContact > 1095) return; 
 
@@ -140,30 +132,34 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             else if (monthDiff === -1) bucket = 'LAST_MONTH';
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
             else if (monthDiff === 1) bucket = 'NEXT_MONTH';
-            else if (monthDiff > 1 && monthDiff <= 5) bucket = 'UPCOMING';
-            else return;
+            else if (monthDiff > 1) bucket = 'UPCOMING'; // ALLA framtida bilar (>1 mån) kastas in i denna hink!
 
-            const monthsSinceJob = getMonthDiff(now, new Date(referenceJob.datum));
-
-            results[bucket].push({
-                id: reg,
-                regnr: reg,
-                customer: vehicle.customer || 'Okänd Kund',
-                referenceJob: referenceJob,
-                monthsSinceJob: monthsSinceJob,
-                monthDiff: monthDiff,
-                hasMileageWarning: hasMileageWarning,
-                needs: needs,
-                sortDate: earliestDueDate
-            });
+            if (bucket) {
+                const monthsSinceJob = getMonthDiff(now, new Date(referenceJob.datum));
+                results[bucket].push({
+                    id: reg,
+                    regnr: reg,
+                    customer: vehicle.customer || 'Okänd Kund',
+                    referenceJob: referenceJob,
+                    monthsSinceJob: monthsSinceJob,
+                    monthDiff: monthDiff,
+                    hasMileageWarning: hasMileageWarning,
+                    needs: needs,
+                    sortDate: earliestDueDate
+                });
+            }
         });
 
+        // Sortera listorna
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
         results.OLD_OVERDUE.sort(sortByDate);
         results.LAST_MONTH.sort(sortByDate);
         results.THIS_MONTH.sort(sortByDate);
         results.NEXT_MONTH.sort(sortByDate);
+        
+        // Sortera kommande och klipp listan till exakt max 5 st!
         results.UPCOMING.sort(sortByDate);
+        results.UPCOMING = results.UPCOMING.slice(0, 5);
 
         return results;
     }, [allJobs]);
@@ -195,13 +191,11 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                         const commentText = stripHtml(job.kommentar);
                         const exactDate = job.datum ? job.datum.split('T')[0] : '';
                         
-                        // Textformatering för tiden och "dags om..."
                         let timeText = item.monthsSinceJob === 0 ? "nyligen" : `${item.monthsSinceJob} mån sedan`;
                         if (item.monthDiff > 0) {
                             timeText += ` (dags om ${item.monthDiff} mån)`;
                         }
 
-                        // Textformatering för miltalsvarning
                         let mileageText = item.hasMileageWarning ? " (rek. även efter miltal)" : "";
 
                         return (
