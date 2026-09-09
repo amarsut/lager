@@ -1,4 +1,4 @@
-// prognos.js - Extremt Strikt Serviceflöde (Endast Paket: Oljebyte)
+// prognos.js - Extremt Strikt Serviceflöde (Endast Oljebytet styr)
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -58,7 +58,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
             let lastOilDate = null, lastBrakeDate = null, lastCabinDate = null, lastAirDate = null;
 
-            // --- STENHÅRD LÄSNING ---
+            // --- LÄSER AV HISTORIKEN ---
             vehicle.jobs.forEach(j => {
                 const p = String(j.paket || '').toLowerCase().trim();
                 const c = String(j.kommentar || '').toLowerCase();
@@ -70,77 +70,78 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                     lastOilDate = { date: d, mil: mil, job: j };
                 }
                 
-                // Tilläggen (Bromsvätska etc) kan fortfarande hämtas från kommentarer i andra jobb, 
-                // men de kan inte byta ut referensdatumet på huvudservicen!
+                // Extra filter och vätskor hämtas från andra jobb, men styr INTE klockan
                 if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
                 if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
                 if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
             });
 
-            // Om kunden ALDRIG har ett jobb med paketet "Oljebyte", hoppa över bilen helt.
+            // Avbryt direkt om kunden aldrig har gjort ett "Oljebyte"
             if (!lastOilDate) return;
 
-            const needs = [];
-            let earliestDueDate = new Date(now.getFullYear() + 10, 0, 1);
-            
-            // Låser datum och kvitto på kortet till EXAKT det senaste oljebytet, aldrig ett annat jobb.
-            let referenceJob = lastOilDate.job; 
+            // 1. Oljebytet sätter huvuddatumet (Alltid 1 år från senaste)
+            let earliestDueDate = new Date(lastOilDate.date);
+            earliestDueDate.setFullYear(earliestDueDate.getFullYear() + 1);
             let isMileageUrgent = false;
 
-            const checkNeed = (name, lastObj, years, milLimit = null) => {
+            // 2. Miltal kan tvinga fram oljebytet i förtid
+            if (estMileage > 0 && lastOilDate.mil > 0) {
+                if (estMileage - lastOilDate.mil >= 1500) {
+                    isMileageUrgent = true;
+                    // Om miltalet är passerat flyttar vi larmet till "Nu" (Denna månad)
+                    if (earliestDueDate > now) {
+                        earliestDueDate = new Date(now); 
+                    }
+                }
+            }
+
+            // 3. Nu kollar vi vad bilen behöver NÄR det väl är dags för nästa oljebyte
+            const needs = ['Oljebyte/Inspektion']; // Alltid med i grunden
+
+            const checkAddon = (name, lastObj, years) => {
                 if (!lastObj) return;
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
                 
-                if (milLimit && estMileage > 0 && lastObj.mil > 0) {
-                    if (estMileage - lastObj.mil >= milLimit) {
-                        dueDate = new Date(now); 
-                        if (name.includes('Oljebyte')) isMileageUrgent = true;
-                    }
-                }
-
-                let horizon = new Date(now);
-                horizon.setMonth(horizon.getMonth() + 5); 
-
-                if (dueDate <= horizon) {
+                // Om bromsvätskan/filtret går ut INNAN eller SAMTIDIGT som nästa oljebyte, lägg till som rekommendation!
+                if (dueDate <= earliestDueDate) {
                     needs.push(name);
-                    if (dueDate < earliestDueDate) earliestDueDate = dueDate;
                 }
             };
 
-            checkNeed('Oljebyte/Inspektion', lastOilDate, 1, 1500);
-            checkNeed('Bromsvätska', lastBrakeDate, 2);
-            checkNeed('Kupéfilter', lastCabinDate, 2);
-            checkNeed('Luft/Bränsle-filter', lastAirDate, 3);
+            checkAddon('Bromsvätska', lastBrakeDate, 2);
+            checkAddon('Kupéfilter', lastCabinDate, 2);
+            checkAddon('Luft/Bränsle-filter', lastAirDate, 3);
 
-            if (needs.length > 0) {
-                // Ta bort bilar vi inte sett till på över 3 år
-                const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
-                if (daysSinceLastContact > 1095) return; 
+            let referenceJob = lastOilDate.job; // Kvittot tillhör alltid oljebytet
 
-                const monthDiff = getMonthDiff(earliestDueDate, now);
-                let bucket = '';
+            // Ta bort bilar vi inte sett till på över 3 år
+            const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
+            if (daysSinceLastContact > 1095) return; 
 
-                if (monthDiff < -1) bucket = 'OLD_OVERDUE';
-                else if (monthDiff === -1) bucket = 'LAST_MONTH';
-                else if (monthDiff === 0) bucket = 'THIS_MONTH';
-                else if (monthDiff === 1) bucket = 'NEXT_MONTH';
-                else if (monthDiff > 1 && monthDiff <= 5) bucket = 'UPCOMING';
-                else return;
+            // Placera i rätt månad baserat på earliestDueDate
+            const monthDiff = getMonthDiff(earliestDueDate, now);
+            let bucket = '';
 
-                const monthsSinceJob = getMonthDiff(now, new Date(referenceJob.datum));
+            if (monthDiff < -1) bucket = 'OLD_OVERDUE';
+            else if (monthDiff === -1) bucket = 'LAST_MONTH';
+            else if (monthDiff === 0) bucket = 'THIS_MONTH';
+            else if (monthDiff === 1) bucket = 'NEXT_MONTH';
+            else if (monthDiff > 1 && monthDiff <= 5) bucket = 'UPCOMING';
+            else return; // Bilar som ligger > 5 månader framåt döljs tills vidare
 
-                results[bucket].push({
-                    id: reg,
-                    regnr: reg,
-                    customer: vehicle.customer || 'Okänd Kund',
-                    referenceJob: referenceJob,
-                    monthsSinceJob: monthsSinceJob,
-                    isMileageUrgent: isMileageUrgent,
-                    needs: needs,
-                    sortDate: earliestDueDate
-                });
-            }
+            const monthsSinceJob = getMonthDiff(now, new Date(referenceJob.datum));
+
+            results[bucket].push({
+                id: reg,
+                regnr: reg,
+                customer: vehicle.customer || 'Okänd Kund',
+                referenceJob: referenceJob,
+                monthsSinceJob: monthsSinceJob,
+                isMileageUrgent: isMileageUrgent,
+                needs: needs,
+                sortDate: earliestDueDate
+            });
         });
 
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
