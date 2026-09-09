@@ -197,9 +197,9 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         
         return (
             <div className="mb-10 animate-in fade-in duration-500">
+                {/* Vänsterställd rubrik med linje efteråt */}
                 <div className="flex items-center gap-4 mb-5">
-                    <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
-                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 shrink-0">
                         {title}
                     </span>
                     <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
@@ -218,7 +218,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
                         let mileageText = item.hasMileageWarning ? " (rek. även efter miltal)" : "";
                         
-                        // Extraherar huvudtjänsten (Oljebyte) och tilläggen
                         const mainService = item.needs[0];
                         const addOns = item.needs.slice(1);
 
@@ -271,30 +270,69 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         );
     };
 
+    const CompactOldSection = ({ items }) => {
+        if (items.length === 0) return null;
+        return (
+            <div className="mb-10 animate-in fade-in duration-500">
+                {/* Vänsterställd rubrik */}
+                <div className="flex items-center gap-4 mb-5">
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 shrink-0">
+                        ÄLDRE FÖRSENADE (VÄNTANDE PÅ UPPDATERING)
+                    </span>
+                    <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
+                </div>
+                
+                {/* justify-start istället för justify-center */}
+                <div className="flex flex-wrap gap-2.5 justify-start">
+                    {items.map((item, i) => (
+                        <div 
+                            key={item.id + i} 
+                            onClick={() => openProfile(item.regnr, item.referenceJob.id)}
+                            title={`${item.customer} - ${item.monthsSinceJob} mån sedan`}
+                            className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 px-3 py-2 rounded-lg shadow-sm flex items-center gap-2.5 cursor-pointer hover:border-orange-500 hover:shadow-md transition-all hover:-translate-y-0.5 group"
+                        >
+                            <span className="font-mono text-xs font-black tracking-widest text-zinc-800 dark:text-zinc-200 group-hover:text-orange-500 transition-colors">
+                                {item.regnr}
+                            </span>
+                            <div className="w-[1px] h-3 bg-zinc-200 dark:bg-zinc-700"></div>
+                            <span className="text-[10px] font-bold text-zinc-400">
+                                {item.monthsSinceJob} mån
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     const totalLeads = feedData.LAST_MONTH.length + feedData.THIS_MONTH.length + feedData.NEXT_MONTH.length + feedData.UPCOMING.length;
 
     return (
         <div className="flex flex-col h-[100dvh] bg-[#fbfcfd] dark:bg-[#09090b] text-zinc-900 dark:text-white transition-colors duration-500 relative w-full overflow-hidden">
             
-            <div className="px-4 py-6 md:py-8 shrink-0 z-20 flex flex-col items-center justify-center text-center relative bg-transparent border-b border-zinc-200/50 dark:border-white/5">
+            {/* Header: Vänsterställd (items-start, text-left) */}
+            <div className="px-4 py-6 md:py-8 shrink-0 z-20 flex flex-col items-start justify-center text-left relative bg-transparent border-b border-zinc-200/50 dark:border-white/5">
                 <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-none text-zinc-900 dark:text-white mb-2">
                     SERVICE<span className="text-zinc-400 font-light">FLÖDE</span>
                 </h1>
-                <p className="text-[10px] md:text-[11px] font-bold text-orange-500 uppercase tracking-widest">
+                <p className="text-[10px] md:text-[11px] font-bold text-orange-500 uppercase tracking-widest flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                     {totalLeads} {totalLeads === 1 ? 'bil' : 'bilar'} i bevakning
                 </p>
             </div>
 
             <div className="flex-1 overflow-y-auto overscroll-none custom-scrollbar p-4 md:p-6 lg:p-8 pb-32 relative">
-                <div className="w-full max-w-4xl mx-auto">
+                {/* Max-width ökad och mx-auto borttagen för att stanna till vänster */}
+                <div className="w-full max-w-5xl ml-0">
                     
-                    {totalLeads === 0 && (
-                        <div className="py-20 text-center text-zinc-400 flex flex-col items-center">
+                    {totalLeads === 0 && feedData.OLD_OVERDUE.length === 0 && (
+                        <div className="py-20 text-left text-zinc-400 flex flex-col items-start">
                             <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
                             <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Kön är tom! Endast bilar med paketet "Oljebyte" visas.</span>
                         </div>
                     )}
 
+                    <CompactOldSection items={feedData.OLD_OVERDUE} />
                     <ListSection title="FÖRRA MÅNADEN" items={feedData.LAST_MONTH} />
                     <ListSection title="DENNA MÅNAD" items={feedData.THIS_MONTH} />
                     <ListSection title="NÄSTA MÅNAD" items={feedData.NEXT_MONTH} />
