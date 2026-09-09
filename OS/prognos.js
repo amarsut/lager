@@ -1,4 +1,4 @@
-// prognos.js - Strikt Tidsstyrt Serviceflöde (Alltid 5 kommande)
+// prognos.js - Strikt Serviceflöde med Kompakt "Frysbox" för äldre missar
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -28,7 +28,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         const now = new Date();
         const results = {
-            OLD_OVERDUE: [], 
+            OLD_OVERDUE: [], // Den nya frysboxen (upp till 6 mån försenade)
             LAST_MONTH: [],  
             THIS_MONTH: [],  
             NEXT_MONTH: [],  
@@ -40,6 +40,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             
             // Sortera: Nyaste jobbet ligger först
             vehicle.jobs.sort((a,b) => (new Date(b.datum).getTime() || 0) - (new Date(a.datum).getTime() || 0));
+
+            // Filtrera Såld/Skrotad
+            const latestJob = vehicle.jobs[0];
+            const latestStr = (String(latestJob.paket || '') + ' ' + String(latestJob.kommentar || '')).toLowerCase();
+            if (latestStr.includes('såld') || latestStr.includes('skrotad') || latestStr.includes('ägarbyte')) {
+                return; 
+            }
 
             // --- SMART MILTALS-EXTRAHERING ---
             const getKm = (j) => {
@@ -128,11 +135,15 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             const monthDiff = getMonthDiff(earliestDueDate, now);
             let bucket = '';
 
-            if (monthDiff < -1) bucket = 'OLD_OVERDUE';
+            // HÄR LIGGER DIN NYA LOGIK FÖR ÄLDRE FÖRSENADE
+            // Om monthDiff är mellan -2 och -7 hamnar de i "frysboxen" (OLD_OVERDUE).
+            // Passerar den -7 (mer än 19 mån sedan service) raderas den helt från listan.
+            if (monthDiff < -7) return; 
+            else if (monthDiff < -1) bucket = 'OLD_OVERDUE'; 
             else if (monthDiff === -1) bucket = 'LAST_MONTH';
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
             else if (monthDiff === 1) bucket = 'NEXT_MONTH';
-            else if (monthDiff > 1) bucket = 'UPCOMING'; // ALLA framtida bilar (>1 mån) kastas in i denna hink!
+            else if (monthDiff > 1) bucket = 'UPCOMING'; 
 
             if (bucket) {
                 const monthsSinceJob = getMonthDiff(now, new Date(referenceJob.datum));
@@ -150,14 +161,12 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             }
         });
 
-        // Sortera listorna
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
         results.OLD_OVERDUE.sort(sortByDate);
         results.LAST_MONTH.sort(sortByDate);
         results.THIS_MONTH.sort(sortByDate);
         results.NEXT_MONTH.sort(sortByDate);
         
-        // Sortera kommande och klipp listan till exakt max 5 st!
         results.UPCOMING.sort(sortByDate);
         results.UPCOMING = results.UPCOMING.slice(0, 5);
 
@@ -233,7 +242,42 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         );
     };
 
-    const totalLeads = feedData.OLD_OVERDUE.length + feedData.LAST_MONTH.length + feedData.THIS_MONTH.length + feedData.NEXT_MONTH.length + feedData.UPCOMING.length;
+    // Ny kompakt komponent för frysboxen
+    const CompactOldSection = ({ items }) => {
+        if (items.length === 0) return null;
+        return (
+            <div className="mb-10 animate-in fade-in duration-500">
+                <div className="flex items-center gap-4 mb-5">
+                    <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                        ÄLDRE FÖRSENADE (MAX 6 MÅN KVAR)
+                    </span>
+                    <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
+                </div>
+                
+                <div className="flex flex-wrap gap-2.5 justify-center">
+                    {items.map((item, i) => (
+                        <div 
+                            key={item.id + i} 
+                            onClick={() => openProfile(item.regnr, item.referenceJob.id)}
+                            title={`${item.customer} - ${item.monthsSinceJob} mån sedan`}
+                            className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 px-3 py-2 rounded-lg shadow-sm flex items-center gap-2.5 cursor-pointer hover:border-orange-500 hover:shadow-md transition-all hover:-translate-y-0.5 group"
+                        >
+                            <span className="font-mono text-xs font-black tracking-widest text-zinc-800 dark:text-zinc-200 group-hover:text-orange-500 transition-colors">
+                                {item.regnr}
+                            </span>
+                            <div className="w-[1px] h-3 bg-zinc-200 dark:bg-zinc-700"></div>
+                            <span className="text-[10px] font-bold text-zinc-400">
+                                {item.monthsSinceJob} mån
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const totalLeads = feedData.LAST_MONTH.length + feedData.THIS_MONTH.length + feedData.NEXT_MONTH.length + feedData.UPCOMING.length;
 
     return (
         <div className="flex flex-col h-[100dvh] bg-[#fbfcfd] dark:bg-[#09090b] text-zinc-900 dark:text-white transition-colors duration-500 relative w-full overflow-hidden">
@@ -250,18 +294,20 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             <div className="flex-1 overflow-y-auto overscroll-none custom-scrollbar p-4 md:p-6 lg:p-8 pb-32 relative">
                 <div className="w-full max-w-4xl mx-auto">
                     
-                    {totalLeads === 0 && (
+                    {totalLeads === 0 && feedData.OLD_OVERDUE.length === 0 && (
                         <div className="py-20 text-center text-zinc-400 flex flex-col items-center">
                             <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
                             <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Kön är tom! Endast bilar med paketet "Oljebyte" visas.</span>
                         </div>
                     )}
 
-                    <ListSection title="FÖRSENADE (ÄLDRE ÄN 1 MÅN)" items={feedData.OLD_OVERDUE} />
+                    {/* Frysboxen renderas högst upp som små pill-knappar */}
+                    <CompactOldSection items={feedData.OLD_OVERDUE} />
+
                     <ListSection title="FÖRRA MÅNADEN" items={feedData.LAST_MONTH} />
                     <ListSection title="DENNA MÅNAD" items={feedData.THIS_MONTH} />
                     <ListSection title="NÄSTA MÅNAD" items={feedData.NEXT_MONTH} />
-                    <ListSection title="KOMMANDE" items={feedData.UPCOMING} />
+                    <ListSection title="KOMMANDE (NÄRMASTE 5)" items={feedData.UPCOMING} />
                     
                 </div>
             </div>
