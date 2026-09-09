@@ -1,4 +1,4 @@
-// prognos.js - Fail-safe Serviceflöde
+// prognos.js - Strikt & Exakt Serviceflöde (Endast Paket: Oljebyte)
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -17,6 +17,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
     const feedData = React.useMemo(() => {
         const groups = {};
         
+        // 1. Gruppera alla jobb och exkludera BMG helt
         allJobs.forEach(job => {
             if (!job.regnr || job.regnr === '-' || job.deleted || !job.datum) return;
             if (job.kundnamn && job.kundnamn.toUpperCase().includes('BMG')) return;
@@ -28,22 +29,22 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         const now = new Date();
         const results = {
-            OLD_OVERDUE: [], 
-            LAST_MONTH: [],  
-            THIS_MONTH: [],  
-            NEXT_MONTH: [],  
-            UPCOMING: []     
+            OLD_OVERDUE: [], // Äldre än 1 månad försenade
+            LAST_MONTH: [],  // Skulle gjorts förra månaden
+            THIS_MONTH: [],  // Ska göras denna månad
+            NEXT_MONTH: [],  // Ska göras nästa månad
+            UPCOMING: []     // 2-5 månader framåt
         };
 
         Object.keys(groups).forEach(reg => {
             const vehicle = groups[reg];
-            
-            // Sortera: Nyaste datumet först
+            // Sortera: Nyaste datumet först, alltid.
             vehicle.jobs.sort((a,b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
 
+            // -- Kalkylera Miltal --
             const validMilJobs = vehicle.jobs.filter(j => j.miltal && parseInt(j.miltal.replace(/[^0-9]/g, '')) > 0).sort((a,b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
             let estMileage = 0;
-            let milPerDay = 4.1; 
+            let milPerDay = 4.1; // Snitt 1500 mil/år
 
             if (validMilJobs.length >= 2) {
                 let j1 = validMilJobs[0], j2 = validMilJobs[validMilJobs.length - 1];
@@ -58,37 +59,34 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
             let lastOilDate = null, lastBrakeDate = null, lastCabinDate = null, lastAirDate = null;
 
-            // -- FAILSAFE HISTORIK-LÄSNING --
+            // -- STRIKT MATCHNING --
             vehicle.jobs.forEach(j => {
                 const p = (j.paket || '').toLowerCase();
                 const c = (j.kommentar || '').toLowerCase();
                 const d = new Date(j.datum);
                 const mil = j.miltal ? parseInt(j.miltal.replace(/[^0-9]/g, '')) : 0;
                 
-                // 1. Spärr mot enbart oljepåfyllning ("fyllt på 1l" etc)
-                const isTopUpOnly = (c.includes('fyllt på') || c.includes('påfyllning') || c.includes('1l') || c.includes('1 liter')) 
-                                 && !p.includes('oljebyte') && !p.includes('inspektion') && !c.includes('oljebyte') && !c.includes('inspektion');
+                // REGLEN: Rullgardinen "Paket" MÅSTE vara exakt "Oljebyte"
+                if (p === 'oljebyte' && !lastOilDate) {
+                    lastOilDate = { date: d, mil: mil, job: j };
+                }
                 
-                // 2. Tvingande nyckelord för att godkänna det som en service!
-                const hasOilKeyword = p.includes('oljebyte') || p.includes('inspektion') || c.includes('oljebyte') || c.includes('inspektion');
-                const hasBrakeKeyword = p.includes('bromsvätska') || c.includes('bromsvätska');
-                const hasCabinKeyword = p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter');
-                const hasAirKeyword = p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter');
-
-                if (hasOilKeyword && !isTopUpOnly && !lastOilDate) lastOilDate = { date: d, mil: mil, job: j };
-                if (hasBrakeKeyword && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
-                if (hasCabinKeyword && !lastCabinDate) lastCabinDate = { date: d, job: j };
-                if (hasAirKeyword && !lastAirDate) lastAirDate = { date: d, job: j };
+                // Tilläggsfilter kan fortfarande sökas i kommentarerna
+                if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
+                if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
+                if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
             });
+
+            // Avbryt och hoppa över bilen om den ALDRIG gjort ett uttryckligt "Oljebyte" hos dig
+            if (!lastOilDate) return;
 
             const needs = [];
             let earliestDueDate = new Date(now.getFullYear() + 10, 0, 1);
-            let referenceJob = null;
+            let referenceJob = lastOilDate.job; // Låser referensen STENHÅRT till senaste oljebytet
             let isMileageUrgent = false;
 
             const checkNeed = (name, lastObj, years, milLimit = null) => {
-                if (!lastObj) return; // Måste finnas ett dokumenterat jobb
-                
+                if (!lastObj) return;
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
                 
@@ -104,21 +102,18 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
                 if (dueDate <= horizon) {
                     needs.push(name);
-                    if (dueDate < earliestDueDate) {
-                        earliestDueDate = dueDate;
-                        referenceJob = lastObj.job; // Länkar varningen till det specifika jobb som orsakade den
-                    }
+                    if (dueDate < earliestDueDate) earliestDueDate = dueDate;
                 }
             };
 
-            // Applicera fail-safe intervallerna
+            // Applicera intervallerna
             checkNeed('Oljebyte/Inspektion', lastOilDate, 1, 1500);
             checkNeed('Bromsvätska', lastBrakeDate, 2);
             checkNeed('Kupéfilter', lastCabinDate, 2);
             checkNeed('Luft/Bränsle-filter', lastAirDate, 3);
 
-            if (needs.length > 0 && referenceJob) {
-                // Säkerställ att kunden inte är helt frånvarande de senaste 3 åren
+            if (needs.length > 0) {
+                // Säkerhetsspärr: Visa inte bilar vi inte haft kontakt med på över 3 år, även om de behöver service
                 const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
                 if (daysSinceLastContact > 1095) return; 
 
@@ -147,6 +142,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             }
         });
 
+        // Sortera listorna internt
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
         results.OLD_OVERDUE.sort(sortByDate);
         results.LAST_MONTH.sort(sortByDate);
@@ -181,9 +177,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 <div className="flex flex-col gap-4">
                     {items.map((item, i) => {
                         const job = item.referenceJob;
-                        let paketName = (job.paket || 'service').toLowerCase();
-                        if (paketName === 'standard') paketName = 'service'; // Ersätter ordet "standard"
-                        
                         const commentText = stripHtml(job.kommentar);
                         const exactDate = job.datum ? job.datum.split('T')[0] : '';
                         
@@ -196,14 +189,11 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                 className="bg-white dark:bg-[#182032] p-5 sm:p-6 rounded-2xl shadow-sm border border-zinc-200/80 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-md transition-all cursor-pointer group"
                             >
                                 <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                                    <strong className="text-zinc-900 dark:text-white font-black uppercase tracking-wide">{item.customer}</strong>, 
-                                    <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> 
-                                    utförde {paketName} för 
-                                    <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>. 
+                                    <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> utförde oljebyte för <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>. 
                                     Rekommenderar {item.isMileageUrgent ? 'pga miltal' : 'enligt serviceintervall'}: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span>.
                                 </div>
                                 
-                                <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-white/5 flex flex-col gap-2">
+                                <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
                                         <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                                             <SafeIcon name="calendar" size={12} /> {exactDate}
@@ -246,7 +236,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                     {totalLeads === 0 && (
                         <div className="py-20 text-center text-zinc-400 flex flex-col items-center">
                             <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
-                            <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Kön är tom!</span>
+                            <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Kön är tom! Endast bilar med paketet "Oljebyte" visas.</span>
                         </div>
                     )}
 
