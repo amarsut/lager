@@ -1,4 +1,4 @@
-// prognos.js - Strikt Flöde med Smart Tidsbuffert & Historik-koll
+// prognos.js - Visuell Hierarki för Rekommendationer
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -73,7 +73,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 estMileage = Math.round(validMilJobs[0].km + (daysSinceLastKnown * kmPerDay));
             }
 
-            let lastOilDate = null, lastBrakeDate = null, lastCabinDate = null, lastAirDate = null;
+            let lastOilDate = null, 
+                lastBrakeDate = null, 
+                lastCabinDate = null, 
+                lastAirDate = null,
+                lastFuelDate = null,
+                lastHaldexDate = null,
+                lastSparkPlugDate = null;
 
             // --- STENHÅRD PAKET-LÄSNING BÅKÅT I TIDEN ---
             vehicle.jobs.forEach(j => {
@@ -86,17 +92,19 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                     lastOilDate = { date: d, km: km, job: j };
                 }
                 
-                // Letar efter första bästa gången dessa nämndes i historiken
+                // Extraherar alla olika tillägg
                 if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
                 if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
-                if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
+                if ((p.includes('luftfilter') || c.includes('luftfilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
+                if ((p.includes('bränslefilter') || c.includes('bränslefilter') || p.includes('dieselfilter') || c.includes('dieselfilter')) && !lastFuelDate) lastFuelDate = { date: d, job: j };
+                if ((p.includes('haldex') || c.includes('haldex') || p.includes('fyrhjuls') || c.includes('fyrhjuls')) && !lastHaldexDate) lastHaldexDate = { date: d, job: j };
+                if ((p.includes('tändstift') || c.includes('tändstift')) && !lastSparkPlugDate) lastSparkPlugDate = { date: d, job: j };
             });
 
             if (!lastOilDate) return;
 
             const needs = ['Oljebyte/Inspektion'];
             
-            // OLJEBYTET BESTÄMMER TIDEN (Exakt 12 månader)
             let earliestDueDate = new Date(lastOilDate.date);
             earliestDueDate.setFullYear(earliestDueDate.getFullYear() + 1);
             let referenceJob = lastOilDate.job; 
@@ -108,19 +116,17 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 }
             }
 
-            // SMART TILLÄGGS-KOLL (Tidsmaskin + Buffert)
-            const checkAddon = (name, lastObj, years) => {
+            // SMART TILLÄGGS-KOLL MED INTERVALLER
+            const checkAddon = (name, lastObj, years, warnIfMissing = false) => {
                 if (!lastObj) {
-                    // Om det ALDRIG gjorts i vår historik, lägg till med ett litet frågetecken
-                    needs.push(`${name} (?)`);
+                    if (warnIfMissing) needs.push(`${name} (?)`);
                     return;
                 }
 
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
                 
-                // Vi bygger in en "Merförsäljnings-buffert" på 3 månader. 
-                // Går filtret ut strax efter servicen? Då tar vi det nu.
+                // Buffert: Är det dags inom 3 månader efter servicen? Då tar vi det nu.
                 let bufferedDueDate = new Date(earliestDueDate);
                 bufferedDueDate.setMonth(bufferedDueDate.getMonth() + 3);
 
@@ -129,15 +135,19 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 }
             };
 
-            checkAddon('Bromsvätska', lastBrakeDate, 2);
-            checkAddon('Kupéfilter', lastCabinDate, 2);
-            checkAddon('Luft/Bränsle-filter', lastAirDate, 3);
+            // Dina specifika intervaller:
+            checkAddon('Bromsvätska', lastBrakeDate, 2, true);
+            checkAddon('Kupéfilter', lastCabinDate, 2, true);
+            checkAddon('Luftfilter', lastAirDate, 6, true);
+            checkAddon('Bränslefilter', lastFuelDate, 6, true);
+            
+            checkAddon('Haldex', lastHaldexDate, 3, false);
+            checkAddon('Tändstift', lastSparkPlugDate, 4, false);
 
-            // Månadsberäkning baserad 100% på tid
+            // Självrensande: Över 14 månader försenad = Raderas från vyn
             const monthDiff = getMonthDiff(earliestDueDate, now);
             let bucket = '';
 
-            // Självrensande: Över 14 månader försenad = Raderas från vyn
             if (monthDiff < -1) return;
             else if (monthDiff === -1) bucket = 'LAST_MONTH';
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
@@ -206,6 +216,10 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                         }
 
                         let mileageText = item.hasMileageWarning ? " (rek. även efter miltal)" : "";
+                        
+                        // Extraherar huvudtjänsten (Oljebyte) och tilläggen
+                        const mainService = item.needs[0];
+                        const addOns = item.needs.slice(1);
 
                         return (
                             <div 
@@ -216,7 +230,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                 <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
                                     <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> utförde oljebyte för <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>. 
                                     <br className="hidden sm:block" />
-                                    Rekommenderar enligt historik: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span><span className="text-orange-600/70 font-bold">{mileageText}</span>.
+                                    Rekommenderar enligt historik: <span className="text-orange-600 dark:text-orange-400 font-bold">{mainService}</span>
+                                    {addOns.length > 0 && (
+                                        <span className="text-zinc-500 dark:text-zinc-400 font-medium ml-1">
+                                            ({addOns.join(', ')})
+                                        </span>
+                                    )}
+                                    <span className="text-orange-600/70 font-bold">{mileageText}</span>.
                                 </div>
                                 
                                 <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
