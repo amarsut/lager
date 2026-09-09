@@ -1,4 +1,4 @@
-// prognos.js - Strikt & Exakt Serviceflöde (Endast Paket: Oljebyte)
+// prognos.js - Extremt Strikt Serviceflöde (Endast Paket: Oljebyte)
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -17,7 +17,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
     const feedData = React.useMemo(() => {
         const groups = {};
         
-        // 1. Gruppera alla jobb och exkludera BMG helt
         allJobs.forEach(job => {
             if (!job.regnr || job.regnr === '-' || job.deleted || !job.datum) return;
             if (job.kundnamn && job.kundnamn.toUpperCase().includes('BMG')) return;
@@ -29,60 +28,63 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
         const now = new Date();
         const results = {
-            OLD_OVERDUE: [], // Äldre än 1 månad försenade
-            LAST_MONTH: [],  // Skulle gjorts förra månaden
-            THIS_MONTH: [],  // Ska göras denna månad
-            NEXT_MONTH: [],  // Ska göras nästa månad
-            UPCOMING: []     // 2-5 månader framåt
+            OLD_OVERDUE: [], 
+            LAST_MONTH: [],  
+            THIS_MONTH: [],  
+            NEXT_MONTH: [],  
+            UPCOMING: []     
         };
 
         Object.keys(groups).forEach(reg => {
             const vehicle = groups[reg];
-            // Sortera: Nyaste datumet först, alltid.
-            vehicle.jobs.sort((a,b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
+            
+            // Sortera alltid så att nyaste jobbet ligger först!
+            vehicle.jobs.sort((a,b) => (new Date(b.datum).getTime() || 0) - (new Date(a.datum).getTime() || 0));
 
-            // -- Kalkylera Miltal --
-            const validMilJobs = vehicle.jobs.filter(j => j.miltal && parseInt(j.miltal.replace(/[^0-9]/g, '')) > 0).sort((a,b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
+            const validMilJobs = vehicle.jobs.filter(j => j.miltal && parseInt(String(j.miltal).replace(/[^0-9]/g, '')) > 0);
             let estMileage = 0;
-            let milPerDay = 4.1; // Snitt 1500 mil/år
+            let milPerDay = 4.1; 
 
             if (validMilJobs.length >= 2) {
                 let j1 = validMilJobs[0], j2 = validMilJobs[validMilJobs.length - 1];
                 let diffDays = Math.abs((new Date(j1.datum) - new Date(j2.datum)) / (1000 * 60 * 60 * 24));
-                let m1 = parseInt(j1.miltal.replace(/[^0-9]/g, '')), m2 = parseInt(j2.miltal.replace(/[^0-9]/g, ''));
+                let m1 = parseInt(String(j1.miltal).replace(/[^0-9]/g, '')), m2 = parseInt(String(j2.miltal).replace(/[^0-9]/g, ''));
                 if (diffDays > 30 && Math.abs(m1 - m2) > 0) milPerDay = Math.min(Math.max(Math.abs(m1 - m2) / diffDays, 0.5), 15);
             }
             if (validMilJobs.length > 0) {
                 let daysSinceLastKnown = Math.floor((now - new Date(validMilJobs[0].datum)) / (1000 * 60 * 60 * 24));
-                estMileage = Math.round(parseInt(validMilJobs[0].miltal.replace(/[^0-9]/g, '')) + (daysSinceLastKnown * milPerDay));
+                estMileage = Math.round(parseInt(String(validMilJobs[0].miltal).replace(/[^0-9]/g, '')) + (daysSinceLastKnown * milPerDay));
             }
 
             let lastOilDate = null, lastBrakeDate = null, lastCabinDate = null, lastAirDate = null;
 
-            // -- STRIKT MATCHNING --
+            // --- STENHÅRD LÄSNING ---
             vehicle.jobs.forEach(j => {
-                const p = (j.paket || '').toLowerCase();
-                const c = (j.kommentar || '').toLowerCase();
+                const p = String(j.paket || '').toLowerCase().trim();
+                const c = String(j.kommentar || '').toLowerCase();
                 const d = new Date(j.datum);
-                const mil = j.miltal ? parseInt(j.miltal.replace(/[^0-9]/g, '')) : 0;
+                const mil = j.miltal ? parseInt(String(j.miltal).replace(/[^0-9]/g, '')) : 0;
                 
-                // REGLEN: Rullgardinen "Paket" MÅSTE vara exakt "Oljebyte"
+                // ENDAST godkänt om rullgardinen är exakt satt till "Oljebyte"
                 if (p === 'oljebyte' && !lastOilDate) {
                     lastOilDate = { date: d, mil: mil, job: j };
                 }
                 
-                // Tilläggsfilter kan fortfarande sökas i kommentarerna
+                // Tilläggen (Bromsvätska etc) kan fortfarande hämtas från kommentarer i andra jobb, 
+                // men de kan inte byta ut referensdatumet på huvudservicen!
                 if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
                 if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
                 if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
             });
 
-            // Avbryt och hoppa över bilen om den ALDRIG gjort ett uttryckligt "Oljebyte" hos dig
+            // Om kunden ALDRIG har ett jobb med paketet "Oljebyte", hoppa över bilen helt.
             if (!lastOilDate) return;
 
             const needs = [];
             let earliestDueDate = new Date(now.getFullYear() + 10, 0, 1);
-            let referenceJob = lastOilDate.job; // Låser referensen STENHÅRT till senaste oljebytet
+            
+            // Låser datum och kvitto på kortet till EXAKT det senaste oljebytet, aldrig ett annat jobb.
+            let referenceJob = lastOilDate.job; 
             let isMileageUrgent = false;
 
             const checkNeed = (name, lastObj, years, milLimit = null) => {
@@ -106,14 +108,13 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 }
             };
 
-            // Applicera intervallerna
             checkNeed('Oljebyte/Inspektion', lastOilDate, 1, 1500);
             checkNeed('Bromsvätska', lastBrakeDate, 2);
             checkNeed('Kupéfilter', lastCabinDate, 2);
             checkNeed('Luft/Bränsle-filter', lastAirDate, 3);
 
             if (needs.length > 0) {
-                // Säkerhetsspärr: Visa inte bilar vi inte haft kontakt med på över 3 år, även om de behöver service
+                // Ta bort bilar vi inte sett till på över 3 år
                 const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
                 if (daysSinceLastContact > 1095) return; 
 
@@ -142,7 +143,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             }
         });
 
-        // Sortera listorna internt
         const sortByDate = (a, b) => a.sortDate - b.sortDate;
         results.OLD_OVERDUE.sort(sortByDate);
         results.LAST_MONTH.sort(sortByDate);
