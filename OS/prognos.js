@@ -119,7 +119,8 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             // SMART TILLÄGGS-KOLL MED INTERVALLER
             const checkAddon = (name, lastObj, years, warnIfMissing = false) => {
                 if (!lastObj) {
-                    if (warnIfMissing) needs.push(`${name} (?)`);
+                    // Använder * istället för (?) om historik saknas
+                    if (warnIfMissing) needs.push(`${name}*`);
                     return;
                 }
 
@@ -228,15 +229,23 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                 className="bg-white dark:bg-[#182032] p-5 sm:p-6 rounded-2xl shadow-sm border border-zinc-200/80 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-md transition-all cursor-pointer group"
                             >
                                 <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                                    <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> utförde oljebyte för <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>. 
-                                    <br className="hidden sm:block" />
-                                    Rekommenderar enligt historik: <span className="text-orange-600 dark:text-orange-400 font-bold">{mainService}</span>
-                                    {addOns.length > 0 && (
-                                        <span className="text-zinc-500 dark:text-zinc-400 font-medium ml-1">
-                                            ({addOns.join(', ')})
-                                        </span>
-                                    )}
-                                    <span className="text-orange-600/70 font-bold">{mileageText}</span>.
+                                    <p className="mb-1.5 sm:mb-1 block">
+                                        <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, 
+                                        <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> 
+                                        utförde oljebyte för 
+                                        <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>.
+                                    </p>
+                                    <p className="text-[12px] sm:text-[13px] leading-snug">
+                                        Rekommenderar enligt historik: <span className="text-orange-600 dark:text-orange-400 font-bold">{mainService}</span>
+                                        {addOns.length > 0 && (
+                                            <span className="text-zinc-500 dark:text-zinc-400 font-medium ml-1">
+                                                ({addOns.join(', ')})
+                                            </span>
+                                        )}
+                                        {mileageText && (
+                                            <span className="text-orange-600/70 font-bold ml-1">{mileageText}</span>
+                                        )}
+                                    </p>
                                 </div>
                                 
                                 <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
