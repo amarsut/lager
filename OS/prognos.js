@@ -1,4 +1,4 @@
-// prognos.js - Failsafe Serviceflöde
+// prognos.js - Fail-safe Serviceflöde
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -17,7 +17,6 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
     const feedData = React.useMemo(() => {
         const groups = {};
         
-        // 1. Gruppera alla jobb och exkludera BMG helt
         allJobs.forEach(job => {
             if (!job.regnr || job.regnr === '-' || job.deleted || !job.datum) return;
             if (job.kundnamn && job.kundnamn.toUpperCase().includes('BMG')) return;
@@ -39,7 +38,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         Object.keys(groups).forEach(reg => {
             const vehicle = groups[reg];
             
-            // SUPERSTRIKT SORTERING: Nyaste datumet först, alltid.
+            // Sortera: Nyaste datumet först
             vehicle.jobs.sort((a,b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
 
             const validMilJobs = vehicle.jobs.filter(j => j.miltal && parseInt(j.miltal.replace(/[^0-9]/g, '')) > 0).sort((a,b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
@@ -66,33 +65,29 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 const d = new Date(j.datum);
                 const mil = j.miltal ? parseInt(j.miltal.replace(/[^0-9]/g, '')) : 0;
                 
-                // 1. Spärr mot "fyllt på 1l olja" utan att det är en faktisk service
-                const isTopUp = (c.includes('fyllt på') || c.includes('påfyllning') || c.includes('1l') || c.includes('1 liter') || c.includes('läckage')) 
-                                && !p.includes('oljebyte') && !p.includes('standard') && !p.includes('inspektion');
+                // 1. Spärr mot enbart oljepåfyllning ("fyllt på 1l" etc)
+                const isTopUpOnly = (c.includes('fyllt på') || c.includes('påfyllning') || c.includes('1l') || c.includes('1 liter')) 
+                                 && !p.includes('oljebyte') && !p.includes('inspektion') && !c.includes('oljebyte') && !c.includes('inspektion');
                 
-                let isOil = false;
-                if (!isTopUp) {
-                    // Strikt positiv matchning för huvudservice
-                    if (p.includes('oljebyte') || p.includes('inspektion') || p.includes('standard') || p.includes('service')) isOil = true;
-                    if (c.includes('oljebyte') || c.includes('inspektion') || c.includes('årlig service')) isOil = true;
-                }
+                // 2. Tvingande nyckelord för att godkänna det som en service!
+                const hasOilKeyword = p.includes('oljebyte') || p.includes('inspektion') || c.includes('oljebyte') || c.includes('inspektion');
+                const hasBrakeKeyword = p.includes('bromsvätska') || c.includes('bromsvätska');
+                const hasCabinKeyword = p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter');
+                const hasAirKeyword = p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter');
 
-                const hasBrake = p.includes('bromsvätska') || c.includes('bromsvätska');
-                const hasCabin = p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter');
-                const hasAir = p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter');
-
-                if (isOil && !lastOilDate) lastOilDate = { date: d, mil: mil, job: j };
-                if (hasBrake && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
-                if (hasCabin && !lastCabinDate) lastCabinDate = { date: d, job: j };
-                if (hasAir && !lastAirDate) lastAirDate = { date: d, job: j };
+                if (hasOilKeyword && !isTopUpOnly && !lastOilDate) lastOilDate = { date: d, mil: mil, job: j };
+                if (hasBrakeKeyword && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
+                if (hasCabinKeyword && !lastCabinDate) lastCabinDate = { date: d, job: j };
+                if (hasAirKeyword && !lastAirDate) lastAirDate = { date: d, job: j };
             });
 
             const needs = [];
             let earliestDueDate = new Date(now.getFullYear() + 10, 0, 1);
+            let referenceJob = null;
             let isMileageUrgent = false;
 
             const checkNeed = (name, lastObj, years, milLimit = null) => {
-                if (!lastObj) return; 
+                if (!lastObj) return; // Måste finnas ett dokumenterat jobb
                 
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
@@ -109,20 +104,21 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
 
                 if (dueDate <= horizon) {
                     needs.push(name);
-                    if (dueDate < earliestDueDate) earliestDueDate = dueDate;
+                    if (dueDate < earliestDueDate) {
+                        earliestDueDate = dueDate;
+                        referenceJob = lastObj.job; // Länkar varningen till det specifika jobb som orsakade den
+                    }
                 }
             };
 
+            // Applicera fail-safe intervallerna
             checkNeed('Oljebyte/Inspektion', lastOilDate, 1, 1500);
             checkNeed('Bromsvätska', lastBrakeDate, 2);
             checkNeed('Kupéfilter', lastCabinDate, 2);
             checkNeed('Luft/Bränsle-filter', lastAirDate, 3);
 
-            // Vi låser "referens-jobbet" som visas på kortet till SENASTE OLJESERVICEN i första hand.
-            let referenceJob = lastOilDate ? lastOilDate.job : vehicle.jobs[0];
-
             if (needs.length > 0 && referenceJob) {
-                // Säkerställ att kunden inte är "död" (ingen kontakt alls på över 3 år)
+                // Säkerställ att kunden inte är helt frånvarande de senaste 3 åren
                 const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
                 if (daysSinceLastContact > 1095) return; 
 
@@ -185,7 +181,9 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 <div className="flex flex-col gap-4">
                     {items.map((item, i) => {
                         const job = item.referenceJob;
-                        const paketName = (job.paket || 'service').toLowerCase();
+                        let paketName = (job.paket || 'service').toLowerCase();
+                        if (paketName === 'standard') paketName = 'service'; // Ersätter ordet "standard"
+                        
                         const commentText = stripHtml(job.kommentar);
                         const exactDate = job.datum ? job.datum.split('T')[0] : '';
                         
