@@ -1,4 +1,4 @@
-// prognos.js - Extremt Strikt Serviceflöde (Endast Oljebytet styr)
+// prognos.js - Strikt Tidsstyrt Serviceflöde med Miltals-indikation
 
 const SafeIcon = React.memo(({ name, size = 14, className = "" }) => (
     <span className={`inline-flex items-center justify-center shrink-0 ${className}`}>
@@ -38,72 +38,87 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         Object.keys(groups).forEach(reg => {
             const vehicle = groups[reg];
             
-            // Sortera alltid så att nyaste jobbet ligger först!
+            // Sortera: Nyaste jobbet ligger först
             vehicle.jobs.sort((a,b) => (new Date(b.datum).getTime() || 0) - (new Date(a.datum).getTime() || 0));
 
-            const validMilJobs = vehicle.jobs.filter(j => j.miltal && parseInt(String(j.miltal).replace(/[^0-9]/g, '')) > 0);
+            // --- SMART MILTALS-EXTRAHERING ---
+            // Letar enbart efter "12345km" eller "12345 km" i kommentarerna som du skrev
+            const getKm = (j) => {
+                const match = String(j.kommentar || '').match(/(\d+)\s*km/i);
+                if (match) return parseInt(match[1], 10);
+                
+                // Fallback om du använt standardmiltalsfältet tidigare
+                if (j.miltal) {
+                    let m = parseInt(String(j.miltal).replace(/[^0-9]/g, ''));
+                    if (m < 50000 && m > 0) return m * 10; // Tolka som mil
+                    return m;
+                }
+                return 0;
+            };
+
+            const validMilJobs = vehicle.jobs
+                .map(j => ({ date: new Date(j.datum), km: getKm(j), job: j }))
+                .filter(j => j.km > 0)
+                .sort((a,b) => b.date.getTime() - a.date.getTime());
+
             let estMileage = 0;
-            let milPerDay = 4.1; 
+            let kmPerDay = 41; // Snitt 15000 km/år -> ~41 km/dag
 
             if (validMilJobs.length >= 2) {
                 let j1 = validMilJobs[0], j2 = validMilJobs[validMilJobs.length - 1];
-                let diffDays = Math.abs((new Date(j1.datum) - new Date(j2.datum)) / (1000 * 60 * 60 * 24));
-                let m1 = parseInt(String(j1.miltal).replace(/[^0-9]/g, '')), m2 = parseInt(String(j2.miltal).replace(/[^0-9]/g, ''));
-                if (diffDays > 30 && Math.abs(m1 - m2) > 0) milPerDay = Math.min(Math.max(Math.abs(m1 - m2) / diffDays, 0.5), 15);
+                let diffDays = Math.abs((j1.date - j2.date) / (1000 * 60 * 60 * 24));
+                if (diffDays > 30 && Math.abs(j1.km - j2.km) > 0) {
+                    kmPerDay = Math.min(Math.max(Math.abs(j1.km - j2.km) / diffDays, 5), 150);
+                }
             }
             if (validMilJobs.length > 0) {
-                let daysSinceLastKnown = Math.floor((now - new Date(validMilJobs[0].datum)) / (1000 * 60 * 60 * 24));
-                estMileage = Math.round(parseInt(String(validMilJobs[0].miltal).replace(/[^0-9]/g, '')) + (daysSinceLastKnown * milPerDay));
+                let daysSinceLastKnown = Math.floor((now - validMilJobs[0].date) / (1000 * 60 * 60 * 24));
+                estMileage = Math.round(validMilJobs[0].km + (daysSinceLastKnown * kmPerDay));
             }
 
             let lastOilDate = null, lastBrakeDate = null, lastCabinDate = null, lastAirDate = null;
 
-            // --- LÄSER AV HISTORIKEN ---
+            // --- STENHÅRD PAKET-LÄSNING ---
             vehicle.jobs.forEach(j => {
                 const p = String(j.paket || '').toLowerCase().trim();
                 const c = String(j.kommentar || '').toLowerCase();
                 const d = new Date(j.datum);
-                const mil = j.miltal ? parseInt(String(j.miltal).replace(/[^0-9]/g, '')) : 0;
+                const km = getKm(j);
                 
                 // ENDAST godkänt om rullgardinen är exakt satt till "Oljebyte"
                 if (p === 'oljebyte' && !lastOilDate) {
-                    lastOilDate = { date: d, mil: mil, job: j };
+                    lastOilDate = { date: d, km: km, job: j };
                 }
                 
-                // Extra filter och vätskor hämtas från andra jobb, men styr INTE klockan
+                // Tilläggen kollar vi fortfarande efter
                 if ((p.includes('bromsvätska') || c.includes('bromsvätska')) && !lastBrakeDate) lastBrakeDate = { date: d, job: j };
                 if ((p.includes('kupéfilter') || p.includes('kupefilter') || p.includes('pollenfilter') || c.includes('kupéfilter') || c.includes('kupefilter')) && !lastCabinDate) lastCabinDate = { date: d, job: j };
                 if ((p.includes('luftfilter') || p.includes('bränslefilter') || c.includes('luftfilter') || c.includes('bränslefilter')) && !lastAirDate) lastAirDate = { date: d, job: j };
             });
 
-            // Avbryt direkt om kunden aldrig har gjort ett "Oljebyte"
+            // Om kunden ALDRIG har ett jobb med paketet "Oljebyte", hoppa över bilen helt.
             if (!lastOilDate) return;
 
-            // 1. Oljebytet sätter huvuddatumet (Alltid 1 år från senaste)
+            const needs = ['Oljebyte/Inspektion'];
+            
+            // OLJEBYTET BESTÄMMER TIDEN (Exakt 12 månader)
             let earliestDueDate = new Date(lastOilDate.date);
             earliestDueDate.setFullYear(earliestDueDate.getFullYear() + 1);
-            let isMileageUrgent = false;
+            let referenceJob = lastOilDate.job; 
 
-            // 2. Miltal kan tvinga fram oljebytet i förtid
-            if (estMileage > 0 && lastOilDate.mil > 0) {
-                if (estMileage - lastOilDate.mil >= 1500) {
-                    isMileageUrgent = true;
-                    // Om miltalet är passerat flyttar vi larmet till "Nu" (Denna månad)
-                    if (earliestDueDate > now) {
-                        earliestDueDate = new Date(now); 
-                    }
+            // Miltal (15000 km = 1500 mil) ger endast en text-indikation, det ändrar INTE datumet
+            let hasMileageWarning = false;
+            if (estMileage > 0 && lastOilDate.km > 0) {
+                if (estMileage - lastOilDate.km >= 15000) {
+                    hasMileageWarning = true;
                 }
             }
-
-            // 3. Nu kollar vi vad bilen behöver NÄR det väl är dags för nästa oljebyte
-            const needs = ['Oljebyte/Inspektion']; // Alltid med i grunden
 
             const checkAddon = (name, lastObj, years) => {
                 if (!lastObj) return;
                 let dueDate = new Date(lastObj.date);
                 dueDate.setFullYear(dueDate.getFullYear() + years);
-                
-                // Om bromsvätskan/filtret går ut INNAN eller SAMTIDIGT som nästa oljebyte, lägg till som rekommendation!
+                // Inkludera tillägget om det har passerat (eller löper ut samtidigt som) oljebytet
                 if (dueDate <= earliestDueDate) {
                     needs.push(name);
                 }
@@ -113,13 +128,11 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             checkAddon('Kupéfilter', lastCabinDate, 2);
             checkAddon('Luft/Bränsle-filter', lastAirDate, 3);
 
-            let referenceJob = lastOilDate.job; // Kvittot tillhör alltid oljebytet
-
             // Ta bort bilar vi inte sett till på över 3 år
             const daysSinceLastContact = Math.floor((now - new Date(vehicle.jobs[0].datum)) / (1000 * 60 * 60 * 24));
             if (daysSinceLastContact > 1095) return; 
 
-            // Placera i rätt månad baserat på earliestDueDate
+            // Månadsberäkning baserad 100% på tid
             const monthDiff = getMonthDiff(earliestDueDate, now);
             let bucket = '';
 
@@ -128,7 +141,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
             else if (monthDiff === 0) bucket = 'THIS_MONTH';
             else if (monthDiff === 1) bucket = 'NEXT_MONTH';
             else if (monthDiff > 1 && monthDiff <= 5) bucket = 'UPCOMING';
-            else return; // Bilar som ligger > 5 månader framåt döljs tills vidare
+            else return;
 
             const monthsSinceJob = getMonthDiff(now, new Date(referenceJob.datum));
 
@@ -138,7 +151,8 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 customer: vehicle.customer || 'Okänd Kund',
                 referenceJob: referenceJob,
                 monthsSinceJob: monthsSinceJob,
-                isMileageUrgent: isMileageUrgent,
+                monthDiff: monthDiff,
+                hasMileageWarning: hasMileageWarning,
                 needs: needs,
                 sortDate: earliestDueDate
             });
@@ -181,7 +195,14 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                         const commentText = stripHtml(job.kommentar);
                         const exactDate = job.datum ? job.datum.split('T')[0] : '';
                         
+                        // Textformatering för tiden och "dags om..."
                         let timeText = item.monthsSinceJob === 0 ? "nyligen" : `${item.monthsSinceJob} mån sedan`;
+                        if (item.monthDiff > 0) {
+                            timeText += ` (dags om ${item.monthDiff} mån)`;
+                        }
+
+                        // Textformatering för miltalsvarning
+                        let mileageText = item.hasMileageWarning ? " (rek. även efter miltal)" : "";
 
                         return (
                             <div 
@@ -191,7 +212,8 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                             >
                                 <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
                                     <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> utförde oljebyte för <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>. 
-                                    Rekommenderar {item.isMileageUrgent ? 'pga miltal' : 'enligt serviceintervall'}: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span>.
+                                    <br className="hidden sm:block" />
+                                    Rekommenderar enligt serviceintervall: <span className="text-orange-600 dark:text-orange-400 font-bold">{item.needs.join(' & ')}</span><span className="text-orange-600/70 font-bold">{mileageText}</span>.
                                 </div>
                                 
                                 <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
