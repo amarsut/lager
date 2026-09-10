@@ -320,23 +320,31 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
     const totalLeads = feedData.LAST_MONTH.length + feedData.THIS_MONTH.length + feedData.NEXT_MONTH.length + feedData.UPCOMING.length;
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-[#fbfcfd] dark:bg-[#09090b] text-zinc-900 dark:text-white transition-colors duration-500 relative w-full overflow-hidden">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
             
-            {/* Header: Vänsterställd (items-start, text-left) */}
-            <div className="px-4 py-6 md:py-8 shrink-0 z-20 flex flex-col items-start justify-center text-left relative bg-transparent border-b border-zinc-200/50 dark:border-white/5">
-                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-none text-zinc-900 dark:text-white mb-2">
-                    SERVICE<span className="text-zinc-400 font-light">FLÖDE</span>
-                </h1>
-                <p className="text-[10px] md:text-[11px] font-bold text-orange-500 uppercase tracking-widest flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                    {totalLeads} {totalLeads === 1 ? 'bil' : 'bilar'} i bevakning
-                </p>
-            </div>
+            {/* --- DESKTOP VY (Göm på mobil, visas på tablet/dator) --- */}
+            <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="relative group cursor-default shrink-0">
+                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <window.Icon name="inbox" size={20} className="md:w-6 md:h-6" />
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                SERVICE<span className="text-zinc-400 dark:text-zinc-500 font-light">FLÖDE</span>
+                            </h1>
+                            <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                {totalLeads} {totalLeads === 1 ? 'bil' : 'bilar'} i bevakning
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-none custom-scrollbar p-4 md:p-6 lg:p-8 pb-32 relative">
-                {/* Max-width ökad och mx-auto borttagen för att stanna till vänster */}
-                <div className="w-full max-w-5xl ml-0">
-                    
+                <div className="w-full max-w-5xl ml-0 pb-10">
                     {totalLeads === 0 && feedData.OLD_OVERDUE.length === 0 && (
                         <div className="py-20 text-left text-zinc-400 flex flex-col items-start">
                             <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
@@ -349,9 +357,49 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                     <ListSection title="DENNA MÅNAD" items={feedData.THIS_MONTH} />
                     <ListSection title="NÄSTA MÅNAD" items={feedData.NEXT_MONTH} />
                     <ListSection title="KOMMANDE (NÄRMASTE 5)" items={feedData.UPCOMING} />
-                    
                 </div>
             </div>
+
+            {/* --- MOBIL VY (Visas endast på mobil, identisk arkitektur som Dashboard) --- */}
+            <div className="lg:hidden flex flex-col min-h-[100dvh] bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
+                <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
+                    <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
+                        <div className="flex items-center gap-4">
+                            <div className="relative group cursor-default shrink-0">
+                                <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
+                                <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <window.Icon name="inbox" size={24} />
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                                    SERVICE<span className="text-zinc-400 dark:text-zinc-500 font-light">FLÖDE</span>
+                                </h1>
+                                <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                    {totalLeads} {totalLeads === 1 ? 'bil' : 'bilar'} i bevakning
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-4 pt-6 pb-24 flex flex-col">
+                    {totalLeads === 0 && feedData.OLD_OVERDUE.length === 0 && (
+                        <div className="py-20 text-center text-zinc-400 flex flex-col items-center">
+                            <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
+                            <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-500">Kön är tom!</span>
+                        </div>
+                    )}
+
+                    <CompactOldSection items={feedData.OLD_OVERDUE} />
+                    <ListSection title="FÖRRA MÅNADEN" items={feedData.LAST_MONTH} />
+                    <ListSection title="DENNA MÅNAD" items={feedData.THIS_MONTH} />
+                    <ListSection title="NÄSTA MÅNAD" items={feedData.NEXT_MONTH} />
+                    <ListSection title="KOMMANDE (NÄRMASTE 5)" items={feedData.UPCOMING} />
+                </div>
+            </div>
+
         </div>
     );
 });
