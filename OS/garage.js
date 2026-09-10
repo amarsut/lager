@@ -157,6 +157,12 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         const handleMessage = async (event) => {
             const fordonData = event.data;
             if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension'].includes(fordonData.source)) {
+                
+                // Fix: Säkerställ att inkommande data faktiskt tillhör bilen du tittar på
+                const msgReg = fordonData.regnr?.toUpperCase().replace(/\s+/g, '');
+                const currentReg = v.regnr?.toUpperCase().replace(/\s+/g, '');
+                if (msgReg && msgReg !== currentReg) return;
+
                 const specUpdates = {};
                 if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
                 if (fordonData.oljevolym) specUpdates.oil = fordonData.oljevolym.toString().includes('l') ? fordonData.oljevolym : `${fordonData.oljevolym} l`;
