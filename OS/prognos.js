@@ -208,16 +208,17 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         if (items.length === 0) return null;
         
         return (
-            <div className="mb-10 animate-in fade-in duration-500">
-                {/* Vänsterställd rubrik med linje efteråt */}
-                <div className="flex items-center gap-4 mb-5">
+            <div className="mb-6 animate-in fade-in duration-500">
+                {/* Tätare marginaler runt rubriken */}
+                <div className="flex items-center gap-4 mb-3.5">
                     <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 shrink-0">
                         {title}
                     </span>
                     <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
                 </div>
 
-                <div className="flex flex-col gap-4">
+                {/* En kolumn (flex-col), men tätare mellanrum */}
+                <div className="flex flex-col gap-3">
                     {items.map((item, i) => {
                         const job = item.referenceJob;
                         const commentText = stripHtml(job.kommentar);
@@ -237,16 +238,17 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                             <div 
                                 key={item.id + i} 
                                 onClick={() => openProfile(item.regnr, job.id)}
-                                className="bg-white dark:bg-[#182032] p-5 sm:p-6 rounded-2xl shadow-sm border border-zinc-200/80 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-md transition-all cursor-pointer group"
+                                /* Ändrat till md:flex-row för att lägga kvittolådan till höger på breda skärmar */
+                                className="bg-white dark:bg-[#182032] p-4 sm:p-5 rounded-xl shadow-sm border border-zinc-200/80 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-md transition-all cursor-pointer group flex flex-col md:flex-row md:items-stretch justify-between gap-4"
                             >
-                                <div className="text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                                    <p className="mb-1.5 sm:mb-1 block">
+                                <div className="flex-1 flex flex-col justify-center text-[13px] sm:text-[14px] text-zinc-700 dark:text-zinc-300 leading-snug font-medium">
+                                    <p className="mb-1.5 block">
                                         <strong className="text-zinc-900 dark:text-white font-black uppercase">{item.customer}</strong>, 
                                         <strong className="font-mono font-black tracking-widest text-zinc-900 dark:text-white mx-1">{item.regnr}</strong> 
                                         utförde oljebyte för 
                                         <strong className="text-zinc-900 dark:text-white font-black mx-1">{timeText}</strong>.
                                     </p>
-                                    <p className="text-[12px] sm:text-[13px] leading-snug">
+                                    <p className="text-[12px] sm:text-[13px] leading-tight">
                                         Rekommenderar enligt historik: <span className="text-orange-600 dark:text-orange-400 font-bold">{mainService}</span>
                                         {addOns.length > 0 && (
                                             <span className="text-zinc-500 dark:text-zinc-400 font-medium ml-1">
@@ -259,7 +261,8 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                     </p>
                                 </div>
                                 
-                                <div className="mt-4 bg-zinc-50 dark:bg-[#0f1522] rounded-xl p-3.5 sm:p-4 border border-zinc-100 dark:border-transparent flex flex-col gap-2">
+                                {/* Kvittolådan har fått en fast bredd på desktop (md:w-72) och centrerar sig snyggt */}
+                                <div className="shrink-0 md:w-72 bg-zinc-50 dark:bg-[#0f1522] rounded-lg p-3 border border-zinc-100 dark:border-transparent flex flex-col justify-center gap-1.5">
                                     <div className="flex items-center justify-between">
                                         <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                                             <SafeIcon name="calendar" size={12} /> {exactDate}
@@ -269,7 +272,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                                         </div>
                                     </div>
                                     {commentText && (
-                                        <div className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 italic leading-relaxed mt-1.5">
+                                        <div className="text-[11px] sm:text-[12px] text-zinc-500 dark:text-zinc-400 italic leading-snug line-clamp-2">
                                             "{commentText}"
                                         </div>
                                     )}
@@ -285,29 +288,27 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
     const CompactOldSection = ({ items }) => {
         if (items.length === 0) return null;
         return (
-            <div className="mb-10 animate-in fade-in duration-500">
-                {/* Vänsterställd rubrik */}
-                <div className="flex items-center gap-4 mb-5">
+            <div className="mb-6 animate-in fade-in duration-500">
+                <div className="flex items-center gap-4 mb-3.5">
                     <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 shrink-0">
                         ÄLDRE FÖRSENADE (VÄNTANDE PÅ UPPDATERING)
                     </span>
                     <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10"></div>
                 </div>
                 
-                {/* justify-start istället för justify-center */}
-                <div className="flex flex-wrap gap-2.5 justify-start">
+                <div className="flex flex-wrap gap-2 justify-start">
                     {items.map((item, i) => (
                         <div 
                             key={item.id + i} 
                             onClick={() => openProfile(item.regnr, item.referenceJob.id)}
                             title={`${item.customer} - ${item.monthsSinceJob} mån sedan`}
-                            className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 px-3 py-2 rounded-lg shadow-sm flex items-center gap-2.5 cursor-pointer hover:border-orange-500 hover:shadow-md transition-all hover:-translate-y-0.5 group"
+                            className="bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 px-2.5 py-1.5 rounded-md shadow-sm flex items-center gap-2 cursor-pointer hover:border-orange-500 hover:shadow-md transition-all hover:-translate-y-0.5 group"
                         >
-                            <span className="font-mono text-xs font-black tracking-widest text-zinc-800 dark:text-zinc-200 group-hover:text-orange-500 transition-colors">
+                            <span className="font-mono text-[11px] font-black tracking-widest text-zinc-800 dark:text-zinc-200 group-hover:text-orange-500 transition-colors">
                                 {item.regnr}
                             </span>
                             <div className="w-[1px] h-3 bg-zinc-200 dark:bg-zinc-700"></div>
-                            <span className="text-[10px] font-bold text-zinc-400">
+                            <span className="text-[9px] font-bold text-zinc-400">
                                 {item.monthsSinceJob} mån
                             </span>
                         </div>
