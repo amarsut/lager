@@ -58,18 +58,18 @@ const SplashScreen = memo(() => (
     </div>
 ));
 
-// Fast Navigations-data för att undvika re-renders
+// Fast Navigations-data med uppdaterade svenska namn och Kanban-vy
 const NAV_ITEMS = [
     { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
-    { id: 'PROGNOS', icon: 'inbox', label: 'Prognos' }, // <-- NY RAD
+    { id: 'KANBAN', icon: 'trello', label: 'Statusboard' },
+    { id: 'PROGNOS', icon: 'inbox', label: 'Prognos' },
     { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
-    { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt_Jobb' },
     { id: 'LAGER', icon: 'package', label: 'Lager' },
-    { id: 'CUSTOMERS', icon: 'users', label: 'Kund_Databas' },
-    { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oil_Status' },
+    { id: 'CUSTOMERS', icon: 'users', label: 'Kundregister' },
+    { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oljehantering' },
     { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
     { id: 'STATISTICS', icon: 'bar-chart-2', label: 'Statistik' },
-    { id: 'CHAT', icon: 'message-square', label: 'System_Chat' }
+    { id: 'CHAT', icon: 'message-square', label: 'Systemchatt' }
 ];
 
 // --- 3. HUVUDAPPLIKATION (App) ---
@@ -253,7 +253,7 @@ const App = () => {
     useEffect(() => {
         const syncWithUrl = () => {
             const hash = window.location.hash.replace('#', '').toUpperCase();
-            const validViews = ['DASHBOARD', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE']; // <-- UPPDATERAD RAD            
+            const validViews = ['DASHBOARD', 'KANBAN', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE', 'SETTINGS'];
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 768) setSidebarOpen(false);
@@ -273,7 +273,7 @@ const App = () => {
         return () => clearInterval(timer); 
     }, []);
     
-    // Säkerställ att ikoner laddas, med en liten delay som fallback
+    // Säkerställ att ikoner laddas
     useEffect(() => { 
         if (window.lucide) {
             window.lucide.createIcons();
@@ -347,12 +347,11 @@ const App = () => {
                 <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
             )}
 
-            {/* === NYTT: NATTLJUS-FILTER === */}
+            {/* NATTLJUS-FILTER */}
             <div 
                 className={`fixed inset-0 pointer-events-none z-[9999] transition-opacity duration-1000 mix-blend-multiply ${isNightLight && !isDark ? 'opacity-100' : 'opacity-0'}`}
                 style={{ backgroundColor: '#ffb04f', opacity: isNightLight && !isDark ? 0.15 : 0 }} 
             ></div>
-            {/* ============================= */}
 
             <div className="flex h-[100dvh] overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
@@ -361,13 +360,11 @@ const App = () => {
                     
                     <div className={`h-20 flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} border-b border-white/5 overflow-hidden shrink-0`}>
                         <div className="flex items-center gap-3.5">
-                            {/* Klickbar logga som öppnar/stänger sidebaren */}
                             <div 
                                 onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} 
                                 className="cursor-pointer shrink-0 relative flex items-center justify-center group/logo"
                                 title={sidebarOpen ? "Fäll in meny" : "Fäll ut meny"}
                             >
-                                {/* Använder iconColor="fill-white" så A:et ALDRIG blir svart */}
                                 <HexLogo 
                                     className={`transition-all duration-300 group-hover/logo:scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.4)] group-hover/logo:drop-shadow-[0_0_20px_rgba(249,115,22,0.8)] ${sidebarOpen ? 'w-8 h-8' : 'w-10 h-10'}`} 
                                     iconColor="fill-white" 
@@ -390,19 +387,29 @@ const App = () => {
                             </button>
                         )}
                     </div>
-                    
-                    <nav className="flex-1 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+
+                    {/* FRAMHÄVD CTAN-KNAPP FÖR NYTT JOBB */}
+                    <div className="p-3">
+                        <button
+                            onClick={() => navigateTo('NEW_JOB', { job: null })}
+                            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-black font-extrabold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_22px_rgba(249,115,22,0.5)] flex items-center justify-center ${sidebarOpen ? 'px-4 gap-2.5' : 'px-0'}`}
+                            title="Skapa nytt jobb"
+                        >
+                            <window.Icon name="plus-circle" size={20} className="shrink-0" />
+                            {sidebarOpen && <span className="text-xs uppercase tracking-wider font-black">Nytt Jobb</span>}
+                        </button>
+                    </div>
+
+                    <nav className="flex-1 py-2 space-y-1 overflow-y-auto custom-scrollbar">
                         {NAV_ITEMS.map(item => {
                             const isActive = view === item.id;
                             return (
                                 <div key={item.id} 
-                                    onClick={() => navigateTo(item.id, item.id === 'NEW_JOB' ? { job: null } : null)} 
-                                    className={`flex items-center px-6 py-4 cursor-pointer transition-all duration-300 group relative ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06] shadow-sm' : 'hover:bg-white/[0.03]'}`}>                                
+                                    onClick={() => navigateTo(item.id, null)} 
+                                    className={`flex items-center px-6 py-3.5 cursor-pointer transition-all duration-300 group relative ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06] shadow-sm' : 'hover:bg-white/[0.03]'}`}>                                
                                     
-                                    {/* Aktiv linje (Orange) som växer fram */}
                                     <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-orange-500 rounded-r-full shadow-[0_0_12px_rgba(249,115,22,0.8)] transition-all duration-300 ${isActive ? 'h-8 opacity-100' : 'h-0 opacity-0 group-hover:h-4 group-hover:opacity-50'}`}></div>
 
-                                    {/* Ikon */}
                                     <div className={`relative flex items-center justify-center transition-all duration-300 z-10 ${isActive ? 'text-orange-500 drop-shadow-sm scale-110' : 'text-zinc-400 group-hover:text-orange-400 group-hover:translate-x-1'}`}>
                                         <window.Icon name={item.icon} size={18} />
                                         {item.id === 'CHAT' && hasUnread && (
@@ -413,10 +420,9 @@ const App = () => {
                                         )}
                                     </div>
                                     
-                                    {/* Text */}
                                     {sidebarOpen && (
                                         <span className={`ml-4 text-[13px] font-bold tracking-wide transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-zinc-300 group-hover:text-white group-hover:translate-x-1'}`}>
-                                            {item.label.replace('_', ' ')}
+                                            {item.label}
                                         </span>
                                     )}
                                 </div>
@@ -426,7 +432,6 @@ const App = () => {
 
                     <div className="mt-auto border-t border-white/5 bg-black/20 pb-20 lg:pb-0 transition-colors duration-300">
     
-                        {/* NYTT: Nattljus-knapp (Visas endast i ljust tema) */}
                         {!isDark && (
                             <button onClick={() => { triggerHaptic(); setIsNightLight(!isNightLight); }} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
                                 <div className="relative w-5 h-5 flex items-center justify-center">
@@ -436,7 +441,6 @@ const App = () => {
                             </button>
                         )}
 
-                        {/* Tightare padding: py-3.5 istället för py-5, lite mindre ikoner */}
                         <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
                             <div className="relative w-5 h-5 flex items-center justify-center">
                                 <window.Icon name={isDark ? "sun" : "moon"} size={16} className={`absolute transition-all duration-500 ${isDark ? "text-orange-500 rotate-0 opacity-100 scale-100" : "-rotate-90 opacity-0 scale-50"}`} />
@@ -447,7 +451,6 @@ const App = () => {
 
                         <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-3.5 gap-3 group/profile cursor-pointer`}>
                             <div className="flex items-center gap-3 min-w-0">
-                                {/* Profilikon låst till mörk tema färg */}
                                 <div className="min-w-[32px] w-8 h-8 bg-zinc-800 flex items-center justify-center font-black rounded-lg text-white shadow-sm uppercase text-[12px] transition-transform duration-300 group-hover/profile:scale-105">
                                     {user?.email ? user.email[0] : 'U'}
                                 </div>
@@ -459,9 +462,14 @@ const App = () => {
                                 )}
                             </div>
                             {sidebarOpen && (
-                                <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all group/logout shrink-0 z-10" title="Logga ut">
-                                    <window.Icon name="log-out" size={16} className="group-hover/logout:translate-x-0.5 transition-transform" />
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => { triggerHaptic(); navigateTo('SETTINGS'); }} className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Inställningar">
+                                        <window.Icon name="settings" size={16} />
+                                    </button>
+                                    <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all group/logout shrink-0 z-10" title="Logga ut">
+                                        <window.Icon name="log-out" size={16} className="group-hover/logout:translate-x-0.5 transition-transform" />
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -496,9 +504,10 @@ const App = () => {
                         </>
                     )}
 
-                    <div className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
+                    <div className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'KANBAN', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {view === 'DASHBOARD' && window.DashboardView && <window.DashboardView allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} />}
-                        {view === 'PROGNOS' && window.PrognosView && <window.PrognosView allJobs={allJobs} setView={navigateTo} />} {/* <-- NY RAD */}
+                        {view === 'KANBAN' && window.KanbanView && <window.KanbanView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
+                        {view === 'PROGNOS' && window.PrognosView && <window.PrognosView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'NEW_JOB' && window.NewJobView && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
                         {view === 'GARAGE' && window.GarageView && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'LAGER' && window.LagerView && <window.LagerView allJobs={allJobs} />} 
@@ -510,9 +519,11 @@ const App = () => {
                         {view === 'REFERENCE' && window.ReferenceView && <window.ReferenceView setView={navigateTo} />}
                     </div>
 
-                    {/* Mobila Bottenmenyn (Förfinad Glassmorphism) */}
-                        <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">                        {[
+                    {/* Mobila Bottenmenyn */}
+                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">
+                        {[
                             { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
+                            { id: 'KANBAN', icon: 'trello', label: 'Tavla' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt', param: { job: null } },
                             { id: 'CHAT', icon: 'message-square', label: 'Chatt', hasBadge: hasUnread },
@@ -525,7 +536,6 @@ const App = () => {
                                         {item.hasBadge && (
                                             <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                {/* Badge-border är nu mörk för att matcha */}
                                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border-2 border-[#0b0f19] shadow-sm"></span>
                                             </span>
                                         )}
@@ -563,7 +573,6 @@ const LoginScreen = memo(() => {
     const [showPassword, setShowPassword] = useState(false);
     const emailRef = useRef(null);
 
-    // Auto-fokus på e-post när skärmen laddas
     useEffect(() => {
         if (emailRef.current) {
             emailRef.current.focus();
@@ -601,7 +610,6 @@ const LoginScreen = memo(() => {
                 }
             `}} />
 
-            {/* Dynamiska Bakgrundseffekter (Pulsar extremt långsamt för Premium-feel) */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none transition-colors duration-500"></div>
             <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[600px] sm:h-[600px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none animate-[pulse_10s_ease-in-out_infinite]"></div>
 
