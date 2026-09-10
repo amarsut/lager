@@ -58,18 +58,40 @@ const SplashScreen = memo(() => (
     </div>
 ));
 
-// Fast Navigations-data med uppdaterade svenska namn och Kanban-vy
-const NAV_ITEMS = [
-    { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
-    { id: 'KANBAN', icon: 'trello', label: 'Statusboard' },
-    { id: 'PROGNOS', icon: 'inbox', label: 'Prognos' },
-    { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' },
-    { id: 'LAGER', icon: 'package', label: 'Lager' },
-    { id: 'CUSTOMERS', icon: 'users', label: 'Kundregister' },
-    { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oljehantering' },
-    { id: 'REFERENCE', icon: 'file-text', label: 'Dokument' },
-    { id: 'STATISTICS', icon: 'bar-chart-2', label: 'Statistik' },
-    { id: 'CHAT', icon: 'message-square', label: 'Systemchatt' }
+// NY STRUKTUR: Grupperad navigering för bättre översikt och kortare namn
+const NAV_GROUPS = [
+    {
+        title: 'Dagligt Arbete',
+        items: [
+            { id: 'DASHBOARD', icon: 'grid', label: 'Dashboard' },
+            { id: 'ACTIVE_JOBS', icon: 'trello', label: 'Arbetsordrar' }, // NY VY
+            { id: 'CALENDAR', icon: 'calendar', label: 'Kalender' }
+        ]
+    },
+    {
+        title: 'Register',
+        items: [
+            { id: 'CUSTOMERS', icon: 'users', label: 'Kunder' }, // Kortare namn
+            { id: 'VEHICLES', icon: 'truck', label: 'Fordon' }, // NY VY
+            { id: 'LAGER', icon: 'package', label: 'Lager' }
+        ]
+    },
+    {
+        title: 'Ekonomi & Analys',
+        items: [
+            { id: 'PROGNOS', icon: 'inbox', label: 'Prognos' },
+            { id: 'INVOICE', icon: 'file-text', label: 'Fakturering' }, // NY VY
+            { id: 'STATISTICS', icon: 'bar-chart-2', label: 'Statistik' }
+        ]
+    },
+    {
+        title: 'System',
+        items: [
+            { id: 'REFERENCE', icon: 'folder', label: 'Dokument' },
+            { id: 'OIL_SUPPLY', icon: 'droplet', label: 'Oljestatus' },
+            { id: 'CHAT', icon: 'message-square', label: 'Chatt', mobileHide: true }
+        ]
+    }
 ];
 
 // --- 3. HUVUDAPPLIKATION (App) ---
@@ -224,7 +246,6 @@ const App = () => {
         if (window.innerWidth < 768) setSidebarOpen(false);
         setGlobalVehicle(null);
         
-        // Auto-scroll till toppen vid vy-byte
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [view, triggerHaptic]);
 
@@ -253,7 +274,8 @@ const App = () => {
     useEffect(() => {
         const syncWithUrl = () => {
             const hash = window.location.hash.replace('#', '').toUpperCase();
-            const validViews = ['DASHBOARD', 'KANBAN', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE', 'SETTINGS'];
+            // Uppdaterad lista med alla nya vyer
+            const validViews = ['DASHBOARD', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE', 'ACTIVE_JOBS', 'VEHICLES', 'INVOICE', 'SETTINGS'];
             if (hash && validViews.includes(hash)) {
                 setView(hash);
                 if (window.innerWidth < 768) setSidebarOpen(false);
@@ -273,13 +295,12 @@ const App = () => {
         return () => clearInterval(timer); 
     }, []);
     
-    // Säkerställ att ikoner laddas
     useEffect(() => { 
         if (window.lucide) {
             window.lucide.createIcons();
             setTimeout(() => window.lucide.createIcons(), 100);
         }
-    }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes, appReady]);
+    }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes, appReady, isNightLight]);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(u => { setUser(u); setLoading(false); });
@@ -332,7 +353,6 @@ const App = () => {
         <>
             {!appReady && <SplashScreen />}
             
-            {/* OFFLINE BANNER */}
             {!isOnline && (
                 <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-500/95 text-white px-5 py-2.5 rounded-full text-[11px] font-bold tracking-widest uppercase backdrop-blur-md flex items-center gap-2 shadow-[0_10px_30px_rgba(239,68,68,0.4)] animate-in slide-in-from-top-4 fade-in duration-300">
                     <window.Icon name="wifi-off" size={14} /> System Offline
@@ -342,7 +362,7 @@ const App = () => {
             {window.SpotlightSearch && (
                 <window.SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} allLagerItems={allLagerItems} navigateTo={navigateTo} />
             )}
-            {/* Svävande Systemradarn */}
+            
             {window.GlobalSystemRadar && (
                 <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
             )}
@@ -356,7 +376,7 @@ const App = () => {
             <div className="flex h-[100dvh] overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
                 {/* DYNAMISK SIDEBAR */}
-                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
+                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
                     
                     <div className={`h-20 flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} border-b border-white/5 overflow-hidden shrink-0`}>
                         <div className="flex items-center gap-3.5">
@@ -388,68 +408,77 @@ const App = () => {
                         )}
                     </div>
 
-                    {/* FRAMHÄVD CTAN-KNAPP FÖR NYTT JOBB */}
-                    <div className="p-3">
-                        <button
+                    {/* PRIMÄR CTA: Nytt Jobb (Löst frikopplad från listan) */}
+                    <div className={`pt-6 pb-2 ${sidebarOpen ? 'px-4' : 'flex justify-center px-0'}`}>
+                        <button 
                             onClick={() => navigateTo('NEW_JOB', { job: null })}
-                            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-black font-extrabold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_22px_rgba(249,115,22,0.5)] flex items-center justify-center ${sidebarOpen ? 'px-4 gap-2.5' : 'px-0'}`}
-                            title="Skapa nytt jobb"
+                            className={`flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-black font-black rounded-xl transition-all duration-300 shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.5)] active:scale-95 ${sidebarOpen ? 'w-full py-3 px-4' : 'w-11 h-11 p-0'}`}
                         >
-                            <window.Icon name="plus-circle" size={20} className="shrink-0" />
-                            {sidebarOpen && <span className="text-xs uppercase tracking-wider font-black">Nytt Jobb</span>}
+                            <window.Icon name="plus" size={sidebarOpen ? 18 : 20} className="shrink-0" />
+                            {sidebarOpen && <span className="uppercase tracking-widest text-[11px] mt-0.5">Skapa Nytt Jobb</span>}
                         </button>
                     </div>
-
-                    <nav className="flex-1 py-2 space-y-1 overflow-y-auto custom-scrollbar">
-                        {NAV_ITEMS.map(item => {
-                            const isActive = view === item.id;
-                            return (
-                                <div key={item.id} 
-                                    onClick={() => navigateTo(item.id, null)} 
-                                    className={`flex items-center px-6 py-3.5 cursor-pointer transition-all duration-300 group relative ${item.id === 'CHAT' ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06] shadow-sm' : 'hover:bg-white/[0.03]'}`}>                                
-                                    
-                                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-orange-500 rounded-r-full shadow-[0_0_12px_rgba(249,115,22,0.8)] transition-all duration-300 ${isActive ? 'h-8 opacity-100' : 'h-0 opacity-0 group-hover:h-4 group-hover:opacity-50'}`}></div>
-
-                                    <div className={`relative flex items-center justify-center transition-all duration-300 z-10 ${isActive ? 'text-orange-500 drop-shadow-sm scale-110' : 'text-zinc-400 group-hover:text-orange-400 group-hover:translate-x-1'}`}>
-                                        <window.Icon name={item.icon} size={18} />
-                                        {item.id === 'CHAT' && hasUnread && (
-                                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
-                                            </span>
-                                        )}
+                    
+                    <nav className="flex-1 py-2 overflow-y-auto custom-scrollbar pb-6 space-y-5">
+                        {NAV_GROUPS.map((group, gIdx) => (
+                            <div key={gIdx} className="space-y-1">
+                                {sidebarOpen && (
+                                    <div className="px-6 text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 mt-1">
+                                        {group.title}
                                     </div>
-                                    
-                                    {sidebarOpen && (
-                                        <span className={`ml-4 text-[13px] font-bold tracking-wide transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-zinc-300 group-hover:text-white group-hover:translate-x-1'}`}>
-                                            {item.label}
-                                        </span>
-                                    )}
-                                </div>
-                            );
-                        })}
+                                )}
+                                
+                                {group.items.map(item => {
+                                    const isActive = view === item.id;
+                                    return (
+                                        <div key={item.id} 
+                                            onClick={() => navigateTo(item.id)} 
+                                            className={`flex items-center px-6 py-3 cursor-pointer transition-all duration-300 group relative ${item.mobileHide ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06]' : 'hover:bg-white/[0.03]'}`}>                                
+                                            
+                                            <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-orange-500 rounded-r-full shadow-[0_0_12px_rgba(249,115,22,0.8)] transition-all duration-300 ${isActive ? 'h-7 opacity-100' : 'h-0 opacity-0 group-hover:h-3 group-hover:opacity-50'}`}></div>
+
+                                            <div className={`relative flex items-center justify-center transition-all duration-300 z-10 ${isActive ? 'text-orange-500 scale-110' : 'text-zinc-400 group-hover:text-orange-400 group-hover:translate-x-1'}`}>
+                                                <window.Icon name={item.icon} size={18} />
+                                                {item.id === 'CHAT' && hasUnread && (
+                                                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-[999]">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 border border-[#0d0d0e]"></span>
+                                                    </span>
+                                                )}
+                                            </div>
+                                            
+                                            {sidebarOpen && (
+                                                <span className={`ml-4 text-[13px] font-bold tracking-wide transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-zinc-300 group-hover:text-white group-hover:translate-x-1'}`}>
+                                                    {item.label}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))}
                     </nav>
 
-                    <div className="mt-auto border-t border-white/5 bg-black/20 pb-20 lg:pb-0 transition-colors duration-300">
-    
-                        {!isDark && (
-                            <button onClick={() => { triggerHaptic(); setIsNightLight(!isNightLight); }} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
-                                <div className="relative w-5 h-5 flex items-center justify-center">
-                                    <window.Icon name="eye" size={16} className={`transition-colors duration-500 ${isNightLight ? "text-orange-400" : "text-zinc-400 group-hover:text-white"}`} />
-                                </div>
-                                {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isNightLight ? 'Nattljus PÅ' : 'Nattljus AV'}</span>}
+                    {/* KOMPAKT BOTTENSEKTION */}
+                    <div className="mt-auto border-t border-white/5 bg-black/20 pb-20 md:pb-0 transition-colors duration-300 shrink-0">
+                        
+                        {/* Verktygsrad: Nattljus, Tema & Inställningar */}
+                        <div className={`flex items-center ${sidebarOpen ? 'justify-around px-4' : 'justify-center flex-col'} py-3 border-b border-white/5 gap-2`}>
+                            {!isDark && (
+                                <button onClick={() => { triggerHaptic(); setIsNightLight(!isNightLight); }} className={`p-2 rounded-xl transition-all ${isNightLight ? 'bg-orange-500/10 text-orange-500' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`} title="Nattljus">
+                                    <window.Icon name="eye" size={18} />
+                                </button>
+                            )}
+                            <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all" title="Växla Tema">
+                                <window.Icon name={isDark ? "sun" : "moon"} size={18} className={isDark ? "text-orange-500" : ""} />
                             </button>
-                        )}
+                            <button onClick={() => navigateTo('SETTINGS')} className={`p-2 rounded-xl transition-all ${view === 'SETTINGS' ? 'bg-orange-500/10 text-orange-500' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`} title="Inställningar">
+                                <window.Icon name="settings" size={18} />
+                            </button>
+                        </div>
 
-                        <button onClick={() => setIsDark(!isDark)} className={`w-full flex items-center ${sidebarOpen ? 'justify-start px-6' : 'justify-center'} py-3.5 text-zinc-500 hover:text-white transition-colors border-b border-white/5 gap-4 group`}>
-                            <div className="relative w-5 h-5 flex items-center justify-center">
-                                <window.Icon name={isDark ? "sun" : "moon"} size={16} className={`absolute transition-all duration-500 ${isDark ? "text-orange-500 rotate-0 opacity-100 scale-100" : "-rotate-90 opacity-0 scale-50"}`} />
-                                <window.Icon name={isDark ? "sun" : "moon"} size={16} className={`absolute transition-all duration-500 ${!isDark ? "text-zinc-400 rotate-0 opacity-100 scale-100 group-hover:text-white" : "rotate-90 opacity-0 scale-50"}`} />
-                            </div>
-                            {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-widest">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
-                        </button>
-
-                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-3.5 gap-3 group/profile cursor-pointer`}>
+                        {/* Profil & Utloggning */}
+                        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} py-4 gap-3 group/profile cursor-pointer`}>
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="min-w-[32px] w-8 h-8 bg-zinc-800 flex items-center justify-center font-black rounded-lg text-white shadow-sm uppercase text-[12px] transition-transform duration-300 group-hover/profile:scale-105">
                                     {user?.email ? user.email[0] : 'U'}
@@ -462,14 +491,9 @@ const App = () => {
                                 )}
                             </div>
                             {sidebarOpen && (
-                                <div className="flex items-center gap-1">
-                                    <button onClick={() => { triggerHaptic(); navigateTo('SETTINGS'); }} className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Inställningar">
-                                        <window.Icon name="settings" size={16} />
-                                    </button>
-                                    <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all group/logout shrink-0 z-10" title="Logga ut">
-                                        <window.Icon name="log-out" size={16} className="group-hover/logout:translate-x-0.5 transition-transform" />
-                                    </button>
-                                </div>
+                                <button onClick={() => { triggerHaptic(); auth.signOut(); }} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all group/logout shrink-0 z-10" title="Logga ut">
+                                    <window.Icon name="log-out" size={16} className="group-hover/logout:translate-x-0.5 transition-transform" />
+                                </button>
                             )}
                         </div>
                     </div>
@@ -504,9 +528,9 @@ const App = () => {
                         </>
                     )}
 
-                    <div className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'KANBAN', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY'].includes(view) ? 'p-0' : 'p-4'}`}>
+                    <div className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY', 'ACTIVE_JOBS', 'VEHICLES', 'INVOICE', 'SETTINGS'].includes(view) ? 'p-0' : 'p-4'}`}>
+                        {/* BEFINTLIGA VYER */}
                         {view === 'DASHBOARD' && window.DashboardView && <window.DashboardView allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} />}
-                        {view === 'KANBAN' && window.KanbanView && <window.KanbanView allJobs={allJobs} setEditingJob={setEditingJob} setView={navigateTo} />}
                         {view === 'PROGNOS' && window.PrognosView && <window.PrognosView allJobs={allJobs} setView={navigateTo} />}
                         {view === 'NEW_JOB' && window.NewJobView && <window.NewJobView editingJob={editingJob} setView={navigateTo} allJobs={allJobs} />}
                         {view === 'GARAGE' && window.GarageView && <window.GarageView allJobs={allJobs} setView={navigateTo} />}
@@ -517,13 +541,18 @@ const App = () => {
                         {view === 'CHAT' && window.innerWidth < 1024 && window.ChatView && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
                         {view === 'STATISTICS' && window.StatisticsView && <window.StatisticsView allJobs={allJobs} />}
                         {view === 'REFERENCE' && window.ReferenceView && <window.ReferenceView setView={navigateTo} />}
+                        
+                        {/* NYA VYER (Visar platshållare om komponenten inte skapats ännu) */}
+                        {view === 'ACTIVE_JOBS' && (window.ActiveJobsView ? <window.ActiveJobsView allJobs={allJobs} setView={navigateTo} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Arbetsordrar...</div>)}
+                        {view === 'VEHICLES' && (window.VehiclesView ? <window.VehiclesView setView={navigateTo} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Fordonsregister...</div>)}
+                        {view === 'INVOICE' && (window.InvoiceView ? <window.InvoiceView allJobs={allJobs} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Faktureringsmodul...</div>)}
+                        {view === 'SETTINGS' && (window.SettingsView ? <window.SettingsView user={user} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Inställningar...</div>)}
                     </div>
 
                     {/* Mobila Bottenmenyn */}
-                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">
+                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">                        
                         {[
                             { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
-                            { id: 'KANBAN', icon: 'trello', label: 'Tavla' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
                             { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt', param: { job: null } },
                             { id: 'CHAT', icon: 'message-square', label: 'Chatt', hasBadge: hasUnread },
