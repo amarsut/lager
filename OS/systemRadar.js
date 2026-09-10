@@ -5,7 +5,8 @@
 // ==========================================
 window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH', forceScrape = false) => {
     if (!regnr || !window.db) return;
-    const cleanReg = regnr.toUpperCase().trim();
+    // Fix: Tvinga bort alla mellanslag så det alltid matchar databasen
+    const cleanReg = regnr.toUpperCase().replace(/\s+/g, '');
 
     try {
         const doc = await window.db.collection('vehicleSpecs').doc(cleanReg).get();
@@ -147,7 +148,8 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
 
             delete data.source; delete data.action;
 
-            const regnr = fordonData.regnr?.toUpperCase();
+            // Fix: Rensa bort mellanslag från tilläggets svar
+            const regnr = fordonData.regnr?.toUpperCase().replace(/\s+/g, '');
             if (window[`timeout_${regnr}`]) clearTimeout(window[`timeout_${regnr}`]);
 
             const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== '' && v !== null && v !== undefined && v !== 'SAKNAS'));
