@@ -619,55 +619,59 @@ const LoginScreen = memo(() => {
     };
 
     return (
-        <div className="fixed inset-0 bg-[#06080a] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700 transition-colors duration-300">
+        <div className="fixed inset-0 bg-[#09090b] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700 transition-colors duration-300">
             
+            {/* Fix för Chrome Autofill så det matchar den nya mörka input-bakgrunden */}
             <style dangerouslySetInnerHTML={{__html: `
                 input:-webkit-autofill,
                 input:-webkit-autofill:hover, 
                 input:-webkit-autofill:focus, 
                 input:-webkit-autofill:active {
-                    -webkit-box-shadow: 0 0 0 30px #0f131c inset !important;
+                    -webkit-box-shadow: 0 0 0 30px #18181b inset !important;
                     -webkit-text-fill-color: white !important;
                     transition: background-color 5000s ease-in-out 0s;
                 }
             `}} />
 
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#161c29_0%,_#06080a_70%)] pointer-events-none transition-colors duration-500"></div>
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[600px] sm:h-[600px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none animate-[pulse_10s_ease-in-out_infinite]"></div>
+            {/* Mjuk, centrerad glow bakom kortet */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square sm:w-[450px] sm:h-[450px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-            <div className="relative w-full max-w-[400px] mx-5 sm:mx-0 bg-[#0b0e14]/70 backdrop-blur-2xl border border-white/[0.08] shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-[32px] sm:rounded-[40px] z-10 overflow-hidden group transition-colors duration-300">
+            {/* Inloggningskortet - Solid matt mörkgrå */}
+            <div className="relative w-full max-w-[360px] mx-5 sm:mx-0 bg-[#121214] shadow-[0_20px_60px_rgba(0,0,0,0.6)] rounded-[32px] z-10 overflow-hidden">
                 
-                <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-orange-500/60 to-transparent group-hover:via-orange-500 transition-all duration-700"></div>
+                {/* Mycket subtil highlight på toppen */}
+                <div className="absolute inset-0 rounded-[32px] border border-white/[0.03] pointer-events-none"></div>
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
 
-                <div className="p-8 sm:p-12">
+                <div className="p-8 sm:p-10">
                     
                     <div className="flex flex-col items-center mb-10">
-                        <div className="w-20 h-20 bg-gradient-to-b from-[#1a1f2e] to-[#0a0d14] flex items-center justify-center rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] mb-6 ring-1 ring-white/10 relative overflow-hidden group-hover:shadow-[0_15px_40px_rgba(249,115,22,0.2)] transition-all duration-500">
-                            <HexLogo className="w-12 h-12 relative z-10" iconColor="fill-white" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-full group-hover:-translate-y-full transition-transform duration-1000"></div>
+                        {/* Mörkare låda för ikonen */}
+                        <div className="w-16 h-16 bg-[#18181b] flex items-center justify-center rounded-2xl shadow-inner border border-white/5 mb-6 relative overflow-hidden">
+                            <HexLogo className="w-10 h-10 relative z-10" iconColor="fill-white" />
                         </div>
                         
-                        <h1 className="text-white font-black uppercase tracking-[0.25em] text-xl flex items-center transition-colors">
+                        <h1 className="text-white font-black uppercase tracking-[0.25em] text-lg flex items-center">
                             AUTO<span className="text-orange-500 font-light">GRID</span>
                         </h1>
-                        <p className="text-zinc-500 text-[9px] font-bold tracking-[0.3em] uppercase mt-2">Secure Access</p>
+                        <p className="text-zinc-600 text-[8px] font-black tracking-[0.3em] uppercase mt-2">Secure Access</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         {error && (
-                            <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-2xl text-red-400 text-[13px] font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
-                                <window.Icon name="alert-octagon" size={20} className="shrink-0 text-red-500" />
+                            <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-xl text-red-400 text-[12px] font-medium flex items-center gap-2.5 animate-in slide-in-from-top-2 mb-2">
+                                <window.Icon name="alert-octagon" size={16} className="shrink-0 text-red-500" />
                                 <span>{error}</span>
                             </div>
                         )}
 
-                        <div className="space-y-2">
-                            <label htmlFor="emailInput" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
+                        <div className="space-y-1.5">
+                            <label htmlFor="emailInput" className="text-[9px] font-black text-zinc-500 uppercase tracking-widest pl-1">
                                 E-postadress
                             </label>
                             <div className="relative group/input">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
-                                    <window.Icon name="mail" size={18} />
+                                    <window.Icon name="mail" size={16} />
                                 </div>
                                 <input 
                                     id="emailInput"
@@ -675,7 +679,7 @@ const LoginScreen = memo(() => {
                                     type="email" 
                                     placeholder="namn@foretag.se" 
                                     required
-                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50" 
+                                    className="w-full h-12 bg-[#18181b] border border-white/5 rounded-2xl pl-11 text-white text-[13px] outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all placeholder:text-zinc-600 disabled:opacity-50" 
                                     value={email} 
                                     onChange={e => setEmail(e.target.value)} 
                                     disabled={isLoading}
@@ -683,20 +687,20 @@ const LoginScreen = memo(() => {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label htmlFor="passwordInput" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-2">
+                        <div className="space-y-1.5">
+                            <label htmlFor="passwordInput" className="text-[9px] font-black text-zinc-500 uppercase tracking-widest pl-1">
                                 Lösenord
                             </label>
                             <div className="relative group/input">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-zinc-500 group-focus-within/input:text-orange-500 transition-colors">
-                                    <window.Icon name="lock" size={18} />
+                                    <window.Icon name="lock" size={16} />
                                 </div>
                                 <input 
                                     id="passwordInput"
                                     type={showPassword ? "text" : "password"} 
                                     placeholder="••••••••" 
                                     required
-                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-12 text-white text-[15px] outline-none focus:border-orange-500/50 focus:bg-white/10 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
+                                    className="w-full h-12 bg-[#18181b] border border-white/5 rounded-2xl pl-11 pr-11 text-white text-[13px] outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all placeholder:text-zinc-600 disabled:opacity-50 tracking-widest font-mono" 
                                     value={password} 
                                     onChange={e => setPassword(e.target.value)} 
                                     disabled={isLoading}
@@ -708,7 +712,7 @@ const LoginScreen = memo(() => {
                                     tabIndex="-1"
                                     disabled={isLoading}
                                 >
-                                    <window.Icon name={showPassword ? "eye-off" : "eye"} size={18} />
+                                    <window.Icon name={showPassword ? "eye-off" : "eye"} size={16} />
                                 </button>
                             </div>
                         </div>
@@ -716,17 +720,17 @@ const LoginScreen = memo(() => {
                         <button 
                             type="submit" 
                             disabled={isLoading}
-                            className="w-full h-14 mt-8 relative overflow-hidden group/btn bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 disabled:opacity-70 disabled:cursor-not-allowed text-black font-black rounded-2xl text-[14px] tracking-[0.15em] uppercase transition-all hover:scale-[1.02] shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_15px_40px_rgba(249,115,22,0.5)] active:scale-[0.98] flex items-center justify-center gap-3"
+                            className="w-full h-12 mt-8 bg-gradient-to-r from-orange-500 to-orange-600 disabled:opacity-70 disabled:cursor-not-allowed text-black font-black rounded-2xl text-[12px] tracking-widest uppercase transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] active:scale-[0.98] flex items-center justify-center gap-3"
                         >
                             {isLoading ? (
                                 <>
-                                    <window.Icon name="loader-2" size={20} className="animate-spin text-black/80" />
+                                    <window.Icon name="loader-2" size={18} className="animate-spin text-black/80" />
                                     <span>Verifierar...</span>
                                 </>
                             ) : (
                                 <>
                                     <span>Logga in</span>
-                                    <window.Icon name="arrow-right" size={18} className="opacity-80 group-hover/btn:translate-x-1.5 transition-transform" />
+                                    <window.Icon name="arrow-right" size={16} className="opacity-80 transition-transform" />
                                 </>
                             )}
                         </button>
