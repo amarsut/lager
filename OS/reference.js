@@ -170,52 +170,104 @@ window.ReferenceView = () => {
     return (
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
-            {/* LÖSNING X/Y: Tagit bort max-w-[1600px] och mx-auto så vyn flyter från vänsterkant precis som Dashboard */}
-            <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <window.Icon name="inbox" size={20} className="md:w-6 md:h-6" />
+            <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
+                
+                {/* --- DESKTOP HEADER (0 padding) --- */}
+                <div className="hidden lg:flex flex-col h-full p-0">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 p-0 shrink-0 z-10">
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <div className="relative group cursor-default shrink-0">
+                                <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                                <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <window.Icon name="cloud" size={20} className="md:w-6 md:h-6" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                    AUTO<span className="font-light text-zinc-400 dark:text-zinc-500">DRIVE</span>
+                                </h1>
+                                <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                    Filer & Dokument
+                                </p>
                             </div>
                         </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                AUTO<span className="text-zinc-400 dark:text-zinc-500 font-light">DRIVE</span>
-                            </h1>
+
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1 w-full md:w-72 relative group">
+                                <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Sök i Drive..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl h-[46px] pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-500 transition-colors">
+                                        <window.Icon name="x" size={12} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div className="flex-1 w-full md:max-w-md relative group">
-                        <window.Icon name="search" size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                        <input 
-                            type="text" 
-                            placeholder="Sök i Drive..." 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white dark:bg-[#1e293b] ring-1 ring-zinc-200 dark:ring-white/5 focus:ring-2 focus:ring-orange-500 text-zinc-900 dark:text-white rounded-full py-4 pl-12 pr-4 text-[14px] font-medium transition-all outline-none shadow-sm placeholder:text-zinc-400"
-                        />
-                        {searchQuery && (
-                            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                                <window.Icon name="x" size={14} />
-                            </button>
-                        )}
+                {/* --- MOBIL HEADER (0 padding) --- */}
+                <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
+                    {/* Tog bort pt-safe-top och all inbyggd padding */}
+                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
+                        
+                        {/* 1. Logga & Titel på X:0 Y:0 (p-0) */}
+                        <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
+                            <div className="flex items-center gap-4">
+                                <div className="relative group cursor-default shrink-0">
+                                    <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
+                                    <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
+                                        <window.Icon name="cloud" size={24} />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                                        AUTO<span className="text-zinc-400 dark:text-zinc-500 font-light">DRIVE</span>
+                                    </h1>
+                                    <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                        Filer & Dokument
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. Sökfält med 0 padding på sidorna (px-0) */}
+                        <div className="px-0 pt-3 pb-3">
+                            <div className="relative group w-full">
+                                <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Sök i Drive..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl py-3 pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
+                                />
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
                 {/* DRIVE LAYOUT */}
-                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-6 lg:mt-8 px-6 lg:px-8 gap-8 pb-24 lg:pb-10">
-                    
-                    <div className="w-full lg:w-[260px] shrink-0 flex flex-col gap-6">
+                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-3 px-0 gap-8 pb-24 lg:pb-10">
+    
+                    <div className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6">
                         <button 
                             onClick={openCreate} 
-                            className="hidden lg:flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
+                            className="flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
                         >
                             <window.Icon name="plus" size={20} /> Ny Uppladdning
                         </button>
 
-                        <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm hidden lg:block">
+                        <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm">
                             <nav className="flex flex-col gap-1">
                                 {FOLDERS.map(folder => {
                                     const isActive = currentFolder === folder.id;
@@ -232,22 +284,6 @@ window.ReferenceView = () => {
                                 })}
                             </nav>
                         </div>
-
-                        <nav className="flex lg:hidden overflow-x-auto gap-2 pb-2 custom-scrollbar -mx-4 px-4">
-                            {FOLDERS.map(folder => {
-                                const isActive = currentFolder === folder.id;
-                                return (
-                                    <button 
-                                        key={folder.id}
-                                        onClick={() => setCurrentFolder(folder.id)}
-                                        className={`flex items-center gap-2 px-5 py-3 rounded-full transition-all whitespace-nowrap shrink-0 text-[12px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md' : 'bg-white dark:bg-[#151b28] ring-1 ring-zinc-200 dark:ring-white/5 text-zinc-500'}`}
-                                    >
-                                        <window.Icon name={folder.icon} size={14} className={isActive && folder.id === 'FAVORITER' ? 'text-orange-500 fill-current' : ''} />
-                                        {folder.label}
-                                    </button>
-                                );
-                            })}
-                        </nav>
                     </div>
 
                     <div className="flex-1 flex flex-col min-w-0">
