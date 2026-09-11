@@ -170,52 +170,101 @@ window.ReferenceView = () => {
     return (
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
-            {/* LÖSNING X/Y: Tagit bort max-w-[1600px] och mx-auto så vyn flyter från vänsterkant precis som Dashboard */}
-            <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <window.Icon name="inbox" size={20} className="md:w-6 md:h-6" />
+            <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-zinc-100 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in pb-0 slide-in-from-left-4">
+                
+                {/* --- DESKTOP HEADER --- */}
+                <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0 shrink-0 z-10">
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <div className="relative group cursor-default shrink-0">
+                                <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                                <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <window.Icon name="cloud" size={24} className="md:w-6 md:h-6" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                    AUTO<span className="font-light text-zinc-400 dark:text-zinc-500">DRIVE</span>
+                                </h1>
+                                <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                    Filer & Dokument
+                                </p>
                             </div>
                         </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                AUTO<span className="text-zinc-400 dark:text-zinc-500 font-light">DRIVE</span>
-                            </h1>
+
+                        <div className="flex-1 w-full md:max-w-md relative group">
+                            <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                            <input 
+                                type="text" 
+                                placeholder="Sök i Drive..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl py-3.5 pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
+                            />
+                            {searchQuery && (
+                                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-500 transition-colors">
+                                    <window.Icon name="x" size={12} />
+                                </button>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    <div className="flex-1 w-full md:max-w-md relative group">
-                        <window.Icon name="search" size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                        <input 
-                            type="text" 
-                            placeholder="Sök i Drive..." 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white dark:bg-[#1e293b] ring-1 ring-zinc-200 dark:ring-white/5 focus:ring-2 focus:ring-orange-500 text-zinc-900 dark:text-white rounded-full py-4 pl-12 pr-4 text-[14px] font-medium transition-all outline-none shadow-sm placeholder:text-zinc-400"
-                        />
-                        {searchQuery && (
-                            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                                <window.Icon name="x" size={14} />
-                            </button>
-                        )}
+                {/* --- MOBIL HEADER (Exakt match med Dashboard.js) --- */}
+                <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
+                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
+                        <div className="px-4 pb-4 pt-2 flex flex-col gap-4 border-b border-zinc-100 dark:border-white/10">
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="relative group cursor-default shrink-0">
+                                    <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
+                                    <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
+                                        <window.Icon name="cloud" size={24} />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                                        AUTO<span className="text-zinc-400 dark:text-zinc-500 font-light">DRIVE</span>
+                                    </h1>
+                                    <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                        Filer & Dokument
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="relative group">
+                                <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Sök i Drive..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl py-3 pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-white/10 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-500 transition-colors shadow-sm border border-zinc-200 dark:border-white/5">
+                                        <window.Icon name="x" size={12} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* DRIVE LAYOUT */}
-                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-6 lg:mt-8 px-6 lg:px-8 gap-8 pb-24 lg:pb-10">
+                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden lg:mt-4 px-4 lg:px-0 gap-8 pb-24 lg:pb-10">
                     
                     <div className="w-full lg:w-[260px] shrink-0 flex flex-col gap-6">
                         <button 
                             onClick={openCreate} 
-                            className="hidden lg:flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
+                            className="hidden lg:flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white rounded-xl py-4 px-6 font-black text-[12px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] transition-all duration-300 active:scale-95"
                         >
-                            <window.Icon name="plus" size={20} /> Ny Uppladdning
+                            <window.Icon name="plus" size={18} /> Ny Uppladdning
                         </button>
 
-                        <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm hidden lg:block">
+                        <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-2xl p-3 shadow-sm hidden lg:block">
                             <nav className="flex flex-col gap-1">
                                 {FOLDERS.map(folder => {
                                     const isActive = currentFolder === folder.id;
@@ -223,9 +272,9 @@ window.ReferenceView = () => {
                                         <button 
                                             key={folder.id}
                                             onClick={() => setCurrentFolder(folder.id)}
-                                            className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 w-full text-[13px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
+                                            className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 w-full text-[12px] font-bold tracking-widest uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
                                         >
-                                            <window.Icon name={folder.icon} size={18} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
+                                            <window.Icon name={folder.icon} size={16} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
                                             {folder.label}
                                         </button>
                                     );
@@ -240,7 +289,7 @@ window.ReferenceView = () => {
                                     <button 
                                         key={folder.id}
                                         onClick={() => setCurrentFolder(folder.id)}
-                                        className={`flex items-center gap-2 px-5 py-3 rounded-full transition-all whitespace-nowrap shrink-0 text-[12px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md' : 'bg-white dark:bg-[#151b28] ring-1 ring-zinc-200 dark:ring-white/5 text-zinc-500'}`}
+                                        className={`flex items-center gap-2 px-5 py-3 rounded-full transition-all whitespace-nowrap shrink-0 text-[12px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md' : 'bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500'}`}
                                     >
                                         <window.Icon name={folder.icon} size={14} className={isActive && folder.id === 'FAVORITER' ? 'text-orange-500 fill-current' : ''} />
                                         {folder.label}
@@ -252,21 +301,21 @@ window.ReferenceView = () => {
 
                     <div className="flex-1 flex flex-col min-w-0">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
+                            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
-                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-3 py-1.5 rounded-md">{displayedFiles.length} objekt</span>
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 px-2 py-1 rounded-md">{displayedFiles.length} objekt</span>
                         </div>
 
                         {loading ? (
                             <div className="flex-1 flex items-center justify-center text-orange-500"><window.Icon name="loader" size={32} className="animate-spin opacity-50" /></div>
                         ) : displayedFiles.length === 0 ? (
                             <div className="flex-1 flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
-                                <div className="w-24 h-24 bg-white dark:bg-[#151b28] rounded-[2rem] flex items-center justify-center text-zinc-300 dark:text-zinc-600 mb-6 shadow-sm ring-1 ring-zinc-100 dark:ring-white/5">
+                                <div className="w-24 h-24 bg-white dark:bg-[#1e293b] rounded-2xl flex items-center justify-center text-zinc-300 dark:text-zinc-600 mb-6 shadow-sm border border-zinc-200 dark:border-white/10">
                                     <window.Icon name="folder-open" size={40} />
                                 </div>
-                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Mappen är tom</h3>
-                                <p className="text-[14px] text-zinc-500 max-w-sm">Inga filer hittades här. Klicka på plusknappen för att ladda upp något nytt.</p>
+                                <h3 className="text-[14px] font-bold text-zinc-900 dark:text-white mb-2 uppercase tracking-widest">Mappen är tom</h3>
+                                <p className="text-[12px] text-zinc-500 max-w-sm">Inga filer hittades här. Klicka på plusknappen för att ladda upp något nytt.</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 lg:gap-6 pb-4">
@@ -274,7 +323,7 @@ window.ReferenceView = () => {
                                     <div 
                                         key={doc.id}
                                         onClick={() => setSelectedDoc(doc)}
-                                        className="group relative flex flex-col bg-white dark:bg-[#151b28] rounded-[24px] overflow-hidden cursor-pointer shadow-sm ring-1 ring-zinc-200 dark:ring-white/5 hover:ring-orange-500/50 hover:shadow-lg transition-all duration-300 aspect-square md:aspect-[4/3] transform hover:-translate-y-1"
+                                        className="group relative flex flex-col bg-white dark:bg-[#1e293b] rounded-[24px] overflow-hidden cursor-pointer shadow-sm border border-zinc-200 dark:border-white/10 hover:border-orange-500/50 hover:shadow-lg transition-all duration-300 aspect-square md:aspect-[4/3] transform hover:-translate-y-1"
                                     >
                                         <div className="absolute inset-0 bg-zinc-100 dark:bg-black/40">
                                             {doc.image ? (
@@ -312,16 +361,16 @@ window.ReferenceView = () => {
                     </div>
                 </div>
 
-                <button onClick={openCreate} className="lg:hidden fixed bottom-6 right-6 z-[90] bg-orange-500 text-white rounded-[20px] w-14 h-14 shadow-lg active:scale-95 flex items-center justify-center transition-transform">
+                <button onClick={openCreate} className="lg:hidden fixed bottom-6 right-6 z-[90] bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-[20px] w-14 h-14 shadow-lg active:scale-95 flex items-center justify-center transition-transform">
                     <window.Icon name="plus" size={24} />
                 </button>
             </div>
 
             {/* --- MODALER --- */}
             
-            {/* CINEMA LIGHTBOX (Nu med Navigering Höger/Vänster) */}
-            {selectedDoc && renderModal(
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 lg:p-10" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+            {/* CINEMA LIGHTBOX UTAN PORTAL FÖR MOBIL STABILITET */}
+            {selectedDoc && (
+                <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 lg:p-10 h-[100dvh] w-full" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                     
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-auto transition-opacity" onClick={handleClosePanel}></div>
                     
@@ -334,16 +383,22 @@ window.ReferenceView = () => {
                                 <window.Icon name="x" size={24} />
                             </button>
 
-                            {/* NAVIGERING: Vänster-pil */}
+                            {/* Pilen för Vänster */}
                             {hasPrev && (
-                                <button onClick={goToPrev} className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/60 hover:bg-black/90 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-xl active:scale-90 opacity-70 hover:opacity-100">
+                                <button 
+                                    onClick={goToPrev} 
+                                    className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/50 hover:bg-black/80 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-xl active:scale-90 opacity-100 lg:opacity-0 group-hover:opacity-100"
+                                >
                                     <window.Icon name="chevron-left" size={28} />
                                 </button>
                             )}
 
-                            {/* NAVIGERING: Höger-pil */}
+                            {/* Pilen för Höger */}
                             {hasNext && (
-                                <button onClick={goToNext} className="absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/60 hover:bg-black/90 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-xl active:scale-90 opacity-70 hover:opacity-100">
+                                <button 
+                                    onClick={goToNext} 
+                                    className="absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/50 hover:bg-black/80 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-xl active:scale-90 opacity-100 lg:opacity-0 group-hover:opacity-100"
+                                >
                                     <window.Icon name="chevron-right" size={28} />
                                 </button>
                             )}
@@ -421,9 +476,9 @@ window.ReferenceView = () => {
                 </div>
             )}
 
-            {/* UPPLADDNINGS-MODAL */}
-            {isUploadOpen && renderModal(
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+            {/* UPPLADDNINGS-MODAL UTAN PORTAL */}
+            {isUploadOpen && (
+                <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 h-[100dvh] w-full" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                     
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsUploadOpen(false)}></div>
                     
@@ -441,7 +496,7 @@ window.ReferenceView = () => {
                             
                             <div>
                                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Filnamn / Titel</label>
-                                <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all placeholder:text-zinc-400" placeholder="Ange en titel..." />
+                                <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-zinc-400" placeholder="Ange en titel..." />
                             </div>
 
                             <div>
@@ -452,7 +507,7 @@ window.ReferenceView = () => {
                                             key={f.id} 
                                             type="button"
                                             onClick={() => setFormData({...formData, category: f.id})}
-                                            className={`px-4 py-2.5 rounded-xl ring-1 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all ${formData.category === f.id ? `bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 ring-transparent` : 'bg-white dark:bg-transparent text-zinc-600 dark:text-zinc-400 ring-zinc-200 dark:ring-white/10 hover:bg-zinc-50 dark:hover:bg-white/5'}`}
+                                            className={`px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all ${formData.category === f.id ? `bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-sm` : 'bg-white dark:bg-transparent text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5'}`}
                                         >
                                             <window.Icon name={f.icon} size={14} className={formData.category === f.id ? '' : f.colorClass} /> {f.label}
                                         </button>
@@ -476,18 +531,18 @@ window.ReferenceView = () => {
                             <div className="space-y-5 pt-2">
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Extern Länk (Valfritt)</label>
-                                    <input type="url" value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono placeholder:text-zinc-400" placeholder="https://..." />
+                                    <input type="url" value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all font-mono placeholder:text-zinc-400" placeholder="https://..." />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Anteckningar (Valfritt)</label>
-                                    <textarea value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} rows="3" className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none placeholder:text-zinc-400 custom-scrollbar" placeholder="Instruktioner..."></textarea>
+                                    <textarea value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} rows="3" className="w-full p-4 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all resize-none placeholder:text-zinc-400 custom-scrollbar" placeholder="Instruktioner..."></textarea>
                                 </div>
                             </div>
                         </form>
 
                         <div className="p-6 border-t border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-[#1a2133]">
-                            <button form="upload-form" type="submit" disabled={uploading} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-2xl font-bold text-[13px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
-                                {uploading ? <><window.Icon name="loader" size={18} className="animate-spin" /> Sparar...</> : <><window.Icon name="save" size={18} /> Spara</>}
+                            <button form="upload-form" type="submit" disabled={uploading} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white py-4 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
+                                {uploading ? <><window.Icon name="loader" size={18} className="animate-spin" /> Sparar...</> : <><window.Icon name="save" size={18} /> Spara i Drive</>}
                             </button>
                         </div>
                     </div>
