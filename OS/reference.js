@@ -425,20 +425,23 @@ window.ReferenceView = () => {
                     <div className="flex-1 flex flex-col min-w-0 pb-12 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar lg:pr-4">
                         
                         {/* Sektionstitel, Action Bar & Vy-växlare */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 shrink-0 gap-4">
-                            <h2 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
+                        <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0 gap-3 w-full min-w-0">
+                            
+                            {/* Titel - flex-1 och truncate gör att texten kortas ner med ... om utrymmet tar slut */}
+                            <h2 className="text-[13px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest truncate min-w-0 flex-1">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
 
-                            <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
+                            {/* Högra sidan (Knappar) - shrink-0 ser till att knapparna aldrig trycks ihop */}
+                            <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
                                 
                                 {/* ACTION BAR (Visas endast när en fil är markerad via 3-prickarna) */}
                                 {selectedFiles.length > 0 && (
-                                    <div className="flex items-center gap-1 bg-white dark:bg-[#151b28] border border-blue-200 dark:border-blue-900/50 shadow-sm rounded-xl px-1.5 py-1 mr-1 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="flex items-center gap-0.5 sm:gap-1 bg-white dark:bg-[#151b28] border border-blue-200 dark:border-blue-900/50 shadow-sm rounded-xl px-1 py-1 animate-in fade-in zoom-in-95 duration-200 shrink-0">
                                         {selectedFiles.length === 1 && (
                                             <button 
                                                 onClick={() => openEdit(displayedFiles.find(f => f.id === selectedFiles[0]))} 
-                                                className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-blue-500 dark:hover:bg-white/10 transition-colors" title="Redigera"
+                                                className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-blue-500 dark:hover:bg-white/10 transition-colors" title="Redigera"
                                             >
                                                 <window.Icon name="edit-2" size={14} />
                                             </button>
@@ -451,7 +454,7 @@ window.ReferenceView = () => {
                                                 });
                                                 setSelectedFiles([]);
                                             }} 
-                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-white/10 transition-colors" title="Bokmärk"
+                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-white/10 transition-colors" title="Bokmärk"
                                         >
                                             <window.Icon name="star" size={14} />
                                         </button>
@@ -463,7 +466,7 @@ window.ReferenceView = () => {
                                                 });
                                                 setSelectedFiles([]);
                                             }} 
-                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-white/10 transition-colors" title="Ladda ner"
+                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-white/10 transition-colors" title="Ladda ner"
                                         >
                                             <window.Icon name="download" size={14} />
                                         </button>
@@ -472,14 +475,14 @@ window.ReferenceView = () => {
                                                 selectedFiles.forEach(id => handleDelete(id));
                                                 setSelectedFiles([]);
                                             }} 
-                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-white/10 transition-colors" title="Radera"
+                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-white/10 transition-colors" title="Radera"
                                         >
                                             <window.Icon name="trash-2" size={14} />
                                         </button>
-                                        <div className="w-[1px] h-4 bg-zinc-200 dark:bg-white/10 mx-1"></div>
+                                        <div className="w-[1px] h-4 bg-zinc-200 dark:bg-white/10 mx-0.5 sm:mx-1"></div>
                                         <button 
                                             onClick={() => setSelectedFiles([])} 
-                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/10 transition-colors" title="Avbryt"
+                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/10 transition-colors" title="Avbryt"
                                         >
                                             <window.Icon name="x" size={14} />
                                         </button>
@@ -487,15 +490,18 @@ window.ReferenceView = () => {
                                 )}
 
                                 {/* VY-VÄXLARE */}
-                                <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm">
-                                    <button onClick={() => setViewMode('grid')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
+                                <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm shrink-0">
+                                    <button onClick={() => setViewMode('grid')} className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
                                         <window.Icon name="grid" size={14} />
                                     </button>
-                                    <button onClick={() => setViewMode('list')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
+                                    <button onClick={() => setViewMode('list')} className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
                                         <window.Icon name="list" size={14} />
                                     </button>
                                 </div>
-                                <span className="hidden sm:block text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">{displayedFiles.length} objekt</span>
+                                
+                                <span className="hidden sm:block text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm shrink-0">
+                                    {displayedFiles.length} objekt
+                                </span>
                             </div>
                         </div>
 
