@@ -1,679 +1,1859 @@
-// reference.js - AutoGrid Premium Drive UX
+// dashboard.js
 
-const { useState, useEffect, useMemo } = React;
-
-const compressReferenceImage = async (file, maxWidth = 1600, quality = 0.8) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let { width, height } = img;
-                if (width > maxWidth) {
-                    height = (maxWidth / width) * height;
-                    width = maxWidth;
-                }
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/webp', quality));
-            };
-        };
-        reader.onerror = reject;
-    });
+const formatTime = (dateStr) => {
+    if (!dateStr || !dateStr.includes('T')) return "";
+    const currentYear = new Date().getFullYear().toString();
+    
+    // Om datumet inte börjar med innevarande år, returnera ingenting
+    if (!dateStr.startsWith(currentYear)) {
+        return "";
+    }
+    
+    // Annars, plocka ut HH:MM (exakt som den gjorde tidigare, men säkrare)
+    return dateStr.split('T')[1].substring(0, 5); 
 };
 
-const FOLDERS = [
-    { id: 'ALLA', label: 'Min Enhet', icon: 'hard-drive', colorClass: 'text-zinc-500' },
-    { id: 'FAVORITER', label: 'Favoriter', icon: 'star', colorClass: 'text-orange-500' },
-    { id: 'OLJA', label: 'Olja & Vätskor', icon: 'droplet', colorClass: 'text-emerald-500' },
-    { id: 'DÄCK', label: 'Däck & Fälg', icon: 'disc', colorClass: 'text-blue-500' },
-    { id: 'MANUALER', label: 'Manualer & Guider', icon: 'book-open', colorClass: 'text-purple-500' },
-    { id: 'ÖVRIGT', label: 'Övrigt', icon: 'package', colorClass: 'text-zinc-500' }
-];
+// Din befintliga formatTime ligger här ovanför...
 
-window.ReferenceView = () => {
-    const [docs, setDocs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentFolder, setCurrentFolder] = useState('ALLA');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedDoc, setSelectedDoc] = useState(null);
-    const [isUploadOpen, setIsUploadOpen] = useState(false);
-    const [uploading, setUploading] = useState(false);
-    const [formData, setFormData] = useState({ id: null, title: '', category: 'ÖVRIGT', text: '', link: '', image: null, file: null });
+// Lägg till denna funktion som saknades:
+const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const targetDate = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [portalNode, setPortalNode] = useState(null);
+    const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
 
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' eller 'list'
+    if (isSameDay(targetDate, today)) return "IDAG";
+    if (isSameDay(targetDate, tomorrow)) return "IMORGON";
 
-    // Räknar ut storlek på Base64-strängar
-    const storageStats = useMemo(() => {
-        let totalBytes = 0;
-        docs.forEach(doc => {
-            if (doc.image) {
-                // Base64 tar ca 3/4 av stränglängden i bytes. Ta bort 'data:image/...;base64,' i beräkningen.
-                const base64Data = doc.image.split(',')[1] || doc.image;
-                totalBytes += (base64Data.length * 3) / 4;
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
+    const day = targetDate.getDate();
+    const month = months[targetDate.getMonth()];
+    
+    // Om det är föregående/kommande år (ex: "28 AUG, 2024")
+    if (targetDate.getFullYear() !== today.getFullYear()) {
+        return `${day} ${month}, ${targetDate.getFullYear()}`;
+    }
+    
+    // Innevarande år (ex: "28 AUG")
+    return `${day} ${month}`;
+};
+
+// Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
+const stripHtml = (html) => {
+    if (!html) return '';
+    const cleanText = String(html)
+        .replace(/<br\s*[\/]?>/gi, " ")
+        .replace(/<[^>]*>?/gm, ''); 
+    return cleanText.trim();
+};
+
+// 2. PREMIUM STATUS BADGE
+window.Badge = React.memo(({ status }) => {
+    const s = (status || 'BOKAD').toUpperCase();
+    const config = {
+        'BOKAD': { bg: 'bg-orange-50/80 dark:bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-200/60 dark:border-orange-500/20', dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]' },
+        'OFFERERAD': { bg: 'bg-blue-50/80 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200/60 dark:border-blue-500/20', dot: 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]' },
+        'KLAR': { bg: 'bg-emerald-50/80 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200/60 dark:border-emerald-500/20', dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' },
+        'FAKTURERAS': { bg: 'bg-zinc-100/80 dark:bg-white/10', text: 'text-zinc-600 dark:text-zinc-300', border: 'border-zinc-200/80 dark:border-white/10', dot: 'bg-zinc-400' },
+    };
+    const style = config[s] || config['BOKAD'];
+    return (
+        <span className={`h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest inline-flex items-center justify-center gap-1 rounded-lg border backdrop-blur-sm transition-all duration-300 ${style.bg} ${style.text} ${style.border}`}>
+            <span className={`w-1 h-1 rounded-full ${style.dot}`}></span>
+            {s}
+        </span>
+    );
+});
+
+// --- WIDGET: AKTIVITET (12 MÅN) & VÄDER (COMBINED) ---
+window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
+    const [showWeather, setShowWeather] = React.useState(false);
+    const [hoveredIdx, setHoveredIdx] = React.useState(null);
+
+    // -- VÄDER DATA --
+    const [weatherData, setWeatherData] = React.useState([]);
+    const [loadingWeather, setLoadingWeather] = React.useState(true);
+    const [weatherError, setWeatherError] = React.useState(false);
+
+    React.useEffect(() => {
+        const lon = "13.3034";
+        const lat = "55.8390";
+        const url = `https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/${lon}/lat/${lat}/data.json`;
+
+        const fetchWeather = async () => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Kunde inte ansluta till SMHI");
+                const data = await response.json();
+                
+                const todayStr = new Date().toISOString().split('T')[0];
+                const dailyData = [];
+                const seenDays = new Set();
+                
+                data.timeSeries.forEach(entry => {
+                    const dateStr = entry.time.split('T')[0];
+                    const isNoon = entry.time.includes("12:00:00");
+                    
+                    if (!seenDays.has(dateStr)) {
+                        if (dateStr === todayStr) {
+                            dailyData.push(entry);
+                            seenDays.add(dateStr);
+                        } else if (isNoon) {
+                            dailyData.push(entry);
+                            seenDays.add(dateStr);
+                        }
+                    }
+                });
+                
+                const mapSmhiIcon = (symbolCode) => {
+                    if (symbolCode === 9999) return 'cloud'; 
+                    if (symbolCode >= 1 && symbolCode <= 2) return 'sun'; 
+                    if (symbolCode >= 3 && symbolCode <= 4) return 'cloud-sun'; 
+                    if (symbolCode >= 5 && symbolCode <= 7) return 'cloud'; 
+                    if (symbolCode >= 8 && symbolCode <= 10) return 'cloud-drizzle'; 
+                    if (symbolCode >= 18 && symbolCode <= 20) return 'cloud-rain'; 
+                    if (symbolCode >= 11 && symbolCode <= 17) return 'cloud-snow'; 
+                    if (symbolCode === 21) return 'cloud-lightning'; 
+                    return 'cloud';
+                };
+
+                const days = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
+                
+                const formattedData = dailyData.slice(0, 5).map((day, index) => {
+                    const date = new Date(day.time);
+                    const temp = day.data?.air_temperature !== undefined && day.data?.air_temperature !== 9999 
+                        ? `${Math.round(day.data.air_temperature)}°` 
+                        : '-°';
+                        
+                    const symbol = day.data?.symbol_code !== undefined && day.data?.symbol_code !== 9999 
+                        ? mapSmhiIcon(day.data.symbol_code) 
+                        : 'cloud';
+                    
+                    return {
+                        day: index === 0 ? 'Idag' : days[date.getDay()],
+                        icon: symbol,
+                        temp: temp
+                    };
+                });
+
+                setWeatherData(formattedData);
+                setLoadingWeather(false);
+            } catch (err) {
+                setWeatherError(true);
+                setLoadingWeather(false);
             }
-            if (doc.text) totalBytes += doc.text.length;
-        });
-
-        const mbUsed = (totalBytes / (1024 * 1024)).toFixed(1);
-        const maxMb = 50; // Visuell maxgräns (justera vid behov)
-        const percentage = Math.min(100, Math.round((mbUsed / maxMb) * 100));
-
-        return { mbUsed, percentage, maxMb };
-    }, [docs]);
-
-    useEffect(() => {
-        setPortalNode(document.body || document.documentElement);
-    }, []);
-
-    const renderModal = (content) => {
-        if (portalNode && window.ReactDOM) {
-            return window.ReactDOM.createPortal(content, portalNode);
-        }
-        return content;
-    };
-
-    useEffect(() => {
-        if (!window.db) return;
-        const unsubscribe = window.db.collection("reference_docs").orderBy("timestamp", "desc").onSnapshot(snap => {
-            setDocs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    useEffect(() => {
-        let timeoutId;
-        if (window.lucide) {
-            timeoutId = setTimeout(() => {
-                try { window.lucide.createIcons(); } catch (e) { console.error(e); }
-            }, 50);
-        }
-        return () => clearTimeout(timeoutId);
-    });
-
-    const displayedFiles = useMemo(() => {
-        return docs.filter(d => {
-            if (searchQuery) return (d.title + d.text + d.category).toLowerCase().includes(searchQuery.toLowerCase());
-            if (currentFolder === 'ALLA') return true;
-            if (currentFolder === 'FAVORITER') return d.isFavorite;
-            return d.category === currentFolder;
-        });
-    }, [docs, currentFolder, searchQuery]);
-
-    const handleClosePanel = () => setSelectedDoc(null);
-
-    const openCreate = () => {
-        setFormData({ id: null, title: '', category: ['ALLA', 'FAVORITER'].includes(currentFolder) ? 'ÖVRIGT' : currentFolder, text: '', link: '', image: null, file: null });
-        setIsUploadOpen(true);
-    };
-
-    const openEdit = (doc) => {
-        setFormData({ ...doc, file: null });
-        setIsUploadOpen(true);
-    };
-
-    const toggleFavorite = async (e, docId, currentState) => {
-        e.stopPropagation();
-        try {
-            await window.db.collection("reference_docs").doc(docId).update({ isFavorite: !currentState });
-            if (selectedDoc?.id === docId) setSelectedDoc(prev => ({ ...prev, isFavorite: !currentState }));
-        } catch (error) { console.error(error); }
-    };
-
-    const handleDelete = async (docId) => {
-        if (!confirm("Är du säker på att du vill radera filen från din Drive?")) return;
-        try {
-            await window.db.collection("reference_docs").doc(docId).delete();
-            setSelectedDoc(null);
-        } catch (error) { console.error(error); }
-    };
-
-    const handleSave = async (e) => {
-        e.preventDefault();
-        if (!formData.title) return;
-        setUploading(true);
-        try {
-            let imageBase64 = formData.image;
-            if (formData.file) imageBase64 = await compressReferenceImage(formData.file);
-
-            const payload = {
-                title: formData.title, category: formData.category, text: formData.text, link: formData.link,
-                image: imageBase64, timestamp: formData.id ? formData.timestamp : new Date().toISOString()
-            };
-
-            if (formData.id) {
-                await window.db.collection("reference_docs").doc(formData.id).update(payload);
-                setSelectedDoc({ ...payload, id: formData.id, isFavorite: selectedDoc?.isFavorite });
-            } else {
-                payload.isFavorite = false;
-                await window.db.collection("reference_docs").add(payload);
-            }
-            setIsUploadOpen(false);
-        } catch (error) { alert("Fel vid uppladdning."); }
-        finally { setUploading(false); }
-    };
-
-    // --- NAVIGERING I LIGHTBOX ---
-    const currentIndex = selectedDoc ? displayedFiles.findIndex(d => d.id === selectedDoc.id) : -1;
-    const hasNext = currentIndex !== -1 && currentIndex < displayedFiles.length - 1;
-    const hasPrev = currentIndex > 0;
-
-    const goToNext = (e) => {
-        if (e) e.stopPropagation();
-        if (hasNext) setSelectedDoc(displayedFiles[currentIndex + 1]);
-    };
-
-    const goToPrev = (e) => {
-        if (e) e.stopPropagation();
-        if (hasPrev) setSelectedDoc(displayedFiles[currentIndex - 1]);
-    };
-
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (!selectedDoc) return;
-            if (e.key === 'ArrowRight') goToNext();
-            if (e.key === 'ArrowLeft') goToPrev();
-            if (e.key === 'Escape') handleClosePanel();
         };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedDoc, currentIndex, displayedFiles]);
-    // ----------------------------
+
+        fetchWeather();
+        const interval = setInterval(fetchWeather, 3600000); 
+        return () => clearInterval(interval);
+    }, []);
+
+    // -- CHART DATA --
+    const chartData = React.useMemo(() => {
+        const now = new Date();
+        const data = [];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+        
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            data.push({ month: monthNames[d.getMonth()], count: 0 });
+        }
+        
+        allJobs.forEach(job => {
+            if (!job.datum || job.deleted) return;
+            const jd = new Date(job.datum);
+            const diffMonths = (now.getFullYear() - jd.getFullYear()) * 12 + now.getMonth() - jd.getMonth();
+            if (diffMonths >= 0 && diffMonths < 12) {
+                data[11 - diffMonths].count++;
+            }
+        });
+        
+        const max = Math.max(...data.map(d => d.count), 5);
+        return { data, max };
+    }, [allJobs]);
+
+    const { data, max } = chartData;
+    
+    const points = data.map((d, i) => ({ 
+        x: (i / 11) * 100, 
+        y: 90 - (d.count / max) * 75 
+    })); 
+    
+    let linePath = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i === 0 ? 0 : i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2 === points.length ? i + 1 : i + 2];
+        
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        
+        linePath += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+    
+    const areaPath = `${linePath} L 100,100 L 0,100 Z`;
+    const totalJobs = data.reduce((sum, d) => sum + d.count, 0);
+
+    React.useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+    }, [showWeather, weatherData]);
 
     return (
-        <>
-            {/* --- HUVUDVY (DRIVE) --- */}
-            {/* h-full, max-h-[100dvh] och overflow-hidden låser hela komponenten stenhårt */}
-            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4 lg:h-full lg:max-h-[100dvh] lg:overflow-hidden">
+        <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-5 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-orange-500/5 dark:hover:shadow-[0_10px_40px_rgba(249,115,22,0.1)] transition-all duration-300 flex flex-col min-h-[170px] justify-between">
+            
+            <div className={`absolute right-0 top-0 w-32 h-32 blur-3xl rounded-full pointer-events-none transition-colors duration-500 ${showWeather ? 'bg-sky-500/10 group-hover:bg-sky-500/20' : 'bg-orange-500/5 group-hover:bg-orange-500/10'}`}></div>
+            
+            {/* HEADER MED VÄXEL-KNAPP */}
+            <div className="relative z-10 flex items-center justify-between mb-2">
+                <div className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${showWeather ? 'text-sky-500' : 'text-orange-500 dark:text-orange-400'}`}>
+                    <window.Icon name={showWeather ? "cloud-sun" : "activity"} size={12} /> 
+                    {showWeather ? 'Prognos Eslöv' : 'Uppdrag (12 Mån)'}
+                </div>
+                
+                <button 
+                    onClick={() => setShowWeather(!showWeather)} 
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg border shadow-sm transition-all active:scale-90 ${showWeather ? 'bg-orange-50 text-orange-500 border-orange-200 dark:bg-sky-500/10 dark:border-sky-500/20 dark:text-sky-400' : 'bg-sky-50 text-sky-500 border-sky-200 dark:bg-orange-500/10 dark:border-orange-500/20 dark:text-orange-400'}`}
+                    title={showWeather ? 'Visa Diagram' : 'Visa Väder'}
+                >
+                    <window.Icon name={showWeather ? "activity" : "cloud-sun"} size={12} />
+                </button>
+            </div>
 
-                {/* --- DESKTOP HEADER (0 padding, krymper inte) --- */}
-                <div className="hidden lg:flex flex-col p-0 shrink-0">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 p-0 shrink-0 z-10 pt-2 lg:pt-4">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <div className="relative group cursor-default shrink-0">
-                                <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                                <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                    <window.Icon name="cloud" size={20} className="md:w-6 md:h-6" />
+            {/* INNEHÅLL */}
+            <div className="relative z-10 flex-1 flex flex-col w-full">
+                {showWeather ? (
+                    /* --- VÄDER VY --- */
+                    <div className="flex items-end justify-between gap-1 w-full h-full pb-1 animate-in fade-in zoom-in-95 duration-300 mt-2">
+                        {loadingWeather ? (
+                            <div className="w-full text-center text-[10px] text-zinc-400 uppercase tracking-widest py-4">Hämtar data...</div>
+                        ) : weatherError ? (
+                            <div className="w-full text-center text-[10px] text-red-400 uppercase tracking-widest py-4">Kunde inte nå SMHI</div>
+                        ) : (
+                            weatherData.map((w, i) => (
+                                <div key={i} className="flex flex-col items-center justify-end flex-1 cursor-default group/day">
+                                    <span className={`text-[8px] font-bold uppercase tracking-widest mb-1.5 transition-all ${i === 0 ? 'text-sky-500' : 'text-zinc-400 group-hover/day:text-zinc-800 dark:group-hover/day:text-zinc-100 group-hover/day:-translate-y-0.5'}`}>
+                                        {w.day}
+                                    </span>
+                                    <div className="transition-transform duration-300 group-hover/day:scale-125 group-hover/day:-translate-y-1">
+                                        <window.Icon name={w.icon} size={16} className={`mb-1.5 ${i === 0 ? 'text-sky-500 drop-shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`} />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-zinc-900 dark:text-white leading-none transition-transform duration-300 group-hover/day:scale-110">
+                                        {w.temp}
+                                    </span>
                                 </div>
-                            </div>
-                            <div className="flex flex-col">
-                                <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                    AUTO<span className="font-light text-zinc-400 dark:text-zinc-500">DRIVE</span>
-                                </h1>
-                                <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                    Filer & Dokument
-                                </p>
-                            </div>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    /* --- DIAGRAM VY (PRO-VERSION) --- */
+                    <div className="flex flex-col flex-1 animate-in fade-in zoom-in-95 duration-300 h-full" onMouseLeave={() => setHoveredIdx(null)}>
+                        <div className="text-3xl sm:text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                            {totalJobs} <span className="text-[12px] sm:text-sm font-bold text-zinc-400 uppercase tracking-widest ml-0.5">st</span>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1 w-full md:w-72 relative group">
-                                <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                                <input
-                                    type="text"
-                                    placeholder="Sök i Drive..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl h-[46px] pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
-                                />
-                                {searchQuery && (
-                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-500 transition-colors">
-                                        <window.Icon name="x" size={12} />
-                                    </button>
-                                )}
+                        <div className="relative w-full flex-1 mt-3 min-h-[65px]">
+                            
+                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-4 opacity-[0.15] dark:opacity-20">
+                                <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
+                                <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
+                                <div className="w-full h-px border-t border-zinc-500"></div>
+                            </div>
+
+                            <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pb-4 overflow-visible" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#f97316" stopOpacity="0.3" />
+                                        <stop offset="100%" stopColor="#f97316" stopOpacity="0.0" />
+                                    </linearGradient>
+                                </defs>
+                                
+                                <path d={areaPath} fill="url(#chartGradient)" />
+                                <path d={linePath} fill="none" stroke="#f97316" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+
+                                {points.map((p, i) => (
+                                    <g key={i} className={`transition-opacity duration-200 ${hoveredIdx === i ? 'opacity-100' : 'opacity-0'}`}>
+                                        <line x1={p.x} y1={p.y} x2={p.x} y2="100" stroke="#f97316" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" className="opacity-50" />
+                                        <circle cx={p.x} cy={p.y} r="3" fill="#1e293b" stroke="#f97316" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                        <circle cx={p.x} cy={p.y} r="6" fill="#f97316" fillOpacity="0.2" vectorEffect="non-scaling-stroke" />
+                                    </g>
+                                ))}
+                            </svg>
+
+                            <div className="absolute inset-0 flex pb-4 z-20">
+                                {data.map((d, i) => {
+                                    let tooltipAlign = "-translate-x-1/2";
+                                    if (i === 0) tooltipAlign = "translate-x-0";
+                                    if (i === 11) tooltipAlign = "-translate-x-full";
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="flex-1 h-full cursor-crosshair relative"
+                                            onMouseEnter={() => setHoveredIdx(i)}
+                                            onTouchStart={() => setHoveredIdx(i)}
+                                        >
+                                            {hoveredIdx === i && (
+                                                <div 
+                                                    className={`absolute top-[-25px] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-2 py-1 rounded-lg shadow-xl pointer-events-none whitespace-nowrap z-30 flex items-center gap-1.5 animate-in zoom-in-95 duration-100 ${tooltipAlign}`} 
+                                                    style={{ left: i === 0 ? '0' : i === 11 ? '100%' : '50%' }}
+                                                >
+                                                    <span className="font-mono font-bold text-[12px] leading-none">{d.count}</span>
+                                                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 pt-[1px]">{d.month}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] font-bold uppercase tracking-widest text-zinc-400 px-0.5">
+                                {data.map((d, i) => (
+                                    <span key={i} className={`transition-colors duration-200 ${hoveredIdx === i ? 'text-orange-500 scale-110' : ([0, 3, 6, 9, 11].includes(i) ? 'opacity-100' : 'opacity-0')}`}>
+                                        {d.month}
+                                    </span>
+                                ))}
                             </div>
                         </div>
                     </div>
+                )}
+            </div>
+        </div>
+    );
+});
+
+// 3. SMART DATA-IKON
+window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
+    const [hasData, setHasData] = React.useState(false);
+    const [pulse, setPulse] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!job) return;
+
+        const isValid = (val) => val && String(val).trim().length > 0 && String(val).trim() !== '-' && String(val).trim().toLowerCase() !== 'okänd modell';
+        const checkOil = (vol) => {
+            if (!vol) return false;
+            const num = parseFloat(String(vol).replace(/,/g, '.').replace(/[^\d.]/g, ''));
+            return !isNaN(num) && num > 0 && num !== 4.3;
+        };
+
+        const localHasData = isValid(job.bilmodell) || isValid(job.motorkod) || isValid(job.vin) || isValid(job.miltal) || isValid(job.årsmodell) || checkOil(job.oljevolym);
+
+        if (localHasData) {
+            setHasData(true);
+            return;
+        }
+
+        const regnr = job.regnr ? job.regnr.toUpperCase().trim() : null;
+        if (!regnr || !window.db) return;
+
+        const unsubscribe = window.db.collection('vehicleSpecs').doc(regnr).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                const registryHasData = isValid(data.model) || isValid(data.engine) || isValid(data.vin) || isValid(data.mileage) || isValid(data.year) || checkOil(data.oil);
+                if (registryHasData && !hasData) {
+                    setPulse(true);
+                    setTimeout(() => setPulse(false), 2000);
+                }
+                setHasData(registryHasData);
+            } else {
+                setHasData(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [job.id, job.regnr, job.bilmodell, job.motorkod, job.vin, job.miltal, job.årsmodell, job.oljevolym, hasData]);
+
+    React.useEffect(() => {
+        if (hasData && window.lucide) window.lucide.createIcons();
+    }, [hasData]);
+
+    if (!hasData) return null;
+
+    if (isDesktop) {
+        return (
+            <div title="Teknisk fordonsdata finns sparad" className={`absolute right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/50 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all duration-300 group-hover:opacity-0 group-hover:scale-75 group-hover:translate-x-4 shadow-sm pointer-events-none z-0 ${pulse ? 'animate-pulse ring-4 ring-emerald-500/20' : ''}`}>
+                <window.Icon name="database" size={16} />
+            </div>
+        );
+    }
+
+    return (
+        <span title="Teknisk data tillgänglig i garaget" className="h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-200/50 dark:border-emerald-500/20 shadow-sm transition-all">
+            <window.Icon name="database" size={9} className={pulse ? "animate-spin" : ""} /> DATA
+        </span>
+    );
+});
+
+const getAvatarTheme = (name) => {
+    if (!name) return 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-[#1e293b] dark:text-zinc-300 dark:border-white/10';
+    const themes = [
+        'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+        'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+        'bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20',
+        'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+        'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
+        'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/20'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return themes[Math.abs(hash) % themes.length];
+};
+
+const AVATAR_BRANDS = { 'Volvo':'volvo', 'BMW':'bmw', 'Audi':'audi', 'VW':'volkswagen', 'Volkswagen':'volkswagen', 'Mercedes':'mercedes', 'Benz':'mercedes', 'Tesla':'tesla', 'Toyota':'toyota', 'Ford':'ford', 'Kia':'kia', 'Saab':'saab', 'Porsche':'porsche', 'Seat':'seat', 'Skoda':'skoda', 'Nissan':'nissan', 'Peugeot':'peugeot', 'Renault':'renault', 'Fiat':'fiat', 'Iveco':'iveco', 'Honda':'honda', 'Mazda':'mazda', 'Hyundai':'hyundai', 'Polestar':'polestar', 'Mini':'mini', 'Jeep':'jeep', 'Land Rover':'landrover', 'Subaru':'subaru', 'Suzuki':'suzuki', 'Lexus':'lexus', 'Chevrolet':'chevrolet', 'Citroen':'citroen', 'Opel':'opel', 'Dacia':'dacia', 'Mitsubishi':'mitsubishi', 'Jaguar':'jaguar', 'Dodge':'dodge', 'Ram':'ram', 'Cupra':'cupra' };
+
+const getLocalBrand = (text1, text2) => {
+    const combined = `${text1 || ''} ${text2 || ''}`.toLowerCase();
+    if (!combined.trim()) return null;
+    for (const [key, slug] of Object.entries(AVATAR_BRANDS)) {
+        if (combined.includes(key.toLowerCase()) || combined.includes(slug)) return slug;
+    }
+    return null;
+};
+
+window.CustomerAvatar = React.memo(({ job }) => {
+    const [brand, setBrand] = React.useState(null);
+    const [hasDbData, setHasDbData] = React.useState(false); 
+
+    React.useEffect(() => {
+        if (job.bilmodell) {
+            const initialBrand = getLocalBrand(job.bilmodell);
+            if (initialBrand) setBrand(initialBrand);
+        }
+        const regnr = job.regnr ? job.regnr.toUpperCase().trim() : null;
+        if (!regnr || !window.db) return;
+        const unsubscribe = window.db.collection('vehicleSpecs').doc(regnr).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                setHasDbData(true);
+                if (data.brand_manual) {
+                    setBrand(data.brand_manual);
+                } else {
+                    const foundBrand = getLocalBrand(data.model, data.fabrikat);
+                    if (foundBrand) setBrand(foundBrand);
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, [job.regnr, job.bilmodell]);
+
+    React.useEffect(() => {
+        if (hasDbData && !brand && window.lucide) window.lucide.createIcons();
+    }, [hasDbData, brand]);
+
+    const initials = job.kundnamn ? job.kundnamn.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : '??';
+    const avatarTheme = getAvatarTheme(job.kundnamn);
+    const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+
+    return (
+        <div className="relative shrink-0 z-10 group-hover:scale-105 transition-transform duration-300">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[12px] font-bold border shadow-sm transition-all ${avatarTheme} ${isDone ? 'opacity-70 grayscale' : ''}`}>
+                {initials}
+            </div>
+            
+            {brand ? (
+                <div className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-white dark:bg-[#1e293b] rounded-full border border-zinc-200 dark:border-white/10 shadow-sm flex items-center justify-center p-[3px] overflow-hidden animate-in zoom-in duration-300 z-20">
+                    <img src={`https://cdn.simpleicons.org/${brand}`} className="w-full h-full object-contain opacity-80 dark:invert transition-opacity hover:opacity-100" alt={brand} onError={(e) => e.target.style.display = 'none'} />
                 </div>
+            ) : 
+            hasDbData ? (
+                <div title="Fordonsteknisk data hittad, men okänt märke" className="absolute -bottom-2 -right-2 w-[26px] h-[26px] bg-zinc-100 dark:bg-[#1e293b] rounded-full border border-zinc-200 dark:border-white/10 shadow-sm flex items-center justify-center overflow-hidden animate-in zoom-in duration-300 z-20 text-zinc-400">
+                    <window.Icon name="car" size={14} /> 
+                </div>
+            ) : null}
+        </div>
+    );
+});
 
-                {/* --- MOBIL HEADER (krymper inte) --- */}
-                <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500 shrink-0">
-                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
+// 3. MOBILKORTET
+const mobileCardPropsAreEqual = (prev, next) => {
+    return prev.job === next.job && prev.job.status === next.job.status && prev.job.datum === next.job.datum;
+};
 
-                        {/* 1. Logga, Titel & Knappar */}
-                        <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
-                            <div className="flex items-center gap-4">
-                                <div className="relative group cursor-default shrink-0">
-                                    <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
-                                    <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
-                                        <window.Icon name="cloud" size={24} />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col">
-                                    <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
-                                        AUTO<span className="text-zinc-400 dark:text-zinc-500 font-light">DRIVE</span>
-                                    </h1>
-                                    <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                        Filer & Dokument
-                                    </p>
-                                </div>
+// --- UPPGRADERAT MOBILKORT ---
+const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
+    const [menuOpen, setMenuOpen] = React.useState(false);
+    const [copied, setCopied] = React.useState(false);
+
+    const isWaiting = !job.datum;
+    const dateString = formatDate(job.datum);
+    const isUrgentDate = ['IDAG', 'IMORGON'].includes(dateString);
+    const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+
+    const vehicleDisplay = job.regnr || job.bilmodell || '-';
+    const isReg = vehicleDisplay.length <= 8 && /\d/.test(vehicleDisplay);
+    const price = parseInt(job.kundpris) || 0;
+    const paid = parseInt(job.betaltBelopp) || 0;
+    const remaining = Math.max(0, price - paid);
+
+    const handleCopy = (e) => {
+        e.stopPropagation();
+        if (!job.regnr || job.regnr === '-') return;
+        navigator.clipboard.writeText(vehicleDisplay);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div
+            onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id, job) : null}
+            className={`w-full relative active:scale-[0.97] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border rounded-2xl
+                ${isDone ? 'opacity-60 grayscale-[0.2] border-zinc-200 dark:border-white/5' : 
+                  isUrgentDate ? 'border-orange-300 dark:border-orange-500/50 shadow-[0_4px_15px_-3px_rgba(249,115,22,0.1)]' : 
+                  'border-zinc-200 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}
+            `}
+        >
+            <div className={`absolute inset-0 transition-colors duration-300 ${
+                isUrgentDate && !isDone 
+                ? 'bg-gradient-to-b from-orange-50 to-white dark:from-orange-500/10 dark:to-[#1e293b]' 
+                : 'bg-white dark:bg-[#1e293b]'
+            }`}></div>
+
+            <div className="p-4 relative z-10">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                        <window.CustomerAvatar job={job} />
+                        <div className="flex flex-col min-w-0">
+                            <div className="text-[15px] font-black tracking-tight truncate leading-tight text-zinc-900 dark:text-white group-hover:text-orange-500 transition-colors">
+                                {job.kundnamn}
                             </div>
-
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={openCreate}
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/10 active:scale-90"
-                                >
-                                    <window.Icon name="plus" size={18} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* 2. Mapparna */}
-                        <div className="flex overflow-x-auto px-0 pt-2 pb-0 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
-                            {FOLDERS.map(folder => {
-                                const isActive = currentFolder === folder.id;
-                                return (
-                                    <button
-                                        key={folder.id}
-                                        onClick={() => setCurrentFolder(folder.id)}
-                                        className={`py-3 px-1 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative flex items-center gap-1.5 ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-400 border-transparent hover:text-zinc-700 dark:hover:text-zinc-200'}`}
-                                    >
-                                        <window.Icon name={folder.icon} size={14} className={isActive && folder.id === 'FAVORITER' ? 'fill-current' : ''} />
-                                        {folder.label}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        {/* 3. Sökfältet */}
-                        <div className="px-0 pt-3 pb-4">
-                            <div className="relative group w-full mb-3">
-                                <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                                <input
-                                    type="text"
-                                    placeholder="Sök i Drive..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl py-3 pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
-                                />
-                                {searchQuery && (
-                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-white/10 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-500 transition-colors shadow-sm border border-zinc-200 dark:border-white/5">
-                                        <window.Icon name="x" size={12} />
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-3 bg-zinc-100/30 dark:bg-black/10 rounded-xl p-2.5 border border-zinc-200/50 dark:border-white/5">
-                                <div className="w-7 h-7 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
-                                    <window.Icon name="hard-drive" size={12} />
-                                </div>
-                                <div className="flex-1 min-w-0 pr-1">
-                                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest mb-1.5">
-                                        <span className="text-zinc-500 dark:text-zinc-400">Databas Lagring</span>
-                                        <span className="text-zinc-900 dark:text-white">{storageStats.mbUsed} / {storageStats.maxMb} MB</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-zinc-200 dark:bg-black/30 rounded-full overflow-hidden">
-                                        <div className="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out" style={{ width: `${storageStats.percentage}%` }}></div>
-                                    </div>
-                                </div>
+                            <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                                <span className="bg-zinc-100 dark:bg-black/30 px-1.5 py-0.5 rounded text-[9px]">#{job.id.substring(0, 6)}</span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* --- DRIVE LAYOUT (Fristående inre scroll) --- */}
-                {/* min-h-0 är extremt viktigt här för att tvinga flexbox att hålla sig inom ramen */}
-                <div className="flex flex-col lg:flex-row flex-1 mt-3 px-0 gap-8 pb-4 lg:min-h-0 lg:overflow-hidden">
-
-                    {/* VÄNSTER MENY (Fastnar, rullar inte) */}
-                    <div className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6 h-full pb-4">
-                        <button 
-                            onClick={openCreate} 
-                            className="shrink-0 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
-                        >
-                            <window.Icon name="plus" size={20} /> Ny Uppladdning
-                        </button>
-
-                        <div className="flex flex-col flex-1 gap-6 min-h-0">
-                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm shrink-0">
-                                <nav className="flex flex-col gap-1">
-                                    {FOLDERS.map(folder => {
-                                        const isActive = currentFolder === folder.id;
-                                        return (
-                                            <button 
-                                                key={folder.id}
-                                                onClick={() => setCurrentFolder(folder.id)}
-                                                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 w-full text-[13px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
-                                            >
-                                                <window.Icon name={folder.icon} size={18} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
-                                                {folder.label}
+                    <div className="flex items-center gap-2 relative z-30">
+                        <window.VehicleDataIcon job={job} isDesktop={false} />
+                        <window.Badge status={job.status} />
+                        
+                        <div className="relative">
+                            <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full active:scale-90 -mr-2">
+                                <window.Icon name="more-horizontal" size={18} />
+                            </button>
+                            {menuOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-100 dark:border-white/10 z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right">
+                                        {job.status !== 'KLAR' && (
+                                            <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-3 rounded-xl transition-colors">
+                                                <window.Icon name="check-circle" size={16} className="text-emerald-500" /> Markera klar
                                             </button>
-                                        );
-                                    })}
-                                </nav>
-                            </div>
-
-                            {/* LAGRINGSINDIKATOR (Trycks alltid ner i botten av den fasta ramen) */}
-                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-5 shadow-sm mt-auto shrink-0">
-                                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    <window.Icon name="hard-drive" size={14} /> Databas (Base64)
-                                </h3>
-                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden mb-2">
-                                    <div className="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out" style={{ width: `${storageStats.percentage}%` }}></div>
-                                </div>
-                                <div className="flex justify-between text-[10px] font-bold">
-                                    <span className="text-zinc-900 dark:text-white">{storageStats.mbUsed} MB</span>
-                                    <span className="text-zinc-400">{storageStats.maxMb} MB</span>
-                                </div>
-                            </div>
+                                        )}
+                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-3 rounded-xl transition-colors">
+                                            <window.Icon name="edit-2" size={16} className="text-blue-500" /> Redigera order
+                                        </button>
+                                        <div className="h-[1px] bg-zinc-100 dark:bg-white/5 my-1 mx-2"></div>
+                                        <button onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) { window.db.collection("jobs").doc(job.id).update({ deleted: true }); } setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 flex items-center gap-3 rounded-xl transition-colors">
+                                            <window.Icon name="trash-2" size={16} className="text-red-500" /> Radera order
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
-                    
-                    {/* HÖGER SIDA (Inre scroll) */}
-                    {/* overflow-y-auto skapar den interna rullningslisten, så hela sidan är stilla! */}
-                    <div className="flex-1 flex flex-col lg:h-full lg:overflow-y-auto custom-scrollbar lg:pr-4 pb-20">
-                            <div className="flex items-center justify-between mb-6 shrink-0">
-                            <h2 className="text-[12px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2 md:gap-3">
-                                {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
-                            </h2>
+                </div>
 
-                            <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                                <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm">
-                                    <button onClick={() => setViewMode('grid')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
-                                        <window.Icon name="grid" size={14} />
-                                    </button>
-                                    <button onClick={() => setViewMode('list')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
-                                        <window.Icon name="list" size={14} />
-                                    </button>
-                                </div>
-                                <span className="text-[9px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">{displayedFiles.length} objekt</span>
-                            </div>
+                <div className="flex items-stretch gap-2 mb-4">
+                    <div className="flex-1 bg-zinc-50/90 dark:bg-black/20 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <window.Icon name="car" size={10} /> Fordon
+                            </span>
                         </div>
-
-                        {loading ? (
-                            <div className="flex-1 flex items-center justify-center text-orange-500"><window.Icon name="loader" size={32} className="animate-spin opacity-50" /></div>
-                        ) : displayedFiles.length === 0 ? (
-                            <div className="flex-1 flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
-                                <div className="w-24 h-24 bg-white dark:bg-[#151b28] rounded-[2rem] flex items-center justify-center text-zinc-300 dark:text-zinc-600 mb-6 shadow-sm ring-1 ring-zinc-100 dark:ring-white/5">
-                                    <window.Icon name="folder-open" size={40} />
+                        
+                        <div 
+                            onClick={handleCopy} 
+                            className={`inline-flex items-center rounded-md border shadow-sm overflow-hidden h-[28px] relative transition-all duration-300 active:scale-95 cursor-pointer
+                                ${copied 
+                                    ? 'border-emerald-400 ring-2 ring-emerald-400/20 dark:border-emerald-500 dark:ring-emerald-500/20' 
+                                    : isReg ? 'border-zinc-300 dark:border-white/10' : 'border-transparent'
+                                }`}
+                        >
+                            {isReg ? (
+                                <>
+                                    <div className="w-[16px] bg-[#003399] h-full flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
+                                        <div className="w-1.5 h-1.5 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
+                                        <span className="text-[7px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
+                                    </div>
+                                    
+                                    <div className={`flex h-full items-center justify-center px-2.5 w-full relative transition-colors duration-300 ${copied ? 'bg-emerald-50 dark:bg-emerald-500/20' : 'bg-white dark:bg-[#1e293b]'}`}>
+                                        <span className={`font-mono font-bold text-[14px] tracking-[0.1em] leading-none mt-[1px] transition-colors duration-300 ${copied ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                                            {vehicleDisplay}
+                                        </span>
+                                        <div className={`absolute right-1.5 transition-all duration-300 ${copied ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+                                            <window.Icon name="check" size={12} className="text-emerald-500" />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className={`relative flex items-center justify-center px-2 py-1 rounded w-full transition-colors duration-300 ${copied ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20' : 'text-zinc-800 dark:text-zinc-300'}`}>
+                                    <span className="font-mono font-bold text-[13px] uppercase leading-none mt-[1px]">
+                                        {vehicleDisplay}
+                                    </span>
+                                    <div className={`absolute right-1 transition-all duration-300 ${copied ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+                                        <window.Icon name="check" size={12} />
+                                    </div>
                                 </div>
-                                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Mappen är tom</h3>
-                                <p className="text-[14px] text-zinc-500 max-w-sm">Inga filer hittades här. Klicka på plusknappen för att ladda upp något nytt.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex-1 bg-zinc-50/90 dark:bg-black/20 shadow-inner rounded-lg p-3 border border-zinc-200/80 dark:border-white/5 flex flex-col justify-between">                        
+                        <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <window.Icon name="calendar" size={10} /> {job.datum ? 'Tid & Datum' : 'Status'}
+                        </span>
+                        {job.datum ? (
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    {!isDone && isUrgentDate && (
+                                        <span className="relative flex h-2 w-2 shrink-0">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                        </span>
+                                    )}
+                                    <span className={`text-[13px] font-black uppercase leading-none truncate ${!isDone && isUrgentDate ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white'}`}>
+                                        {dateString}
+                                    </span>
+                                    <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                       {formatTime(job.datum)}
+                                    </span>
+                                </div>
                             </div>
                         ) : (
-                            <>
-                                {viewMode === 'grid' ? (
-                                    /* --- GRID VY --- */
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 lg:gap-6 pb-4">
-                                        {displayedFiles.map(doc => (
-                                            <div
-                                                key={doc.id}
-                                                onClick={() => setSelectedDoc(doc)}
-                                                className="group relative flex flex-col bg-white dark:bg-[#151b28] rounded-[24px] overflow-hidden cursor-pointer shadow-sm ring-1 ring-zinc-200 dark:ring-white/5 hover:ring-orange-500/50 hover:shadow-lg transition-all duration-300 aspect-square md:aspect-[4/3] transform hover:-translate-y-1"
-                                            >
-                                                <div className="absolute inset-0 bg-zinc-100 dark:bg-black/40">
-                                                    {doc.image ? (
-                                                        <img src={doc.image} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" loading="lazy" alt={doc.title} />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover:scale-110 group-hover:text-orange-500/50 transition-all duration-500">
-                                                            <window.Icon name={doc.link ? "link" : "file-text"} size={48} strokeWidth={1.5} />
-                                                        </div>
-                                                    )}
-                                                </div>
+                            <div className="inline-flex items-center gap-1.5 mt-auto w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
+                                 <window.Icon name="clock" size={10} className="text-zinc-400" />
+                                 <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
 
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
-
-                                                <button
-                                                    onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
-                                                    className={`absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 ${doc.isFavorite ? 'bg-orange-500 text-white shadow-md' : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/60 hover:text-white'}`}
-                                                >
-                                                    <window.Icon name="star" size={14} className={doc.isFavorite ? "fill-white" : ""} />
-                                                </button>
-
-                                                <div className="absolute inset-x-0 bottom-0 p-4 pt-12 flex flex-col justify-end z-10 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
-                                                    <div className="flex items-center gap-2 text-white">
-                                                        <div className="shrink-0 opacity-80">
-                                                            <window.Icon name={FOLDERS.find(f => f.id === doc.category)?.icon || 'file'} size={14} />
-                                                        </div>
-                                                        <h4 className="text-[13px] font-bold truncate tracking-wide drop-shadow-md">
-                                                            {doc.title}
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                <div className="flex items-end justify-between gap-4 mt-2">
+                    <div className="flex-1 min-w-0">
+                        <span className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-tight block truncate">
+                            {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
+                        </span>
+                        {job.kommentar && (
+                            <div 
+                                className="relative group/note cursor-pointer mt-1 w-fit"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onTouchStart={(e) => e.stopPropagation()}
+                                onTouchEnd={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-start gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                                    <window.Icon name="message-square" size={10} className="shrink-0 mt-[2.5px] opacity-70" />
+                                    <span className="line-clamp-4 leading-snug whitespace-normal break-words">
+                                        {stripHtml(job.kommentar)}
+                                    </span>
+                                </div>
+                                
+                                {/* Svävande Tooltip (visas vid tryck på mobil) */}
+                                <div className="absolute left-0 bottom-full mb-2 w-max min-w-[250px] max-w-[320px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-bottom-left">
+                                    <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
+                                        <div className="shrink-0 mt-[2px] text-orange-500">
+                                            <window.Icon name="message-square" size={14} />
+                                        </div>
+                                        <div className="whitespace-normal leading-relaxed break-words">
+                                            {stripHtml(job.kommentar)}
+                                        </div>
                                     </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="shrink-0 text-right">
+                        {price > 0 ? (
+                            <div className="flex flex-col items-end">
+                                {paid > 0 ? (
+                                    <>
+                                        <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest mb-0.5">{paid.toLocaleString('sv-SE')} kr</span>
+                                        <div className="flex items-baseline gap-1 text-orange-500">
+                                            <span className="text-[18px] font-black leading-none tracking-tight">
+                                                {remaining.toLocaleString('sv-SE')}
+                                            </span> 
+                                            <span className="text-[11px] font-bold uppercase tracking-widest">kr</span>
+                                        </div>
+                                    </>
                                 ) : (
-                                    /* --- LIST VY --- */
-                                    <div className="flex flex-col gap-3 pb-4">
-                                        {displayedFiles.map(doc => (
-                                            <div
-                                                key={doc.id}
-                                                onClick={() => setSelectedDoc(doc)}
-                                                className="group flex items-center gap-4 bg-white dark:bg-[#151b28] rounded-2xl p-2.5 pr-4 cursor-pointer shadow-sm ring-1 ring-zinc-200 dark:ring-white/5 hover:ring-orange-500/50 hover:shadow-md transition-all duration-200"
-                                            >
-                                                <div className="w-16 h-16 shrink-0 bg-zinc-100 dark:bg-black/40 rounded-xl overflow-hidden relative">
-                                                    {doc.image ? (
-                                                        <img src={doc.image} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" alt={doc.title} />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600">
-                                                            <window.Icon name={doc.link ? "link" : "file-text"} size={24} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <h4 className="text-[14px] font-bold text-zinc-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
-                                                        {doc.title}
-                                                    </h4>
-                                                    <div className="flex items-center gap-3 mt-1.5">
-                                                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                                                            <window.Icon name={FOLDERS.find(f => f.id === doc.category)?.icon || 'file'} size={12} className={FOLDERS.find(f => f.id === doc.category)?.colorClass} />
-                                                            {doc.category}
-                                                        </span>
-                                                        {doc.text && (
-                                                            <span className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
-                                                                <window.Icon name="align-left" size={10} /> Anteckning
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="shrink-0 flex items-center gap-2">
-                                                    <button
-                                                        onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
-                                                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all opacity-0 group-hover:opacity-100 ${doc.isFavorite ? 'text-orange-500 bg-orange-500/10 opacity-100' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-white'}`}
-                                                    >
-                                                        <window.Icon name="star" size={16} className={doc.isFavorite ? "fill-current" : ""} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-[18px] font-black leading-none tracking-tight text-zinc-900 dark:text-white">
+                                            {price.toLocaleString('sv-SE')}
+                                        </span> 
+                                        <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest">kr</span>
                                     </div>
                                 )}
-                            </>
+                            </div>
+                        ) : (
+                            <span className="text-[9px] font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded-md uppercase tracking-widest">Ej prissatt</span>
                         )}
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}, mobileCardPropsAreEqual);
 
-            {/* --- MODALER (Dessa ligger kvar exakt som du hade dem!) --- */}
+// --- 4. HUVUDVY ---
+const dashboardPropsAreEqual = (prev, next) => {
+    return prev.filteredJobs === next.filteredJobs && prev.activeFilter === next.activeFilter && prev.globalSearch === next.globalSearch && prev.statusCounts === next.statusCounts;
+};
 
-            {/* --- MODALER --- */}
+// --- SMART TEXTTOLK FÖR UPPGIFTER ---
+window.TaskFormatter = React.memo(({ text, isDone }) => {
+    const [copiedToken, setCopiedToken] = React.useState(null);
+    const regex = /(https?:\/\/[^\s]+|[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9])/g;
+    const parts = text.split(regex);
 
-            {/* CINEMA LIGHTBOX (Nu med Navigering Höger/Vänster) */}
-            {selectedDoc && renderModal(
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 lg:p-10" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+    const handleCopy = (e, token) => {
+        e.stopPropagation();
+        if (isDone) return; 
+        navigator.clipboard.writeText(token);
+        setCopiedToken(token);
+        setTimeout(() => setCopiedToken(null), 1500);
+    };
 
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-auto transition-opacity" onClick={handleClosePanel}></div>
+    return (
+        <>
+            {parts.map((part, i) => {
+                if (!part) return null;
+                if (isDone) return <span key={i} className="transition-all duration-500">{part}</span>;
 
-                    <div className="relative w-full max-w-[1400px] h-[95vh] lg:h-[85vh] flex flex-col lg:flex-row bg-[#151b28] rounded-[32px] shadow-2xl ring-1 ring-white/10 overflow-hidden animate-in zoom-in-95 duration-200 z-10 pointer-events-auto">
-
-                        {/* Vänster sida: Bildvisaren */}
-                        <div className="flex-1 flex flex-col relative bg-[#0a0d14] min-w-0 min-h-0 group" onClick={handleClosePanel}>
-
-                            <button onClick={handleClosePanel} className="absolute top-4 lg:top-6 left-4 lg:left-6 z-50 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all border border-white/10 shadow-lg cursor-pointer active:scale-90">
-                                <window.Icon name="x" size={24} />
-                            </button>
-
-                            {/* NAVIGERING: Vänster-pil */}
-                            {hasPrev && (
-                                <button onClick={goToPrev} className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/60 hover:bg-black/90 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-xl active:scale-90 opacity-70 hover:opacity-100">
-                                    <window.Icon name="chevron-left" size={28} />
-                                </button>
-                            )}
-
-                            {/* NAVIGERING: Höger-pil */}
-                            {hasNext && (
-                                <button onClick={goToNext} className="absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/60 hover:bg-black/90 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-xl active:scale-90 opacity-70 hover:opacity-100">
-                                    <window.Icon name="chevron-right" size={28} />
-                                </button>
-                            )}
-
-                            <div className="flex-1 flex items-center justify-center p-6 lg:p-12 min-w-0 min-h-0 overflow-hidden relative">
-                                {selectedDoc.image ? (
-                                    <img
-                                        src={selectedDoc.image}
-                                        className="w-auto h-auto max-w-full max-h-full object-contain rounded-[24px] ring-1 ring-white/10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300"
-                                        alt={selectedDoc.title}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                ) : (
-                                    <window.Icon name="file-text" size={120} className="text-white/10 animate-in zoom-in-95 duration-300" />
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Höger sida: Panel */}
-                        <div className="w-full lg:w-[420px] flex flex-col shrink-0 bg-[#151b28] border-t lg:border-t-0 lg:border-l border-white/5 min-h-[40vh] lg:min-h-0">
-
-                            <div className="lg:hidden w-full flex justify-center pt-4 pb-2 cursor-pointer" onClick={handleClosePanel}>
-                                <div className="w-12 h-1.5 bg-white/20 rounded-full"></div>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 custom-scrollbar">
-                                <div>
-                                    <h2 className="text-2xl font-black text-white leading-tight mb-4 tracking-tight">{selectedDoc.title}</h2>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white/5 border border-white/5 ${FOLDERS.find(f => f.id === selectedDoc.category)?.colorClass || 'text-zinc-400'}`}>
-                                            <window.Icon name={FOLDERS.find(f => f.id === selectedDoc.category)?.icon || 'folder'} size={12} />
-                                            {selectedDoc.category}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-3">
-                                    <button onClick={() => openEdit(selectedDoc)} className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white transition-all border border-white/5 active:scale-95">
-                                        <window.Icon name="edit-2" size={18} />
-                                        <span className="text-[9px] font-bold uppercase tracking-widest mt-1">Redigera</span>
-                                    </button>
-                                    <button onClick={(e) => toggleFavorite(e, selectedDoc.id, selectedDoc.isFavorite)} className={`flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl transition-all active:scale-95 ${selectedDoc.isFavorite ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-white/5 hover:bg-white/10 text-white border border-white/5'}`}>
-                                        <window.Icon name="star" size={18} className={selectedDoc.isFavorite ? "fill-current" : ""} />
-                                        <span className="text-[9px] font-bold uppercase tracking-widest mt-1">Bokmärk</span>
-                                    </button>
-                                    <button onClick={() => handleDelete(selectedDoc.id)} className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all border border-red-500/10 active:scale-95">
-                                        <window.Icon name="trash-2" size={18} />
-                                        <span className="text-[9px] font-bold uppercase tracking-widest mt-1">Radera</span>
-                                    </button>
-                                </div>
-
-                                {selectedDoc.text && (
-                                    <div className="space-y-3">
-                                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><window.Icon name="align-left" size={14} /> Anteckningar</h4>
-                                        <div className="text-[14px] text-zinc-300 whitespace-pre-wrap leading-relaxed bg-white/5 p-5 rounded-2xl border border-white/5">
-                                            {selectedDoc.text}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedDoc.link && (
-                                    <div className="space-y-3">
-                                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><window.Icon name="link" size={14} /> Referenslänk</h4>
-                                        <a href={selectedDoc.link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-2xl text-[12px] font-bold text-blue-400 transition-colors group">
-                                            <span className="truncate pr-4">{selectedDoc.link.replace(/^https?:\/\//, '')}</span>
-                                            <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors shrink-0">
-                                                <window.Icon name="external-link" size={12} />
-                                            </div>
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* UPPLADDNINGS-MODAL */}
-            {isUploadOpen && renderModal(
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsUploadOpen(false)}></div>
-
-                    <div className="relative bg-white dark:bg-[#151b28] rounded-[32px] w-full max-w-lg shadow-2xl flex flex-col ring-1 ring-black/5 dark:ring-white/10 overflow-hidden animate-in zoom-in-95 duration-200 z-10">
-
-                        <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50 dark:bg-[#1a2133]">
-                            <h2 className="text-[13px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-2">
-                                <window.Icon name={formData.id ? "edit-2" : "upload-cloud"} size={16} className="text-orange-500" />
-                                {formData.id ? 'Redigera Dokument' : 'Ladda upp till Drive'}
-                            </h2>
-                            <button onClick={() => setIsUploadOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-500 transition-colors"><window.Icon name="x" size={16} /></button>
-                        </div>
-
-                        <form id="upload-form" onSubmit={handleSave} className="p-6 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
-
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Filnamn / Titel</label>
-                                <input required type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all placeholder:text-zinc-400" placeholder="Ange en titel..." />
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Mapp</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {FOLDERS.filter(f => !['ALLA', 'FAVORITER'].includes(f.id)).map(f => (
-                                        <button
-                                            key={f.id}
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, category: f.id })}
-                                            className={`px-4 py-2.5 rounded-xl ring-1 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all ${formData.category === f.id ? `bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 ring-transparent` : 'bg-white dark:bg-transparent text-zinc-600 dark:text-zinc-400 ring-zinc-200 dark:ring-white/10 hover:bg-zinc-50 dark:hover:bg-white/5'}`}
-                                        >
-                                            <window.Icon name={f.icon} size={14} className={formData.category === f.id ? '' : f.colorClass} /> {f.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Media</label>
-                                <label className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-[24px] cursor-pointer transition-all ${formData.file || formData.image ? 'border-orange-500/50 bg-orange-50 dark:bg-orange-500/5' : 'border-zinc-300 dark:border-white/10 hover:border-orange-400/50 hover:bg-zinc-50 dark:hover:bg-white/5'} text-zinc-500`}>
-                                    <input type="file" accept="image/*" onChange={e => setFormData({ ...formData, file: e.target.files[0] })} className="hidden" />
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${formData.file || formData.image ? 'bg-orange-500 text-white shadow-md' : 'bg-zinc-100 dark:bg-black/40 text-zinc-400'}`}>
-                                        <window.Icon name={formData.file || formData.image ? "check" : "image"} size={20} />
-                                    </div>
-                                    <span className={`text-[12px] font-bold text-center tracking-wide ${formData.file || formData.image ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500'}`}>
-                                        {formData.file ? formData.file.name : (formData.image ? 'Befintlig bild vald. Klicka för att byta.' : 'Klicka för att välja fil från enhet')}
-                                    </span>
-                                </label>
-                            </div>
-
-                            <div className="space-y-5 pt-2">
-                                <div>
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Extern Länk (Valfritt)</label>
-                                    <input type="url" value={formData.link} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono placeholder:text-zinc-400" placeholder="https://..." />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Anteckningar (Valfritt)</label>
-                                    <textarea value={formData.text} onChange={e => setFormData({ ...formData, text: e.target.value })} rows="3" className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none placeholder:text-zinc-400 custom-scrollbar" placeholder="Instruktioner..."></textarea>
-                                </div>
-                            </div>
-                        </form>
-
-                        <div className="p-6 border-t border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-[#1a2133]">
-                            <button form="upload-form" type="submit" disabled={uploading} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-2xl font-bold text-[13px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
-                                {uploading ? <><window.Icon name="loader" size={18} className="animate-spin" /> Sparar...</> : <><window.Icon name="save" size={18} /> Spara</>}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                if (/^https?:\/\//.test(part)) {
+                    return (
+                        <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 border-b border-dashed border-blue-500/50 hover:text-orange-500 hover:border-orange-500 transition-colors pb-[1px]">
+                            {part}
+                        </a>
+                    );
+                }
+                if (/^[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9]$/.test(part)) {
+                    const cleanReg = part.replace(/\s+/g, '').toUpperCase();
+                    const isCopied = copiedToken === cleanReg;
+                    
+                    if (isCopied) {
+                        return (
+                            <span key={i} className="text-emerald-600 dark:text-emerald-400 border-b border-dashed border-emerald-500/30 pb-[1px] animate-in slide-in-from-bottom-1 duration-200">
+                                <window.Icon name="check" size={12} className="inline mr-0.5 relative -top-[1px]" />
+                                {cleanReg}
+                            </span>
+                        );
+                    }
+                    return (
+                        <span key={i} onClick={(e) => handleCopy(e, cleanReg)} title="Klicka för att kopiera" className="cursor-pointer border-b border-dashed border-zinc-400/60 dark:border-zinc-500/60 hover:text-orange-500 hover:border-orange-500 dark:hover:text-orange-400 dark:hover:border-orange-400 transition-colors pb-[1px]">
+                            {cleanReg}
+                        </span>
+                    );
+                }
+                return <span key={i}>{part}</span>;
+            })}
         </>
     );
-};
+});
+
+// --- DASHBOARD WIDGETS ---
+window.DashboardWidgets = React.memo(({ allJobs }) => {
+    
+    const [tasks, setTasks] = React.useState([]);
+    const [newTask, setNewTask] = React.useState('');
+
+    React.useEffect(() => {
+        if (!window.db) return;
+        const unsubscribe = window.db.collection("tasks")
+            .orderBy("createdAt", "asc")
+            .onSnapshot(snap => {
+                const fetchedTasks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setTasks(fetchedTasks);
+            }, error => console.error("Kunde inte hämta uppgifter:", error));
+        return () => unsubscribe();
+    }, []);
+
+    const toggleTask = (id, currentStatus) => {
+        window.db.collection("tasks").doc(id).update({ done: !currentStatus });
+    };
+
+    const addTask = (e) => {
+        e.preventDefault();
+        if (!newTask.trim()) return;
+        window.db.collection("tasks").add({ 
+            text: newTask.trim(), 
+            done: false,
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        });
+        setNewTask('');
+    };
+
+    const deleteTask = (e, id) => {
+        e.stopPropagation();
+        window.db.collection("tasks").doc(id).delete();
+    };
+
+    const clearCompletedTasks = () => {
+        const completed = tasks.filter(t => t.done);
+        if(completed.length > 0 && confirm(`Radera ${completed.length} klara uppgifter?`)) {
+            completed.forEach(t => window.db.collection("tasks").doc(t.id).delete());
+        }
+    };
+
+    const completedTasks = tasks.filter(t => t.done).length;
+    const taskProgress = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
+    const progressColor = taskProgress === 100 ? 'from-emerald-400 to-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'from-orange-400 to-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]';
+
+    const sortedTasks = React.useMemo(() => {
+        return [...tasks].sort((a, b) => {
+            if (a.done !== b.done) return a.done ? 1 : -1;
+            const timeA = a.createdAt?.toMillis?.() || Number.MAX_SAFE_INTEGER;
+            const timeB = b.createdAt?.toMillis?.() || Number.MAX_SAFE_INTEGER;
+            return timeA - timeB;
+        });
+    }, [tasks]);
+
+    const upcomingDays = React.useMemo(() => {
+        const days = [];
+        const today = new Date();
+        const dayNames = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
+        let maxJobs = 1; 
+
+        for (let i = 0; i < 5; i++) {
+            const d = new Date();
+            d.setDate(today.getDate() + i);
+            const targetIso = d.toISOString().split('T')[0];
+            const count = allJobs.filter(j => j.datum && j.datum.startsWith(targetIso)).length;
+            if (count > maxJobs) maxJobs = count;
+        }
+
+        for (let i = 0; i < 5; i++) {
+            const targetDate = new Date();
+            targetDate.setDate(today.getDate() + i);
+            const targetIso = targetDate.toISOString().split('T')[0];
+
+            const jobsThisDay = allJobs.filter(job => {
+                if (!job.datum) return false;
+                return job.datum.startsWith(targetIso);
+            }).length;
+
+            const heightPercent = jobsThisDay === 0 ? 5 : (jobsThisDay / maxJobs) * 100;
+            
+            let colorClass = 'from-orange-400 to-orange-300'; 
+            if (jobsThisDay > 4) colorClass = 'from-orange-500 to-orange-400'; 
+            if (jobsThisDay > 8) colorClass = 'from-red-500 to-orange-500'; 
+
+            days.push({
+                label: i === 0 ? 'Idag' : dayNames[targetDate.getDay()],
+                dateLabel: `${targetDate.getDate()} ${['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'][targetDate.getMonth()]}`,
+                count: jobsThisDay,
+                isToday: i === 0,
+                height: `${heightPercent}%`,
+                colorClass: colorClass
+            });
+        }
+        return days;
+    }, [allJobs]);
+
+    React.useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+    }, [tasks, upcomingDays]);
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-2 lg:mb-8">
+            
+            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col justify-between group/widget relative overflow-hidden bg-[radial-gradient(#00000008_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:12px_12px]">
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all duration-500 group-hover/widget:bg-orange-500/10"></div>
+
+                <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div>
+                        <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white flex items-center gap-2 mb-1 group-hover/widget:text-orange-500 transition-colors">
+                            Arbetsbelastning
+                        </h3>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                            <window.Icon name="calendar" size={10} /> Kommande 5 Dagar
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-emerald-200/50 dark:border-emerald-500/20 shadow-sm">
+                        <window.Icon name="trending-up" size={10} /> Live
+                    </div>
+                </div>
+                
+                <div className="flex items-end justify-between h-32 gap-3 mt-auto pt-4 relative z-10">
+                    <div className="absolute inset-0 flex flex-col justify-between pt-4 pb-8 pointer-events-none px-2 opacity-20 dark:opacity-20 z-0">
+                        <div className="w-full border-b border-dashed border-zinc-800 dark:border-white"></div>
+                        <div className="w-full border-b border-dashed border-zinc-800 dark:border-white"></div>
+                        <div className="w-full border-b border-zinc-800 dark:border-white"></div>
+                    </div>
+
+                    {upcomingDays.map((day, i) => (
+                        <div key={i} className="flex flex-col items-center flex-1 group h-full justify-end cursor-default relative z-10">
+                            <div className="absolute -top-4 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 flex flex-col items-center pointer-events-none z-20">
+                                <span className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap flex flex-col items-center">
+                                    <span>{day.count} Bilar</span>
+                                    <span className="text-[8px] font-mono text-zinc-400 dark:text-zinc-500 uppercase">{day.dateLabel}</span>
+                                </span>
+                                <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-l-transparent border-r-transparent border-t-zinc-900 dark:border-t-white -mt-[1px]"></div>
+                            </div>
+
+                            <div className="w-full max-w-[36px] h-full bg-zinc-100/80 dark:bg-white/5 rounded-xl flex items-end overflow-hidden p-1 relative shadow-inner border border-transparent dark:border-white/5">
+                                <div 
+                                    className={`w-full rounded-lg transition-all duration-1000 ease-out bg-gradient-to-t ${day.isToday || day.count > 0 ? day.colorClass : 'from-zinc-300 to-zinc-200 dark:from-[#2a3441] dark:to-[#1e293b]'} group-hover:brightness-110`}
+                                    style={{ height: day.height }}
+                                ></div>
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest mt-3 transition-colors ${day.isToday ? 'text-orange-500' : 'text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`}>
+                                {day.label}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden flex flex-col min-h-[220px]">
+                
+                <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-100 dark:bg-white/5">
+                    <div 
+                        className={`h-full bg-gradient-to-r transition-all duration-500 ease-out ${progressColor}`}
+                        style={{ width: `${taskProgress}%` }}
+                    ></div>
+                </div>
+                
+                <div className="flex justify-between items-end mb-4 relative z-10 pt-2">
+                    <div>
+                        <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+                            Mina Uppgifter
+                        </h3>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold">
+                                {completedTasks} av {tasks.length} Klara
+                            </span>
+                            {completedTasks > 0 && (
+                                <button onClick={clearCompletedTasks} title="Rensa klara uppgifter" className="text-[9px] text-red-400 hover:text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors uppercase font-bold tracking-wider">
+                                    <window.Icon name="trash" size={10} /> Rensa
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className={`text-2xl font-light tracking-tighter transition-colors duration-500 ${taskProgress === 100 ? 'text-emerald-500' : 'text-zinc-900 dark:text-white'}`}>
+                        {taskProgress}<span className={`text-[12px] font-bold ml-0.5 ${taskProgress === 100 ? 'text-emerald-500/50' : 'text-zinc-400'}`}>%</span>
+                    </div>
+                </div>
+
+                <div className="flex-1 space-y-2.5 overflow-y-auto custom-scrollbar relative z-10 pr-2 max-h-[140px] mt-2">
+                    {tasks.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-4 opacity-50">
+                            <window.Icon name="check-circle" size={24} className="mb-2 text-zinc-400" />
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Allt är klart!</p>
+                        </div>
+                    )}
+                    {sortedTasks.map((task) => (
+                        <div key={task.id} className={`flex items-start justify-between gap-3 group py-1.5 px-2 -mx-2 rounded-xl transition-all duration-300 ${task.done ? 'opacity-50' : 'hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                            
+                            <div className="flex items-start gap-3 min-w-0 flex-1">
+                                <div 
+                                    onClick={() => toggleTask(task.id, task.done)}
+                                    className={`mt-[2px] w-5 h-5 rounded-md border flex items-center justify-center shrink-0 cursor-pointer transition-all duration-300 ${task.done ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'border-zinc-300 dark:border-white/20 bg-white/50 dark:bg-black/20 text-transparent hover:border-orange-500 hover:shadow-sm'}`}
+                                >
+                                    <window.Icon name="check" size={12} className={`transition-transform duration-300 ${task.done ? 'scale-100' : 'scale-0 opacity-0'}`} />
+                                </div>
+                                
+                                <div className="flex-1 min-w-0 select-text text-[13px] font-medium leading-relaxed relative">
+                                    <span className={`transition-colors duration-500 ${task.done ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-200'}`}>
+                                        <window.TaskFormatter text={task.text} isDone={task.done} />
+                                    </span>
+                                    <div className={`absolute left-0 top-1/2 h-[1.5px] bg-zinc-400 dark:bg-zinc-500 transition-all duration-300 ease-out origin-left ${task.done ? 'w-full opacity-100 scale-x-100' : 'w-0 opacity-0 scale-x-0'}`}></div>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onClick={(e) => deleteTask(e, task.id)} 
+                                className="mt-0.5 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-all shrink-0 cursor-pointer"
+                                title="Radera uppgift"
+                            >
+                                <window.Icon name="trash-2" size={12} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                
+                <form onSubmit={addTask} className="mt-4 relative z-10 flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-white/5">
+                    <input
+                        type="text"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        placeholder="Skriv ny uppgift..."
+                        className="flex-1 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-[12px] text-zinc-900 dark:text-white outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all placeholder:text-zinc-400"
+                    />
+                    <button 
+                        type="submit" 
+                        disabled={!newTask.trim()}
+                        className="w-10 h-10 bg-zinc-900 dark:bg-white disabled:bg-zinc-100 dark:disabled:bg-white/5 disabled:text-zinc-400 hover:bg-orange-500 dark:hover:bg-orange-500 text-white dark:text-zinc-900 rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-sm"
+                    >
+                        <window.Icon name="plus" size={16} />
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+});
+
+window.DashboardView = React.memo(({
+    allJobs,
+    filteredJobs, setEditingJob, setView,
+    activeFilter, setActiveFilter, statusCounts,
+    globalSearch, setGlobalSearch
+}) => {
+    const [historyTarget, setHistoryTarget] = React.useState(null);
+    const [visibleCount, setVisibleCount] = React.useState(20);
+    const [copiedRegId, setCopiedRegId] = React.useState(null); 
+    const [sortConfig, setSortConfig] = React.useState({ key: null, direction: 'asc' });
+    const [showMobileWidgets, setShowMobileWidgets] = React.useState(false);
+    const [showWaitingJobs, setShowWaitingJobs] = React.useState(false);
+    
+    React.useEffect(() => {
+        setVisibleCount(20);
+    }, [activeFilter, globalSearch]);
+
+    const sortedAndFilteredJobs = React.useMemo(() => {
+        let result = [...filteredJobs];
+
+        result.sort((a, b) => {
+            if (!sortConfig.key) {
+                if (!a.datum) return 1; if (!b.datum) return -1;
+                return activeFilter === 'BOKAD' ? a.datum.localeCompare(b.datum) : b.datum.localeCompare(a.datum);
+            }
+
+            let aVal = a[sortConfig.key];
+            let bVal = b[sortConfig.key];
+
+            if (sortConfig.key === 'kundpris') {
+                aVal = parseInt(aVal) || 0;
+                bVal = parseInt(bVal) || 0;
+            } else {
+                aVal = (aVal || '').toString().toLowerCase();
+                bVal = (bVal || '').toString().toLowerCase();
+            }
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        return result;
+    }, [filteredJobs, sortConfig, activeFilter]);
+
+    const visibleJobs = sortedAndFilteredJobs.slice(0, visibleCount);
+    const hasMore = visibleCount < sortedAndFilteredJobs.length;
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+        setSortConfig({ key, direction });
+    };
+
+    const handleCopyDesktop = (e, regnr, jobId) => {
+        e.stopPropagation();
+        if (!regnr || regnr === '-') return;
+        navigator.clipboard.writeText(regnr);
+        setCopiedRegId(jobId);
+        setTimeout(() => setCopiedRegId(null), 2000);
+    };
+
+    const tabsRef = React.useRef(null);
+    const filters = ['ALLA', 'BOKAD', 'FAKTURERAS', 'OFFERERAD', 'KLAR'];
+
+    const stats30Days = React.useMemo(() => {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return allJobs.filter(j => j.status === 'KLAR' && j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted).length;
+    }, [allJobs]);
+
+    const statsNext7Days = React.useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const nextWeek = new Date(today);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        return allJobs.filter(j => {
+            if (!j.datum || j.status === 'KLAR' || j.deleted) return false;
+            const d = new Date(j.datum);
+            return d >= today && d <= nextWeek;
+        }).length;
+    }, [allJobs]);
+
+    const revenue30Days = React.useMemo(() => {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return allJobs.reduce((sum, j) => {
+            if (j.status === 'KLAR' && j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted) {
+                return sum + (parseInt(j.kundpris) || 0);
+            }
+            return sum;
+        }, 0);
+    }, [allJobs]);
+
+    const nextUpcomingJob = React.useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = allJobs.filter(j => {
+            if (!j.datum || j.status === 'KLAR' || j.deleted) return false;
+            const d = new Date(j.datum);
+            return d >= today;
+        }).sort((a, b) => a.datum.localeCompare(b.datum));
+        return upcoming.length > 0 ? upcoming[0] : null;
+    }, [allJobs]);
+
+    const invoiceStats = React.useMemo(() => {
+        if (activeFilter !== 'FAKTURERAS') return { total: 0, topCustomers: [] };
+        let totalRemaining = 0;
+        const customers = {};
+        filteredJobs.forEach(job => {
+            const price = parseInt(job.kundpris) || 0;
+            const paid = parseInt(job.betaltBelopp) || 0;
+            const remaining = Math.max(0, price - paid);
+
+            if (remaining > 0) { 
+                totalRemaining += remaining;
+                const name = job.kundnamn || 'Okänd kund';
+                customers[name] = (customers[name] || 0) + remaining;
+            }
+        });
+        return {
+            total: totalRemaining,
+            topCustomers: Object.entries(customers).sort((a, b) => b[1] - a[1])
+        };
+    }, [filteredJobs, activeFilter]);
+
+    const getHeaderDate = () => {
+        const d = new Date();
+        const days = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+        return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+    };
+
+    const handleOpenHistory = React.useCallback((regnr, jobId, job) => {
+        if (window.openVehicleProfile) {
+            window.openVehicleProfile(regnr, jobId); 
+        }
+    }, []);
+
+    React.useEffect(() => {
+        if (tabsRef.current) {
+            const activeBtn = tabsRef.current.querySelector(`[data-tab="${activeFilter}"]`);
+            if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }, [activeFilter]);
+
+    const touchStart = React.useRef(null);
+    const touchStartY = React.useRef(null);
+    const onTouchStart = React.useCallback((e) => {
+        touchStart.current = e.targetTouches[0].clientX;
+        touchStartY.current = e.targetTouches[0].clientY;
+    }, []);
+    const onTouchEnd = React.useCallback((e) => {
+        if (touchStart.current === null || touchStartY.current === null) return;
+        const xDiff = touchStart.current - e.changedTouches[0].clientX;
+        const yDiff = touchStartY.current - e.changedTouches[0].clientY;
+        touchStart.current = null; touchStartY.current = null;
+        if (Math.abs(yDiff) >= Math.abs(xDiff) || Math.abs(xDiff) < 50) return;
+        const currIdx = filters.indexOf(activeFilter);
+        if (currIdx === -1) return;
+        let nextIdx = currIdx + (xDiff > 0 ? 1 : -1);
+        if (nextIdx >= 0 && nextIdx < filters.length) setActiveFilter(filters[nextIdx]);
+    }, [activeFilter, filters, setActiveFilter]);
+
+    return (
+        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
+
+            <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block transition-all duration-700"></div>
+
+            <div className="hidden lg:flex flex-col h-full lg:px-0 lg:pt-0">
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="relative group cursor-default shrink-0">
+                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <window.Icon name="grid" size={20} className="md:w-6 md:h-6" />
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                DASH<span className="text-zinc-400 dark:text-zinc-500 font-light">BOARD</span>
+                            </h1>
+                            <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                Operationell Status
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
+                            className="group w-64 bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-lg"
+                        >
+                            <div className="flex items-center gap-2">
+                                <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-400 group-hover:text-orange-500 group-hover:rotate-12 transition-all duration-300" />
+                                <span className="text-[12px] font-bold tracking-widest uppercase">Sök i systemet...</span>
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-400 bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-md shadow-sm">⌘K</span>
+                        </button>
+                        <button onClick={() => setView('NEW_JOB')} className="group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white border border-orange-400/50 h-[46px] px-8 rounded-xl flex items-center gap-3 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_12px_25px_-4px_rgba(249,115,22,0.6)] hover:-translate-y-0.5 transition-all duration-300 active:scale-95 active:translate-y-0">
+                            <span className="text-[12px] font-black uppercase tracking-widest">Nytt Uppdrag</span>
+                            <window.Icon name="plus" size={16} className="group-hover:rotate-90 transition-transform duration-500" />
+                        </button>
+                    </div>
+                </div>
+
+                <window.DashboardWidgets allJobs={allJobs} />
+
+                <div className="grid grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
+                        <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-emerald-500/10"></div>
+                        <window.Icon name="check-circle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-emerald-500/10 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500" />
+                        
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div>
+                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    <window.Icon name="bar-chart-2" size={12} /> Utförda (30d)
+                                </div>
+                                <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                    {stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                </div>
+                            </div>
+                            
+                            {/* NYTT: Omsättning & Snitt */}
+                            <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5 flex items-center justify-between">
+                                <div>
+                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Omsättning</div>
+                                    <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">{revenue30Days.toLocaleString('sv-SE')} kr</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Snitt / bil</div>
+                                    <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">
+                                        {stats30Days > 0 ? Math.round(revenue30Days / stats30Days).toLocaleString('sv-SE') : 0} kr
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {activeFilter === 'FAKTURERAS' ? (
+                        <div className="col-span-2 bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden flex items-center justify-between group animate-in fade-in slide-in-from-right-4 duration-500 transition-all">
+                            <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                            <window.Icon name="file-text" size={120} className="absolute -right-4 -bottom-8 text-zinc-100 dark:text-white/[0.02] group-hover:text-orange-500/10 group-hover:scale-105 transition-all duration-700" />
+                            
+                            <div className="relative z-10 flex flex-col justify-center">
+                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
+                                    <window.Icon name="pie-chart" size={12} className="text-orange-500" /> Att Fakturera
+                                </div>
+                                <div className="text-5xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-xl font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">kr</span>
+                                </div>
+                            </div>
+
+                            <div className="relative z-10 flex flex-col justify-center flex-1 max-w-sm pl-8 ml-8 border-l border-zinc-200 dark:border-white/10">
+                                <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-3 flex items-center justify-between">
+                                    <span>Berörda Kunder ({invoiceStats.topCustomers.length})</span>
+                                </div>
+                                <div className="space-y-2.5">
+                                    {invoiceStats.topCustomers.slice(0, 3).map(([name, amount], idx) => {
+                                        const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                        return (
+                                            <div key={idx} className="flex flex-col gap-1 group/cust">
+                                                <div className="flex justify-between text-[11px] font-medium text-zinc-700 dark:text-zinc-300 group-hover/cust:text-orange-600 dark:group-hover/cust:text-orange-400 transition-colors">
+                                                    <span className="truncate pr-2">{name}</span>
+                                                    <span className="font-mono text-zinc-500 dark:text-zinc-400 shrink-0">{amount.toLocaleString('sv-SE')} kr</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
+                                                    <div className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${percentage}%` }}></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {invoiceStats.topCustomers.length > 3 && (
+                                        <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 pt-1">
+                                            + {invoiceStats.topCustomers.length - 3} fler kunder
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
+                                <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-blue-500/10"></div>
+                                <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500" />
+                                
+                                <div className="relative z-10 flex flex-col h-full">
+                                    <div>
+                                        <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                                            <window.Icon name="clock" size={12} /> Kommande (7d)
+                                        </div>
+                                        <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                            {statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* NYTT: Nästa uppdrag */}
+                                    <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5">
+                                        <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-1.5">Nästa i kalendern</div>
+                                        {nextUpcomingJob ? (
+                                            <div className="flex items-center justify-between bg-zinc-50/80 dark:bg-black/20 rounded-lg p-2 border border-zinc-200/50 dark:border-white/5 shadow-sm">
+                                                <div className="flex flex-col min-w-0 pr-2">
+                                                    <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 truncate leading-tight">{nextUpcomingJob.kundnamn}</span>
+                                                    <span className="text-[9px] text-zinc-500 font-mono font-medium mt-0.5">{nextUpcomingJob.regnr || nextUpcomingJob.bilmodell || 'Inget fordon'}</span>
+                                                </div>
+                                                <div className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-500/20 px-2 py-1 rounded border border-blue-200/50 dark:border-blue-500/20 shrink-0">
+                                                    {formatDate(nextUpcomingJob.datum)}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] text-zinc-500 italic flex items-center gap-1.5 h-[34px]">
+                                                <window.Icon name="calendar-off" size={12} /> Helt ledigt
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <window.ActivityAndWeatherWidget allJobs={allJobs} />
+                        </>
+                    )}
+                </div>
+
+                <div className="flex flex-col flex-1 pb-10 relative">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 pt-2 bg-transparent">
+                    <div className="flex space-x-2">
+                            {filters.map(f => (
+                                <button 
+                                    key={f} 
+                                    data-tab={f} 
+                                    onClick={() => setActiveFilter(f)} 
+                                    className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-white/5 rounded-t-lg'}`}
+                                >
+                                    {f}
+                                    {(statusCounts[f] || 0) > 0 && (
+                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] transition-colors ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
+                                            {statusCounts[f]}
+                                        </span>
+                                    )}
+                                    {activeFilter === f && (
+                                        <span className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="relative group mb-2 sm:mb-0 shrink-0">
+                            <input 
+                                type="text" 
+                                placeholder="SÖK I LISTAN..." 
+                                className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-2.5 pl-10 pr-10 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-xl shadow-sm"
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                            />
+                            <window.Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
+                            
+                            {globalSearch ? (
+                                <button 
+                                    onClick={() => setGlobalSearch('')}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-red-500 bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all active:scale-95"
+                                    title="Rensa sökning"
+                                >
+                                    <window.Icon name="x" size={12} />
+                                </button>
+                            ) : (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                                    <kbd className="hidden sm:flex items-center justify-center px-1.5 py-0.5 text-[9px] font-sans font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded text-center">⌘F</kbd>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-[#1e293b] rounded-b-3xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col min-h-[500px]">
+                        <div className="flex-1 overflow-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200 dark:border-white/10">
+                                    <tr>
+                                        <th className="pl-8 pr-4 py-4 w-[25%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Kund
+                                                <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundnamn' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('paket')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Service Typ
+                                                <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'paket' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('regnr')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Reg.nr
+                                                <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'regnr' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('datum')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Bokat datum
+                                                <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'datum' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('status')}>
+                                            <div className="flex items-center gap-1.5">
+                                                Status
+                                                <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'status' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 w-[15%] text-right cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundpris')}>
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                Pris
+                                                <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundpris' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                            </div>
+                                        </th>
+                                        <th className="pl-4 pr-8 py-4 w-[10%] text-right"></th>
+                                    </tr>
+                                </thead>
+                                
+                                {visibleJobs.length === 0 ? (
+                                    <tbody>
+                                        <tr>
+                                            <td colSpan="7" className="py-32 text-center">
+                                                <div className="flex flex-col items-center justify-center text-zinc-400">
+                                                    <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center">
+                                                        <window.Icon name="inbox" size={32} className="opacity-50" />
+                                                    </div>
+                                                    <span className="text-[14px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest mb-1">Inga uppdrag hittades</span>
+                                                    <span className="text-[11px] text-zinc-400">Prova att ändra sökning eller byta flik.</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                ) : (
+                                    <tbody className="divide-y divide-zinc-100 dark:divide-white/5 relative z-10">
+                                    {(() => {
+                                        let hasRenderedWaitingHeader = false;
+                                        
+                                        return visibleJobs.map((job, index) => {
+                                            const dateText = formatDate(job.datum);
+                                            const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
+                                            const regDisplay = job.regnr || job.bilmodell || '-';
+                                            const isReg = regDisplay.length <= 8 && /\d/.test(regDisplay);
+                                            const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+                                            const price = parseInt(job.kundpris) || 0;
+                                            const paid = parseInt(job.betaltBelopp) || 0;
+                                            const remaining = Math.max(0, price - paid);
+                                            
+                                            const isWaiting = !job.datum;
+                                            const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader;
+                                            if (showWaitingHeader) hasRenderedWaitingHeader = true;
+
+                                            return (
+                                                <React.Fragment key={job.id}>
+                                                    {showWaitingHeader && (
+                                                        <tr>
+                                                            <td colSpan="7" className="py-8 relative">
+                                                                <div className="absolute inset-0 flex items-center px-4" aria-hidden="true">
+                                                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
+                                                                </div>
+                                                                <div className="relative flex justify-center">
+                                                                    <span className="bg-zinc-50 dark:bg-[#1a2235] px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 shadow-sm">
+                                                                        <window.Icon name="inbox" size={14} className="text-zinc-400" />
+                                                                        Oplanerade Uppdrag
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+
+                                                    <tr 
+                                                        onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
+                                                        className={`group transition-colors duration-200 cursor-pointer relative bg-transparent hover:bg-zinc-50 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
+                                                    >
+                                                        <td className="pl-7 pr-4 py-4 align-middle relative">
+                                                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
+                                                            <div className="flex items-center gap-4">
+                                                                <window.CustomerAvatar job={job} />
+                                                                <div>
+                                                                    <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-none mb-1.5 group-hover:text-orange-500 transition-colors">{job.kundnamn}</div>
+                                                                    <div className="flex items-center gap-2 text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                                                                        <window.Icon name="hash" size={10} className="inline mr-1 -mt-0.5" />{job.id.substring(0,6)}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle relative">
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                                                                    {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
+                                                                </span>
+                                                                
+                                                                {job.kommentar && (
+                                                                    <div 
+                                                                        className="relative group/note cursor-pointer mt-1 w-fit"
+                                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                                        onTouchStart={(e) => e.stopPropagation()}
+                                                                        onTouchEnd={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[140px]">
+                                                                            <window.Icon name="message-square" size={10} className="shrink-0" />
+                                                                            <span className="truncate">{stripHtml(job.kommentar)}</span>
+                                                                        </div>
+                                                                        
+                                                                        <div className="absolute left-[-10px] top-[-10px] w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-top-left">
+                                                                            <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
+                                                                                <div className="shrink-0 mt-[2px] text-orange-500">
+                                                                                    <window.Icon name="message-square" size={14} />
+                                                                                </div>
+                                                                                <div className="whitespace-normal leading-relaxed break-words">
+                                                                                    {stripHtml(job.kommentar)}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            <div 
+                                                                onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
+                                                                className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-black/20 border-zinc-200 dark:border-white/10' : 'bg-transparent border-transparent'} transition-all`}
+                                                            >
+                                                                {copiedRegId === job.id && (
+                                                                    <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
+                                                                        <window.Icon name="check" size={14} />
+                                                                    </div>
+                                                                )}
+                                                                {isReg ? (
+                                                                    <>
+                                                                        <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
+                                                                            <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
+                                                                            <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
+                                                                        </div>
+                                                                        <div className="flex-1 flex items-center justify-center bg-white dark:bg-transparent">
+                                                                            <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px] group-hover/copy:text-orange-600 dark:group-hover/copy:text-orange-400 transition-colors">{regDisplay}</span>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="flex-1 flex items-center justify-start px-1">
+                                                                        <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px] group-hover/copy:text-orange-500 transition-colors">{regDisplay}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            {job.datum ? (
+                                                                <div className="flex items-center gap-2.5">
+                                                                    {isUrgent && (
+                                                                        <span className="relative flex h-2 w-2 shrink-0">
+                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
+                                                                        </span>
+                                                                    )}
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className={`text-[13px] font-black uppercase leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white transition-colors'}`}>
+                                                                            {dateText}
+                                                                        </span>
+                                                                        <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                                            {formatTime(job.datum)}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
+                                                                     <window.Icon name="clock" size={10} className="text-zinc-400" />
+                                                                     <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
+                                                                </div>
+                                                            )}
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle">
+                                                            <window.Badge status={job.status} />
+                                                        </td>
+
+                                                        <td className="px-4 py-4 align-middle text-right">
+                                                            <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
+                                                                {paid > 0 ? (
+                                                                <>
+                                                                    <span className="text-[10px] text-emerald-500 font-bold font-sans tracking-widest uppercase mb-1">
+                                                                        {paid.toLocaleString('sv-SE')} kr
+                                                                    </span>
+                                                                        <div className="text-orange-500">
+                                                                            {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="text-zinc-700 dark:text-zinc-200">
+                                                                        {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="pl-4 pr-8 py-4 align-middle text-right relative">
+                                                            <window.VehicleDataIcon job={job} isDesktop={true} />
+                                                            <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 ease-out flex justify-end items-center gap-2 relative z-10 scale-95 group-hover:scale-100">
+                                                                {job.status !== 'KLAR' && (
+                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                        <window.Icon name="check" size={16} />
+                                                                    </button>
+                                                                )}
+                                                                <button onClick={() => setView('NEW_JOB', { job: job })} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                    <window.Icon name="edit-2" size={16} />
+                                                                </button>
+                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 shadow-sm transition-all hover:scale-110 active:scale-95">
+                                                                    <window.Icon name="trash" size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </React.Fragment>
+                                            );
+                                        });
+                                    })()}
+                                </tbody>
+                                )}
+                            </table>
+                            
+                            {hasMore && (
+                                <div className="flex justify-center p-6 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-black/20">
+                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-8 py-3 bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 hover:border-orange-500/30 text-zinc-600 dark:text-zinc-300 hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
+                                        Ladda in fler <span className="opacity-50 font-medium">({sortedAndFilteredJobs.length - visibleCount} kvar)</span>
+                                    </button>
+                                </div>
+                            )}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="lg:hidden flex flex-col min-h-[100dvh] bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
+                <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
+                    <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
+                        
+                        <div className="flex items-center gap-4">
+                            <div className="relative group cursor-default shrink-0">
+                                <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
+                                <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <window.Icon name="grid" size={24} />
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                                    DASH<span className="text-zinc-400 dark:text-zinc-500 font-light">BOARD</span>
+                                </h1>
+                                <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                    {getHeaderDate()}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => setShowMobileWidgets(!showMobileWidgets)} 
+                                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${showMobileWidgets ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 dark:hover:text-white border-transparent dark:border-white/10'}`}
+                            >
+                                <window.Icon name={showMobileWidgets ? "chevron-up" : "layout-dashboard"} size={18} />
+                            </button>
+                            <button 
+                                onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
+                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/10 active:scale-90"
+                            >
+                                <window.Icon name="search" size={18} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        ref={tabsRef}
+                        className="flex overflow-x-auto px-4 pt-2 pb-0 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                    >
+                        {filters.map(f => {
+                            const isActive = activeFilter === f;
+                            const count = statusCounts[f] || 0;
+                            return (
+                                <button key={f} data-tab={f} onClick={() => { setActiveFilter(f); setShowMobileWidgets(false); }} className={`py-3 px-1 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-400 border-transparent'}`}>
+                                    {f}
+                                    {count > 0 && <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>{count}</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {showMobileWidgets && (
+                        <div className="absolute top-full left-0 right-0 bg-zinc-50/95 dark:bg-[#09090b]/95 backdrop-blur-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-b border-zinc-200 dark:border-white/10 p-4 pt-5 animate-in slide-in-from-top-2 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar z-50">
+                            <window.DashboardWidgets allJobs={allJobs} />
+                        </div>
+                    )}
+                </div>
+
+                {activeFilter === 'FAKTURERAS' && invoiceStats.total > 0 && (
+                    <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#1e293b]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                        
+                        <div className="flex items-center justify-between relative z-10">
+                            <div>
+                                <h3 className="text-[9px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                    <window.Icon name="pie-chart" size={10} className="text-orange-500" /> Att Fakturera
+                                </h3>
+                                <div className="text-2xl font-light text-zinc-900 dark:text-white tracking-tighter leading-none">
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-0.5">kr</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-[10px] font-medium bg-zinc-50 dark:bg-black/30 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg border border-zinc-200/80 dark:border-white/10 flex items-center gap-1.5">
+                                    <window.Icon name="users" size={10} /> {invoiceStats.topCustomers.length} Kunder
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="relative z-10 mt-4 pt-4 border-t border-zinc-100 dark:border-white/10">
+                            <div className="space-y-3.5">
+                                {invoiceStats.topCustomers.slice(0, 5).map(([name, amount], idx) => {
+                                    const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                    return (
+                                        <div key={idx} className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between items-end text-[12px] font-medium text-zinc-800 dark:text-zinc-200 leading-none">
+                                                <span className="truncate pr-2">{name}</span>
+                                                <span className="font-mono font-bold shrink-0">
+                                                    {amount.toLocaleString('sv-SE')} <span className="text-[9px] text-zinc-400 font-sans tracking-widest">kr</span>
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" 
+                                                    style={{ width: `${percentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                
+                                {invoiceStats.topCustomers.length > 5 && (
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-center text-zinc-400 dark:text-zinc-500 pt-1">
+                                        + {invoiceStats.topCustomers.length - 5} fler kunder
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                    </div>
+                )}
+
+                {['ALLA', 'BOKAD', 'KLAR'].includes(activeFilter) && (
+                    <div className="px-3 mt-3 mb-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="relative group">
+                            <input 
+                                type="text" 
+                                placeholder="SÖK I ALLA UPPDRAG..." 
+                                className="bg-white dark:bg-[#1e293b] border border-zinc-200/80 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-3.5 pl-11 pr-11 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-2xl shadow-sm"
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                            />
+                            <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
+                            
+                            {globalSearch && (
+                                <button 
+                                    onClick={() => setGlobalSearch('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-red-500 bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-xl transition-all active:scale-95"
+                                    title="Rensa sökning"
+                                >
+                                    <window.Icon name="x" size={14} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                <div className="px-3 pt-1 pb-6 flex flex-col">
+                    {sortedAndFilteredJobs.length > 0 ? (
+                        <>
+                            {(() => {
+                                let lastDate = null;
+                                const waitingJobsCount = visibleJobs.filter(j => !j.datum).length;
+
+                                return visibleJobs.map((job, index) => { 
+                                    const isWaiting = !job.datum;
+                                    const currentDate = isWaiting ? 'INVÄNTAR DATUM' : formatDate(job.datum);
+                                    const showHeader = currentDate !== lastDate;
+                                    lastDate = currentDate;
+
+                                    if (isWaiting) {
+                                        return (
+                                            <React.Fragment key={job.id}>
+                                                {showHeader && (
+                                                    <div className={`${index === 0 ? 'mt-4' : 'mt-8'} mb-6 px-4 flex justify-center relative animate-in fade-in duration-300`}>
+                                                        <div className="absolute inset-0 flex items-center px-6" aria-hidden="true">
+                                                            <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => setShowWaitingJobs(!showWaitingJobs)}
+                                                            className="relative bg-white dark:bg-[#1e293b] px-5 py-2 rounded-full border border-zinc-200 dark:border-white/10 shadow-sm flex items-center gap-2.5 hover:border-orange-500 hover:text-orange-500 text-zinc-600 dark:text-zinc-300 transition-all active:scale-95 z-10"
+                                                        >
+                                                            <window.Icon name="inbox" size={14} className={showWaitingJobs ? 'text-orange-500' : 'text-zinc-400'} />
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest mt-[1px] flex items-center gap-1.5">
+                                                                Oplanerade
+                                                                <span className="bg-zinc-100 dark:bg-white/5 text-zinc-400 px-1.5 py-0.5 rounded-md text-[9px]">{waitingJobsCount}</span>
+                                                            </span>
+                                                            <window.Icon name="chevron-down" size={14} className={`transition-transform duration-300 ${showWaitingJobs ? 'rotate-180 text-orange-500' : 'text-zinc-400'}`} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                
+                                                {showWaitingJobs && (
+                                                    <div className="animate-in slide-in-from-top-2 fade-in duration-300">
+                                                        <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    }
+
+                                    return (
+                                        <React.Fragment key={job.id}>
+                                            {showHeader && (
+                                                <div className={`${index === 0 ? 'mt-3' : 'mt-6'} mb-3 px-2 flex items-center gap-2 animate-in fade-in duration-300`}>
+                                                    <div className="h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+                                                    <h3 className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                                                        {currentDate}
+                                                    </h3>
+                                                </div>
+                                            )}
+                                            <MobileJobCard job={job} setView={setView} onOpenHistory={handleOpenHistory} />
+                                        </React.Fragment>
+                                    );
+                                });
+                            })()}
+                            
+                            {hasMore && (
+                                <div className="mt-2 mb-6 px-1">
+                                    <button onClick={() => setVisibleCount(prev => prev + 20)} className="w-full py-4 bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-orange-500/50 text-zinc-700 dark:text-zinc-300 hover:text-orange-500 text-[12px] font-bold uppercase tracking-widest rounded-2xl shadow-lg active:scale-95 transition-all">
+                                        Ladda in fler ({sortedAndFilteredJobs.length - visibleCount} kvar)
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-24 text-zinc-400">
+                        <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-[#1e293b] flex items-center justify-center shadow-lg">
+                            <window.Icon name="inbox" size={32} className="opacity-50 text-zinc-400" />
+                        </div>
+                        <span className="text-[14px] font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest mb-1">Inga uppdrag hittades</span>
+                        <span className="text-[11px] text-zinc-400">Prova att ändra sökning eller byta flik.</span>
+                    </div>
+                )}
+                </div>
+            </div>
+        </div>
+    );
+}, dashboardPropsAreEqual);
