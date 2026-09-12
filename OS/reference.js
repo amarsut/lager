@@ -191,10 +191,11 @@ window.ReferenceView = () => {
     return (
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
-            <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
+            {/* h-full, max-h-[100dvh] och overflow-hidden låser hela komponenten stenhårt */}
+            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4 lg:h-full lg:max-h-[100dvh] lg:overflow-hidden">
 
-                {/* --- DESKTOP HEADER (0 padding) --- */}
-                <div className="hidden lg:flex flex-col h-full p-0">
+                {/* --- DESKTOP HEADER (0 padding, krymper inte) --- */}
+                <div className="hidden lg:flex flex-col p-0 shrink-0">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 p-0 shrink-0 z-10">
                         <div className="flex items-center gap-3 md:gap-4">
                             <div className="relative group cursor-default shrink-0">
@@ -234,11 +235,11 @@ window.ReferenceView = () => {
                     </div>
                 </div>
 
-                {/* --- MOBIL HEADER --- */}
-                <div className="lg:hidden flex flex-col min-h-fit bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
+                {/* --- MOBIL HEADER (krymper inte) --- */}
+                <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500 shrink-0">
                     <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
 
-                        {/* 1. Logga, Titel & Knappar (0 padding för X:0 Y:0) */}
+                        {/* 1. Logga, Titel & Knappar */}
                         <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                             <div className="flex items-center gap-4">
                                 <div className="relative group cursor-default shrink-0">
@@ -258,7 +259,6 @@ window.ReferenceView = () => {
                                 </div>
                             </div>
 
-                            {/* Plus-knappen */}
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={openCreate}
@@ -269,7 +269,7 @@ window.ReferenceView = () => {
                             </div>
                         </div>
 
-                        {/* 2. Mapparna som scrollbara flikar (Indrag borttaget = px-0) */}
+                        {/* 2. Mapparna */}
                         <div className="flex overflow-x-auto px-0 pt-2 pb-0 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
                             {FOLDERS.map(folder => {
                                 const isActive = currentFolder === folder.id;
@@ -286,7 +286,7 @@ window.ReferenceView = () => {
                             })}
                         </div>
 
-                        {/* 3. Sökfältet (Indrag borttaget = px-0) */}
+                        {/* 3. Sökfältet */}
                         <div className="px-0 pt-3 pb-4">
                             <div className="relative group w-full mb-3">
                                 <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
@@ -304,7 +304,6 @@ window.ReferenceView = () => {
                                 )}
                             </div>
 
-                            {/* Kompakt lagringsindikator för mobilen */}
                             <div className="flex items-center gap-3 bg-zinc-100/30 dark:bg-black/10 rounded-xl p-2.5 border border-zinc-200/50 dark:border-white/5">
                                 <div className="w-7 h-7 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
                                     <window.Icon name="hard-drive" size={12} />
@@ -320,28 +319,29 @@ window.ReferenceView = () => {
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
-                {/* DRIVE LAYOUT */}
-                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-3 px-0 gap-8 pb-4 lg:pb-6">
+                {/* --- DRIVE LAYOUT (Fristående inre scroll) --- */}
+                {/* min-h-0 är extremt viktigt här för att tvinga flexbox att hålla sig inom ramen */}
+                <div className="flex flex-col lg:flex-row flex-1 mt-3 px-0 gap-8 pb-4 lg:min-h-0 lg:overflow-hidden">
 
-                    <div className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6">
-                        <button
-                            onClick={openCreate}
-                            className="flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
+                    {/* VÄNSTER MENY (Fastnar, rullar inte) */}
+                    <div className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6 h-full pb-4">
+                        <button 
+                            onClick={openCreate} 
+                            className="shrink-0 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
                         >
                             <window.Icon name="plus" size={20} /> Ny Uppladdning
                         </button>
 
-                        <div className="flex flex-col h-full gap-6">
-                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm">
+                        <div className="flex flex-col flex-1 gap-6 min-h-0">
+                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm shrink-0">
                                 <nav className="flex flex-col gap-1">
                                     {FOLDERS.map(folder => {
                                         const isActive = currentFolder === folder.id;
                                         return (
-                                            <button
+                                            <button 
                                                 key={folder.id}
                                                 onClick={() => setCurrentFolder(folder.id)}
                                                 className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 w-full text-[13px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
@@ -354,8 +354,8 @@ window.ReferenceView = () => {
                                 </nav>
                             </div>
 
-                            {/* LAGRINGSINDIKATOR */}
-                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-5 shadow-sm mt-auto mb-4">
+                            {/* LAGRINGSINDIKATOR (Trycks alltid ner i botten av den fasta ramen) */}
+                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-5 shadow-sm mt-auto shrink-0">
                                 <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <window.Icon name="hard-drive" size={14} /> Databas (Base64)
                                 </h3>
@@ -369,15 +369,16 @@ window.ReferenceView = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="flex-1 flex flex-col min-w-0">
-                        <div className="flex items-center justify-between mb-6">
+                    
+                    {/* HÖGER SIDA (Inre scroll) */}
+                    {/* overflow-y-auto skapar den interna rullningslisten, så hela sidan är stilla! */}
+                    <div className="flex-1 flex flex-col lg:h-full lg:overflow-y-auto custom-scrollbar lg:pr-4 pb-20">
+                            <div className="flex items-center justify-between mb-6 shrink-0">
                             <h2 className="text-[12px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2 md:gap-3">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
 
-                            {/* Toggle-knappar & Antal (Nu synliga överallt) */}
-                            <div className="flex items-center gap-2 md:gap-3">
+                            <div className="flex items-center gap-2 md:gap-3 shrink-0">
                                 <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm">
                                     <button onClick={() => setViewMode('grid')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
                                         <window.Icon name="grid" size={14} />
@@ -494,6 +495,8 @@ window.ReferenceView = () => {
                     </div>
                 </div>
             </div>
+
+            {/* --- MODALER (Dessa ligger kvar exakt som du hade dem!) --- */}
 
             {/* --- MODALER --- */}
 
