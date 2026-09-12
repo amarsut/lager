@@ -453,8 +453,8 @@ window.ReferenceView = () => {
                             <>
                                 {viewMode === 'grid' ? (
                                     /* --- GOOGLE DRIVE GRID-KORT (2-kolumner på mobil, responsiv höjd) --- */
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-4">
-                                        {displayedFiles.map(doc => {
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
+                                            {displayedFiles.map(doc => {
                                             const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                                             
                                             const pdfFile = isPdf(doc.image);
