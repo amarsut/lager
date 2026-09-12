@@ -215,10 +215,10 @@ window.ReferenceView = () => {
 
                 {/* --- MOBIL HEADER --- */}
                 <div className="lg:hidden flex flex-col min-h-fit bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
-                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
+                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
                         
-                        {/* 1. Logga, Titel & Knappar (Samma padding som Dashboard) */}
-                        <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
+                        {/* 1. Logga, Titel & Knappar (0 padding för X:0 Y:0) */}
+                        <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                             <div className="flex items-center gap-4">
                                 <div className="relative group cursor-default shrink-0">
                                     <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
@@ -237,7 +237,7 @@ window.ReferenceView = () => {
                                 </div>
                             </div>
 
-                            {/* Ny placering av Plus-knappen */}
+                            {/* Plus-knappen */}
                             <div className="flex items-center gap-2">
                                 <button 
                                     onClick={openCreate} 
@@ -248,8 +248,8 @@ window.ReferenceView = () => {
                             </div>
                         </div>
 
-                        {/* 2. Mapparna som scrollbara flikar */}
-                        <div className="flex overflow-x-auto px-4 pt-2 pb-0 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
+                        {/* 2. Mapparna som scrollbara flikar (Indrag borttaget = px-0) */}
+                        <div className="flex overflow-x-auto px-0 pt-2 pb-0 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
                             {FOLDERS.map(folder => {
                                 const isActive = currentFolder === folder.id;
                                 return (
@@ -265,8 +265,8 @@ window.ReferenceView = () => {
                             })}
                         </div>
 
-                        {/* 3. Sökfältet */}
-                        <div className="px-4 pt-3 pb-3">
+                        {/* 3. Sökfältet (Indrag borttaget = px-0) */}
+                        <div className="px-0 pt-3 pb-3">
                             <div className="relative group w-full">
                                 <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
                                 <input 
