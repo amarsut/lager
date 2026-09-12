@@ -64,6 +64,7 @@ window.ReferenceView = () => {
     const [currentFolder, setCurrentFolder] = useState('ALLA');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDoc, setSelectedDoc] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({ id: null, title: '', category: 'ÖVRIGT', text: '', link: '', image: null, file: null });
@@ -371,30 +372,32 @@ window.ReferenceView = () => {
                 {/* --- DRIVE LAYOUT --- */}
                 <div className="flex flex-col lg:flex-row flex-1 mt-2 px-0 gap-8 pb-4 relative items-start">
                     
-                    {/* VÄNSTER MENY (Sticky) */}
+                    {/* VÄNSTER MENY (Originalfärger men mer kompakt) */}
                     <div 
-                        className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6 sticky top-[130px]" 
+                        className="w-full lg:w-[230px] shrink-0 hidden lg:flex flex-col gap-4 sticky top-[130px]" 
                         style={{ height: 'calc(100vh - 150px)' }}
                     >
+                        {/* Huvudknapp: Samma orange färg men smidigare storlek */}
                         <button 
                             onClick={openCreate} 
-                            className="shrink-0 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
+                            className="shrink-0 flex items-center justify-center gap-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 px-4 font-bold text-[12px] uppercase tracking-widest shadow-sm transition-all active:scale-95"
                         >
-                            <window.Icon name="plus" size={20} /> Ny Uppladdning
+                            <window.Icon name="plus" size={18} /> Ny Uppladdning
                         </button>
 
-                        <div className="flex flex-col flex-1 gap-6 min-h-0">
-                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm shrink-0">
-                                <nav className="flex flex-col gap-1">
+                        <div className="flex flex-col flex-1 gap-4 min-h-0">
+                            {/* Mapplista: Vit bakgrund tillbaka, men tajtare */}
+                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-2xl p-2 shadow-sm shrink-0">
+                                <nav className="flex flex-col gap-0.5">
                                     {FOLDERS.map(folder => {
                                         const isActive = currentFolder === folder.id;
                                         return (
                                             <button 
                                                 key={folder.id}
                                                 onClick={() => setCurrentFolder(folder.id)}
-                                                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 w-full text-[13px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
+                                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 w-full text-[11px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
                                             >
-                                                <window.Icon name={folder.icon} size={18} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
+                                                <window.Icon name={folder.icon} size={16} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
                                                 {folder.label}
                                             </button>
                                         );
@@ -402,7 +405,8 @@ window.ReferenceView = () => {
                                 </nav>
                             </div>
 
-                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-5 shadow-sm mt-auto shrink-0">
+                            {/* Databas: Samma stil, lite tajtare */}
+                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-2xl p-4 shadow-sm mt-auto shrink-0">
                                 <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <window.Icon name="hard-drive" size={14} /> Databas (Base64)
                                 </h3>
@@ -420,22 +424,78 @@ window.ReferenceView = () => {
                     {/* HÖGER SIDA (Med aktiv intern scroll) */}
                     <div className="flex-1 flex flex-col min-w-0 pb-12 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar lg:pr-4">
                         
-                        {/* Sektionstitel & Vy-växlare */}
-                        <div className="flex items-center justify-between mb-6 shrink-0">
+                        {/* Sektionstitel, Action Bar & Vy-växlare */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 shrink-0 gap-4">
                             <h2 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
+                                
+                                {/* ACTION BAR (Visas endast när en fil är markerad via 3-prickarna) */}
+                                {selectedFiles.length > 0 && (
+                                    <div className="flex items-center gap-1 bg-white dark:bg-[#151b28] border border-blue-200 dark:border-blue-900/50 shadow-sm rounded-xl px-1.5 py-1 mr-1 animate-in fade-in zoom-in-95 duration-200">
+                                        {selectedFiles.length === 1 && (
+                                            <button 
+                                                onClick={() => openEdit(displayedFiles.find(f => f.id === selectedFiles[0]))} 
+                                                className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-blue-500 dark:hover:bg-white/10 transition-colors" title="Redigera"
+                                            >
+                                                <window.Icon name="edit-2" size={14} />
+                                            </button>
+                                        )}
+                                        <button 
+                                            onClick={() => {
+                                                selectedFiles.forEach(id => {
+                                                    const doc = displayedFiles.find(f => f.id === id);
+                                                    if (doc) toggleFavorite({ stopPropagation: () => {} }, doc.id, doc.isFavorite);
+                                                });
+                                                setSelectedFiles([]);
+                                            }} 
+                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-white/10 transition-colors" title="Bokmärk"
+                                        >
+                                            <window.Icon name="star" size={14} />
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                selectedFiles.forEach(id => {
+                                                    const doc = displayedFiles.find(f => f.id === id);
+                                                    if (doc) handleDownload(doc);
+                                                });
+                                                setSelectedFiles([]);
+                                            }} 
+                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-white/10 transition-colors" title="Ladda ner"
+                                        >
+                                            <window.Icon name="download" size={14} />
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                selectedFiles.forEach(id => handleDelete(id));
+                                                setSelectedFiles([]);
+                                            }} 
+                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-white/10 transition-colors" title="Radera"
+                                        >
+                                            <window.Icon name="trash-2" size={14} />
+                                        </button>
+                                        <div className="w-[1px] h-4 bg-zinc-200 dark:bg-white/10 mx-1"></div>
+                                        <button 
+                                            onClick={() => setSelectedFiles([])} 
+                                            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/10 transition-colors" title="Avbryt"
+                                        >
+                                            <window.Icon name="x" size={14} />
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* VY-VÄXLARE */}
                                 <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm">
-                                    <button onClick={() => setViewMode('grid')} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
+                                    <button onClick={() => setViewMode('grid')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
                                         <window.Icon name="grid" size={14} />
                                     </button>
-                                    <button onClick={() => setViewMode('list')} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
+                                    <button onClick={() => setViewMode('list')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
                                         <window.Icon name="list" size={14} />
                                     </button>
                                 </div>
-                                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">{displayedFiles.length} objekt</span>
+                                <span className="hidden sm:block text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">{displayedFiles.length} objekt</span>
                             </div>
                         </div>
 
@@ -452,79 +512,63 @@ window.ReferenceView = () => {
                         ) : (
                             <>
                                 {viewMode === 'grid' ? (
-                                    /* --- GOOGLE DRIVE GRID-KORT (2-kolumner på mobil, responsiv höjd) --- */
+                                    /* --- GOOGLE DRIVE GRID-KORT --- */
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
-                                            {displayedFiles.map(doc => {
+                                        {displayedFiles.map(doc => {
                                             const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-                                            
                                             const pdfFile = isPdf(doc.image);
                                             const isHtmlFile = doc.title.toLowerCase().endsWith('.html') || (doc.image && doc.image.includes('text/html'));
+                                            const isSelected = selectedFiles.includes(doc.id);
                                             
-                                            // Smart ikonval för headern på kortet
-                                            let topIcon = "file-text";
-                                            let topIconColor = "text-blue-500";
-                                            if (pdfFile) {
-                                                topIcon = "file-text";
-                                                topIconColor = "text-red-500";
-                                            } else if (isHtmlFile) {
-                                                topIcon = "code";
-                                                topIconColor = "text-orange-500";
-                                            } else if (doc.link) {
-                                                topIcon = "link";
-                                                topIconColor = "text-sky-500";
-                                            } else if (doc.image && doc.image.startsWith('data:image/')) {
-                                                topIcon = "image";
-                                                topIconColor = "text-emerald-500";
-                                            } else if (doc.text) {
-                                                topIcon = "align-left";
-                                                topIconColor = "text-amber-500";
-                                            }
+                                            let topIcon = "file-text", topIconColor = "text-blue-500";
+                                            if (pdfFile) { topIcon = "file-text"; topIconColor = "text-red-500"; }
+                                            else if (isHtmlFile) { topIcon = "code"; topIconColor = "text-orange-500"; }
+                                            else if (doc.link) { topIcon = "link"; topIconColor = "text-sky-500"; }
+                                            else if (doc.image && doc.image.startsWith('data:image/')) { topIcon = "image"; topIconColor = "text-emerald-500"; }
+                                            else if (doc.text) { topIcon = "align-left"; topIconColor = "text-amber-500"; }
 
                                             return (
                                                 <div 
                                                     key={doc.id}
                                                     onClick={() => setSelectedDoc(doc)}
-                                                    className="group flex flex-col bg-white dark:bg-[#151b28] rounded-xl md:rounded-2xl overflow-hidden cursor-pointer border border-zinc-200/80 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow-md transition-all duration-200"
+                                                    className={`group flex flex-col rounded-xl md:rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md border ${isSelected ? 'bg-blue-50/40 dark:bg-[#1a2333] border-blue-400 ring-1 ring-blue-400' : 'bg-white dark:bg-[#151b28] border-zinc-200/80 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10'}`}
                                                 >
-                                                    {/* Titel och korrekt ikon överst */}
-                                                    <div className="px-2.5 md:px-3.5 pt-2.5 md:pt-3 pb-2 flex items-center justify-between gap-1.5 md:gap-2 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02]">
+                                                    {/* Header */}
+                                                    <div className={`px-2.5 md:px-3.5 pt-2.5 md:pt-3 pb-2 flex items-center justify-between gap-1.5 md:gap-2 border-b bg-transparent ${isSelected ? 'border-blue-200 dark:border-blue-900/50' : 'border-zinc-100 dark:border-white/5'}`}>
                                                         <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
                                                             <window.Icon name={topIcon} size={14} className={`${topIconColor} shrink-0 w-3 h-3 md:w-3.5 md:h-3.5`} />
-                                                            <h4 className="text-[11px] md:text-[12px] font-medium text-zinc-900 dark:text-white truncate">
+                                                            <h4 className={`text-[11px] md:text-[12px] font-medium truncate ${isSelected ? 'text-blue-700 dark:text-blue-400' : 'text-zinc-900 dark:text-white'}`}>
                                                                 {doc.title}
                                                             </h4>
                                                         </div>
-                                                        <button 
-                                                            onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
-                                                            className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-all shrink-0 ${doc.isFavorite ? 'text-orange-500 opacity-100' : 'text-zinc-400 opacity-0 group-hover:opacity-100 hover:bg-zinc-200 dark:hover:bg-white/10'}`}
-                                                        >
-                                                            <window.Icon name="star" size={12} className={doc.isFavorite ? "fill-current" : ""} />
-                                                        </button>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            {doc.isFavorite && <window.Icon name="star" size={12} className="fill-orange-400 text-orange-400 shrink-0 mr-1" />}
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedFiles(prev => prev.includes(doc.id) ? prev.filter(id => id !== doc.id) : [doc.id]);
+                                                                }}
+                                                                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${isSelected ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400' : 'text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10'}`}
+                                                            >
+                                                                <window.Icon name="more-vertical" size={14} />
+                                                            </button>
+                                                        </div>
                                                     </div>
 
-                                                    {/* Stor förhandsvisningsyta (Anpassad höjd & perfekt skalning) */}
-                                                    <div className="h-28 sm:h-36 md:h-40 w-full bg-zinc-50/50 dark:bg-[#0a0d14]/60 relative overflow-hidden flex items-center justify-center p-2 md:p-3 border-b border-zinc-100 dark:border-white/5">
+                                                    {/* Preview (Nu med äkta Google Drive #f0f4f9 bakgrund) */}
+                                                    <div className={`h-28 sm:h-36 md:h-40 w-full relative overflow-hidden flex items-center justify-center p-2 md:p-3 border-b ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-900/50' : 'bg-[#f0f4f9] dark:bg-[#0a0d14]/60 border-zinc-100 dark:border-white/5'}`}>
                                                         {doc.image && doc.image.startsWith('data:image/') ? (
-                                                            /* --- BILDER --- */
                                                             <img src={doc.image} className="w-full h-full object-cover rounded-md shadow-sm group-hover:scale-105 transition-transform duration-300" loading="lazy" alt={doc.title} />
                                                         ) : isHtmlFile ? (
-                                                            /* --- HTML (Live-iframe anpassad för 2-kolumn) --- */
                                                             <div className="w-full h-full relative pointer-events-none overflow-hidden rounded-md bg-white border border-zinc-200 shadow-sm">
-                                                                <iframe 
-                                                                    src={doc.image} 
-                                                                    className="w-[400%] h-[400%] absolute top-0 left-0 border-0 bg-white pointer-events-none select-none" 
-                                                                    style={{ transform: 'scale(0.25)', transformOrigin: 'top left' }}
-                                                                    title={doc.title}
-                                                                />
+                                                                <iframe src={doc.image} className="w-[400%] h-[400%] absolute top-0 left-0 border-0 bg-white pointer-events-none select-none" style={{ transform: 'scale(0.25)', transformOrigin: 'top left' }} title={doc.title} />
                                                             </div>
                                                         ) : pdfFile ? (
-                                                            /* --- PDF: Stor enhetlig ikon (skalad för mobil) --- */
                                                             <div className="flex flex-col items-center justify-center gap-1.5 md:gap-3 group-hover:scale-105 transition-transform duration-300 scale-75 md:scale-100">
                                                                 <window.Icon name="file-text" size={48} className="text-red-400 drop-shadow-sm" strokeWidth={1.2} />
                                                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-red-500">PDF-Dokument</span>
                                                             </div>
                                                         ) : (
-                                                            /* --- ÖVRIGT (Däck Caddy m.m) --- */
                                                             <div className="flex flex-col items-center justify-center gap-1.5 md:gap-3 group-hover:scale-105 transition-transform duration-300 scale-75 md:scale-100">
                                                                 <window.Icon name={doc.link ? "link" : "file-text"} size={48} className="text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400 transition-colors drop-shadow-sm" strokeWidth={1.2} />
                                                                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center leading-tight">Ingen<br className="md:hidden" /> förhandsvisning</span>
@@ -532,8 +576,8 @@ window.ReferenceView = () => {
                                                         )}
                                                     </div>
 
-                                                    {/* Underkant med datum och kategori */}
-                                                    <div className="px-2.5 md:px-3.5 py-2 flex items-center justify-between text-[9px] md:text-[10px] text-zinc-400 bg-white dark:bg-[#151b28]">
+                                                    {/* Footer */}
+                                                    <div className={`px-2.5 md:px-3.5 py-2 flex items-center justify-between text-[9px] md:text-[10px] bg-transparent ${isSelected ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-zinc-400'}`}>
                                                         <span className="truncate">{doc.category}</span>
                                                         {formattedDate && <span className="font-mono shrink-0">{formattedDate}</span>}
                                                     </div>
@@ -542,85 +586,63 @@ window.ReferenceView = () => {
                                         })}
                                     </div>
                                 ) : (
-                                    /* --- LISTVY MED PDF OCH HTML-STÖD --- */
+                                    /* --- LISTVY MED MARKERING --- */
                                     <div className="bg-white dark:bg-[#151b28] rounded-2xl border border-zinc-200 dark:border-white/5 overflow-hidden shadow-sm">
                                         <div className="grid grid-cols-12 px-4 py-3 bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                                            <div className="col-span-6">Namn</div>
-                                            <div className="col-span-3">Kategori</div>
-                                            <div className="col-span-2">Datum</div>
+                                            <div className="col-span-7 sm:col-span-6">Namn</div>
+                                            <div className="col-span-4 sm:col-span-3">Kategori</div>
+                                            <div className="hidden sm:block col-span-2">Datum</div>
                                             <div className="col-span-1 text-right"></div>
                                         </div>
                                         <div className="divide-y divide-zinc-100 dark:divide-white/5">
                                             {displayedFiles.map(doc => {
                                                 const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-                                                
-                                                // Identifiera filtyp
                                                 const pdfFile = isPdf(doc.image);
                                                 const isHtmlFile = doc.title.toLowerCase().endsWith('.html') || (doc.image && doc.image.includes('text/html'));
+                                                const isSelected = selectedFiles.includes(doc.id);
                                                 
-                                                // Standard-ikon och färg
-                                                let iconName = "file-text";
-                                                let iconBg = "bg-blue-500/10 text-blue-500";
-                                                
-                                                if (pdfFile) {
-                                                    iconName = "file-text";
-                                                    iconBg = "bg-red-500/10 text-red-500";
-                                                } else if (isHtmlFile) {
-                                                    iconName = "code";
-                                                    iconBg = "bg-orange-500/10 text-orange-500";
-                                                } else if (doc.image && doc.image.startsWith('data:image/')) {
-                                                    iconName = "image";
-                                                    iconBg = "bg-emerald-500/10 text-emerald-500";
-                                                } else if (doc.link) {
-                                                    iconName = "link";
-                                                    iconBg = "bg-sky-500/10 text-sky-500";
-                                                } else if (doc.text) {
-                                                    iconName = "align-left";
-                                                    iconBg = "bg-amber-500/10 text-amber-500";
-                                                }
+                                                let iconName = "file-text", iconBg = "bg-blue-500/10 text-blue-500";
+                                                if (pdfFile) { iconName = "file-text"; iconBg = "bg-red-500/10 text-red-500"; }
+                                                else if (isHtmlFile) { iconName = "code"; iconBg = "bg-orange-500/10 text-orange-500"; }
+                                                else if (doc.image && doc.image.startsWith('data:image/')) { iconName = "image"; iconBg = "bg-emerald-500/10 text-emerald-500"; }
+                                                else if (doc.link) { iconName = "link"; iconBg = "bg-sky-500/10 text-sky-500"; }
+                                                else if (doc.text) { iconName = "align-left"; iconBg = "bg-amber-500/10 text-amber-500"; }
 
                                                 return (
                                                     <div 
                                                         key={doc.id}
                                                         onClick={() => setSelectedDoc(doc)}
-                                                        className="grid grid-cols-12 px-4 py-3 items-center hover:bg-zinc-50 dark:hover:bg-white/5 cursor-pointer transition-colors group"
+                                                        className={`grid grid-cols-12 px-4 py-3 items-center cursor-pointer transition-colors group border-l-2 ${isSelected ? 'bg-blue-50/40 dark:bg-[#1a2333] border-blue-500' : 'hover:bg-zinc-50 dark:hover:bg-white/5 border-transparent'}`}
                                                     >
-                                                        <div className="col-span-6 flex items-center gap-3 min-w-0 pr-4">
-                                                            <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105 overflow-hidden`}>
-                                                                {/* Visa endast som bild om det faktiskt ÄR en bild */}
-                                                                {doc.image && doc.image.startsWith('data:image/') ? (
-                                                                    <img src={doc.image} className="w-full h-full object-cover" alt="" />
-                                                                ) : (
-                                                                    <window.Icon name={iconName} size={16} />
-                                                                )}
+                                                        <div className="col-span-7 sm:col-span-6 flex items-center gap-3 min-w-0 pr-2 sm:pr-4">
+                                                            <div className={`w-8 h-8 md:w-9 md:h-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105 overflow-hidden`}>
+                                                                {doc.image && doc.image.startsWith('data:image/') ? <img src={doc.image} className="w-full h-full object-cover" alt="" /> : <window.Icon name={iconName} size={16} />}
                                                             </div>
                                                             <div className="flex flex-col min-w-0">
-                                                                <span className="text-[13px] font-medium text-zinc-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
-                                                                    {doc.title}
-                                                                </span>
-                                                                {doc.text && (
-                                                                    <span className="text-[10px] text-zinc-400 truncate max-w-[250px]">
-                                                                        {doc.text}
-                                                                    </span>
-                                                                )}
+                                                                <span className={`text-[12px] md:text-[13px] font-medium truncate transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-400' : 'text-zinc-900 dark:text-white group-hover:text-blue-500'}`}>{doc.title}</span>
+                                                                {doc.text && <span className="hidden sm:block text-[10px] text-zinc-400 truncate max-w-[250px]">{doc.text}</span>}
                                                             </div>
                                                         </div>
 
-                                                        <div className="col-span-3 flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                                                        <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5 text-[10px] md:text-[11px] text-zinc-500 font-medium">
                                                             <window.Icon name={FOLDERS.find(f => f.id === doc.category)?.icon || 'folder'} size={12} className={FOLDERS.find(f => f.id === doc.category)?.colorClass} />
                                                             <span className="truncate">{doc.category}</span>
                                                         </div>
 
-                                                        <div className="col-span-2 text-[11px] text-zinc-400 font-mono">
+                                                        <div className="hidden sm:block col-span-2 text-[11px] text-zinc-400 font-mono">
                                                             {formattedDate}
                                                         </div>
 
-                                                        <div className="col-span-1 text-right flex items-center justify-end gap-1">
+                                                        <div className="col-span-1 text-right flex items-center justify-end gap-1 sm:gap-2">
+                                                            {doc.isFavorite && <window.Icon name="star" size={14} className="fill-orange-400 text-orange-400 hidden sm:block" />}
                                                             <button 
-                                                                onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
-                                                                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${doc.isFavorite ? 'text-orange-500 opacity-100' : 'text-zinc-400 opacity-0 group-hover:opacity-100 hover:bg-zinc-200 dark:hover:bg-white/10'}`}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedFiles(prev => prev.includes(doc.id) ? prev.filter(id => id !== doc.id) : [doc.id]);
+                                                                }}
+                                                                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${isSelected ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400' : 'text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10'}`}
                                                             >
-                                                                <window.Icon name="star" size={14} className={doc.isFavorite ? "fill-current" : ""} />
+                                                                <window.Icon name="more-vertical" size={14} />
                                                             </button>
                                                         </div>
                                                     </div>
