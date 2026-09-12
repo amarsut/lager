@@ -4,21 +4,21 @@ const { useState, useEffect, useMemo } = React;
 
 const compressReferenceImage = async (file, maxWidth = 1600, quality = 0.8) => {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader(); 
+        const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = (event) => {
-            const img = new Image(); 
+            const img = new Image();
             img.src = event.target.result;
             img.onload = () => {
-                const canvas = document.createElement('canvas'); 
+                const canvas = document.createElement('canvas');
                 let { width, height } = img;
-                if (width > maxWidth) { 
-                    height = (maxWidth / width) * height; 
-                    width = maxWidth; 
+                if (width > maxWidth) {
+                    height = (maxWidth / width) * height;
+                    width = maxWidth;
                 }
-                canvas.width = width; 
-                canvas.height = height; 
-                const ctx = canvas.getContext('2d'); 
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 resolve(canvas.toDataURL('image/webp', quality));
             };
@@ -48,6 +48,27 @@ window.ReferenceView = () => {
 
     const [portalNode, setPortalNode] = useState(null);
 
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' eller 'list'
+
+    // Räknar ut storlek på Base64-strängar
+    const storageStats = useMemo(() => {
+        let totalBytes = 0;
+        docs.forEach(doc => {
+            if (doc.image) {
+                // Base64 tar ca 3/4 av stränglängden i bytes. Ta bort 'data:image/...;base64,' i beräkningen.
+                const base64Data = doc.image.split(',')[1] || doc.image;
+                totalBytes += (base64Data.length * 3) / 4;
+            }
+            if (doc.text) totalBytes += doc.text.length;
+        });
+
+        const mbUsed = (totalBytes / (1024 * 1024)).toFixed(1);
+        const maxMb = 50; // Visuell maxgräns (justera vid behov)
+        const percentage = Math.min(100, Math.round((mbUsed / maxMb) * 100));
+
+        return { mbUsed, percentage, maxMb };
+    }, [docs]);
+
     useEffect(() => {
         setPortalNode(document.body || document.documentElement);
     }, []);
@@ -62,7 +83,7 @@ window.ReferenceView = () => {
     useEffect(() => {
         if (!window.db) return;
         const unsubscribe = window.db.collection("reference_docs").orderBy("timestamp", "desc").onSnapshot(snap => {
-            setDocs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))); 
+            setDocs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
             setLoading(false);
         });
         return () => unsubscribe();
@@ -120,23 +141,23 @@ window.ReferenceView = () => {
         if (!formData.title) return;
         setUploading(true);
         try {
-            let imageBase64 = formData.image; 
-            if (formData.file) imageBase64 = await compressReferenceImage(formData.file); 
-            
-            const payload = { 
-                title: formData.title, category: formData.category, text: formData.text, link: formData.link, 
-                image: imageBase64, timestamp: formData.id ? formData.timestamp : new Date().toISOString() 
+            let imageBase64 = formData.image;
+            if (formData.file) imageBase64 = await compressReferenceImage(formData.file);
+
+            const payload = {
+                title: formData.title, category: formData.category, text: formData.text, link: formData.link,
+                image: imageBase64, timestamp: formData.id ? formData.timestamp : new Date().toISOString()
             };
-            
+
             if (formData.id) {
-                await window.db.collection("reference_docs").doc(formData.id).update(payload); 
+                await window.db.collection("reference_docs").doc(formData.id).update(payload);
                 setSelectedDoc({ ...payload, id: formData.id, isFavorite: selectedDoc?.isFavorite });
             } else {
                 payload.isFavorite = false;
                 await window.db.collection("reference_docs").add(payload);
             }
             setIsUploadOpen(false);
-        } catch (error) { alert("Fel vid uppladdning."); } 
+        } catch (error) { alert("Fel vid uppladdning."); }
         finally { setUploading(false); }
     };
 
@@ -171,7 +192,7 @@ window.ReferenceView = () => {
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
             <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
-                
+
                 {/* --- DESKTOP HEADER (0 padding) --- */}
                 <div className="hidden lg:flex flex-col h-full p-0">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 p-0 shrink-0 z-10">
@@ -196,9 +217,9 @@ window.ReferenceView = () => {
                         <div className="flex items-center gap-4">
                             <div className="flex-1 w-full md:w-72 relative group">
                                 <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Sök i Drive..." 
+                                <input
+                                    type="text"
+                                    placeholder="Sök i Drive..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl h-[46px] pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
@@ -215,8 +236,8 @@ window.ReferenceView = () => {
 
                 {/* --- MOBIL HEADER --- */}
                 <div className="lg:hidden flex flex-col min-h-fit bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
-                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
-                        
+                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
+
                         {/* 1. Logga, Titel & Knappar (0 padding för X:0 Y:0) */}
                         <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                             <div className="flex items-center gap-4">
@@ -239,8 +260,8 @@ window.ReferenceView = () => {
 
                             {/* Plus-knappen */}
                             <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={openCreate} 
+                                <button
+                                    onClick={openCreate}
                                     className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/10 active:scale-90"
                                 >
                                     <window.Icon name="plus" size={18} />
@@ -253,9 +274,9 @@ window.ReferenceView = () => {
                             {FOLDERS.map(folder => {
                                 const isActive = currentFolder === folder.id;
                                 return (
-                                    <button 
-                                        key={folder.id} 
-                                        onClick={() => setCurrentFolder(folder.id)} 
+                                    <button
+                                        key={folder.id}
+                                        onClick={() => setCurrentFolder(folder.id)}
                                         className={`py-3 px-1 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative flex items-center gap-1.5 ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-400 border-transparent hover:text-zinc-700 dark:hover:text-zinc-200'}`}
                                     >
                                         <window.Icon name={folder.icon} size={14} className={isActive && folder.id === 'FAVORITER' ? 'fill-current' : ''} />
@@ -266,12 +287,12 @@ window.ReferenceView = () => {
                         </div>
 
                         {/* 3. Sökfältet (Indrag borttaget = px-0) */}
-                        <div className="px-0 pt-3 pb-3">
-                            <div className="relative group w-full">
+                        <div className="px-0 pt-3 pb-4">
+                            <div className="relative group w-full mb-3">
                                 <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Sök i Drive..." 
+                                <input
+                                    type="text"
+                                    placeholder="Sök i Drive..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl py-3 pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
@@ -282,6 +303,22 @@ window.ReferenceView = () => {
                                     </button>
                                 )}
                             </div>
+
+                            {/* Kompakt lagringsindikator för mobilen */}
+                            <div className="flex items-center gap-3 bg-zinc-100/30 dark:bg-black/10 rounded-xl p-2.5 border border-zinc-200/50 dark:border-white/5">
+                                <div className="w-7 h-7 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                                    <window.Icon name="hard-drive" size={12} />
+                                </div>
+                                <div className="flex-1 min-w-0 pr-1">
+                                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest mb-1.5">
+                                        <span className="text-zinc-500 dark:text-zinc-400">Databas Lagring</span>
+                                        <span className="text-zinc-900 dark:text-white">{storageStats.mbUsed} / {storageStats.maxMb} MB</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-zinc-200 dark:bg-black/30 rounded-full overflow-hidden">
+                                        <div className="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out" style={{ width: `${storageStats.percentage}%` }}></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -289,40 +326,68 @@ window.ReferenceView = () => {
 
                 {/* DRIVE LAYOUT */}
                 <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-3 px-0 gap-8 pb-4 lg:pb-6">
-    
+
                     <div className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6">
-                        <button 
-                            onClick={openCreate} 
+                        <button
+                            onClick={openCreate}
                             className="flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-4 px-6 font-bold text-[13px] uppercase tracking-widest shadow-md transition-all active:scale-95"
                         >
                             <window.Icon name="plus" size={20} /> Ny Uppladdning
                         </button>
 
-                        <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm">
-                            <nav className="flex flex-col gap-1">
-                                {FOLDERS.map(folder => {
-                                    const isActive = currentFolder === folder.id;
-                                    return (
-                                        <button 
-                                            key={folder.id}
-                                            onClick={() => setCurrentFolder(folder.id)}
-                                            className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 w-full text-[13px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
-                                        >
-                                            <window.Icon name={folder.icon} size={18} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
-                                            {folder.label}
-                                        </button>
-                                    );
-                                })}
-                            </nav>
+                        <div className="flex flex-col h-full gap-6">
+                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-3 shadow-sm">
+                                <nav className="flex flex-col gap-1">
+                                    {FOLDERS.map(folder => {
+                                        const isActive = currentFolder === folder.id;
+                                        return (
+                                            <button
+                                                key={folder.id}
+                                                onClick={() => setCurrentFolder(folder.id)}
+                                                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 w-full text-[13px] font-bold tracking-wide uppercase ${isActive ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'}`}
+                                            >
+                                                <window.Icon name={folder.icon} size={18} className={`${isActive ? (folder.id === 'FAVORITER' ? 'text-orange-500 fill-orange-500/20' : 'text-orange-500') : (folder.id === 'FAVORITER' ? 'text-orange-500' : 'text-zinc-400')}`} />
+                                                {folder.label}
+                                            </button>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
+
+                            {/* LAGRINGSINDIKATOR */}
+                            <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-3xl p-5 shadow-sm mt-auto mb-4">
+                                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <window.Icon name="hard-drive" size={14} /> Databas (Base64)
+                                </h3>
+                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden mb-2">
+                                    <div className="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out" style={{ width: `${storageStats.percentage}%` }}></div>
+                                </div>
+                                <div className="flex justify-between text-[10px] font-bold">
+                                    <span className="text-zinc-900 dark:text-white">{storageStats.mbUsed} MB</span>
+                                    <span className="text-zinc-400">{storageStats.maxMb} MB</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div className="flex-1 flex flex-col min-w-0">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
+                            <h2 className="text-[12px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2 md:gap-3">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
-                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-3 py-1.5 rounded-md">{displayedFiles.length} objekt</span>
+
+                            {/* Toggle-knappar & Antal (Nu synliga överallt) */}
+                            <div className="flex items-center gap-2 md:gap-3">
+                                <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm">
+                                    <button onClick={() => setViewMode('grid')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
+                                        <window.Icon name="grid" size={14} />
+                                    </button>
+                                    <button onClick={() => setViewMode('list')} className={`w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
+                                        <window.Icon name="list" size={14} />
+                                    </button>
+                                </div>
+                                <span className="text-[9px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 dark:bg-[#151b28] px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">{displayedFiles.length} objekt</span>
+                            </div>
                         </div>
 
                         {loading ? (
@@ -336,63 +401,113 @@ window.ReferenceView = () => {
                                 <p className="text-[14px] text-zinc-500 max-w-sm">Inga filer hittades här. Klicka på plusknappen för att ladda upp något nytt.</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 lg:gap-6 pb-4">
-                                {displayedFiles.map(doc => (
-                                    <div 
-                                        key={doc.id}
-                                        onClick={() => setSelectedDoc(doc)}
-                                        className="group relative flex flex-col bg-white dark:bg-[#151b28] rounded-[24px] overflow-hidden cursor-pointer shadow-sm ring-1 ring-zinc-200 dark:ring-white/5 hover:ring-orange-500/50 hover:shadow-lg transition-all duration-300 aspect-square md:aspect-[4/3] transform hover:-translate-y-1"
-                                    >
-                                        <div className="absolute inset-0 bg-zinc-100 dark:bg-black/40">
-                                            {doc.image ? (
-                                                <img src={doc.image} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" loading="lazy" alt={doc.title} />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover:scale-110 group-hover:text-orange-500/50 transition-all duration-500">
-                                                    <window.Icon name={doc.link ? "link" : "file-text"} size={48} strokeWidth={1.5} />
+                            <>
+                                {viewMode === 'grid' ? (
+                                    /* --- GRID VY --- */
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 lg:gap-6 pb-4">
+                                        {displayedFiles.map(doc => (
+                                            <div
+                                                key={doc.id}
+                                                onClick={() => setSelectedDoc(doc)}
+                                                className="group relative flex flex-col bg-white dark:bg-[#151b28] rounded-[24px] overflow-hidden cursor-pointer shadow-sm ring-1 ring-zinc-200 dark:ring-white/5 hover:ring-orange-500/50 hover:shadow-lg transition-all duration-300 aspect-square md:aspect-[4/3] transform hover:-translate-y-1"
+                                            >
+                                                <div className="absolute inset-0 bg-zinc-100 dark:bg-black/40">
+                                                    {doc.image ? (
+                                                        <img src={doc.image} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" loading="lazy" alt={doc.title} />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover:scale-110 group-hover:text-orange-500/50 transition-all duration-500">
+                                                            <window.Icon name={doc.link ? "link" : "file-text"} size={48} strokeWidth={1.5} />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
 
-                                        <button 
-                                            onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
-                                            className={`absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 ${doc.isFavorite ? 'bg-orange-500 text-white shadow-md' : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/60 hover:text-white'}`}
-                                        >
-                                            <window.Icon name="star" size={14} className={doc.isFavorite ? "fill-white" : ""} />
-                                        </button>
+                                                <button
+                                                    onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
+                                                    className={`absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 ${doc.isFavorite ? 'bg-orange-500 text-white shadow-md' : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-black/60 hover:text-white'}`}
+                                                >
+                                                    <window.Icon name="star" size={14} className={doc.isFavorite ? "fill-white" : ""} />
+                                                </button>
 
-                                        <div className="absolute inset-x-0 bottom-0 p-4 pt-12 flex flex-col justify-end z-10 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
-                                            <div className="flex items-center gap-2 text-white">
-                                                <div className="shrink-0 opacity-80">
-                                                    <window.Icon name={FOLDERS.find(f => f.id === doc.category)?.icon || 'file'} size={14} />
+                                                <div className="absolute inset-x-0 bottom-0 p-4 pt-12 flex flex-col justify-end z-10 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                                                    <div className="flex items-center gap-2 text-white">
+                                                        <div className="shrink-0 opacity-80">
+                                                            <window.Icon name={FOLDERS.find(f => f.id === doc.category)?.icon || 'file'} size={14} />
+                                                        </div>
+                                                        <h4 className="text-[13px] font-bold truncate tracking-wide drop-shadow-md">
+                                                            {doc.title}
+                                                        </h4>
+                                                    </div>
                                                 </div>
-                                                <h4 className="text-[13px] font-bold truncate tracking-wide drop-shadow-md">
-                                                    {doc.title}
-                                                </h4>
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                ) : (
+                                    /* --- LIST VY --- */
+                                    <div className="flex flex-col gap-3 pb-4">
+                                        {displayedFiles.map(doc => (
+                                            <div
+                                                key={doc.id}
+                                                onClick={() => setSelectedDoc(doc)}
+                                                className="group flex items-center gap-4 bg-white dark:bg-[#151b28] rounded-2xl p-2.5 pr-4 cursor-pointer shadow-sm ring-1 ring-zinc-200 dark:ring-white/5 hover:ring-orange-500/50 hover:shadow-md transition-all duration-200"
+                                            >
+                                                <div className="w-16 h-16 shrink-0 bg-zinc-100 dark:bg-black/40 rounded-xl overflow-hidden relative">
+                                                    {doc.image ? (
+                                                        <img src={doc.image} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" alt={doc.title} />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600">
+                                                            <window.Icon name={doc.link ? "link" : "file-text"} size={24} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <h4 className="text-[14px] font-bold text-zinc-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
+                                                        {doc.title}
+                                                    </h4>
+                                                    <div className="flex items-center gap-3 mt-1.5">
+                                                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                                            <window.Icon name={FOLDERS.find(f => f.id === doc.category)?.icon || 'file'} size={12} className={FOLDERS.find(f => f.id === doc.category)?.colorClass} />
+                                                            {doc.category}
+                                                        </span>
+                                                        {doc.text && (
+                                                            <span className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
+                                                                <window.Icon name="align-left" size={10} /> Anteckning
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="shrink-0 flex items-center gap-2">
+                                                    <button
+                                                        onClick={(e) => toggleFavorite(e, doc.id, doc.isFavorite)}
+                                                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all opacity-0 group-hover:opacity-100 ${doc.isFavorite ? 'text-orange-500 bg-orange-500/10 opacity-100' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-white'}`}
+                                                    >
+                                                        <window.Icon name="star" size={16} className={doc.isFavorite ? "fill-current" : ""} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
             </div>
 
             {/* --- MODALER --- */}
-            
+
             {/* CINEMA LIGHTBOX (Nu med Navigering Höger/Vänster) */}
             {selectedDoc && renderModal(
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 lg:p-10" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-                    
+
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-auto transition-opacity" onClick={handleClosePanel}></div>
-                    
+
                     <div className="relative w-full max-w-[1400px] h-[95vh] lg:h-[85vh] flex flex-col lg:flex-row bg-[#151b28] rounded-[32px] shadow-2xl ring-1 ring-white/10 overflow-hidden animate-in zoom-in-95 duration-200 z-10 pointer-events-auto">
-                        
+
                         {/* Vänster sida: Bildvisaren */}
                         <div className="flex-1 flex flex-col relative bg-[#0a0d14] min-w-0 min-h-0 group" onClick={handleClosePanel}>
-                            
+
                             <button onClick={handleClosePanel} className="absolute top-4 lg:top-6 left-4 lg:left-6 z-50 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all border border-white/10 shadow-lg cursor-pointer active:scale-90">
                                 <window.Icon name="x" size={24} />
                             </button>
@@ -413,11 +528,11 @@ window.ReferenceView = () => {
 
                             <div className="flex-1 flex items-center justify-center p-6 lg:p-12 min-w-0 min-h-0 overflow-hidden relative">
                                 {selectedDoc.image ? (
-                                    <img 
-                                        src={selectedDoc.image} 
-                                        className="w-auto h-auto max-w-full max-h-full object-contain rounded-[24px] ring-1 ring-white/10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300" 
-                                        alt={selectedDoc.title} 
-                                        onClick={(e) => e.stopPropagation()} 
+                                    <img
+                                        src={selectedDoc.image}
+                                        className="w-auto h-auto max-w-full max-h-full object-contain rounded-[24px] ring-1 ring-white/10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300"
+                                        alt={selectedDoc.title}
+                                        onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : (
                                     <window.Icon name="file-text" size={120} className="text-white/10 animate-in zoom-in-95 duration-300" />
@@ -427,7 +542,7 @@ window.ReferenceView = () => {
 
                         {/* Höger sida: Panel */}
                         <div className="w-full lg:w-[420px] flex flex-col shrink-0 bg-[#151b28] border-t lg:border-t-0 lg:border-l border-white/5 min-h-[40vh] lg:min-h-0">
-                            
+
                             <div className="lg:hidden w-full flex justify-center pt-4 pb-2 cursor-pointer" onClick={handleClosePanel}>
                                 <div className="w-12 h-1.5 bg-white/20 rounded-full"></div>
                             </div>
@@ -460,16 +575,16 @@ window.ReferenceView = () => {
 
                                 {selectedDoc.text && (
                                     <div className="space-y-3">
-                                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><window.Icon name="align-left" size={14}/> Anteckningar</h4>
+                                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><window.Icon name="align-left" size={14} /> Anteckningar</h4>
                                         <div className="text-[14px] text-zinc-300 whitespace-pre-wrap leading-relaxed bg-white/5 p-5 rounded-2xl border border-white/5">
                                             {selectedDoc.text}
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {selectedDoc.link && (
                                     <div className="space-y-3">
-                                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><window.Icon name="link" size={14}/> Referenslänk</h4>
+                                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><window.Icon name="link" size={14} /> Referenslänk</h4>
                                         <a href={selectedDoc.link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-2xl text-[12px] font-bold text-blue-400 transition-colors group">
                                             <span className="truncate pr-4">{selectedDoc.link.replace(/^https?:\/\//, '')}</span>
                                             <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors shrink-0">
@@ -487,34 +602,34 @@ window.ReferenceView = () => {
             {/* UPPLADDNINGS-MODAL */}
             {isUploadOpen && renderModal(
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-                    
+
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsUploadOpen(false)}></div>
-                    
+
                     <div className="relative bg-white dark:bg-[#151b28] rounded-[32px] w-full max-w-lg shadow-2xl flex flex-col ring-1 ring-black/5 dark:ring-white/10 overflow-hidden animate-in zoom-in-95 duration-200 z-10">
-                        
+
                         <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50 dark:bg-[#1a2133]">
                             <h2 className="text-[13px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white flex items-center gap-2">
-                                <window.Icon name={formData.id ? "edit-2" : "upload-cloud"} size={16} className="text-orange-500" /> 
+                                <window.Icon name={formData.id ? "edit-2" : "upload-cloud"} size={16} className="text-orange-500" />
                                 {formData.id ? 'Redigera Dokument' : 'Ladda upp till Drive'}
                             </h2>
                             <button onClick={() => setIsUploadOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-500 transition-colors"><window.Icon name="x" size={16} /></button>
                         </div>
-                        
+
                         <form id="upload-form" onSubmit={handleSave} className="p-6 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
-                            
+
                             <div>
                                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Filnamn / Titel</label>
-                                <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all placeholder:text-zinc-400" placeholder="Ange en titel..." />
+                                <input required type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all placeholder:text-zinc-400" placeholder="Ange en titel..." />
                             </div>
 
                             <div>
                                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Mapp</label>
                                 <div className="flex flex-wrap gap-2">
                                     {FOLDERS.filter(f => !['ALLA', 'FAVORITER'].includes(f.id)).map(f => (
-                                        <button 
-                                            key={f.id} 
+                                        <button
+                                            key={f.id}
                                             type="button"
-                                            onClick={() => setFormData({...formData, category: f.id})}
+                                            onClick={() => setFormData({ ...formData, category: f.id })}
                                             className={`px-4 py-2.5 rounded-xl ring-1 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all ${formData.category === f.id ? `bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 ring-transparent` : 'bg-white dark:bg-transparent text-zinc-600 dark:text-zinc-400 ring-zinc-200 dark:ring-white/10 hover:bg-zinc-50 dark:hover:bg-white/5'}`}
                                         >
                                             <window.Icon name={f.icon} size={14} className={formData.category === f.id ? '' : f.colorClass} /> {f.label}
@@ -526,7 +641,7 @@ window.ReferenceView = () => {
                             <div>
                                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Media</label>
                                 <label className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-[24px] cursor-pointer transition-all ${formData.file || formData.image ? 'border-orange-500/50 bg-orange-50 dark:bg-orange-500/5' : 'border-zinc-300 dark:border-white/10 hover:border-orange-400/50 hover:bg-zinc-50 dark:hover:bg-white/5'} text-zinc-500`}>
-                                    <input type="file" accept="image/*" onChange={e => setFormData({...formData, file: e.target.files[0]})} className="hidden" />
+                                    <input type="file" accept="image/*" onChange={e => setFormData({ ...formData, file: e.target.files[0] })} className="hidden" />
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${formData.file || formData.image ? 'bg-orange-500 text-white shadow-md' : 'bg-zinc-100 dark:bg-black/40 text-zinc-400'}`}>
                                         <window.Icon name={formData.file || formData.image ? "check" : "image"} size={20} />
                                     </div>
@@ -539,11 +654,11 @@ window.ReferenceView = () => {
                             <div className="space-y-5 pt-2">
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Extern Länk (Valfritt)</label>
-                                    <input type="url" value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono placeholder:text-zinc-400" placeholder="https://..." />
+                                    <input type="url" value={formData.link} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono placeholder:text-zinc-400" placeholder="https://..." />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block ml-1">Anteckningar (Valfritt)</label>
-                                    <textarea value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} rows="3" className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none placeholder:text-zinc-400 custom-scrollbar" placeholder="Instruktioner..."></textarea>
+                                    <textarea value={formData.text} onChange={e => setFormData({ ...formData, text: e.target.value })} rows="3" className="w-full p-4 bg-zinc-50 dark:bg-black/20 ring-1 ring-zinc-200 dark:ring-white/10 rounded-2xl text-[14px] text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none placeholder:text-zinc-400 custom-scrollbar" placeholder="Instruktioner..."></textarea>
                                 </div>
                             </div>
                         </form>
