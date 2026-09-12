@@ -213,13 +213,12 @@ window.ReferenceView = () => {
                     </div>
                 </div>
 
-                {/* --- MOBIL HEADER (0 padding) --- */}
-                <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
-                    {/* Tog bort pt-safe-top och all inbyggd padding */}
-                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
+                {/* --- MOBIL HEADER --- */}
+                <div className="lg:hidden flex flex-col min-h-fit bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500">
+                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white pt-safe-top pt-2 shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">                    
                         
-                        {/* 1. Logga & Titel på X:0 Y:0 (p-0) */}
-                        <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
+                        {/* 1. Logga, Titel & Knappar (Samma padding som Dashboard) */}
+                        <div className="px-4 pb-4 pt-2 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
                             <div className="flex items-center gap-4">
                                 <div className="relative group cursor-default shrink-0">
                                     <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
@@ -237,10 +236,37 @@ window.ReferenceView = () => {
                                     </p>
                                 </div>
                             </div>
+
+                            {/* Ny placering av Plus-knappen */}
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={openCreate} 
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-black/20 text-zinc-500 dark:text-zinc-400 hover:text-orange-500 dark:hover:text-white transition-colors border border-transparent dark:border-white/10 active:scale-90"
+                                >
+                                    <window.Icon name="plus" size={18} />
+                                </button>
+                            </div>
                         </div>
 
-                        {/* 2. Sökfält med 0 padding på sidorna (px-0) */}
-                        <div className="px-0 pt-3 pb-3">
+                        {/* 2. Mapparna som scrollbara flikar */}
+                        <div className="flex overflow-x-auto px-4 pt-2 pb-0 space-x-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
+                            {FOLDERS.map(folder => {
+                                const isActive = currentFolder === folder.id;
+                                return (
+                                    <button 
+                                        key={folder.id} 
+                                        onClick={() => setCurrentFolder(folder.id)} 
+                                        className={`py-3 px-1 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap relative flex items-center gap-1.5 ${isActive ? 'text-orange-500 border-orange-500' : 'text-zinc-400 dark:text-zinc-400 border-transparent hover:text-zinc-700 dark:hover:text-zinc-200'}`}
+                                    >
+                                        <window.Icon name={folder.icon} size={14} className={isActive && folder.id === 'FAVORITER' ? 'fill-current' : ''} />
+                                        {folder.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* 3. Sökfältet */}
+                        <div className="px-4 pt-3 pb-3">
                             <div className="relative group w-full">
                                 <window.Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
                                 <input 
@@ -250,6 +276,11 @@ window.ReferenceView = () => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-zinc-900 dark:text-white rounded-xl py-3 pl-11 pr-4 text-[12px] font-bold transition-all outline-none shadow-sm placeholder:text-zinc-400 uppercase tracking-widest"
                                 />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-white/10 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-500 transition-colors shadow-sm border border-zinc-200 dark:border-white/5">
+                                        <window.Icon name="x" size={12} />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -257,7 +288,7 @@ window.ReferenceView = () => {
                 </div>
 
                 {/* DRIVE LAYOUT */}
-                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-3 px-0 gap-8 pb-24 lg:pb-10">
+                <div className="flex flex-col lg:flex-row flex-1 overflow-hidden mt-3 px-0 gap-8 pb-4 lg:pb-6">
     
                     <div className="w-full lg:w-[260px] shrink-0 hidden lg:flex flex-col gap-6">
                         <button 
@@ -347,10 +378,6 @@ window.ReferenceView = () => {
                         )}
                     </div>
                 </div>
-
-                <button onClick={openCreate} className="lg:hidden fixed bottom-6 right-6 z-[90] bg-orange-500 text-white rounded-[20px] w-14 h-14 shadow-lg active:scale-95 flex items-center justify-center transition-transform">
-                    <window.Icon name="plus" size={24} />
-                </button>
             </div>
 
             {/* --- MODALER --- */}
