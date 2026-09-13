@@ -207,6 +207,19 @@ const App = () => {
             
             .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; border: none; background: transparent; }
             .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
+
+            /* =========================================
+               DYNAMISK SKALNING FÖR ALLA SKÄRMAR 
+               ========================================= */
+            /* Standard webbläsare är 16px. Vi minskar rotstorleken på mindre skärmar 
+               för att automatiskt zooma ut hela appen snyggt och proportionerligt. */
+            
+            @media (max-width: 1536px) { html { font-size: 15px; } }
+            @media (max-width: 1366px), (max-height: 800px) { html { font-size: 14px; } }
+            @media (max-width: 1280px), (max-height: 700px) { html { font-size: 13px; } }
+            
+            /* Mobiler & surfplattor behåller standardstorlek så texten förblir läsbar */
+            @media (max-width: 1024px) { html { font-size: 16px; } }
         `;
     }, [isDark]);
 
