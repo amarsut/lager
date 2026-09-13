@@ -518,8 +518,8 @@ window.ReferenceView = () => {
                         ) : (
                             <>
                                 {viewMode === 'grid' ? (
-                                    /* --- GOOGLE DRIVE GRID-KORT --- */
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
+                                    /* --- GOOGLE DRIVE GRID-KORT (Ren & Stabil) --- */
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-6">
                                         {displayedFiles.map(doc => {
                                             const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                                             const pdfFile = isPdf(doc.image);
@@ -539,7 +539,6 @@ window.ReferenceView = () => {
                                                     onClick={() => setSelectedDoc(doc)}
                                                     className={`group flex flex-col rounded-xl md:rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md border ${isSelected ? 'bg-blue-50/40 dark:bg-[#1a2333] border-blue-400 ring-1 ring-blue-400' : 'bg-white dark:bg-[#151b28] border-zinc-200/80 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/10'}`}
                                                 >
-                                                    {/* Header */}
                                                     <div className={`px-2.5 md:px-3.5 pt-2.5 md:pt-3 pb-2 flex items-center justify-between gap-1.5 md:gap-2 border-b bg-transparent ${isSelected ? 'border-blue-200 dark:border-blue-900/50' : 'border-zinc-100 dark:border-white/5'}`}>
                                                         <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
                                                             <window.Icon name={topIcon} size={14} className={`${topIconColor} shrink-0 w-3 h-3 md:w-3.5 md:h-3.5`} />
@@ -554,14 +553,13 @@ window.ReferenceView = () => {
                                                                     e.stopPropagation();
                                                                     setSelectedFiles(prev => prev.includes(doc.id) ? prev.filter(id => id !== doc.id) : [doc.id]);
                                                                 }}
-                                                                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${isSelected ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400' : 'text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10'}`}
+                                                                className={`w-6 h-6 flex items-center justify-center rounded-full transition-all ${isSelected ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-700 dark:hover:text-white'}`}
                                                             >
                                                                 <window.Icon name="more-vertical" size={14} />
                                                             </button>
                                                         </div>
                                                     </div>
 
-                                                    {/* Preview (Nu med äkta Google Drive #f0f4f9 bakgrund) */}
                                                     <div className={`h-28 sm:h-36 md:h-40 w-full relative overflow-hidden flex items-center justify-center p-2 md:p-3 border-b ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-900/50' : 'bg-[#f0f4f9] dark:bg-[#0a0d14]/60 border-zinc-100 dark:border-white/5'}`}>
                                                         {doc.image && doc.image.startsWith('data:image/') ? (
                                                             <img src={doc.image} className="w-full h-full object-cover rounded-md shadow-sm group-hover:scale-105 transition-transform duration-300" loading="lazy" alt={doc.title} />
@@ -582,7 +580,6 @@ window.ReferenceView = () => {
                                                         )}
                                                     </div>
 
-                                                    {/* Footer */}
                                                     <div className={`px-2.5 md:px-3.5 py-2 flex items-center justify-between text-[9px] md:text-[10px] bg-transparent ${isSelected ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-zinc-400'}`}>
                                                         <span className="truncate">{doc.category}</span>
                                                         {formattedDate && <span className="font-mono shrink-0">{formattedDate}</span>}
@@ -592,9 +589,9 @@ window.ReferenceView = () => {
                                         })}
                                     </div>
                                 ) : (
-                                    /* --- LISTVY MED MARKERING --- */
-                                    <div className="bg-white dark:bg-[#151b28] rounded-2xl border border-zinc-200 dark:border-white/5 overflow-hidden shadow-sm">
-                                        <div className="grid grid-cols-12 px-4 py-3 bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    /* --- LISTVY MED MARKERING (Ren & Stabil) --- */
+                                    <div className="bg-white dark:bg-[#151b28] rounded-2xl border border-zinc-200 dark:border-white/5 shadow-sm mb-6">
+                                        <div className="grid grid-cols-12 px-4 py-3 bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest rounded-t-2xl">
                                             <div className="col-span-7 sm:col-span-6">Namn</div>
                                             <div className="col-span-4 sm:col-span-3">Kategori</div>
                                             <div className="hidden sm:block col-span-2">Datum</div>
