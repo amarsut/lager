@@ -421,69 +421,37 @@ window.ReferenceView = () => {
                         </div>
                     </div>
                     
-                    {/* HÖGER SIDA (Med aktiv intern scroll) */}
-                    <div className="flex-1 flex flex-col min-w-0 pb-12 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar lg:pr-4">
+                    {/* HÖGER SIDA (Perfekt Scroll & Minimal Padding) */}
+                    <div className="flex-1 flex flex-col min-w-0 pb-2 lg:pb-8 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar px-3 lg:px-0 lg:pr-4">
                         
                         {/* Sektionstitel, Action Bar & Vy-växlare */}
-                        <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0 gap-3 w-full min-w-0">
+                        <div className="flex items-center justify-between mb-4 shrink-0 gap-3 w-full min-w-0">
                             
-                            {/* Titel - flex-1 och truncate gör att texten kortas ner med ... om utrymmet tar slut */}
                             <h2 className="text-[13px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest truncate min-w-0 flex-1">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
 
-                            {/* Högra sidan (Knappar) - shrink-0 ser till att knapparna aldrig trycks ihop */}
                             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
                                 
-                                {/* ACTION BAR (Visas endast när en fil är markerad via 3-prickarna) */}
+                                {/* ACTION BAR */}
                                 {selectedFiles.length > 0 && (
                                     <div className="flex items-center gap-0.5 sm:gap-1 bg-white dark:bg-[#151b28] border border-blue-200 dark:border-blue-900/50 shadow-sm rounded-xl px-1 py-1 animate-in fade-in zoom-in-95 duration-200 shrink-0">
                                         {selectedFiles.length === 1 && (
-                                            <button 
-                                                onClick={() => openEdit(displayedFiles.find(f => f.id === selectedFiles[0]))} 
-                                                className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-blue-500 dark:hover:bg-white/10 transition-colors" title="Redigera"
-                                            >
+                                            <button onClick={() => openEdit(displayedFiles.find(f => f.id === selectedFiles[0]))} className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-blue-500 dark:hover:bg-white/10 transition-colors" title="Redigera">
                                                 <window.Icon name="edit-2" size={14} />
                                             </button>
                                         )}
-                                        <button 
-                                            onClick={() => {
-                                                selectedFiles.forEach(id => {
-                                                    const doc = displayedFiles.find(f => f.id === id);
-                                                    if (doc) toggleFavorite({ stopPropagation: () => {} }, doc.id, doc.isFavorite);
-                                                });
-                                                setSelectedFiles([]);
-                                            }} 
-                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-white/10 transition-colors" title="Bokmärk"
-                                        >
+                                        <button onClick={() => { selectedFiles.forEach(id => { const doc = displayedFiles.find(f => f.id === id); if (doc) toggleFavorite({ stopPropagation: () => {} }, doc.id, doc.isFavorite); }); setSelectedFiles([]); }} className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-orange-50 hover:text-orange-500 dark:hover:bg-white/10 transition-colors" title="Bokmärk">
                                             <window.Icon name="star" size={14} />
                                         </button>
-                                        <button 
-                                            onClick={() => {
-                                                selectedFiles.forEach(id => {
-                                                    const doc = displayedFiles.find(f => f.id === id);
-                                                    if (doc) handleDownload(doc);
-                                                });
-                                                setSelectedFiles([]);
-                                            }} 
-                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-white/10 transition-colors" title="Ladda ner"
-                                        >
+                                        <button onClick={() => { selectedFiles.forEach(id => { const doc = displayedFiles.find(f => f.id === id); if (doc) handleDownload(doc); }); setSelectedFiles([]); }} className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-white/10 transition-colors" title="Ladda ner">
                                             <window.Icon name="download" size={14} />
                                         </button>
-                                        <button 
-                                            onClick={() => {
-                                                selectedFiles.forEach(id => handleDelete(id));
-                                                setSelectedFiles([]);
-                                            }} 
-                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-white/10 transition-colors" title="Radera"
-                                        >
+                                        <button onClick={() => { selectedFiles.forEach(id => handleDelete(id)); setSelectedFiles([]); }} className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-white/10 transition-colors" title="Radera">
                                             <window.Icon name="trash-2" size={14} />
                                         </button>
                                         <div className="w-[1px] h-4 bg-zinc-200 dark:bg-white/10 mx-0.5 sm:mx-1"></div>
-                                        <button 
-                                            onClick={() => setSelectedFiles([])} 
-                                            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/10 transition-colors" title="Avbryt"
-                                        >
+                                        <button onClick={() => setSelectedFiles([])} className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/10 transition-colors" title="Avbryt">
                                             <window.Icon name="x" size={14} />
                                         </button>
                                     </div>
@@ -508,7 +476,7 @@ window.ReferenceView = () => {
                         {loading ? (
                             <div className="flex-1 flex items-center justify-center text-orange-500"><window.Icon name="loader" size={32} className="animate-spin opacity-50" /></div>
                         ) : displayedFiles.length === 0 ? (
-                            <div className="flex-1 flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
+                            <div className="flex-1 flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500 shrink-0">
                                 <div className="w-24 h-24 bg-white dark:bg-[#151b28] rounded-[2rem] flex items-center justify-center text-zinc-300 dark:text-zinc-600 mb-6 shadow-sm ring-1 ring-zinc-100 dark:ring-white/5">
                                     <window.Icon name="folder-open" size={40} />
                                 </div>
@@ -518,8 +486,8 @@ window.ReferenceView = () => {
                         ) : (
                             <>
                                 {viewMode === 'grid' ? (
-                                    /* --- GOOGLE DRIVE GRID-KORT (Ren & Stabil) --- */
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-6">
+                                    /* --- GOOGLE DRIVE GRID-KORT --- */
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-2 shrink-0">
                                         {displayedFiles.map(doc => {
                                             const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                                             const pdfFile = isPdf(doc.image);
@@ -589,9 +557,9 @@ window.ReferenceView = () => {
                                         })}
                                     </div>
                                 ) : (
-                                    /* --- LISTVY MED MARKERING (Ren & Stabil) --- */
-                                    <div className="bg-white dark:bg-[#151b28] rounded-2xl border border-zinc-200 dark:border-white/5 shadow-sm mb-6">
-                                        <div className="grid grid-cols-12 px-4 py-3 bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest rounded-t-2xl">
+                                    /* --- LISTVY MED MARKERING (Tvingad shrink-0 låser upp scrollen!) --- */
+                                    <div className="bg-white dark:bg-[#151b28] rounded-2xl md:rounded-3xl border border-zinc-200 dark:border-white/5 shadow-sm mb-2 shrink-0 w-full overflow-hidden">
+                                        <div className="grid grid-cols-12 px-3 md:px-4 py-3 bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                                             <div className="col-span-7 sm:col-span-6">Namn</div>
                                             <div className="col-span-4 sm:col-span-3">Kategori</div>
                                             <div className="hidden sm:block col-span-2">Datum</div>
@@ -615,9 +583,9 @@ window.ReferenceView = () => {
                                                     <div 
                                                         key={doc.id}
                                                         onClick={() => setSelectedDoc(doc)}
-                                                        className={`grid grid-cols-12 px-4 py-3 items-center cursor-pointer transition-colors group border-l-2 ${isSelected ? 'bg-blue-50/40 dark:bg-[#1a2333] border-blue-500' : 'hover:bg-zinc-50 dark:hover:bg-white/5 border-transparent'}`}
+                                                        className={`grid grid-cols-12 px-3 md:px-4 py-3 items-center cursor-pointer transition-colors group border-l-2 ${isSelected ? 'bg-blue-50/40 dark:bg-[#1a2333] border-blue-500' : 'hover:bg-zinc-50 dark:hover:bg-white/5 border-transparent'}`}
                                                     >
-                                                        <div className="col-span-7 sm:col-span-6 flex items-center gap-3 min-w-0 pr-2 sm:pr-4">
+                                                        <div className="col-span-7 sm:col-span-6 flex items-center gap-2.5 md:gap-3 min-w-0 pr-2 sm:pr-4">
                                                             <div className={`w-8 h-8 md:w-9 md:h-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105 overflow-hidden`}>
                                                                 {doc.image && doc.image.startsWith('data:image/') ? <img src={doc.image} className="w-full h-full object-cover" alt="" /> : <window.Icon name={iconName} size={16} />}
                                                             </div>
