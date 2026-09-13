@@ -15,14 +15,14 @@ const SectionHeader = ({ title, sub, icon, color = "orange" }) => {
     };
 
     return (
-        <div className="flex items-start gap-2.5 mb-4 pb-3 border-b border-zinc-100 dark:border-white/5">
+        <div className="flex items-start gap-3 mb-4 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-white/5">
             <div className={`mt-1 h-4 w-1.5 bg-gradient-to-b ${colorMap[color]} rounded-full`} />
-            <div>
+            <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-zinc-900 dark:text-white">
-                    <SafeIcon name={icon} size={14} className="text-zinc-400 dark:text-zinc-500" />
-                    <h3 className="text-[11px] sm:text-[13px] font-black uppercase tracking-[0.15em] leading-none mt-0.5">{title}</h3>
+                    <SafeIcon name={icon} size={14} className="text-zinc-400 dark:text-zinc-500 shrink-0" />
+                    <h3 className="text-[12px] sm:text-[13px] font-black uppercase tracking-[0.15em] leading-none truncate mt-0.5">{title}</h3>
                 </div>
-                {sub && <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-1">{sub}</p>}
+                {sub && <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-1.5 truncate">{sub}</p>}
             </div>
         </div>
     );
@@ -44,13 +44,12 @@ const getBrandDisplayName = (slug) => {
 
 window.StatisticsView = ({ allJobs }) => {
     const currentYear = new Date().getFullYear().toString();
+    const currentMonthIdx = new Date().getMonth();
+    
     const [selectedYear, setSelectedYear] = React.useState(currentYear);
+    const [selectedMonth, setSelectedMonth] = React.useState(currentMonthIdx);
     const [brandMap, setBrandMap] = React.useState({});
     const [hoveredMonth, setHoveredMonth] = React.useState(null);
-    
-    // State för den utfällbara tabellen
-    const [expandedMonth, setExpandedMonth] = React.useState(null);
-    const tableRef = React.useRef(null);
 
     React.useEffect(() => {
         if (window.db) {
@@ -140,7 +139,6 @@ window.StatisticsView = ({ allJobs }) => {
             if (rev > bestMonth.revenue) bestMonth = { index: i, revenue: rev };
         });
 
-        // Sortera månadens jobb med nyast först
         monthlyJobs.forEach(monthArr => monthArr.sort((a, b) => b.datum.localeCompare(a.datum)));
 
         let trend = prevActualRevenue > 0 ? Math.round(((actualRevenue - prevActualRevenue) / prevActualRevenue) * 100) : (actualRevenue > 0 ? 100 : 0);
@@ -163,50 +161,44 @@ window.StatisticsView = ({ allJobs }) => {
 
     React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
-    const handleChartClick = (index) => {
-        setExpandedMonth(expandedMonth === index ? null : index);
-        if (tableRef.current && expandedMonth !== index) {
-            setTimeout(() => {
-                tableRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 150);
-        }
-    };
-
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
     const fullMonths = ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'];
 
+    // Specifik månadsvy data
+    const activeMonthJobs = stats.monthlyJobs[selectedMonth] || [];
+    const activeMonthActual = stats.monthlyActualRev[selectedMonth] || 0;
+    const activeMonthBooked = stats.monthlyBookedRev[selectedMonth] || 0;
+
     return (
-        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-8 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
+        <div className="flex flex-col h-full min-h-0 bg-transparent text-zinc-900 dark:text-white pb-8 sm:pb-12 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4 px-4 lg:px-0">
             
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            <div className="px-4 pt-4 lg:px-0 lg:pt-0">
-                {/* HEADER */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-zinc-200/50 dark:border-white/5 gap-4">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <SafeIcon name="bar-chart-2" size={20} className="md:w-6 md:h-6" />
-                            </div>
+            {/* HEADER & ÅRSVÄLJARE */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pt-4 lg:pt-0 gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="relative group cursor-default shrink-0">
+                        <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                        <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                            <SafeIcon name="bar-chart-2" size={20} className="md:w-6 md:h-6" />
                         </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                STATISTIK<span className="text-zinc-400 dark:text-zinc-500 font-light"> & INSIGHTS</span>
-                            </h1>
-                            <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                Performance Dashboard
-                            </p>
-                        </div>
+                    </div>
+                    <div className="flex flex-col">
+                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                            STATISTIK<span className="text-zinc-400 dark:text-zinc-500 font-light"> & INSIGHTS</span>
+                        </h1>
+                        <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                            Performance Dashboard
+                        </p>
                     </div>
                 </div>
 
-                <div className="flex items-center bg-zinc-100/50 dark:bg-[#121826]/80 p-1 rounded-xl sm:rounded-2xl border border-zinc-200/50 dark:border-white/5 backdrop-blur-md overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex items-center bg-white/80 dark:bg-[#121826]/80 p-1.5 rounded-xl sm:rounded-2xl border border-zinc-200/50 dark:border-white/5 backdrop-blur-md overflow-x-auto [&::-webkit-scrollbar]:hidden shadow-sm shrink-0">
                     {stats.availableYears.map(year => (
                         <button 
-                            key={year} onClick={() => { setSelectedYear(year); setExpandedMonth(null); }}
-                            className={`py-2 px-4 sm:px-5 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl transition-all whitespace-nowrap ${selectedYear === year ? 'bg-white dark:bg-[#1f2940] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
+                            key={year} onClick={() => { setSelectedYear(year); setSelectedMonth(currentMonthIdx); }}
+                            className={`py-2 px-4 sm:px-5 text-[11px] sm:text-[12px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl transition-all whitespace-nowrap ${selectedYear === year ? 'bg-zinc-100 dark:bg-[#1f2940] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                         >
                             {year}
                         </button>
@@ -214,74 +206,57 @@ window.StatisticsView = ({ allJobs }) => {
                 </div>
             </div>
 
-            {/* TOP KPI ROW */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 mt-4 lg:mt-0">
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-sm relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-all"></div>
-                    <div className="flex justify-between items-start mb-2 sm:mb-4 relative z-10">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
-                            <SafeIcon name="dollar-sign" size={16} className="sm:w-5 sm:h-5" />
+            {/* TOP KPI ROW - Andrum och tydlighet */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-5 sm:mb-6 shrink-0">
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                    <div className="absolute right-0 top-0 w-20 h-20 bg-emerald-500/10 blur-[30px] rounded-full pointer-events-none"></div>
+                    <div className="flex justify-between items-start mb-2 sm:mb-3 relative z-10">
+                        <div className="text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                            <SafeIcon name="dollar-sign" size={14} className="text-emerald-500" /> Total Omsättning
                         </div>
                         {stats.trend !== 0 && selectedYear === currentYear && (
-                            <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md sm:rounded-lg text-[8px] sm:text-[9px] font-black uppercase flex items-center gap-1 ${stats.trend > 0 ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                                <SafeIcon name={stats.trend > 0 ? 'trending-up' : 'trending-down'} size={10} />
+                            <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase flex items-center gap-1 ${stats.trend > 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
                                 {stats.trend > 0 ? '+' : ''}{stats.trend}%
                             </span>
                         )}
                     </div>
-                    <div className="relative z-10">
-                        <div className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1 truncate">Total Omsättning</div>
-                        <div className="text-xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white truncate">
-                            {stats.actualRevenue.toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
-                        </div>
+                    <div className="text-2xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white relative z-10">
+                        {stats.actualRevenue.toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-sm relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-orange-500/10 blur-[40px] rounded-full pointer-events-none group-hover:bg-orange-500/20 transition-all"></div>
-                    <div className="flex justify-between items-start mb-2 sm:mb-4 relative z-10">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-500/20">
-                            <SafeIcon name="shopping-bag" size={16} className="sm:w-5 sm:h-5" />
-                        </div>
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                    <div className="absolute right-0 top-0 w-20 h-20 bg-orange-500/10 blur-[30px] rounded-full pointer-events-none"></div>
+                    <div className="text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-2 sm:mb-3 relative z-10">
+                        <SafeIcon name="shopping-bag" size={14} className="text-orange-500" /> Snittvärde / Jobb
                     </div>
-                    <div className="relative z-10">
-                        <div className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1 truncate">Snittvärde / Jobb</div>
-                        <div className="text-xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white truncate">
-                            {Math.round(stats.avgPrice).toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
-                        </div>
+                    <div className="text-2xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white relative z-10">
+                        {Math.round(stats.avgPrice).toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-sm relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-blue-500/10 blur-[40px] rounded-full pointer-events-none group-hover:bg-blue-500/20 transition-all"></div>
-                    <div className="flex justify-between items-start mb-2 sm:mb-4 relative z-10">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20">
-                            <SafeIcon name="check-circle" size={16} className="sm:w-5 sm:h-5" />
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                    <div className="absolute right-0 top-0 w-20 h-20 bg-blue-500/10 blur-[30px] rounded-full pointer-events-none"></div>
+                    <div className="flex justify-between items-start mb-2 sm:mb-3 relative z-10">
+                        <div className="text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                            <SafeIcon name="check-circle" size={14} className="text-blue-500" /> Hit Rate
                         </div>
-                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-400 mt-1 sm:mt-2">{stats.completedJobsCount} klara</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mt-1">{stats.completedJobsCount} klara</span>
                     </div>
-                    <div className="relative z-10">
-                        <div className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1 truncate">Avslutade Jobb</div>
-                        <div className="text-xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white">
-                            {stats.completionRate}<span className="text-[12px] sm:text-[18px] font-bold text-blue-500 ml-0.5">%</span>
-                        </div>
+                    <div className="text-2xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white relative z-10 flex items-baseline">
+                        {stats.completionRate}<span className="text-[14px] sm:text-[16px] font-bold text-blue-500 ml-1">%</span>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-sm relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-violet-500/10 blur-[40px] rounded-full pointer-events-none transition-all group-hover:bg-violet-500/20"></div>
-                    <div className="flex justify-between items-start mb-2 sm:mb-4 relative z-10">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-500/20">
-                            <SafeIcon name="layers" size={16} className="sm:w-5 sm:h-5" />
-                        </div>
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-center group">
+                    <div className="absolute right-0 top-0 w-20 h-20 bg-violet-500/10 blur-[30px] rounded-full pointer-events-none"></div>
+                    <div className="text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-2 sm:mb-3 relative z-10">
+                        <SafeIcon name="layers" size={14} className="text-violet-500" /> Aktiv Pipeline
                     </div>
-                    <div className="relative z-10">
-                        <div className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1 truncate">Aktiv Pipeline</div>
-                        <div className="text-xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white truncate">
-                            {stats.pipeline.offererat.toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
-                        </div>
+                    <div className="text-2xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white relative z-10">
+                        {stats.pipeline.offererat.toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-100 dark:bg-white/5 flex">
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-zinc-100 dark:bg-white/5 flex opacity-60 group-hover:opacity-100 transition-opacity">
                         <div className="h-full bg-violet-500" style={{ width: `${stats.totalBookedValue > 0 ? (stats.pipeline.offererat/stats.totalBookedValue)*100 : 0}%` }}></div>
                         <div className="h-full bg-orange-500" style={{ width: `${stats.totalBookedValue > 0 ? (stats.pipeline.bokad/stats.totalBookedValue)*100 : 0}%` }}></div>
                         <div className="h-full bg-emerald-500" style={{ width: `${stats.totalBookedValue > 0 ? (stats.pipeline.klart/stats.totalBookedValue)*100 : 0}%` }}></div>
@@ -289,71 +264,76 @@ window.StatisticsView = ({ allJobs }) => {
                 </div>
             </div>
 
-            {/* CHART & INSIGHTS ROW */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 mb-4">
+            {/* MASTER-DETAIL VIEW: Diagram (Master) + Månadsvy (Detail) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 mb-5 sm:mb-6 lg:h-[440px]">
                 
-                {/* CHART */}
-                <div className="lg:col-span-2 bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
-                        <div>
-                            <h3 className="text-sm sm:text-base font-black text-zinc-900 dark:text-white tracking-tight uppercase">Omsättning över tid</h3>
-                            <p className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Visar utfört och bokat för {selectedYear}</p>
-                        </div>
-                        <div className="flex items-center gap-3 bg-zinc-50 dark:bg-[#121826] p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-zinc-200/50 dark:border-white/5">
-                            <div className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 px-1 sm:px-2">
-                                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-sm bg-emerald-400"></span> Fakturerat
+                {/* VÄNSTER: INTERAKTIVT DIAGRAM (Master) */}
+                <div className="lg:col-span-7 bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col h-full min-h-[350px] lg:min-h-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-6 gap-4 shrink-0">
+                        <SectionHeader title="Månadsöversikt" sub={`Tryck på en stapel för att se detaljer (${selectedYear})`} icon="bar-chart" color="blue" />
+                        <div className="flex items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-[#121826] p-2 rounded-xl sm:rounded-2xl border border-zinc-200/50 dark:border-white/5 shrink-0">
+                            <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 px-2">
+                                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span> Fakturerat
                             </div>
-                            <div className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 px-1 sm:px-2">
-                                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-sm bg-orange-400 opacity-50"></span> Inbokat
+                            <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 px-2">
+                                <span className="w-2.5 h-2.5 rounded-sm bg-orange-400 opacity-50"></span> Inbokat
                             </div>
                         </div>
                     </div>
                     
-                    <div className="flex-1 w-full overflow-x-auto sm:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 pt-20 sm:pt-0 -mt-16 sm:mt-0">
-                        <div className="flex items-end gap-1 sm:gap-3 relative h-48 sm:h-56 mt-0 sm:mt-12 min-w-[380px] sm:min-w-0">
-                            <div className="absolute inset-0 flex flex-col justify-between border-y border-zinc-100 dark:border-white/5 pointer-events-none opacity-50">
-                                <div className="w-full h-px bg-zinc-200 dark:bg-white/10"></div>
-                                <div className="w-full h-px bg-zinc-200 dark:bg-white/10"></div>
-                                <div className="w-full h-px bg-zinc-200 dark:bg-white/10"></div>
+                    <div className="flex-1 w-full overflow-x-auto custom-scrollbar pb-2 flex flex-col">
+                        <div className="flex items-end gap-1 sm:gap-2 relative flex-1 min-h-[240px] min-w-[420px] sm:min-w-0 pt-10 mt-auto border-b border-zinc-200 dark:border-white/10">
+
+                            {/* Diskreta bakgrundslinjer (Y-axel referens) */}
+                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-40 pb-6 pt-10">
+                                <div className="w-full h-px border-b border-dashed border-zinc-300 dark:border-white/20"></div>
+                                <div className="w-full h-px border-b border-dashed border-zinc-300 dark:border-white/20"></div>
+                                <div className="w-full h-px border-b border-dashed border-zinc-300 dark:border-white/20"></div>
                             </div>
 
                             {months.map((month, i) => {
                                 const actual = stats.monthlyActualRev[i];
                                 const booked = stats.monthlyBookedRev[i];
                                 const total = actual + booked;
-                                const heightPct = total === 0 ? 0 : Math.max((total / stats.maxMonthRevenue) * 100, 4);
+                                const heightPct = total === 0 ? 0 : Math.max((total / stats.maxMonthRevenue) * 100, 2);
                                 const actPct = total === 0 ? 0 : (actual / total) * 100;
                                 const bkdPct = total === 0 ? 0 : (booked / total) * 100;
-                                const isHovered = hoveredMonth === i;
-                                const isActive = expandedMonth === i;
+                                const isSelected = selectedMonth === i;
 
                                 return (
                                     <div 
                                         key={i} 
-                                        className="flex-1 flex flex-col justify-end items-center h-full relative group cursor-pointer z-10"
-                                        onMouseEnter={() => setHoveredMonth(i)}
-                                        onMouseLeave={() => setHoveredMonth(null)}
-                                        onClick={() => handleChartClick(i)}
+                                        className="flex-1 flex flex-col justify-end items-center h-full relative group cursor-pointer z-10 pb-6"
+                                        onClick={() => setSelectedMonth(i)}
                                     >
-                                        <div className={`absolute -top-14 sm:-top-16 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-xl pointer-events-none transition-all duration-200 z-50 flex flex-col min-w-[100px] sm:min-w-[120px] items-center text-center ${isHovered ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95'}`}>
-                                            <div className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5 sm:mb-1">{fullMonths[i]}</div>
-                                            <div className="text-sm sm:text-lg font-black tracking-tighter leading-none mb-1 sm:mb-1.5">{total.toLocaleString()} <span className="text-[8px] sm:text-[9px]">kr</span></div>
-                                            {actual > 0 && <div className="text-[8px] font-bold text-emerald-400 dark:text-emerald-600 uppercase tracking-wider">Klar: {actual.toLocaleString()}</div>}
-                                            {booked > 0 && <div className="text-[8px] font-bold text-orange-400 dark:text-orange-600 uppercase tracking-wider">Bok: {booked.toLocaleString()}</div>}
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 sm:w-3 sm:h-3 bg-zinc-900 dark:bg-white rotate-45"></div>
+                                        <div className="w-full flex justify-center items-end h-full relative">
+                                            {/* STAPELN */}
+                                            <div 
+                                                className={`w-full max-w-[24px] sm:max-w-[36px] bg-zinc-100 dark:bg-[#1a2235] flex flex-col justify-end overflow-visible transition-all duration-500 relative ${isSelected ? 'ring-2 ring-orange-500 ring-offset-2 ring-offset-white dark:ring-offset-[#182032] opacity-100 scale-100 shadow-md z-20 rounded-t-md sm:rounded-t-lg' : 'group-hover:opacity-100 opacity-70 scale-95 hover:scale-100 z-10 rounded-t-sm sm:rounded-t-md'}`} 
+                                                style={{ height: `${heightPct}%` }}
+                                            >
+                                                {/* SIFFRAN: Fastspikad OVANFÖR stapeln så den åker upp/ner med höjden */}
+                                                {total > 0 && (
+                                                    <div className={`absolute -top-6 sm:-top-7 left-1/2 -translate-x-1/2 text-[10px] sm:text-[12px] font-black tracking-tighter transition-all duration-300 ${isSelected ? 'text-zinc-900 dark:text-white scale-110' : 'text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300'}`}>
+                                                        {(total/1000).toFixed(total >= 10000 ? 0 : 1)}k
+                                                    </div>
+                                                )}
+
+                                                {/* Fyllning av stapel */}
+                                                {bkdPct > 0 && <div className={`w-full bg-orange-400/60 transition-all duration-500 ${isSelected ? 'rounded-t-md sm:rounded-t-lg' : 'rounded-t-sm sm:rounded-t-md'}`} style={{ height: `${bkdPct}%` }}></div>}
+                                                {actPct > 0 && <div className={`w-full bg-gradient-to-t from-emerald-600 to-emerald-400 transition-all duration-500 ${bkdPct === 0 ? (isSelected ? 'rounded-t-md sm:rounded-t-lg' : 'rounded-t-sm sm:rounded-t-md') : ''}`} style={{ height: `${actPct}%` }}></div>}
+                                            </div>
                                         </div>
 
-                                        <div className={`w-full max-w-[32px] sm:max-w-[44px] rounded-t-lg sm:rounded-t-xl bg-zinc-100 dark:bg-[#1a2235] flex flex-col justify-end overflow-hidden transition-all duration-300 group-hover:brightness-110 ${isActive ? 'ring-2 ring-orange-500' : 'group-hover:ring-2 group-hover:ring-zinc-300 dark:group-hover:ring-white/20'}`} style={{ height: `${heightPct}%` }}>
-                                            {bkdPct > 0 && (
-                                                <div className="w-full bg-orange-400/50 transition-all duration-300" style={{ height: `${bkdPct}%` }}></div>
-                                            )}
-                                            {actPct > 0 && (
-                                                <div className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 transition-all duration-300" style={{ height: `${actPct}%` }}></div>
-                                            )}
-                                        </div>
-                                        <div className={`mt-2 sm:mt-3 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest transition-colors duration-300 ${isHovered || isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`}>
+                                        {/* MÅNADSETIKETT */}
+                                        <div className={`absolute bottom-0 w-full text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-colors duration-300 ${isSelected ? 'text-orange-500' : 'text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`}>
                                             {month}
                                         </div>
+                                        
+                                        {/* Liten "aktiv-prick" under månaden */}
+                                        {isSelected && (
+                                            <div className="absolute -bottom-3 sm:-bottom-4 w-1 h-1 rounded-full bg-orange-500 animate-in zoom-in duration-300"></div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -361,216 +341,126 @@ window.StatisticsView = ({ allJobs }) => {
                     </div>
                 </div>
 
-                {/* INSIGHTS */}
-                <div className="bg-gradient-to-b from-orange-400 to-orange-600 rounded-2xl sm:rounded-3xl p-[2px] shadow-sm flex flex-col">
-                    <div className="bg-white dark:bg-[#182032] w-full h-full rounded-[14px] sm:rounded-[22px] p-4 sm:p-6 flex flex-col relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 sm:p-6 opacity-20 dark:opacity-20 text-orange-500 pointer-events-none">
-                            <window.Icon name="zap" size={100} />
+                {/* HÖGER: VALD MÅNAD (Detail) */}
+                <div className="lg:col-span-5 bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl shadow-sm flex flex-col overflow-hidden h-[450px] lg:h-full">
+                    <div className="p-4 sm:p-5 border-b border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-[#121826]/50 shrink-0">
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                            <h3 className="text-[14px] sm:text-[16px] font-black text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                                <SafeIcon name="calendar" size={16} className="text-orange-500" /> {fullMonths[selectedMonth]} {selectedYear}
+                            </h3>
+                            <span className="text-[10px] sm:text-[11px] font-bold text-zinc-500 bg-white dark:bg-white/5 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-white/10 uppercase tracking-widest shadow-sm">
+                                {activeMonthJobs.length} Jobb
+                            </span>
                         </div>
-                        
-                        <div className="flex items-center gap-2 text-orange-500 mb-4 sm:mb-6 relative z-10">
-                            <SafeIcon name="sparkles" size={16} />
-                            <h3 className="text-[11px] sm:text-[12px] font-black uppercase tracking-widest">AI Insights</h3>
-                        </div>
-
-                        <div className="space-y-4 sm:space-y-5 flex-1 flex flex-col justify-center relative z-10">
-                            {stats.bestMonth.index !== -1 && stats.bestMonth.revenue > 0 ? (
-                                <div>
-                                    <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1 sm:mb-1.5">Bästa Månaden</div>
-                                    <div className="text-lg sm:text-xl font-light tracking-tight text-zinc-900 dark:text-white leading-tight">
-                                        <strong className="font-black">{fullMonths[stats.bestMonth.index]}</strong> leder med <span className="text-orange-500 font-black">{stats.bestMonth.revenue.toLocaleString()} kr</span>.
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-zinc-500 italic text-xs">För lite data för att generera insikter.</div>
-                            )}
-
-                            {stats.completionRate > 0 && (
-                                <div className="p-3 sm:p-4 bg-zinc-50 dark:bg-[#121826] rounded-xl sm:rounded-2xl border border-zinc-200/50 dark:border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                                            <SafeIcon name="target" size={16} />
-                                        </div>
-                                        <div>
-                                            <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-0.5">Hit Rate</div>
-                                            <div className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">Stänger <span className="text-blue-500">{stats.completionRate}%</span> inbokade.</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* EXPANDABLE MONTHLY TABLE */}
-            <div ref={tableRef} className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm mb-4">
-                <SectionHeader title="Ekonomisk Månadsöversikt" sub="Omsättning & detaljer per månad" icon="table" color="emerald" />
-                
-                <div className="flex flex-col gap-3 mt-4">
-                    {/* Table Header (Desktop only) */}
-                    <div className="hidden sm:flex items-center justify-between px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 border-b border-zinc-100 dark:border-white/5">
-                        <div className="w-1/4">Månad</div>
-                        <div className="w-1/5 text-right">Omsättning (Klar)</div>
-                        <div className="w-1/5 text-right">Bokat Värde</div>
-                        <div className="w-1/5 text-right">Snitt / Jobb</div>
-                        <div className="w-12"></div>
-                    </div>
-
-                    {months.map((month, i) => {
-                        const actual = stats.monthlyActualRev[i];
-                        const booked = stats.monthlyBookedRev[i];
-                        const count = stats.monthlyCounts[i];
-                        const jobs = stats.monthlyJobs[i];
-                        const isExpanded = expandedMonth === i;
-
-                        // Dölj månader helt om de saknar aktivitet för året
-                        if (count === 0 && actual === 0 && booked === 0) return null;
-
-                        const completedJobs = jobs.filter(j => ['KLAR', 'FAKTURERAS'].includes(j.status));
-                        const avg = actual > 0 && completedJobs.length > 0 ? Math.round(actual / completedJobs.length) : 0;
-
-                        return (
-                            <div key={month} className={`flex flex-col border transition-all duration-300 ${isExpanded ? 'border-orange-500/50 shadow-md rounded-2xl bg-white dark:bg-[#1e293b]' : 'border-zinc-200/80 dark:border-white/5 rounded-xl bg-zinc-50 dark:bg-[#121826] hover:border-zinc-300 dark:hover:border-white/20'}`}>
-                                
-                                {/* Summary Row */}
-                                <button onClick={() => setExpandedMonth(isExpanded ? null : i)} className="flex items-center justify-between p-4 sm:px-5 w-full text-left focus:outline-none group">
-                                    <div className="w-full sm:w-1/4 flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-orange-500 text-white shadow-sm' : 'bg-white dark:bg-[#1a2235] text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10 group-hover:text-orange-500'}`}>
-                                            <SafeIcon name="calendar" size={16} />
-                                        </div>
-                                        <div>
-                                            <div className="text-[13px] font-black uppercase tracking-widest text-zinc-900 dark:text-white leading-none">{fullMonths[i]}</div>
-                                            <div className="text-[10px] font-bold text-zinc-500 mt-1">{count} registrerade jobb</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="hidden sm:block w-1/5 text-right">
-                                        <div className="text-[15px] font-mono font-black text-emerald-600 dark:text-emerald-400">{actual > 0 ? actual.toLocaleString() : '-'} <span className="text-[10px] font-sans text-zinc-500">kr</span></div>
-                                    </div>
-                                    <div className="hidden sm:block w-1/5 text-right">
-                                        <div className="text-[14px] font-mono font-bold text-zinc-500 dark:text-zinc-400">{booked > 0 ? booked.toLocaleString() : '-'} <span className="text-[10px] font-sans text-zinc-500">kr</span></div>
-                                    </div>
-                                    <div className="hidden sm:block w-1/5 text-right">
-                                        <div className="text-[14px] font-mono font-bold text-zinc-700 dark:text-zinc-300">{avg > 0 ? avg.toLocaleString() : '-'} <span className="text-[10px] font-sans text-zinc-500">kr</span></div>
-                                    </div>
-
-                                    <div className="w-12 flex justify-end">
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isExpanded ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-500' : 'bg-transparent text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white'}`}>
-                                            <SafeIcon name="chevron-down" size={18} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                                        </div>
-                                    </div>
-                                </button>
-
-                                {/* Expanded Details */}
-                                {isExpanded && (
-                                    <div className="p-4 sm:p-5 border-t border-zinc-100 dark:border-white/5 bg-white dark:bg-[#182032] rounded-b-2xl animate-in slide-in-from-top-2 fade-in duration-200">
-                                        <div className="flex flex-col gap-2">
-                                            {jobs.map(job => {
-                                                const d = new Date(job.datum);
-                                                const price = parseInt(job.kundpris) || 0;
-                                                const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
-                                                return (
-                                                    <div key={job.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-[#121826]/50 hover:bg-zinc-100 dark:hover:bg-[#1a2235] transition-colors gap-3">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 rounded-lg bg-white dark:bg-black/20 flex flex-col items-center justify-center border border-zinc-200/50 dark:border-white/5 shrink-0 shadow-sm">
-                                                                <span className="text-[13px] font-black text-zinc-900 dark:text-white leading-none">{d.getDate()}</span>
-                                                                <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500">{months[d.getMonth()]}</span>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-[12px] font-bold text-zinc-900 dark:text-white">{job.kundnamn}</div>
-                                                                <div className="flex items-center gap-2 mt-0.5">
-                                                                    <span className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold text-zinc-600 dark:text-zinc-300">
-                                                                        {job.regnr || job.bilmodell || 'Okänt'}
-                                                                    </span>
-                                                                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[150px]">
-                                                                        {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center justify-between sm:justify-end gap-4 pl-14 sm:pl-0">
-                                                            <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-md border ${
-                                                                isDone
-                                                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20'
-                                                                : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200/50 dark:border-orange-500/20'
-                                                            }`}>
-                                                                {job.status || 'BOKAD'}
-                                                            </span>
-                                                            <div className="text-right min-w-[70px]">
-                                                                <div className="text-[13px] font-mono font-black text-zinc-900 dark:text-white leading-none">
-                                                                    {price > 0 ? price.toLocaleString() : '-'}
-                                                                </div>
-                                                                <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">kr</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
+                        <div className="flex items-center gap-5 sm:gap-6 bg-white dark:bg-[#182032] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-200/50 dark:border-white/5 shadow-sm">
+                            <div className="flex flex-col">
+                                <span className="text-[16px] sm:text-[20px] font-black text-emerald-600 dark:text-emerald-400 leading-none mb-1">{activeMonthActual > 0 ? activeMonthActual.toLocaleString() : '0'} <span className="text-[10px] font-sans text-zinc-500">kr</span></span>
+                                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Fakturerat</span>
                             </div>
-                        )
-                    })}
+                            <div className="w-px h-8 bg-zinc-200 dark:bg-white/10"></div>
+                            <div className="flex flex-col">
+                                <span className="text-[16px] sm:text-[20px] font-bold text-orange-500 dark:text-orange-400 leading-none mb-1">{activeMonthBooked > 0 ? activeMonthBooked.toLocaleString() : '0'} <span className="text-[10px] font-sans text-zinc-500">kr</span></span>
+                                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Inbokat</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 bg-zinc-50/30 dark:bg-transparent min-h-0">
+                        {activeMonthJobs.length > 0 ? (
+                            <div className="flex flex-col gap-2">
+                                {activeMonthJobs.map(job => {
+                                    const d = new Date(job.datum);
+                                    const price = parseInt(job.kundpris) || 0;
+                                    const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+                                    return (
+                                        <div key={job.id} className="flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-white/5 bg-white dark:bg-[#1a2235] hover:border-zinc-300 dark:hover:border-white/20 transition-colors shadow-sm cursor-default group">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0 pr-3">
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-zinc-50 dark:bg-black/20 flex flex-col items-center justify-center border border-zinc-200/50 dark:border-white/5 shrink-0 shadow-sm">
+                                                    <span className="text-[13px] sm:text-[15px] font-black text-zinc-900 dark:text-white leading-none mb-0.5">{d.getDate()}</span>
+                                                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-zinc-500">{months[d.getMonth()]}</span>
+                                                </div>
+                                                <div className="min-w-0 flex flex-col gap-0.5">
+                                                    <div className="text-[12px] sm:text-[13px] font-bold text-zinc-900 dark:text-white truncate">{job.kundnamn}</div>
+                                                    <div className="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 truncate flex items-center gap-1.5">
+                                                        <span className="font-mono text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-white/5 px-1 rounded">{job.regnr || '-'}</span>
+                                                        {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end shrink-0 gap-1.5">
+                                                <div className="text-[13px] sm:text-[15px] font-black text-zinc-900 dark:text-white leading-none">
+                                                    {price > 0 ? price.toLocaleString() : '-'} <span className="text-[9px] font-bold text-zinc-400">kr</span>
+                                                </div>
+                                                <span className={`px-2 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest rounded-md border shadow-sm ${isDone ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20'}`}>
+                                                    {job.status || 'BOKAD'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-50 min-h-[200px]">
+                                <SafeIcon name="calendar-x" size={32} className="mb-3 text-zinc-400" />
+                                <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-zinc-500">Inga uppdrag i {months[selectedMonth].toLowerCase()}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* BOTTOM ROW (Topkunder, Tjänster, Fordon) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
+            {/* BOTTOM ROW (Topkunder, Tjänster, Fordon) - Luftigare listor */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 shrink-0">
                 
-                {/* TOP CUSTOMERS */}
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm">
                     <SectionHeader title="Toppkunder" sub="Ackumulerad omsättning" icon="users" color="blue" />
-                    <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-3.5 mt-4">
                         {stats.topCustomers.length > 0 ? stats.topCustomers.map(([name, revenue], index) => {
                             const pct = Math.round((revenue / stats.actualRevenue) * 100);
                             return (
-                                <div key={name} className="group cursor-default">
+                                <div key={name} className="group">
                                     <div className="flex justify-between items-end mb-1.5">
                                         <div className="flex items-center gap-2 min-w-0 pr-2">
-                                            <div className="text-[9px] sm:text-[10px] font-black text-zinc-400 dark:text-zinc-600 w-3">{index + 1}.</div>
-                                            <div className="text-[11px] sm:text-[12px] font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-blue-500 transition-colors">{name}</div>
+                                            <div className="text-[10px] sm:text-[11px] font-black text-zinc-400 w-4">{index + 1}.</div>
+                                            <div className="text-[11px] sm:text-[13px] font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-blue-500 transition-colors">{name}</div>
                                         </div>
-                                        <div className="text-[11px] sm:text-[12px] font-mono font-black text-zinc-900 dark:text-white shrink-0">{revenue.toLocaleString()} <span className="text-[8px] font-sans text-zinc-400">kr</span></div>
+                                        <div className="text-[11px] sm:text-[13px] font-mono font-bold text-zinc-900 dark:text-white shrink-0">{revenue.toLocaleString()} <span className="text-[9px] font-sans text-zinc-400">kr</span></div>
                                     </div>
                                     <div className="w-full bg-zinc-100 dark:bg-[#1a2235] h-1.5 rounded-full overflow-hidden">
                                         <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full transition-all duration-1000 ease-out" style={{ width: `${pct}%` }}></div>
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center text-zinc-500 text-xs italic py-6">Ingen data</div>}
+                        }) : <div className="text-center text-zinc-500 text-[11px] italic py-6">Ingen data</div>}
                     </div>
                 </div>
 
-                {/* TOP SERVICES */}
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm">
                     <SectionHeader title="Tjänster" sub="Baserat på volym" icon="layers" color="emerald" />
-                    <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-3.5 mt-4">
                         {stats.topPackages.length > 0 ? stats.topPackages.map(([pkg, count], index) => {
                             const pct = Math.round((count / stats.completedJobsCount) * 100);
                             return (
-                                <div key={pkg} className="group cursor-default">
+                                <div key={pkg} className="group">
                                     <div className="flex justify-between items-end mb-1.5">
                                         <div className="flex items-center gap-2 min-w-0 pr-2">
-                                            <div className="text-[9px] sm:text-[10px] font-black text-zinc-400 dark:text-zinc-600 w-3">{index + 1}.</div>
-                                            <div className="text-[11px] sm:text-[12px] font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-emerald-500 transition-colors">{pkg}</div>
+                                            <div className="text-[10px] sm:text-[11px] font-black text-zinc-400 w-4">{index + 1}.</div>
+                                            <div className="text-[11px] sm:text-[13px] font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-emerald-500 transition-colors">{pkg}</div>
                                         </div>
-                                        <div className="text-[9px] sm:text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-[1px] rounded uppercase tracking-widest shrink-0">{count} st</div>
+                                        <div className="text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest shrink-0">{count} st</div>
                                     </div>
                                     <div className="w-full bg-zinc-100 dark:bg-[#1a2235] h-1.5 rounded-full overflow-hidden">
                                         <div className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full transition-all duration-1000 ease-out" style={{ width: `${pct}%` }}></div>
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center text-zinc-500 text-xs italic py-6">Ingen data</div>}
+                        }) : <div className="text-center text-zinc-500 text-[11px] italic py-6">Ingen data</div>}
                     </div>
                 </div>
 
-                {/* TOP BRANDS */}
-                <div className="bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm">
                     <SectionHeader title="Fordon" sub="Omsättning per märke" icon="truck" color="violet" />
-                    <div className="space-y-2 sm:space-y-3">
+                    <div className="space-y-3 mt-3">
                         {stats.topBrands.length > 0 ? stats.topBrands.map(([brand, revenue]) => {
                             const pct = Math.round((revenue / stats.actualRevenue) * 100);
                             let slug = null;
@@ -580,29 +470,24 @@ window.StatisticsView = ({ allJobs }) => {
                             }
 
                             return (
-                                <div key={brand} className="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors cursor-default">
-                                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-zinc-50 dark:bg-[#121826] border border-zinc-200/50 dark:border-white/10 flex items-center justify-center shrink-0 group-hover:border-violet-500/30 transition-colors">
-                                        {slug ? (
-                                            <img src={`https://cdn.simpleicons.org/${slug}`} className="w-4 h-4 sm:w-4 sm:h-4 object-contain opacity-70 dark:invert group-hover:opacity-100 group-hover:scale-110 transition-all"/>
-                                        ) : (
-                                            <SafeIcon name="car" size={14} className="text-zinc-400"/>
-                                        )}
+                                <div key={brand} className="group flex items-center justify-between gap-3 p-1.5 -mx-1.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                                    <div className="flex items-center min-w-0 gap-3">
+                                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-zinc-50 dark:bg-[#121826] border border-zinc-200/50 dark:border-white/10 flex items-center justify-center shrink-0 group-hover:border-violet-500/30 transition-colors shadow-sm">
+                                            {slug ? (
+                                                <img src={`https://cdn.simpleicons.org/${slug}`} className="w-4 h-4 sm:w-4 sm:h-4 object-contain opacity-70 dark:invert group-hover:opacity-100 group-hover:scale-110 transition-all"/>
+                                            ) : (
+                                                <SafeIcon name="car" size={14} className="text-zinc-400 group-hover:text-violet-500 transition-colors"/>
+                                            )}
+                                        </div>
+                                        <span className="text-[11px] sm:text-[13px] font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-violet-500 transition-colors">{brand}</span>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[11px] sm:text-[12px] font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-violet-500 transition-colors">{brand}</span>
-                                            <span className="text-[10px] sm:text-[11px] font-mono font-black text-zinc-900 dark:text-white shrink-0">{revenue.toLocaleString()} <span className="text-[8px] font-sans text-zinc-400">kr</span></span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-full bg-zinc-100 dark:bg-[#1a2235] h-1 rounded-full overflow-hidden">
-                                                <div className="bg-gradient-to-r from-violet-600 to-violet-400 h-full transition-all duration-1000 ease-out" style={{ width: `${pct}%` }}></div>
-                                            </div>
-                                            <span className="text-[8px] sm:text-[9px] font-black text-zinc-400 uppercase tracking-widest w-5 text-right">{pct}%</span>
-                                        </div>
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        <span className="text-[11px] sm:text-[13px] font-mono font-bold text-zinc-900 dark:text-white">{revenue.toLocaleString()} <span className="text-[9px] font-sans text-zinc-400">kr</span></span>
+                                        <span className="text-[9px] sm:text-[10px] font-black text-violet-500 w-7 text-right">{pct}%</span>
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center text-zinc-500 text-xs italic py-6">Ingen data</div>}
+                        }) : <div className="text-center text-zinc-500 text-[11px] italic py-6">Ingen data</div>}
                     </div>
                 </div>
 
