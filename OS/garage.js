@@ -127,8 +127,28 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
 // KUND/FORDONS - PROFIL (Sidopanelen)
 // ==========================================
 const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
+    // SKYDDAD MERGE & LOKAL CACHE: Förhindrar att data försvinner när kortet stängs/öppnas
+    const getLocalCache = (reg) => {
+        try {
+            const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+            return cache[reg] || {};
+        } catch(e) { return {}; }
+    };
+
+    const saveLocalCache = (reg, newData) => {
+        try {
+            const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+            cache[reg] = { ...(cache[reg] || {}), ...newData };
+            localStorage.setItem('os_vehicle_cache', JSON.stringify(cache));
+        } catch(e) {}
+    };
+
     const [brand, setBrand] = React.useState(v.brand_manual || getBrand(v.model));
-    const [specs, setSpecs] = React.useState({});
+    // Initiera direkt med lokal cache om den finns, så den aldrig flashar tomt
+    const [specs, setSpecs] = React.useState(() => {
+        const local = getLocalCache(v.regnr);
+        return { ...(v.latestSpecs || {}), ...local };
+    });
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
@@ -139,41 +159,85 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         if (window.lucide) window.lucide.createIcons();
     }); 
 
-    React.useEffect(() => {
-        if (!v.regnr || !window.db) return;
-        const u1 = window.db.collection('vehicleSpecs').doc(v.regnr).onSnapshot(d => {
-            if (d.exists) {
-                const data = d.data();
-                if(data.brand_manual) setBrand(data.brand_manual);
-                setSpecs({ ...(v.latestSpecs || {}), ...data }); 
-            } else {
-                if (v.latestSpecs) setSpecs(v.latestSpecs);
+    const isValid = (val) => {
+        if (val === null || val === undefined) return false;
+        const s = String(val).trim();
+        const u = s.toUpperCase();
+        return s !== '' && u !== '-' && u !== 'SAKNAS' && u !== 'NULL';
+    };
+
+    const mergeValidSpecs = (currentSpecs, newSpecs) => {
+        const merged = { ...currentSpecs };
+        for (const [key, val] of Object.entries(newSpecs)) {
+            if (isValid(val)) {
+                merged[key] = val;
+            } else if (!merged[key]) {
+                merged[key] = val;
             }
-        });
-        return () => u1();
+        }
+        return merged;
+    };
+
+    // Synka med databasen OCH den lokala cachen
+    React.useEffect(() => {
+        if (!v.regnr) return;
+        const cleanReg = v.regnr.replace(/\s+/g, ''); 
+        
+        // 1. Läs in lokal cache direkt
+        const localData = getLocalCache(cleanReg);
+        if (Object.keys(localData).length > 0) {
+            setSpecs(prev => mergeValidSpecs(prev, localData));
+        }
+
+        // 2. Läs in från Firebase om det finns
+        if (window.db) {
+            const u1 = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(d => {
+                if (d.exists) {
+                    const data = d.data();
+                    if(data.brand_manual) setBrand(data.brand_manual);
+                    setSpecs(prev => {
+                        const updated = mergeValidSpecs(prev, data);
+                        saveLocalCache(cleanReg, updated); // Spara även till lokal cache
+                        return updated;
+                    }); 
+                }
+            });
+            return () => u1();
+        }
     }, [v.regnr]);
 
+    // Lyssna på tillägget och spara direkt till lokal cache
     React.useEffect(() => {
         const handleMessage = async (event) => {
             const fordonData = event.data;
             if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension'].includes(fordonData.source)) {
                 
-                // Fix: Säkerställ att inkommande data faktiskt tillhör bilen du tittar på
                 const msgReg = fordonData.regnr?.toUpperCase().replace(/\s+/g, '');
                 const currentReg = v.regnr?.toUpperCase().replace(/\s+/g, '');
                 if (msgReg && msgReg !== currentReg) return;
 
                 const specUpdates = {};
-                if (fordonData.motorkod) specUpdates.engine = fordonData.motorkod;
-                if (fordonData.oljevolym) specUpdates.oil = fordonData.oljevolym.toString().includes('l') ? fordonData.oljevolym : `${fordonData.oljevolym} l`;
-                if (fordonData.miltal) specUpdates.mileage = fordonData.miltal;
-                if (fordonData.årsmodell) specUpdates.year = fordonData.årsmodell;
-                if (fordonData.vin) specUpdates.vin = fordonData.vin;
-                if (fordonData.bilmodell) specUpdates.model = fordonData.bilmodell;
+                if (isValid(fordonData.motorkod)) specUpdates.engine = fordonData.motorkod;
+                if (isValid(fordonData.oljevolym)) specUpdates.oil = fordonData.oljevolym.toString().includes('l') ? fordonData.oljevolym : `${fordonData.oljevolym} l`;
+                if (isValid(fordonData.miltal)) specUpdates.mileage = fordonData.miltal;
+                if (isValid(fordonData.årsmodell)) specUpdates.year = fordonData.årsmodell;
+                if (isValid(fordonData.vin)) specUpdates.vin = fordonData.vin;
+                if (isValid(fordonData.bilmodell)) specUpdates.model = fordonData.bilmodell;
+                if (isValid(fordonData.fordonsstatus)) specUpdates.ts_status = fordonData.fordonsstatus;
+                if (isValid(fordonData.besiktning_senast)) specUpdates.ts_inspection = fordonData.besiktning_senast;
+                if (isValid(fordonData.växellåda)) specUpdates.ts_gearbox = fordonData.växellåda;
+                if (isValid(fordonData.drivmedel)) specUpdates.ts_fuel = fordonData.drivmedel;
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
-                    setSpecs(prev => ({ ...prev, ...specUpdates }));
+                    const cleanReg = v.regnr.replace(/\s+/g, '');
+                    
+                    saveLocalCache(cleanReg, specUpdates); // Sparar omedelbart lokalt
+
+                    setSpecs(prev => {
+                        const merged = mergeValidSpecs(prev, specUpdates);
+                        return merged;
+                    });
                 }
             }
         };
@@ -184,7 +248,8 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const changeBrand = (e) => {
         const val = e.target.value;
         setBrand(val);
-        window.db && window.db.collection('vehicleSpecs').doc(v.regnr).set({ brand_manual: val }, { merge: true });
+        const cleanReg = v.regnr.replace(/\s+/g, '');
+        window.db && window.db.collection('vehicleSpecs').doc(cleanReg).set({ brand_manual: val }, { merge: true });
     };
 
     const copyRegClick = () => {
@@ -209,20 +274,13 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
 
-    const handleTouchStart = (e) => { 
-        tStart.current = {
-            x: e.targetTouches[0].clientX,
-            y: e.targetTouches[0].clientY
-        }; 
-    };
+    const handleTouchStart = (e) => { tStart.current = { x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY }; };
     
     const handleTouchEnd = (e) => {
         if (!tStart.current) return;
         const diffX = e.changedTouches[0].clientX - tStart.current.x;
         const diffY = e.changedTouches[0].clientY - tStart.current.y;
-        if (diffX > 60 && Math.abs(diffX) > Math.abs(diffY)) {
-            onClose(); 
-        }
+        if (diffX > 60 && Math.abs(diffX) > Math.abs(diffY)) onClose(); 
         tStart.current = null;
     };
 
@@ -243,13 +301,11 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm cursor-default" onClick={onClose}></div>
             
-            {/* TAJTARE BREDDER: Max 640px för att inte bli för bred på tablet */}
             <div 
                 onTouchStart={handleTouchStart} 
                 onTouchEnd={handleTouchEnd} 
                 className="relative w-full sm:w-[460px] md:w-[560px] lg:w-[640px] h-full bg-zinc-50 dark:bg-slate-800 text-zinc-900 dark:text-slate-200 shadow-[-30px_0_60px_-15px_rgba(0,0,0,0.5)] flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-white/10"
             >
-                {/* HEADER (Kompaktare padding och mindre logo) */}
                 <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 p-3 md:p-4 shrink-0 z-30 flex justify-between items-start relative overflow-hidden shadow-sm">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 dark:bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
@@ -292,11 +348,8 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-                    
-                    {/* Sektion: Teknisk Data (Mycket tajtare space-y och p-värden) */}
                     <div className="p-3 md:p-4 space-y-2 md:space-y-3">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {/* ALLTID SYNLIGA NU (4 ST) */}
                             <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
                             <StatCard icon="droplet" label="Oljevolym" val={specs.oil} />
                             <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
@@ -312,7 +365,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             )}
                         </div>
 
-                        {/* Terminal-VIN (Samma stil som StatCard, fullbredd) */}
                         <div 
                             onClick={copyVinClick}
                             title="Kopiera Chassinummer"
@@ -331,7 +383,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </div>
                         </div>
 
-                        {/* Visa mer/mindre knapp */}
                         <button 
                             onClick={() => setShowAllSpecs(!showAllSpecs)}
                             className="mx-auto mt-2 mb-0 px-3 py-1 bg-zinc-50 dark:bg-slate-800/60 hover:bg-zinc-100 dark:hover:bg-slate-700 rounded-full flex justify-center items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 transition-colors"
@@ -340,7 +391,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={10} />
                         </button>
 
-                        {/* --- ACTION HUB (Slimmade knappar) --- */}
                         <div className="pt-3 border-t border-zinc-200 dark:border-white/5 space-y-2">
                             <div className="grid grid-cols-4 gap-1.5 md:gap-2">
                                 <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-purple-50 dark:hover:bg-purple-500/15 text-zinc-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-300 border border-zinc-200 dark:border-white/5 hover:border-purple-300 dark:hover:border-purple-500/30 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
@@ -352,17 +402,14 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-blue-50 dark:hover:bg-blue-500/15 text-zinc-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-300 border border-zinc-200 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/30 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
                                     <SafeIcon name="external-link" size={12} className="text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" /> <span className="hidden sm:inline">Oljemag.</span><span className="sm:hidden">OM</span>
                                 </button>
-                                {/* ETKA med ny standardikon */}
                                 <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
-                                    <SafeIcon name="external-link" size={12} className="text-zinc-500 dark:text-zinc-400 group-hover:scale-110 transition-transform" /> ETKA
+                                    <img src="https://www.etka.com/etkaportal/static/icons/logo.5feba87b.svg" alt="ETKA" className="h-3 opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all" /> ETKA
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Sektion: Historik Tidslinje (Kompaktare) */}
                     <div className="px-3 md:px-4 pb-20">
-                        
                         <div className="sticky top-0 bg-zinc-50/95 dark:bg-slate-800/95 backdrop-blur-md z-20 py-2 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
                             <div className="text-[9px] md:text-[10px] font-black text-zinc-500 dark:text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5 pl-1 sm:pl-0">
                                 <SafeIcon name="clock" size={10} className="text-orange-500 dark:text-orange-400" /> Historik
@@ -404,7 +451,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
                 </div>
                 
-                {/* STICKY BOTTOM ACTION BAR (Tajtare) */}
                 <div className="p-3 md:p-4 pr-16 lg:pr-20 border-t border-zinc-200 dark:border-white/5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shrink-0 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
                     <button 
                         onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')}
@@ -417,6 +463,83 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
             </div>
         </div>
     );
+};
+
+// FIX 3: Rensa även här så modalen hittar rätt dokument direkt vid start
+window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
+    const [d, setD] = React.useState(null);
+
+    React.useEffect(() => {
+        if(!regnr || !window.db) return;
+
+        let isMounted = true;
+
+        window.db.collection('jobs').where('regnr','==',regnr).get().then(async (s) => {
+            if (!isMounted) return;
+            
+            const j = s.docs.map(doc=>({id:doc.id,...doc.data()})).filter(x=>!x.deleted).sort((a,b)=>(b.datum||'').localeCompare(a.datum||''));
+            
+            let baseData = {
+                regnr: regnr,
+                model: 'Okänd',
+                customer: '-',
+                lastVisit: null,
+                visitCount: 0,
+                totalRevenue: 0,
+                history: [],
+                brand_manual: null,
+                latestSpecs: {}
+            };
+
+            if(j.length){ 
+                const l=j[0]; 
+                baseData = {
+                    ...baseData,
+                    model: l.bilmodell || 'Okänd',
+                    customer: l.kundnamn || 'Okänd',
+                    lastVisit: l.datum,
+                    visitCount: j.length,
+                    totalRevenue: j.reduce((sum,x)=>sum+(parseInt(x.kundpris)||0),0),
+                    history: j,
+                    brand_manual: l.brand_manual,
+                    latestSpecs: {
+                        engine: l.motorkod || '',
+                        oil: l.oljevolym ? (l.oljevolym.toString().includes('l') ? l.oljevolym : `${l.oljevolym} l`) : '',
+                        mileage: l.miltal || '',
+                        year: l.årsmodell || ''
+                    }
+                }; 
+            }
+
+            try {
+                const cleanReg = regnr.replace(/\s+/g, '');
+                const specDoc = await window.db.collection('vehicleSpecs').doc(cleanReg).get();
+                if (specDoc.exists && isMounted) {
+                    const specs = specDoc.data();
+                    
+                    if (specs.model) baseData.model = specs.model;
+                    if (specs.brand_manual) baseData.brand_manual = specs.brand_manual;
+                    
+                    baseData.latestSpecs = {
+                        ...baseData.latestSpecs,
+                        engine: specs.engine || baseData.latestSpecs.engine || '',
+                        oil: specs.oil || baseData.latestSpecs.oil || '',
+                        mileage: specs.mileage || baseData.latestSpecs.mileage || '',
+                        year: specs.year || baseData.latestSpecs.year || '',
+                        vin: specs.vin || ''
+                    };
+                }
+            } catch (err) {
+                console.error("Kunde inte hämta färsk vehicleSpecs data:", err);
+            }
+
+            if (isMounted) setD(baseData);
+        });
+
+        return () => { isMounted = false; };
+    }, [regnr]);
+
+    return d ? <VehicleProfile v={d} highlightId={highlightId} onClose={onClose} setView={setView}/> : null;
 };
 
 // ==========================================
@@ -616,79 +739,4 @@ window.GarageView = ({ allJobs, setView }) => {
             {sel && <VehicleProfile v={sel} onClose={close} setView={setView} />}
         </div>
     );
-};
-
-window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
-    const [d, setD] = React.useState(null);
-
-    React.useEffect(() => {
-        if(!regnr || !window.db) return;
-
-        let isMounted = true;
-
-        window.db.collection('jobs').where('regnr','==',regnr).get().then(async (s) => {
-            if (!isMounted) return;
-            
-            const j = s.docs.map(doc=>({id:doc.id,...doc.data()})).filter(x=>!x.deleted).sort((a,b)=>(b.datum||'').localeCompare(a.datum||''));
-            
-            let baseData = {
-                regnr: regnr,
-                model: 'Okänd',
-                customer: '-',
-                lastVisit: null,
-                visitCount: 0,
-                totalRevenue: 0,
-                history: [],
-                brand_manual: null,
-                latestSpecs: {}
-            };
-
-            if(j.length){ 
-                const l=j[0]; 
-                baseData = {
-                    ...baseData,
-                    model: l.bilmodell || 'Okänd',
-                    customer: l.kundnamn || 'Okänd',
-                    lastVisit: l.datum,
-                    visitCount: j.length,
-                    totalRevenue: j.reduce((sum,x)=>sum+(parseInt(x.kundpris)||0),0),
-                    history: j,
-                    brand_manual: l.brand_manual,
-                    latestSpecs: {
-                        engine: l.motorkod || '',
-                        oil: l.oljevolym ? (l.oljevolym.toString().includes('l') ? l.oljevolym : `${l.oljevolym} l`) : '',
-                        mileage: l.miltal || '',
-                        year: l.årsmodell || ''
-                    }
-                }; 
-            }
-
-            try {
-                const specDoc = await window.db.collection('vehicleSpecs').doc(regnr).get();
-                if (specDoc.exists && isMounted) {
-                    const specs = specDoc.data();
-                    
-                    if (specs.model) baseData.model = specs.model;
-                    if (specs.brand_manual) baseData.brand_manual = specs.brand_manual;
-                    
-                    baseData.latestSpecs = {
-                        ...baseData.latestSpecs,
-                        engine: specs.engine || baseData.latestSpecs.engine || '',
-                        oil: specs.oil || baseData.latestSpecs.oil || '',
-                        mileage: specs.mileage || baseData.latestSpecs.mileage || '',
-                        year: specs.year || baseData.latestSpecs.year || '',
-                        vin: specs.vin || ''
-                    };
-                }
-            } catch (err) {
-                console.error("Kunde inte hämta färsk vehicleSpecs data:", err);
-            }
-
-            if (isMounted) setD(baseData);
-        });
-
-        return () => { isMounted = false; };
-    }, [regnr]);
-
-    return d ? <VehicleProfile v={d} highlightId={highlightId} onClose={onClose} setView={setView}/> : null;
 };
