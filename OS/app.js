@@ -209,19 +209,21 @@ const App = () => {
             .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
 
             /* =========================================
-               DYNAMISK SKALNING FÖR ALLA SKÄRMAR 
+               DYNAMISK SKALNING (Windows-skalning & 1366x768 fix)
                ========================================= */
-            html { font-size: 14px; } /* Ny standard för desktop (hindrar att allt blir gigantiskt) */
+            /* Standard för stora externa skärmar (1080p+) */
+            html { font-size: 14px; } 
             
-            @media (min-width: 1920px) { html { font-size: 15px; } }
-            @media (min-width: 2560px) { html { font-size: 16px; } }
+            /* Laptops (1366x768). Detta ger EXAKT samma effekt som 75% zoom i Chrome */
+            @media (max-width: 1440px) { html { font-size: 12px; } }
             
-            @media (max-width: 1440px) { html { font-size: 13px; } }
-            @media (max-width: 1366px), (max-height: 800px) { html { font-size: 12px; } }
-            @media (max-width: 1280px), (max-height: 700px) { html { font-size: 11px; } }
+            /* Fångar upp laptops där Windows har lagt på 125% eller 150% förstoring */
+            @media (max-width: 1150px) { html { font-size: 11px; } }
+            @media (max-width: 950px) { html { font-size: 10px; } }
             
-            /* Mobiler & surfplattor behåller 16px så texten förblir stor och lättläst */
-            @media (max-width: 1024px) { html { font-size: 16px; } }
+            /* Rena mobiler (vi sänkte brytpunkten från 1024px till 768px för att inte krocka med din laptop). 
+               Här återställs fonten så att den är läsbar på telefonen. */
+            @media (max-width: 768px) { html { font-size: 16px; } }
         `;
     }, [isDark]);
 
