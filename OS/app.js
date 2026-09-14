@@ -108,6 +108,7 @@ const App = () => {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
+    const [zoomLevel, setZoomLevel] = useState(1); // LÄGG TILL DENNA
 
     useEffect(() => {
         localStorage.setItem('sys_nightlight', isNightLight);
@@ -214,14 +215,12 @@ const App = () => {
     useEffect(() => {
         const applyHardZoom = () => {
             const width = window.innerWidth;
-            
-            // Om skärmen är mellan 1000px och 1500px (t.ex. din arbetsdator på 1366px)
-            // Tvinga webbläsaren (Chrome) att skala gränssnittet till 75%
             if (width >= 1000 && width <= 1500) {
                 document.body.style.zoom = "0.75";
+                setZoomLevel(0.75);
             } else {
-                // Din privata dator (över 1500px) eller mobiler (under 1000px) kör 100%
                 document.body.style.zoom = "1";
+                setZoomLevel(1);
             }
         };
 
@@ -384,7 +383,11 @@ const App = () => {
                 style={{ backgroundColor: '#ffb04f', opacity: isNightLight && !isDark ? 0.15 : 0 }} 
             ></div>
 
-            <div className="flex h-[100dvh] overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
+            {/* Ersätt med detta: */}
+            <div 
+                className="flex overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300 w-full"
+                style={{ height: zoomLevel === 1 ? '100dvh' : `${100 / zoomLevel}dvh` }}
+            >
                 
                 {/* DYNAMISK SIDEBAR */}
                 <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[285px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
