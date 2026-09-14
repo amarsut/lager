@@ -170,7 +170,7 @@ window.StatisticsView = ({ allJobs }) => {
     const activeMonthBooked = stats.monthlyBookedRev[selectedMonth] || 0;
 
     return (
-        <div className="flex flex-col h-full min-h-0 bg-transparent text-zinc-900 dark:text-white pb-8 sm:pb-12 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4 px-4 lg:px-0">
+        <div className="flex flex-col h-full min-h-0 bg-transparent text-zinc-900 dark:text-white pb-8 sm:pb-12 transition-colors duration-500 relative max-w-[1400px] animate-in fade-in slide-in-from-left-4 -mx-4 sm:-mx-6 md:-mx-8 lg:mx-0 px-4 sm:px-6 md:px-8 lg:px-0">
             
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
