@@ -215,10 +215,16 @@ const App = () => {
     useEffect(() => {
         const applyHardZoom = () => {
             const width = window.innerWidth;
-            if (width >= 1000 && width <= 1500) {
+            
+            // Känner av om enheten är en touch-skärm (Mobil/Surfplatta)
+            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+
+            // Applicera 75% zoom ENDAST på vanliga datorer (ej touch) i spannet 1000-1500px
+            if (!isTouchDevice && width >= 1000 && width <= 1500) {
                 document.body.style.zoom = "0.75";
                 setZoomLevel(0.75);
             } else {
+                // Surfplattor, mobiler och stora 1080p-skärmar återställs alltid till 100%
                 document.body.style.zoom = "1";
                 setZoomLevel(1);
             }
