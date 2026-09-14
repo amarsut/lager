@@ -149,30 +149,116 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
 
     React.useEffect(() => {
-        const cleanReg = formData.regnr?.toUpperCase().trim();
-        if (!cleanReg || cleanReg.length < 5 || !window.db) return;
+        const rawReg = formData.regnr || '';
+        const cleanReg = String(rawReg).toUpperCase().replace(/\s+/g, '');
+        let isMounted = true;
+        let unsubscribe = () => {};
 
-        const unsubscribe = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(doc => {
-            if (doc.exists) {
-                const specs = doc.data();
-                setFetchedCarInfo(prev => ({
-                    regnr: cleanReg,
-                    bilmodell: specs.model || prev?.bilmodell || "",
-                    motorkod: specs.engine || prev?.motorkod || "",
-                    miltal: specs.mileage || prev?.miltal || "",
-                    oljevolym: specs.oil ? specs.oil.replace(' l', '') : (prev?.oljevolym || ""),
-                    årsmodell: specs.year || prev?.årsmodell || "",
-                    vin: specs.vin || prev?.vin || "",
-                    isNewData: false
-                }));
+        // 1. Nollställ direkt om regnumret är för kort
+        if (cleanReg.length < 5) {
+            setFetchedCarInfo(null);
+            return;
+        }
 
-                if (specs.oil) {
-                    let oljaNum = parseFloat(specs.oil.toString().replace(',', '.').replace(/[^0-9.]/g, ''));
-                    if (!isNaN(oljaNum) && oljaNum > 0) setOilLiters(oljaNum);
+        // 2. Läs från lokalt minne (Samma super-snabba cache som garage.js använder!)
+        const getLocalCache = (reg) => {
+            try {
+                const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+                return cache[reg] || {};
+            } catch(e) { return {}; }
+        };
+        const localData = getLocalCache(cleanReg);
+
+        // 3. Leta upp bilen i systemets historik
+        const previousJobs = allJobs
+            .filter(j => String(j.regnr || '').toUpperCase().replace(/\s+/g, '') === cleanReg)
+            .sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
+        const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
+
+        // Hjälpfunktion för att sammanställa och rita ut datan
+        const updateCarInfo = (specs) => {
+            if (!isMounted) return;
+            const isHistoryUnknown = lastJob && lastJob.bilmodell && lastJob.bilmodell.toLowerCase().includes('okänd');
+            
+            const finalModel = specs.model || localData.model || (lastJob && !isHistoryUnknown ? lastJob.bilmodell : "");
+            const finalEngine = specs.engine || localData.engine || lastJob?.motorkod || "";
+            const finalMileage = specs.mileage || localData.mileage || lastJob?.miltal || "";
+            const finalYear = specs.year || localData.year || lastJob?.årsmodell || "";
+            const finalVin = specs.vin || specs.chassinummer || localData.vin || localData.chassinummer || "";
+            const finalOil = specs.oil || localData.oil || lastJob?.oljevolym || "";
+
+            setFetchedCarInfo({
+                regnr: rawReg,
+                bilmodell: finalModel,
+                motorkod: finalEngine,
+                miltal: finalMileage,
+                oljevolym: finalOil ? String(finalOil).replace(' l', '') : "",
+                årsmodell: finalYear,
+                vin: finalVin,
+                isNewData: false
+            });
+
+            if (finalOil) {
+                let oljaNum = parseFloat(String(finalOil).replace(',', '.').replace(/[^0-9.]/g, ''));
+                if (!isNaN(oljaNum) && oljaNum > 0) setOilLiters(oljaNum);
+            }
+        };
+
+        // Visa omedelbart det vi har från cache/historik
+        updateCarInfo(localData);
+
+        // 4. Koppla upp LIVE mot Firebase för att se om det finns nyare data
+        if (window.db) {
+            unsubscribe = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(doc => {
+                if (doc.exists) updateCarInfo(doc.data());
+            });
+        }
+
+        // 5. Lyssna LIVE på Chrome-tillägget (när man trycker på Blixten)
+        const handleMessage = async (event) => {
+            const fordonData = event.data;
+            if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension'].includes(fordonData.source)) {
+                
+                const msgReg = String(fordonData.regnr || '').toUpperCase().replace(/\s+/g, '');
+                if (!msgReg || msgReg !== cleanReg) return;
+
+                const specUpdates = {};
+                const isValid = (val) => val && String(val).trim() !== '' && String(val).toUpperCase() !== 'SAKNAS' && String(val) !== '-';
+
+                // Översätt från formulär till Firebase-format
+                if (isValid(fordonData.motorkod)) specUpdates.engine = String(fordonData.motorkod);
+                if (isValid(fordonData.oljevolym)) specUpdates.oil = String(fordonData.oljevolym).includes('l') ? String(fordonData.oljevolym) : `${fordonData.oljevolym} l`;
+                if (isValid(fordonData.miltal)) specUpdates.mileage = String(fordonData.miltal);
+                if (isValid(fordonData.årsmodell)) specUpdates.year = String(fordonData.årsmodell);
+                if (isValid(fordonData.vin)) specUpdates.vin = String(fordonData.vin);
+                if (isValid(fordonData.bilmodell)) specUpdates.model = String(fordonData.bilmodell);
+
+                if (Object.keys(specUpdates).length > 0) {
+                    specUpdates.updatedAt = new Date().toISOString();
+                    
+                    try {
+                        const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+                        cache[cleanReg] = { ...(cache[cleanReg] || {}), ...specUpdates };
+                        localStorage.setItem('os_vehicle_cache', JSON.stringify(cache));
+                    } catch(e) {}
+
+                    if (window.db) {
+                        window.db.collection('vehicleSpecs').doc(cleanReg).set(specUpdates, { merge: true }).catch(()=>{});
+                    }
+                    
+                    // Tvinga uppdatering av formuläret ögonblickligen
+                    updateCarInfo(specUpdates);
                 }
             }
-        });
-        return () => unsubscribe();
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+            window.removeEventListener('message', handleMessage);
+        };
     }, [formData.regnr]);
 
     React.useEffect(() => {
@@ -193,7 +279,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     setExpenses(emptyExpenses);
                 }
 
-                // Ladda in delbetalningar (bakåtkompatibelt)
                 if (editingJob.delbetalningar && editingJob.delbetalningar.length > 0) {
                     setPayments(editingJob.delbetalningar);
                 } else if (editingJob.betaltBelopp > 0) {
@@ -206,7 +291,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 
                 let specs = {};
                 if (window.db && editingJob.regnr) {
-                    const doc = await window.db.collection('vehicleSpecs').doc(editingJob.regnr).get();
+                    // FIX: Tvätta mellanslag även när vi redigerar ett gammalt jobb
+                    const cleanReg = String(editingJob.regnr).toUpperCase().replace(/\s+/g, '');
+                    const doc = await window.db.collection('vehicleSpecs').doc(cleanReg).get();
                     if (doc.exists) specs = doc.data();
                 }
 
@@ -215,7 +302,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         bilmodell: specs.model || editingJob.bilmodell || "",
                         motorkod: specs.engine || editingJob.motorkod || "",
                         miltal: editingJob.miltal || specs.mileage || "",
-                        oljevolym: editingJob.oljevolym ? `${editingJob.oljevolym} l` : (specs.oil || ""),
+                        oljevolym: editingJob.oljevolym ? String(editingJob.oljevolym).replace(' l', '') : (specs.oil ? String(specs.oil).replace(' l', '') : ""),
                         årsmodell: specs.year || editingJob.årsmodell || "",
                         vin: specs.vin || "",
                         isNewData: false
@@ -312,7 +399,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     };
 
     const handleNameChange = (val) => {
-        const upperVal = val.toUpperCase(); // Konvertera omedelbart till stora bokstäver
+        const upperVal = val.toUpperCase(); 
         setFormData(p => ({ ...p, kundnamn: upperVal }));
         
         if (val.length > 1) {
@@ -330,48 +417,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         return [...new Set(matches)];
     }, [formData.kundnamn, allJobs]);
 
-    const handleRegnrChange = async (val) => {
-        const upperVal = val ? val.toUpperCase() : '';
+    const handleRegnrChange = (val) => {
+        const upperVal = val ? String(val).toUpperCase() : '';
         setFormData(p => ({ ...p, regnr: upperVal }));
         
         if (upperVal.length > 0) {
-            const matches = allJobs.filter(j => j.regnr?.toUpperCase().includes(upperVal)).map(j => j.regnr.toUpperCase());
+            const matches = allJobs.filter(j => String(j.regnr || '').toUpperCase().includes(upperVal)).map(j => String(j.regnr || '').toUpperCase());
             setRegnrSuggestions([...new Set(matches)].slice(0, 5));
         } else {
             if (relatedVehicles.length > 0) setRegnrSuggestions(relatedVehicles);
             else setRegnrSuggestions([]);
-        }
-
-        if (upperVal.length >= 5) {
-            const previousJobs = allJobs.filter(j => j.regnr === upperVal).sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
-            const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
-            
-            let specs = {};
-            if (window.db) {
-                const specDoc = await window.db.collection('vehicleSpecs').doc(upperVal).get();
-                if (specDoc.exists) specs = specDoc.data();
-            }
-
-            if (lastJob || Object.keys(specs).length > 0) {
-                setFetchedCarInfo({
-                    regnr: upperVal,
-                    bilmodell: specs.model || lastJob?.bilmodell || "",
-                    motorkod: specs.engine || lastJob?.motorkod || "",
-                    miltal: specs.mileage || lastJob?.miltal || "",
-                    oljevolym: specs.oil ? specs.oil.replace(' l', '') : (lastJob?.oljevolym || ""),
-                    årsmodell: specs.year || lastJob?.årsmodell || "",
-                    vin: specs.vin || "",
-                    isNewData: false
-                });
-
-                let rawOil = specs.oil || lastJob?.oljevolym;
-                if (rawOil) {
-                    let oljaNum = parseFloat(rawOil.toString().replace(',', '.').replace(/[^0-9.]/g, ''));
-                    if (!isNaN(oljaNum) && oljaNum > 0) setOilLiters(oljaNum);
-                }
-            }
-        } else {
-            setFetchedCarInfo(null);
         }
     };
 
@@ -380,7 +435,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     };
 
     const saveSpec = async (key, value) => {
-        const finalRegnr = formData.regnr?.toUpperCase().trim();
+        const finalRegnr = formData.regnr?.toUpperCase().replace(/\s+/g, '');
         if (!finalRegnr || !window.db) return;
 
         const specUpdates = { updatedAt: new Date().toISOString() };
@@ -402,21 +457,27 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         try {
             const finalRegnr = formData.regnr.toUpperCase().trim();
             
-            // Hantera utgifter och delbetalningar för databasen
             const finalExpenses = expenses.filter(ex => ex.desc && ex.amount).map(ex => ({ namn: ex.desc, kostnad: ex.amount }));
             const finalPayments = payments.filter(p => p.desc || p.amount).map(p => ({ desc: p.desc, amount: p.amount }));
             const totalPaidAmount = finalPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
+            const resolvedBilmodell = fetchedCarInfo?.bilmodell || fetchedCarInfo?.model || formData.bilmodell || '';
+            const resolvedMotorkod = fetchedCarInfo?.motorkod || fetchedCarInfo?.engine || formData.motorkod || '';
+            const resolvedMiltal = fetchedCarInfo?.miltal || fetchedCarInfo?.mileage || formData.miltal || '';
+            const resolvedArsmodell = fetchedCarInfo?.årsmodell || fetchedCarInfo?.arsmodell || fetchedCarInfo?.year || formData.årsmodell || '';
+            const resolvedOljevolym = fetchedCarInfo?.oljevolym || fetchedCarInfo?.oil || oilLiters;
+
             const data = { 
                 ...formData,
-                betaltBelopp: totalPaidAmount, // Sparar summan för bakåtkompatibilitet
-                delbetalningar: finalPayments, // Sparar listan av objekt
+                betaltBelopp: totalPaidAmount,
+                delbetalningar: finalPayments,
                 regnr: finalRegnr, 
                 datum: formData.datum ? `${formData.datum}T${formData.tid}` : '', 
-                oljevolym: oilLiters,
-                bilmodell: fetchedCarInfo?.bilmodell || formData.bilmodell || '',
-                motorkod: fetchedCarInfo?.motorkod || formData.motorkod || '',
-                miltal: fetchedCarInfo?.miltal || formData.miltal || '',
+                oljevolym: resolvedOljevolym,
+                bilmodell: resolvedBilmodell,
+                motorkod: resolvedMotorkod,
+                miltal: resolvedMiltal,
+                årsmodell: resolvedArsmodell,
                 utgifter: finalExpenses,
                 deleted: false 
             };
@@ -429,14 +490,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
             if (finalRegnr && fetchedCarInfo) {
                 const specUpdates = {};
-                if (fetchedCarInfo.motorkod) specUpdates.engine = fetchedCarInfo.motorkod;
-                if (fetchedCarInfo.oljevolym) specUpdates.oil = fetchedCarInfo.oljevolym.includes('l') ? fetchedCarInfo.oljevolym : `${fetchedCarInfo.oljevolym.replace(/[^0-9.,]/g, '')} l`;
-                if (fetchedCarInfo.årsmodell) specUpdates.year = fetchedCarInfo.årsmodell;
+                if (resolvedMotorkod) specUpdates.engine = resolvedMotorkod;
+                if (resolvedOljevolym) specUpdates.oil = String(resolvedOljevolym).includes('l') ? resolvedOljevolym : `${String(resolvedOljevolym).replace(/[^0-9.,]/g, '')} l`;
+                if (resolvedArsmodell) specUpdates.year = resolvedArsmodell;
                 if (fetchedCarInfo.vin) specUpdates.vin = fetchedCarInfo.vin;
+                if (resolvedBilmodell) specUpdates.model = resolvedBilmodell;
+                if (resolvedMiltal) specUpdates.mileage = resolvedMiltal;
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
-                    await window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true });
+                    const cleanRegForSpecs = finalRegnr.replace(/\s+/g, '');
+                    await window.db.collection("vehicleSpecs").doc(cleanRegForSpecs).set(specUpdates, { merge: true });
                 }
             }
 
@@ -450,8 +514,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const partsTotal = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
     const finalPriceNum = parseFloat(formData.kundpris) || 0;
     const laborTotal = Math.max(0, finalPriceNum - partsTotal);
-    
-    // NYTT: Beräknar totala betalningar
     const totalPaid = payments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
     const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-lg lg:rounded-xl shadow-sm";
