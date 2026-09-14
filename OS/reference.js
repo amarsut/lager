@@ -59,27 +59,31 @@ const handleDownload = (doc) => {
 };
 
 window.ReferenceView = () => {
-    const [docs, setDocs] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-    const [currentFolder, setCurrentFolder] = React.useState('ALLA');
-    const [searchQuery, setSearchQuery] = React.useState('');
-    const [selectedDoc, setSelectedDoc] = React.useState(null);
-    const [selectedFiles, setSelectedFiles] = React.useState([]);
-    const [isUploadOpen, setIsUploadOpen] = React.useState(false);
-    const [uploading, setUploading] = React.useState(false);
-    const [formData, setFormData] = React.useState({ id: null, title: '', category: 'ÖVRIGT', text: '', link: '', image: null, file: null });
+    const [docs, setDocs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [currentFolder, setCurrentFolder] = useState('ALLA');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedDoc, setSelectedDoc] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [formData, setFormData] = useState({ id: null, title: '', category: 'ÖVRIGT', text: '', link: '', image: null, file: null });
 
-    const [portalNode, setPortalNode] = React.useState(null);
-    const [viewMode, setViewMode] = React.useState('grid');
+    const [portalNode, setPortalNode] = useState(null);
 
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' eller 'list'
+
+    // Hjälpfunktion för att kolla om en fil är PDF
     const isPdf = (base64String) => {
         return base64String && base64String.startsWith('data:application/pdf');
     };
 
-    const storageStats = React.useMemo(() => {
+    // Räknar ut storlek på Base64-strängar
+    const storageStats = useMemo(() => {
         let totalBytes = 0;
         docs.forEach(doc => {
             if (doc.image) {
+                // Base64 tar ca 3/4 av stränglängden i bytes. Ta bort 'data:image/...;base64,' i beräkningen.
                 const base64Data = doc.image.split(',')[1] || doc.image;
                 totalBytes += (base64Data.length * 3) / 4;
             }
@@ -87,13 +91,13 @@ window.ReferenceView = () => {
         });
 
         const mbUsed = (totalBytes / (1024 * 1024)).toFixed(1);
-        const maxMb = 50;
+        const maxMb = 50; // Visuell maxgräns (justera vid behov)
         const percentage = Math.min(100, Math.round((mbUsed / maxMb) * 100));
 
         return { mbUsed, percentage, maxMb };
     }, [docs]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setPortalNode(document.body || document.documentElement);
     }, []);
 
@@ -104,7 +108,7 @@ window.ReferenceView = () => {
         return content;
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!window.db) return;
         const unsubscribe = window.db.collection("reference_docs").orderBy("timestamp", "desc").onSnapshot(snap => {
             setDocs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -113,7 +117,7 @@ window.ReferenceView = () => {
         return () => unsubscribe();
     }, []);
 
-    React.useEffect(() => {
+    useEffect(() => {
         let timeoutId;
         if (window.lucide) {
             timeoutId = setTimeout(() => {
@@ -123,7 +127,7 @@ window.ReferenceView = () => {
         return () => clearTimeout(timeoutId);
     });
 
-    const displayedFiles = React.useMemo(() => {
+    const displayedFiles = useMemo(() => {
         return docs.filter(d => {
             if (searchQuery) return (d.title + d.text + d.category).toLowerCase().includes(searchQuery.toLowerCase());
             if (currentFolder === 'ALLA') return true;
@@ -168,9 +172,11 @@ window.ReferenceView = () => {
             let fileBase64 = formData.image;
 
             if (formData.file) {
+                // Om det är en bild, komprimera den
                 if (formData.file.type.startsWith('image/')) {
                     fileBase64 = await compressReferenceImage(formData.file);
                 } else {
+                    // Om det är PDF eller annat dokument, läs in som ren Base64
                     fileBase64 = await new Promise((resolve, reject) => {
                         const reader = new FileReader();
                         reader.readAsDataURL(formData.file);
@@ -185,7 +191,7 @@ window.ReferenceView = () => {
                 category: formData.category, 
                 text: formData.text, 
                 link: formData.link,
-                image: fileBase64,
+                image: fileBase64, // Lagrar filens data (eller bild)
                 fileType: formData.file ? formData.file.type : (formData.image ? 'image' : 'document'),
                 timestamp: formData.id ? formData.timestamp : new Date().toISOString()
             };
@@ -206,6 +212,7 @@ window.ReferenceView = () => {
         }
     };
 
+    // --- NAVIGERING I LIGHTBOX ---
     const currentIndex = selectedDoc ? displayedFiles.findIndex(d => d.id === selectedDoc.id) : -1;
     const hasNext = currentIndex !== -1 && currentIndex < displayedFiles.length - 1;
     const hasPrev = currentIndex > 0;
@@ -220,7 +227,7 @@ window.ReferenceView = () => {
         if (hasPrev) setSelectedDoc(displayedFiles[currentIndex - 1]);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleKeyDown = (e) => {
             if (!selectedDoc) return;
             if (e.key === 'ArrowRight') goToNext();
@@ -230,12 +237,13 @@ window.ReferenceView = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedDoc, currentIndex, displayedFiles]);
+    // ----------------------------
 
     return (
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
-            {/* FIX: Fasta höjder (h-full/max-h) är borttagna. Elementet tillåts sträcka ut sig. */}
-            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-8 sm:pb-12 transition-colors duration-500 relative max-w-[1400px] lg:w-full animate-in fade-in slide-in-from-left-4 -mx-4 sm:-mx-6 md:-mx-8 lg:mx-auto">
+            {/* FIX: Negativa marginaler bryter ut vyn till skärmens kanter */}
+            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] -mx-4 sm:-mx-6 md:-mx-8 lg:mx-0 animate-in fade-in slide-in-from-left-4 lg:h-full lg:max-h-[100dvh] lg:overflow-hidden">
 
                 {/* --- DESKTOP HEADER --- */}
                 <div className="hidden lg:flex flex-col p-0 shrink-0">
@@ -280,7 +288,9 @@ window.ReferenceView = () => {
 
                 {/* --- MOBIL HEADER --- */}
                 <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500 shrink-0">
+                    {/* FIX: Intern padding (px-4) håller innehållet på rätt plats */}
                     <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative px-4 sm:px-6 md:px-8 pt-3">
+
                         <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10 pb-3">
                             <div className="flex items-center gap-4">
                                 <div className="relative group cursor-default shrink-0">
@@ -362,11 +372,14 @@ window.ReferenceView = () => {
                 </div>
 
                 {/* --- DRIVE LAYOUT --- */}
+                {/* FIX: Intern padding (px-4) håller fillistan i linje med resten av appen */}
                 <div className="flex flex-col lg:flex-row flex-1 mt-2 px-4 sm:px-6 md:px-8 lg:px-0 gap-8 pb-4 relative items-start">
                     
                     {/* VÄNSTER MENY */}
-                    {/* FIX: Ändrad från calc-höjd till naturligt flöde */}
-                    <div className="w-full lg:w-[230px] shrink-0 hidden lg:flex flex-col gap-4 sticky top-6">
+                    <div 
+                        className="w-full lg:w-[230px] shrink-0 hidden lg:flex flex-col gap-4 sticky top-[130px]" 
+                        style={{ height: 'calc(100vh - 150px)' }}
+                    >
                         <button 
                             onClick={openCreate} 
                             className="shrink-0 flex items-center justify-center gap-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 px-4 font-bold text-[12px] uppercase tracking-widest shadow-sm transition-all active:scale-95"
@@ -409,8 +422,7 @@ window.ReferenceView = () => {
                     </div>
                     
                     {/* HÖGER SIDA */}
-                    {/* FIX: Inga calc-höjder, listan expanderar automatiskt */}
-                    <div className="flex-1 flex flex-col min-w-0 pb-2 lg:pb-8 px-0 lg:pr-4">
+                    <div className="flex-1 flex flex-col min-w-0 pb-2 lg:pb-8 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar px-0 lg:pr-4">
                         
                         <div className="flex items-center justify-between mb-4 shrink-0 gap-3 w-full min-w-0">
                             <h2 className="text-[13px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest truncate min-w-0 flex-1">
