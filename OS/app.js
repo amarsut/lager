@@ -162,7 +162,7 @@ const App = () => {
         };
     }, []);
 
-    // CSS INJECTION & THEME
+    // CSS INJECTION & THEME (Rensad från gamla skalningsförsök)
     useEffect(() => {
         const root = document.documentElement;
         root.style.setProperty('--brand-primary', '#f97316');
@@ -207,30 +207,28 @@ const App = () => {
             
             .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; border: none; background: transparent; }
             .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
-
-            /* =========================================
-               ÄKTA ZOOM-SKALNING FÖR LAPTOPS
-               ========================================= */
-            /* Standard: 100% för stora skärmar (t.ex. din privata dator) */
-            body { zoom: 1; }
-            
-            /* Arbetsdatorer (1366x768). Här aktiveras automatiskt 80% zoom. 
-               (Ändra till 0.75 om du vill ha den liiite mindre) */
-            @media (max-width: 1440px) and (min-width: 1025px) {
-                body { zoom: 0.80; }
-            }
-            
-            /* Ännu mindre skärmar (Paddor eller laptops med kraftig Windows-förstoring) */
-            @media (max-width: 1024px) and (min-width: 769px) {
-                body { zoom: 0.70; }
-            }
-
-            /* Mobiler: Återgår till 100% så att det inte blir för smått att trycka på */
-            @media (max-width: 768px) {
-                body { zoom: 1; }
-            }
         `;
     }, [isDark]);
+
+    // NYTT: STENHÅRD JAVASCRIPT-ZOOM (Löser 1366x768-problemet permanent)
+    useEffect(() => {
+        const applyHardZoom = () => {
+            const width = window.innerWidth;
+            
+            // Om skärmen är mellan 1000px och 1500px (t.ex. din arbetsdator på 1366px)
+            // Tvinga webbläsaren (Chrome) att skala gränssnittet till 75%
+            if (width >= 1000 && width <= 1500) {
+                document.body.style.zoom = "0.75";
+            } else {
+                // Din privata dator (över 1500px) eller mobiler (under 1000px) kör 100%
+                document.body.style.zoom = "1";
+            }
+        };
+
+        applyHardZoom();
+        window.addEventListener('resize', applyHardZoom);
+        return () => window.removeEventListener('resize', applyHardZoom);
+    }, []);
 
     // DATA FETCHING
     useEffect(() => {
