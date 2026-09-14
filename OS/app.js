@@ -118,7 +118,7 @@ const App = () => {
         if (!user) return;
         let timeoutId;
         const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 min
-        
+
         const resetTimer = () => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
@@ -207,26 +207,6 @@ const App = () => {
             
             .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; border: none; background: transparent; }
             .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
-
-            /* =========================================
-               INDUSTRISTANDARD: REM-SKALNING FÖR RESPONSIVITET
-               ========================================= */
-            
-            /* 1. Stora skärmar (1920p+) - Standardstorlek */
-            html { font-size: 16px; } 
-            
-            /* 2. Vanliga laptops (1440px) - Krymper appen 12.5% */
-            @media (max-width: 1500px) { html { font-size: 14px; } }
-            
-            /* 3. Små laptops & 1366x768 (Även med Windows 125% skalning aktiverat) - Krymper appen ~25% */
-            @media (max-width: 1200px) { html { font-size: 12px; } }
-            
-            /* 4. Extrem Windows-skalning (150% förstoring på små skärmar) - Krymper appen ~35% */
-            @media (max-width: 950px) { html { font-size: 10.5px; } }
-            
-            /* 5. Mobiler och små surfplattor (Pekskärmar)
-               Återställer till 16px så att texten går att läsa och knappar går att trycka på med tummen. */
-            @media (max-width: 768px) { html { font-size: 16px; } }
         `;
     }, [isDark]);
 
@@ -257,7 +237,7 @@ const App = () => {
         if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
         if (window.innerWidth < 768) setSidebarOpen(false);
         setGlobalVehicle(null);
-        
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [view, triggerHaptic]);
 
@@ -299,13 +279,13 @@ const App = () => {
     }, []);
 
     useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs, navigateTo]);
-    
+
     useEffect(() => { 
         const timer = setInterval(() => setTime(new Date()), 1000); 
         setAppReady(true); 
         return () => clearInterval(timer); 
     }, []);
-    
+
     useEffect(() => { 
         if (window.lucide) {
             window.lucide.createIcons();
@@ -363,7 +343,7 @@ const App = () => {
     return (
         <>
             {!appReady && <SplashScreen />}
-            
+
             {!isOnline && (
                 <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-500/95 text-white px-5 py-2.5 rounded-full text-[11px] font-bold tracking-widest uppercase backdrop-blur-md flex items-center gap-2 shadow-[0_10px_30px_rgba(239,68,68,0.4)] animate-in slide-in-from-top-4 fade-in duration-300">
                     <window.Icon name="wifi-off" size={14} /> System Offline
@@ -373,7 +353,7 @@ const App = () => {
             {window.SpotlightSearch && (
                 <window.SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} allJobs={allJobs} allNotes={allNotes} allLagerItems={allLagerItems} navigateTo={navigateTo} />
             )}
-            
+
             {window.GlobalSystemRadar && (
                 <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
             )}
@@ -385,10 +365,10 @@ const App = () => {
             ></div>
 
             <div className="flex h-[100dvh] overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
-                
+
                 {/* DYNAMISK SIDEBAR */}
-                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[285px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
-                    
+                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
+
                     <div className={`h-20 flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} border-b border-white/5 overflow-hidden shrink-0`}>
                         <div className="flex items-center gap-3.5">
                             <div 
@@ -401,14 +381,14 @@ const App = () => {
                                     iconColor="fill-white" 
                                 />
                             </div>
-                            
+
                             {sidebarOpen && (
                                 <span className="font-black tracking-[0.2em] text-[14px] uppercase whitespace-nowrap flex items-center text-white animate-in fade-in duration-300 mt-[2px] cursor-pointer" onClick={() => navigateTo('DASHBOARD')}>
                                     AUTO<span className="text-orange-500 font-light">GRID</span>
                                 </span>
                             )}
                         </div>
-                        
+
                         {sidebarOpen && (
                             <button 
                                 onClick={() => { triggerHaptic(); setSidebarOpen(false); }} 
@@ -421,7 +401,7 @@ const App = () => {
 
                     {/* PRIMÄR CTA: Nytt Jobb (Löst frikopplad från listan) */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col pb-20 md:pb-0">
-                        
+
                         {/* PRIMÄR CTA: Nytt Jobb */}
                         <div className={`pt-6 pb-4 ${sidebarOpen ? 'px-4' : 'flex justify-center px-0'} shrink-0`}>
                             <button 
@@ -432,7 +412,7 @@ const App = () => {
                                 {sidebarOpen && <span className="uppercase tracking-widest text-[11px] mt-0.5">Skapa Nytt Jobb</span>}
                             </button>
                         </div>
-                        
+
                         {/* NAVIGERING */}
                         <nav className="flex-1 py-2 space-y-5 shrink-0">
                             {NAV_GROUPS.map((group, gIdx) => (
@@ -442,14 +422,14 @@ const App = () => {
                                             {group.title}
                                         </div>
                                     )}
-                                    
+
                                     {group.items.map(item => {
                                         const isActive = view === item.id;
                                         return (
                                             <div key={item.id} 
                                                 onClick={() => navigateTo(item.id)} 
                                                 className={`flex items-center px-6 py-3 cursor-pointer transition-all duration-300 group relative ${item.mobileHide ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06]' : 'hover:bg-white/[0.03]'}`}>                                
-                                                
+
                                                 <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-orange-500 rounded-r-full shadow-[0_0_12px_rgba(249,115,22,0.8)] transition-all duration-300 ${isActive ? 'h-7 opacity-100' : 'h-0 opacity-0 group-hover:h-3 group-hover:opacity-50'}`}></div>
 
                                                 <div className={`relative flex items-center justify-center transition-all duration-300 z-10 ${isActive ? 'text-orange-500 scale-110' : 'text-zinc-400 group-hover:text-orange-400 group-hover:translate-x-1'}`}>
@@ -461,7 +441,7 @@ const App = () => {
                                                         </span>
                                                     )}
                                                 </div>
-                                                
+
                                                 {sidebarOpen && (
                                                     <span className={`ml-4 text-[13px] font-bold tracking-wide transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-zinc-300 group-hover:text-white group-hover:translate-x-1'}`}>
                                                         {item.label}
@@ -476,7 +456,7 @@ const App = () => {
 
                         {/* BOTTENSEKTION - Nu en del av scrollen */}
                         <div className="mt-auto border-t border-white/5 bg-black/20 transition-colors duration-300 shrink-0">
-                            
+
                             {/* Verktygsrad: Nattljus, Tema & Inställningar */}
                             <div className={`flex items-center ${sidebarOpen ? 'justify-around px-4' : 'justify-center flex-col'} py-3 border-b border-white/5 gap-2`}>
                                 {!isDark && (
@@ -520,7 +500,7 @@ const App = () => {
                 )}
 
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                    
+
                     {/* Svävande Chattbubbla */}
                     <button 
                         onClick={() => setIsChatOpen(!isChatOpen)} 
@@ -557,7 +537,7 @@ const App = () => {
                         {view === 'CHAT' && window.innerWidth < 1024 && window.ChatView && <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} />}
                         {view === 'STATISTICS' && window.StatisticsView && <window.StatisticsView allJobs={allJobs} />}
                         {view === 'REFERENCE' && window.ReferenceView && <window.ReferenceView setView={navigateTo} />}
-                        
+
                         {/* NYA VYER (Visar platshållare om komponenten inte skapats ännu) */}
                         {view === 'SETTINGS' && (window.SettingsView ? <window.SettingsView user={user} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Inställningar...</div>)}
                     </div>
@@ -587,7 +567,7 @@ const App = () => {
                                 </button>
                             );
                         })}
-                        
+
                         <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'}`}>
                             <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
                                 <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} className={sidebarOpen ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
@@ -640,7 +620,7 @@ const LoginScreen = memo(() => {
 
     return (
         <div className="fixed inset-0 bg-[#09090b] flex items-center justify-center z-[300] overflow-hidden selection:bg-orange-500 selection:text-black font-sans animate-in fade-in duration-700 transition-colors duration-300">
-            
+
             {/* Fix för Chrome Autofill så det matchar den nya mörka input-bakgrunden */}
             <style dangerouslySetInnerHTML={{__html: `
                 input:-webkit-autofill,
@@ -658,19 +638,19 @@ const LoginScreen = memo(() => {
 
             {/* Inloggningskortet - Solid matt mörkgrå */}
             <div className="relative w-full max-w-[360px] mx-5 sm:mx-0 bg-[#121214] shadow-[0_20px_60px_rgba(0,0,0,0.6)] rounded-[32px] z-10 overflow-hidden">
-                
+
                 {/* Mycket subtil highlight på toppen */}
                 <div className="absolute inset-0 rounded-[32px] border border-white/[0.03] pointer-events-none"></div>
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
 
                 <div className="p-8 sm:p-10">
-                    
+
                     <div className="flex flex-col items-center mb-10">
                         {/* Mörkare låda för ikonen */}
                         <div className="w-16 h-16 bg-[#18181b] flex items-center justify-center rounded-2xl shadow-inner border border-white/5 mb-6 relative overflow-hidden">
                             <HexLogo className="w-10 h-10 relative z-10" iconColor="fill-white" />
                         </div>
-                        
+
                         <h1 className="text-white font-black uppercase tracking-[0.25em] text-lg flex items-center">
                             AUTO<span className="text-orange-500 font-light">GRID</span>
                         </h1>
