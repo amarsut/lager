@@ -211,14 +211,16 @@ const App = () => {
             /* =========================================
                DYNAMISK SKALNING FÖR ALLA SKÄRMAR 
                ========================================= */
-            /* Standard webbläsare är 16px. Vi minskar rotstorleken på mindre skärmar 
-               för att automatiskt zooma ut hela appen snyggt och proportionerligt. */
+            html { font-size: 14px; } /* Ny standard för desktop (hindrar att allt blir gigantiskt) */
             
-            @media (max-width: 1536px) { html { font-size: 15px; } }
-            @media (max-width: 1366px), (max-height: 800px) { html { font-size: 14px; } }
-            @media (max-width: 1280px), (max-height: 700px) { html { font-size: 13px; } }
+            @media (min-width: 1920px) { html { font-size: 15px; } }
+            @media (min-width: 2560px) { html { font-size: 16px; } }
             
-            /* Mobiler & surfplattor behåller standardstorlek så texten förblir läsbar */
+            @media (max-width: 1440px) { html { font-size: 13px; } }
+            @media (max-width: 1366px), (max-height: 800px) { html { font-size: 12px; } }
+            @media (max-width: 1280px), (max-height: 700px) { html { font-size: 11px; } }
+            
+            /* Mobiler & surfplattor behåller 16px så texten förblir stor och lättläst */
             @media (max-width: 1024px) { html { font-size: 16px; } }
         `;
     }, [isDark]);
