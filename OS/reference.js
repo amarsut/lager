@@ -242,11 +242,12 @@ window.ReferenceView = () => {
     return (
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
-            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4 lg:h-full lg:max-h-[100dvh] lg:overflow-hidden">
+            {/* FIX: Negativa marginaler bryter ut vyn till skärmens kanter */}
+            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1400px] -mx-4 sm:-mx-6 md:-mx-8 lg:mx-0 animate-in fade-in slide-in-from-left-4 lg:h-full lg:max-h-[100dvh] lg:overflow-hidden">
 
                 {/* --- DESKTOP HEADER --- */}
                 <div className="hidden lg:flex flex-col p-0 shrink-0">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 p-0 shrink-0 z-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 px-4 sm:px-6 md:px-8 lg:px-0 pt-4 lg:pt-0 shrink-0 z-10">
                         <div className="flex items-center gap-3 md:gap-4">
                             <div className="relative group cursor-default shrink-0">
                                 <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
@@ -287,9 +288,10 @@ window.ReferenceView = () => {
 
                 {/* --- MOBIL HEADER --- */}
                 <div className="lg:hidden flex flex-col bg-zinc-50/50 dark:bg-[#09090b] transition-colors duration-500 shrink-0">
-                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative">
+                    {/* FIX: Intern padding (px-4) håller innehållet på rätt plats */}
+                    <div className="bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl text-zinc-900 dark:text-white shadow-sm border-b border-zinc-200 dark:border-white/10 transition-colors duration-300 relative px-4 sm:px-6 md:px-8 pt-3">
 
-                        <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10">
+                        <div className="p-0 flex items-center justify-between border-b border-zinc-100 dark:border-white/10 pb-3">
                             <div className="flex items-center gap-4">
                                 <div className="relative group cursor-default shrink-0">
                                     <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
@@ -370,14 +372,14 @@ window.ReferenceView = () => {
                 </div>
 
                 {/* --- DRIVE LAYOUT --- */}
-                <div className="flex flex-col lg:flex-row flex-1 mt-2 px-0 gap-8 pb-4 relative items-start">
+                {/* FIX: Intern padding (px-4) håller fillistan i linje med resten av appen */}
+                <div className="flex flex-col lg:flex-row flex-1 mt-2 px-4 sm:px-6 md:px-8 lg:px-0 gap-8 pb-4 relative items-start">
                     
-                    {/* VÄNSTER MENY (Originalfärger men mer kompakt) */}
+                    {/* VÄNSTER MENY */}
                     <div 
                         className="w-full lg:w-[230px] shrink-0 hidden lg:flex flex-col gap-4 sticky top-[130px]" 
                         style={{ height: 'calc(100vh - 150px)' }}
                     >
-                        {/* Huvudknapp: Samma orange färg men smidigare storlek */}
                         <button 
                             onClick={openCreate} 
                             className="shrink-0 flex items-center justify-center gap-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 px-4 font-bold text-[12px] uppercase tracking-widest shadow-sm transition-all active:scale-95"
@@ -386,7 +388,6 @@ window.ReferenceView = () => {
                         </button>
 
                         <div className="flex flex-col flex-1 gap-4 min-h-0">
-                            {/* Mapplista: Vit bakgrund tillbaka, men tajtare */}
                             <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-2xl p-2 shadow-sm shrink-0">
                                 <nav className="flex flex-col gap-0.5">
                                     {FOLDERS.map(folder => {
@@ -405,7 +406,6 @@ window.ReferenceView = () => {
                                 </nav>
                             </div>
 
-                            {/* Databas: Samma stil, lite tajtare */}
                             <div className="bg-white dark:bg-[#151b28] ring-1 ring-zinc-100 dark:ring-white/5 rounded-2xl p-4 shadow-sm mt-auto shrink-0">
                                 <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <window.Icon name="hard-drive" size={14} /> Databas (Base64)
@@ -421,19 +421,15 @@ window.ReferenceView = () => {
                         </div>
                     </div>
                     
-                    {/* HÖGER SIDA (Perfekt Scroll & Minimal Padding) */}
-                    <div className="flex-1 flex flex-col min-w-0 pb-2 lg:pb-8 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar px-3 lg:px-0 lg:pr-4">
+                    {/* HÖGER SIDA */}
+                    <div className="flex-1 flex flex-col min-w-0 pb-2 lg:pb-8 lg:h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar px-0 lg:pr-4">
                         
-                        {/* Sektionstitel, Action Bar & Vy-växlare */}
                         <div className="flex items-center justify-between mb-4 shrink-0 gap-3 w-full min-w-0">
-                            
                             <h2 className="text-[13px] md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest truncate min-w-0 flex-1">
                                 {searchQuery ? 'Sökresultat' : FOLDERS.find(f => f.id === currentFolder)?.label}
                             </h2>
 
                             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-                                
-                                {/* ACTION BAR */}
                                 {selectedFiles.length > 0 && (
                                     <div className="flex items-center gap-0.5 sm:gap-1 bg-white dark:bg-[#151b28] border border-blue-200 dark:border-blue-900/50 shadow-sm rounded-xl px-1 py-1 animate-in fade-in zoom-in-95 duration-200 shrink-0">
                                         {selectedFiles.length === 1 && (
@@ -457,7 +453,6 @@ window.ReferenceView = () => {
                                     </div>
                                 )}
 
-                                {/* VY-VÄXLARE */}
                                 <div className="flex items-center bg-zinc-100 dark:bg-[#151b28] rounded-xl p-1 border border-zinc-200 dark:border-white/5 shadow-sm shrink-0">
                                     <button onClick={() => setViewMode('grid')} className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}>
                                         <window.Icon name="grid" size={14} />
@@ -486,7 +481,6 @@ window.ReferenceView = () => {
                         ) : (
                             <>
                                 {viewMode === 'grid' ? (
-                                    /* --- GOOGLE DRIVE GRID-KORT --- */
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-2 shrink-0">
                                         {displayedFiles.map(doc => {
                                             const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -557,7 +551,6 @@ window.ReferenceView = () => {
                                         })}
                                     </div>
                                 ) : (
-                                    /* --- LISTVY MED MARKERING (Tvingad shrink-0 låser upp scrollen!) --- */
                                     <div className="bg-white dark:bg-[#151b28] rounded-2xl md:rounded-3xl border border-zinc-200 dark:border-white/5 shadow-sm mb-2 shrink-0 w-full overflow-hidden">
                                         <div className="grid grid-cols-12 px-3 md:px-4 py-3 bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                                             <div className="col-span-7 sm:col-span-6">Namn</div>
@@ -629,15 +622,10 @@ window.ReferenceView = () => {
             </div>
 
             {/* --- MODALER --- */}
-
-            {/* CINEMA LIGHTBOX (Proffsigare Premium-UX) */}
-            {/* CINEMA LIGHTBOX (Google Drive Premium UI) */}
             {selectedDoc && renderModal(
                 <div className="fixed inset-0 z-[99999] flex flex-col bg-[#0f111a] text-white animate-in fade-in duration-200">
                     
-                    {/* TOP HEADER */}
                     <div className="h-16 px-2 md:px-4 flex items-center justify-between border-b border-white/10 bg-[#0f111a] shrink-0">
-                        {/* Vänster: Tillbaka/Stäng & Titel */}
                         <div className="flex items-center gap-2 md:gap-4 min-w-0 pr-2">
                             <button onClick={handleClosePanel} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0 text-zinc-300 hover:text-white" title="Stäng (Esc)">
                                 <window.Icon name="arrow-left" size={24} />
@@ -653,7 +641,6 @@ window.ReferenceView = () => {
                             </div>
                         </div>
 
-                        {/* Höger: Actions */}
                         <div className="flex items-center gap-1 md:gap-2 shrink-0">
                             <button onClick={() => openEdit(selectedDoc)} className="h-10 px-2 md:px-4 flex items-center gap-2 rounded-full hover:bg-white/10 transition-colors text-zinc-300 hover:text-white" title="Redigera">
                                 <window.Icon name="edit-2" size={18} />
@@ -672,10 +659,7 @@ window.ReferenceView = () => {
                         </div>
                     </div>
 
-                    {/* MAIN CONTENT AREA */}
                     <div className="flex-1 flex flex-col lg:flex-row min-h-0 bg-[#0a0c12]">
-                        
-                        {/* Dokumentvisare */}
                         <div className="flex-1 relative flex items-center justify-center min-w-0 group p-4 md:p-8">
                             {hasPrev && (
                                 <button onClick={goToPrev} className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-black/40 hover:bg-black/80 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all active:scale-90 opacity-0 md:opacity-100 hover:opacity-100 group-hover:opacity-100 border border-white/10">
@@ -710,7 +694,6 @@ window.ReferenceView = () => {
                             </div>
                         </div>
 
-                        {/* Sidopanel för Info (Visas BARA om text eller länk finns) */}
                         {(selectedDoc.text || selectedDoc.link) && (
                             <div className="w-full lg:w-[400px] bg-[#0f111a] border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col shrink-0">
                                 <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
@@ -748,7 +731,6 @@ window.ReferenceView = () => {
                 </div>
             )}
 
-            {/* UPPLADDNINGS-MODAL */}
             {isUploadOpen && renderModal(
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
 
@@ -796,10 +778,7 @@ window.ReferenceView = () => {
                                         onChange={(e) => {
                                             const file = e.target.files[0];
                                             if (file) {
-                                                // Rensa filändelsen (t.ex. ".pdf" eller ".jpg")
                                                 const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
-                                                
-                                                // Uppdatera formData: sätt filen, och om titeln är tom, sätt filnamnet
                                                 setFormData(prev => ({ 
                                                     ...prev, 
                                                     file: file,
