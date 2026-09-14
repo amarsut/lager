@@ -235,7 +235,7 @@ window.ReferenceView = () => {
         <>
             {/* --- HUVUDVY (DRIVE) --- */}
             {/* FIX: Fasta höjder (h-full/max-h) är borttagna. Elementet tillåts sträcka ut sig. */}
-            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-8 sm:pb-12 transition-colors duration-500 relative max-w-[1400px] w-full mx-auto animate-in fade-in slide-in-from-left-4 -mx-4 sm:-mx-6 md:-mx-8 lg:mx-0">
+            <div className="flex flex-col bg-transparent text-zinc-900 dark:text-white pb-8 sm:pb-12 transition-colors duration-500 relative max-w-[1400px] lg:w-full animate-in fade-in slide-in-from-left-4 -mx-4 sm:-mx-6 md:-mx-8 lg:mx-auto">
 
                 {/* --- DESKTOP HEADER --- */}
                 <div className="hidden lg:flex flex-col p-0 shrink-0">
