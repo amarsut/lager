@@ -230,14 +230,20 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
-                    const cleanReg = v.regnr.replace(/\s+/g, '');
+                    // Säkerställ att regnr är rent från mellanslag innan sparning
+                    const cleanReg = v.regnr.toUpperCase().replace(/\s+/g, '');
                     
-                    saveLocalCache(cleanReg, specUpdates); // Sparar omedelbart lokalt
+                    // 1. Spara i webbläsaren (för snabb laddning nästa gång)
+                    saveLocalCache(cleanReg, specUpdates);
 
-                    setSpecs(prev => {
-                        const merged = mergeValidSpecs(prev, specUpdates);
-                        return merged;
-                    });
+                    // 2. SKRIV TILL FIREBASE (Detta är nyckeln till att synka överallt)
+                    if (window.db) {
+                        window.db.collection('vehicleSpecs').doc(cleanReg).set(specUpdates, { merge: true })
+                            .catch(err => console.error("Misslyckades spara till Firebase:", err));
+                    }
+
+                    // 3. Uppdatera gränssnittet
+                    setSpecs(prev => mergeValidSpecs(prev, specUpdates));
                 }
             }
         };
