@@ -209,21 +209,26 @@ const App = () => {
             .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
 
             /* =========================================
-               DYNAMISK SKALNING (Windows-skalning & 1366x768 fix)
+               ÄKTA ZOOM-SKALNING FÖR LAPTOPS
                ========================================= */
-            /* Standard för stora externa skärmar (1080p+) */
-            html { font-size: 14px; } 
+            /* Standard: 100% för stora skärmar (t.ex. din privata dator) */
+            body { zoom: 1; }
             
-            /* Laptops (1366x768). Detta ger EXAKT samma effekt som 75% zoom i Chrome */
-            @media (max-width: 1440px) { html { font-size: 12px; } }
+            /* Arbetsdatorer (1366x768). Här aktiveras automatiskt 80% zoom. 
+               (Ändra till 0.75 om du vill ha den liiite mindre) */
+            @media (max-width: 1440px) and (min-width: 1025px) {
+                body { zoom: 0.80; }
+            }
             
-            /* Fångar upp laptops där Windows har lagt på 125% eller 150% förstoring */
-            @media (max-width: 1150px) { html { font-size: 11px; } }
-            @media (max-width: 950px) { html { font-size: 10px; } }
-            
-            /* Rena mobiler (vi sänkte brytpunkten från 1024px till 768px för att inte krocka med din laptop). 
-               Här återställs fonten så att den är läsbar på telefonen. */
-            @media (max-width: 768px) { html { font-size: 16px; } }
+            /* Ännu mindre skärmar (Paddor eller laptops med kraftig Windows-förstoring) */
+            @media (max-width: 1024px) and (min-width: 769px) {
+                body { zoom: 0.70; }
+            }
+
+            /* Mobiler: Återgår till 100% så att det inte blir för smått att trycka på */
+            @media (max-width: 768px) {
+                body { zoom: 1; }
+            }
         `;
     }, [isDark]);
 
