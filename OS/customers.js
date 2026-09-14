@@ -95,35 +95,67 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
     React.useEffect(() => {
         let isMounted = true;
+        const unsubscribes = []; // Håller koll på våra live-lyssnare
+
         const fetchVehicleModels = async () => {
             if (!selectedCustomer) return;
+
+            // 1. Hjälpfunktion: Läs in från lokalt minne (samma som garage.js använder)
+            const getLocalCache = (reg) => {
+                try {
+                    const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+                    return cache[reg] || {};
+                } catch(e) { return {}; }
+            };
+
             const newModels = {};
+
+            // 2. Plocka modeller från kundens historik (blockera alla varianter av "okänd")
             selectedCustomer.jobs.forEach(j => {
                 if (j.regnr && j.regnr !== '-' && j.bilmodell) {
                     const bm = j.bilmodell.toLowerCase();
-                    if (bm !== 'okänd modell' && !bm.includes('kaffepaus')) {
-                        newModels[j.regnr.toUpperCase()] = j.bilmodell;
+                    if (!bm.includes('okänd') && !bm.includes('kaffepaus')) {
+                        const cleanReg = j.regnr.toUpperCase().replace(/\s+/g, '');
+                        newModels[cleanReg] = j.bilmodell;
                     }
                 }
             });
+
             if (isMounted) setVehicleModels(prev => ({ ...prev, ...newModels }));
+
+            // 3. Synka med Firebase LIVE och kombinera med lokal cache
             if (window.db) {
                 for (let regnr of Array.from(selectedCustomer.vehicles)) {
-                    if (regnr === '-' || regnr.toLowerCase() === 'okänt' || newModels[regnr]) continue;
+                    const cleanReg = regnr.toUpperCase().replace(/\s+/g, '');
+                    if (cleanReg === '-' || cleanReg === 'OKÄNT') continue;
+
+                    // A: Läs in från lokal cache direkt för att slippa vänta
+                    const localData = getLocalCache(cleanReg);
+                    if (localData && localData.model && !localData.model.toLowerCase().includes('okänd')) {
+                        setVehicleModels(prev => ({ ...prev, [cleanReg]: localData.model }));
+                    }
+
+                    // B: Lyssna LIVE på Firebase (uppdaterar bakgrunden omedelbart om tillägget körs)
                     try {
-                        const doc = await window.db.collection('vehicleSpecs').doc(regnr).get();
-                        if (doc.exists && doc.data().model && isMounted) {
-                            const dbModel = doc.data().model;
-                            if (!dbModel.toLowerCase().includes('kaffepaus')) {
-                                setVehicleModels(prev => ({ ...prev, [regnr]: dbModel }));
+                        const unsub = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(doc => {
+                            if (doc.exists && doc.data().model && isMounted) {
+                                const dbModel = doc.data().model;
+                                if (!dbModel.toLowerCase().includes('kaffepaus') && !dbModel.toLowerCase().includes('okänd')) {
+                                    setVehicleModels(prev => ({ ...prev, [cleanReg]: dbModel }));
+                                }
                             }
-                        }
+                        });
+                        unsubscribes.push(unsub);
                     } catch (e) {}
                 }
             }
         };
         fetchVehicleModels();
-        return () => { isMounted = false; };
+        
+        return () => { 
+            isMounted = false; 
+            unsubscribes.forEach(unsub => unsub()); // Stäng live-anslutningarna när vi byter kund
+        };
     }, [selectedCustomer]);
 
     // Grunddata: Byggs en gång för att alltid ha tillgång till riktiga "Toppkunder" oavsett filter
@@ -334,25 +366,59 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
 
                         <div className="bg-white/80 dark:bg-[#182032]/80 backdrop-blur-2xl border border-zinc-200/80 dark:border-white/5 rounded-2xl p-5 sm:p-6 shadow-sm">
                             <SectionHeader title="Kundens Fordon" sub="Kända fordon kopplade till kunden" icon="truck" />
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                {displayedVehicles.map(v => (
-                                    <div key={v} className="bg-zinc-50/80 dark:bg-[#1a2235] border border-zinc-200 dark:border-white/5 p-3 rounded-xl hover:border-orange-500/50 hover:shadow-sm transition-all group flex flex-col justify-center gap-2 min-w-0">
-                                        <LicensePlate regnr={v} size="lg" />
-                                        {vehicleModels[v] && (
-                                            <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest truncate min-w-0 w-full" title={vehicleModels[v]}>
-                                                {vehicleModels[v]}
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                                {displayedVehicles.map(v => {
+                                    // Tvätta regnr och hämta aktuell modell
+                                    const cleanReg = v.toUpperCase().replace(/\s+/g, '');
+                                    const model = vehicleModels[cleanReg] || 'Okänd Fordonsmodell';
+                                    
+                                    // FIX för "Ford"-buggen: Om texten innehåller "okänd", sök inte efter varumärke
+                                    const isUnknown = model.toLowerCase().includes('okänd');
+                                    const brand = (!isUnknown && window.getVehicleBrand) ? window.getVehicleBrand(model) : null;
+                                    
+                                    return (
+                                        <div 
+                                            key={v} 
+                                            onClick={() => { if (window.openVehicleProfile) window.openVehicleProfile(cleanReg); }}
+                                            className="group relative bg-zinc-50/50 dark:bg-[#1a2235] border border-zinc-200/80 dark:border-white/5 p-4 rounded-2xl hover:bg-white dark:hover:bg-white/[0.02] hover:border-orange-400/50 hover:shadow-md transition-all cursor-pointer flex flex-col justify-center min-w-0 overflow-hidden"
+                                        >
+                                            {/* Diskret vattenstämpel av loggan i bakgrunden nere till höger */}
+                                            {brand && (
+                                                <img src={`https://cdn.simpleicons.org/${brand}`} className="absolute -right-4 -bottom-4 w-20 h-20 object-contain opacity-[0.03] dark:invert pointer-events-none group-hover:scale-110 group-hover:opacity-[0.05] transition-all duration-500" alt="" />
+                                            )}
+
+                                            {/* Skarp liten logga i övre högra hörnet */}
+                                            <div className="absolute top-3.5 right-3.5 z-20">
+                                                {brand ? (
+                                                    <img src={`https://cdn.simpleicons.org/${brand}`} className="w-5 h-5 object-contain opacity-40 group-hover:opacity-80 dark:invert transition-opacity" alt={brand} />
+                                                ) : (
+                                                    <SafeIcon name="car" size={16} className="text-zinc-300 dark:text-zinc-600 group-hover:text-orange-400 transition-colors" />
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+
+                                            <div className="relative z-10 flex flex-col gap-2">
+                                                <div className="flex items-center">
+                                                    <LicensePlate regnr={v} size="md" /> 
+                                                </div>
+                                                <div className="pr-6"> {/* Håller texten borta från loggan i hörnet */}
+                                                    <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest truncate w-full" title={model}>
+                                                        {model}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                             
+                            {/* Något mer subtil Visa-fler knapp */}
                             {vehiclesArray.length > 4 && !showAllVehicles && (
                                 <button 
                                     onClick={() => setShowAllVehicles(true)}
-                                    className="mt-3 w-full py-2.5 bg-zinc-100 dark:bg-[#1f2940] border border-zinc-200 dark:border-white/5 rounded-xl hover:bg-zinc-200 dark:hover:bg-[#25324d] transition-all flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold text-zinc-600 dark:text-zinc-300 uppercase shadow-sm"
+                                    className="mt-3 w-full py-2.5 bg-zinc-50 dark:bg-[#1f2940] border border-zinc-200 dark:border-white/5 rounded-xl hover:bg-zinc-100 dark:hover:bg-[#25324d] hover:text-orange-500 transition-all flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase shadow-sm"
                                 >
-                                    <SafeIcon name="plus" size={14} /> Visa {vehiclesArray.length - 4} till
+                                    <SafeIcon name="plus" size={14} /> Visa {vehiclesArray.length - 4} fordon till
                                 </button>
                             )}
                         </div>
@@ -372,12 +438,24 @@ window.CustomersView = ({ allJobs, setView, setEditingJob, viewParams }) => {
                                 </div>
                             </div>
 
-                            <div className="max-h-[600px] overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3">
+                            <div className="p-3 sm:p-4 space-y-3">
                                 {visibleLogs.length > 0 ? visibleLogs.map((j, i) => {
                                     const jobDate = j.datum ? j.datum.split('T')[0] : 'Inget Datum';
                                     const regnr = j.regnr || '-';
-                                    let model = vehicleModels[regnr] || j.bilmodell || 'Okänd Fordonsmodell';
-                                    if (model.toLowerCase().includes('kaffepaus')) model = vehicleModels[regnr] || 'Okänd Fordonsmodell';
+                                    
+                                    // Tvätta regnumret för att matcha Firebase
+                                    const cleanReg = regnr.toUpperCase().replace(/\s+/g, '');
+                                    
+                                    // 1. Kolla först i vår live-uppdaterade state
+                                    let model = vehicleModels[cleanReg];
+                                    
+                                    // 2. Fallback på historisk data ifall okänd
+                                    if (!model && j.bilmodell && !j.bilmodell.toLowerCase().includes('okänd') && !j.bilmodell.toLowerCase().includes('kaffepaus')) {
+                                        model = j.bilmodell;
+                                    }
+                                    
+                                    // 3. Om inget hittades
+                                    if (!model) model = 'Okänd Fordonsmodell';
                                     
                                     return (
                                         <div 
