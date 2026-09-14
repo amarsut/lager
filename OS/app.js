@@ -108,7 +108,6 @@ const App = () => {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
-    const [zoomLevel, setZoomLevel] = useState(1); // LÄGG TILL DENNA
 
     useEffect(() => {
         localStorage.setItem('sys_nightlight', isNightLight);
@@ -163,7 +162,7 @@ const App = () => {
         };
     }, []);
 
-    // CSS INJECTION & THEME (Rensad från gamla skalningsförsök)
+    // CSS INJECTION & THEME
     useEffect(() => {
         const root = document.documentElement;
         root.style.setProperty('--brand-primary', '#f97316');
@@ -208,32 +207,28 @@ const App = () => {
             
             .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; height: 100%; transition: all 0.2s; border: none; background: transparent; }
             .mobile-nav-label { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.3s; }
+
+            /* =========================================
+               INDUSTRISTANDARD: REM-SKALNING FÖR RESPONSIVITET
+               ========================================= */
+            
+            /* 1. Stora skärmar (1920p+) - Standardstorlek */
+            html { font-size: 16px; } 
+            
+            /* 2. Vanliga laptops (1440px) - Krymper appen 12.5% */
+            @media (max-width: 1500px) { html { font-size: 14px; } }
+            
+            /* 3. Små laptops & 1366x768 (Även med Windows 125% skalning aktiverat) - Krymper appen ~25% */
+            @media (max-width: 1200px) { html { font-size: 12px; } }
+            
+            /* 4. Extrem Windows-skalning (150% förstoring på små skärmar) - Krymper appen ~35% */
+            @media (max-width: 950px) { html { font-size: 10.5px; } }
+            
+            /* 5. Mobiler och små surfplattor (Pekskärmar)
+               Återställer till 16px så att texten går att läsa och knappar går att trycka på med tummen. */
+            @media (max-width: 768px) { html { font-size: 16px; } }
         `;
     }, [isDark]);
-
-    // NYTT: STENHÅRD JAVASCRIPT-ZOOM (Löser 1366x768-problemet permanent)
-    useEffect(() => {
-        const applyHardZoom = () => {
-            const width = window.innerWidth;
-            
-            // Känner av om enheten är en touch-skärm (Mobil/Surfplatta)
-            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
-
-            // Applicera 75% zoom ENDAST på vanliga datorer (ej touch) i spannet 1000-1500px
-            if (!isTouchDevice && width >= 1000 && width <= 1500) {
-                document.body.style.zoom = "0.75";
-                setZoomLevel(0.75);
-            } else {
-                // Surfplattor, mobiler och stora 1080p-skärmar återställs alltid till 100%
-                document.body.style.zoom = "1";
-                setZoomLevel(1);
-            }
-        };
-
-        applyHardZoom();
-        window.addEventListener('resize', applyHardZoom);
-        return () => window.removeEventListener('resize', applyHardZoom);
-    }, []);
 
     // DATA FETCHING
     useEffect(() => {
@@ -389,11 +384,7 @@ const App = () => {
                 style={{ backgroundColor: '#ffb04f', opacity: isNightLight && !isDark ? 0.15 : 0 }} 
             ></div>
 
-            {/* Ersätt med detta: */}
-            <div 
-                className="flex overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300 w-full"
-                style={{ height: zoomLevel === 1 ? '100dvh' : `${100 / zoomLevel}dvh` }}
-            >
+            <div className="flex h-[100dvh] overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
                 
                 {/* DYNAMISK SIDEBAR */}
                 <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[285px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
