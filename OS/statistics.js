@@ -378,8 +378,14 @@ window.StatisticsView = ({ allJobs, onSelectJob }) => {
                                         <div 
                                             key={job.id} 
                                             onClick={() => {
-                                                if (onSelectJob) onSelectJob(job);
-                                                else if (window.openJobModal) window.openJobModal(job);
+                                                // Öppnar fordonskortet/historiken i första hand
+                                                if (job.regnr && window.openVehicleProfile) {
+                                                    window.openVehicleProfile(job.regnr, job.id);
+                                                } 
+                                                // Fallback om regnr saknas - öppnar redigeringsläget direkt
+                                                else if (window.openEditModal) {
+                                                    window.openEditModal(job.id);
+                                                }
                                             }}
                                             className="flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-white/5 bg-white dark:bg-[#1a2235] hover:border-zinc-300 dark:hover:border-white/20 transition-colors shadow-sm cursor-pointer group"
                                         >
