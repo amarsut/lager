@@ -252,7 +252,7 @@ window.StatisticsView = ({ allJobs, onSelectJob }) => {
                 <div className="bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-center group">
                     <div className="absolute right-0 top-0 w-20 h-20 bg-violet-500/10 blur-[30px] rounded-full pointer-events-none"></div>
                     <div className="text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-2 sm:mb-3 relative z-10">
-                        <SafeIcon name="layers" size={14} className="text-violet-500" /> Aktiv Pipeline
+                        <SafeIcon name="layers" size={14} className="text-violet-500" /> Pågående & Inbokat
                     </div>
                     <div className="text-2xl sm:text-3xl font-light tracking-tighter text-zinc-900 dark:text-white relative z-10">
                         {stats.pipeline.offererat.toLocaleString()} <span className="text-[10px] sm:text-[12px] font-bold text-zinc-400 uppercase tracking-widest">kr</span>
