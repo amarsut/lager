@@ -42,7 +42,7 @@ const getBrandDisplayName = (slug) => {
     return pretty[slug] || slug.charAt(0).toUpperCase() + slug.slice(1);
 };
 
-window.StatisticsView = ({ allJobs }) => {
+window.StatisticsView = ({ allJobs, onSelectJob }) => {
     const currentYear = new Date().getFullYear().toString();
     const currentMonthIdx = new Date().getMonth();
     
@@ -91,13 +91,14 @@ window.StatisticsView = ({ allJobs }) => {
         let bestMonth = { index: -1, revenue: 0 };
 
         jobsForPrevYear.forEach(j => {
-            if (['KLAR', 'FAKTURERAS'].includes(j.status)) prevActualRevenue += (parseInt(j.kundpris) || 0);
+            const status = (j.status || '').toUpperCase();
+            if (['KLAR', 'FAKTURERAS', 'KLART'].includes(status)) prevActualRevenue += (parseInt(j.kundpris) || 0);
         });
 
         jobsForYear.forEach(j => {
             const price = parseInt(j.kundpris) || 0;
-            const status = j.status || 'BOKAD';
-            const isDone = ['KLAR', 'FAKTURERAS'].includes(status);
+            const status = (j.status || 'BOKAD').toUpperCase();
+            const isDone = ['KLAR', 'FAKTURERAS', 'KLART'].includes(status);
             
             if (status === 'OFFERERAD') pipeline.offererat += price;
             if (status === 'BOKAD') pipeline.bokad += price;
@@ -371,9 +372,17 @@ window.StatisticsView = ({ allJobs }) => {
                                 {activeMonthJobs.map(job => {
                                     const d = new Date(job.datum);
                                     const price = parseInt(job.kundpris) || 0;
-                                    const isDone = ['KLAR', 'FAKTURERAS'].includes(job.status);
+                                    const jobStatus = (job.status || 'BOKAD').toUpperCase();
+                                    const isDone = ['KLAR', 'FAKTURERAS', 'KLART'].includes(jobStatus);
                                     return (
-                                        <div key={job.id} className="flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-white/5 bg-white dark:bg-[#1a2235] hover:border-zinc-300 dark:hover:border-white/20 transition-colors shadow-sm cursor-default group">
+                                        <div 
+                                            key={job.id} 
+                                            onClick={() => {
+                                                if (onSelectJob) onSelectJob(job);
+                                                else if (window.openJobModal) window.openJobModal(job);
+                                            }}
+                                            className="flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-white/5 bg-white dark:bg-[#1a2235] hover:border-zinc-300 dark:hover:border-white/20 transition-colors shadow-sm cursor-pointer group"
+                                        >
                                             <div className="flex items-center gap-3 sm:gap-4 min-w-0 pr-3">
                                                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-zinc-50 dark:bg-black/20 flex flex-col items-center justify-center border border-zinc-200/50 dark:border-white/5 shrink-0 shadow-sm">
                                                     <span className="text-[13px] sm:text-[15px] font-black text-zinc-900 dark:text-white leading-none mb-0.5">{d.getDate()}</span>
