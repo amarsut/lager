@@ -1,21 +1,20 @@
 // dashboard.js
 
+const APP_CONFIG = {
+    weather: { name: 'Eslöv', lat: '55.8390', lon: '13.3034' }
+};
+
 const formatTime = (dateStr) => {
     if (!dateStr || !dateStr.includes('T')) return "";
     const currentYear = new Date().getFullYear().toString();
     
-    // Om datumet inte börjar med innevarande år, returnera ingenting
     if (!dateStr.startsWith(currentYear)) {
         return "";
     }
     
-    // Annars, plocka ut HH:MM (exakt som den gjorde tidigare, men säkrare)
     return dateStr.split('T')[1].substring(0, 5); 
 };
 
-// Din befintliga formatTime ligger här ovanför...
-
-// Lägg till denna funktion som saknades:
 const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const targetDate = new Date(dateStr);
@@ -32,25 +31,25 @@ const formatDate = (dateStr) => {
     const day = targetDate.getDate();
     const month = months[targetDate.getMonth()];
     
-    // Om det är föregående/kommande år (ex: "28 AUG, 2024")
     if (targetDate.getFullYear() !== today.getFullYear()) {
         return `${day} ${month}, ${targetDate.getFullYear()}`;
     }
     
-    // Innevarande år (ex: "28 AUG")
     return `${day} ${month}`;
 };
 
-// Tar bort HTML-taggar och skapar en ren förhandsvisning av texten
+// FIX: Säkrare HTML-rensning med inbyggd DOMParser
 const stripHtml = (html) => {
     if (!html) return '';
-    const cleanText = String(html)
-        .replace(/<br\s*[\/]?>/gi, " ")
-        .replace(/<[^>]*>?/gm, ''); 
-    return cleanText.trim();
+    try {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body.textContent || "";
+    } catch (e) {
+        return String(html).replace(/<[^>]*>?/gm, '').trim();
+    }
 };
 
-// 2. PREMIUM STATUS BADGE
+// 2. PREMIUM STATUS BADGE (Uppdaterad storlek)
 window.Badge = React.memo(({ status }) => {
     const s = (status || 'BOKAD').toUpperCase();
     const config = {
@@ -61,8 +60,8 @@ window.Badge = React.memo(({ status }) => {
     };
     const style = config[s] || config['BOKAD'];
     return (
-        <span className={`h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest inline-flex items-center justify-center gap-1 rounded-lg border backdrop-blur-sm transition-all duration-300 ${style.bg} ${style.text} ${style.border}`}>
-            <span className={`w-1 h-1 rounded-full ${style.dot}`}></span>
+        <span className={`h-6 px-2.5 text-[10px] font-bold uppercase tracking-widest inline-flex items-center justify-center gap-1.5 rounded-lg border backdrop-blur-sm transition-all duration-300 ${style.bg} ${style.text} ${style.border}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`}></span>
             {s}
         </span>
     );
@@ -73,15 +72,13 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
     const [showWeather, setShowWeather] = React.useState(false);
     const [hoveredIdx, setHoveredIdx] = React.useState(null);
 
-    // -- VÄDER DATA --
     const [weatherData, setWeatherData] = React.useState([]);
     const [loadingWeather, setLoadingWeather] = React.useState(true);
     const [weatherError, setWeatherError] = React.useState(false);
 
     React.useEffect(() => {
-        const lon = "13.3034";
-        const lat = "55.8390";
-        const url = `https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/${lon}/lat/${lat}/data.json`;
+        // FIX: Använder dynamisk config
+        const url = `https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/${APP_CONFIG.weather.lon}/lat/${APP_CONFIG.weather.lat}/data.json`;
 
         const fetchWeather = async () => {
             try {
@@ -152,23 +149,31 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
         return () => clearInterval(interval);
     }, []);
 
-    // -- CHART DATA --
     const chartData = React.useMemo(() => {
         const now = new Date();
+        now.setHours(0, 0, 0, 0); 
         const data = [];
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
         
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            data.push({ month: monthNames[d.getMonth()], count: 0 });
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            
+            data.push({ 
+                label: `${d.getDate()} ${monthNames[d.getMonth()]}`, 
+                dateStr: dateStr, 
+                count: 0 
+            });
         }
         
         allJobs.forEach(job => {
             if (!job.datum || job.deleted) return;
-            const jd = new Date(job.datum);
-            const diffMonths = (now.getFullYear() - jd.getFullYear()) * 12 + now.getMonth() - jd.getMonth();
-            if (diffMonths >= 0 && diffMonths < 12) {
-                data[11 - diffMonths].count++;
+            const jobDateStr = job.datum.split('T')[0];
+            
+            const targetIndex = data.findIndex(d => d.dateStr === jobDateStr);
+            if (targetIndex !== -1) {
+                data[targetIndex].count++;
             }
         });
         
@@ -179,9 +184,9 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
     const { data, max } = chartData;
     
     const points = data.map((d, i) => ({ 
-        x: (i / 11) * 100, 
+        x: (i / 29) * 100, 
         y: 90 - (d.count / max) * 75 
-    })); 
+    }));
     
     let linePath = `M ${points[0].x},${points[0].y}`;
     for (let i = 0; i < points.length - 1; i++) {
@@ -210,11 +215,10 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
             
             <div className={`absolute right-0 top-0 w-32 h-32 blur-3xl rounded-full pointer-events-none transition-colors duration-500 ${showWeather ? 'bg-sky-500/10 group-hover:bg-sky-500/20' : 'bg-orange-500/5 group-hover:bg-orange-500/10'}`}></div>
             
-            {/* HEADER MED VÄXEL-KNAPP */}
             <div className="relative z-10 flex items-center justify-between mb-2">
                 <div className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${showWeather ? 'text-sky-500' : 'text-orange-500 dark:text-orange-400'}`}>
                     <window.Icon name={showWeather ? "cloud-sun" : "activity"} size={12} /> 
-                    {showWeather ? 'Prognos Eslöv' : 'Uppdrag (12 Mån)'}
+                    {showWeather ? `Prognos ${APP_CONFIG.weather.name}` : 'Uppdrag (Senaste 30d)'}
                 </div>
                 
                 <button 
@@ -226,10 +230,8 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                 </button>
             </div>
 
-            {/* INNEHÅLL */}
             <div className="relative z-10 flex-1 flex flex-col w-full">
                 {showWeather ? (
-                    /* --- VÄDER VY --- */
                     <div className="flex items-end justify-between gap-1 w-full h-full pb-1 animate-in fade-in zoom-in-95 duration-300 mt-2">
                         {loadingWeather ? (
                             <div className="w-full text-center text-[10px] text-zinc-400 uppercase tracking-widest py-4">Hämtar data...</div>
@@ -252,14 +254,12 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                         )}
                     </div>
                 ) : (
-                    /* --- DIAGRAM VY (PRO-VERSION) --- */
                     <div className="flex flex-col flex-1 animate-in fade-in zoom-in-95 duration-300 h-full" onMouseLeave={() => setHoveredIdx(null)}>
                         <div className="text-3xl sm:text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
                             {totalJobs} <span className="text-[12px] sm:text-sm font-bold text-zinc-400 uppercase tracking-widest ml-0.5">st</span>
                         </div>
 
                         <div className="relative w-full flex-1 mt-3 min-h-[65px]">
-                            
                             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-4 opacity-[0.15] dark:opacity-20">
                                 <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
                                 <div className="w-full h-px border-t border-dashed border-zinc-500"></div>
@@ -290,22 +290,17 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                                 {data.map((d, i) => {
                                     let tooltipAlign = "-translate-x-1/2";
                                     if (i === 0) tooltipAlign = "translate-x-0";
-                                    if (i === 11) tooltipAlign = "-translate-x-full";
+                                    if (i === 29) tooltipAlign = "-translate-x-full"; 
 
                                     return (
-                                        <div
-                                            key={i}
-                                            className="flex-1 h-full cursor-crosshair relative"
-                                            onMouseEnter={() => setHoveredIdx(i)}
-                                            onTouchStart={() => setHoveredIdx(i)}
-                                        >
+                                        <div key={i} className="flex-1 h-full cursor-crosshair relative" onMouseEnter={() => setHoveredIdx(i)} onTouchStart={() => setHoveredIdx(i)}>
                                             {hoveredIdx === i && (
                                                 <div 
                                                     className={`absolute top-[-25px] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-2 py-1 rounded-lg shadow-xl pointer-events-none whitespace-nowrap z-30 flex items-center gap-1.5 animate-in zoom-in-95 duration-100 ${tooltipAlign}`} 
-                                                    style={{ left: i === 0 ? '0' : i === 11 ? '100%' : '50%' }}
+                                                    style={{ left: i === 0 ? '0' : i === 29 ? '100%' : '50%' }}
                                                 >
                                                     <span className="font-mono font-bold text-[12px] leading-none">{d.count}</span>
-                                                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 pt-[1px]">{d.month}</span>
+                                                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 pt-[1px]">{d.label}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -315,8 +310,8 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
                             
                             <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] font-bold uppercase tracking-widest text-zinc-400 px-0.5">
                                 {data.map((d, i) => (
-                                    <span key={i} className={`transition-colors duration-200 ${hoveredIdx === i ? 'text-orange-500 scale-110' : ([0, 3, 6, 9, 11].includes(i) ? 'opacity-100' : 'opacity-0')}`}>
-                                        {d.month}
+                                    <span key={i} className={`transition-colors duration-200 ${hoveredIdx === i ? 'text-orange-500 scale-110' : ([0, 7, 15, 22, 29].includes(i) ? 'opacity-100' : 'opacity-0')}`}>
+                                        {d.label.split(' ')[0]}
                                     </span>
                                 ))}
                             </div>
@@ -328,7 +323,6 @@ window.ActivityAndWeatherWidget = React.memo(({ allJobs }) => {
     );
 });
 
-// 3. SMART DATA-IKON
 window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
     const [hasData, setHasData] = React.useState(false);
     const [pulse, setPulse] = React.useState(false);
@@ -476,7 +470,7 @@ const mobileCardPropsAreEqual = (prev, next) => {
     return prev.job === next.job && prev.job.status === next.job.status && prev.job.datum === next.job.datum;
 };
 
-// --- UPPGRADERAT MOBILKORT ---
+// FIX: Wrappat funktioner i useCallback för att inte bryta React.memo
 const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
@@ -492,17 +486,26 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const paid = parseInt(job.betaltBelopp) || 0;
     const remaining = Math.max(0, price - paid);
 
-    const handleCopy = (e) => {
+    const handleCopy = React.useCallback((e) => {
         e.stopPropagation();
         if (!job.regnr || job.regnr === '-') return;
         navigator.clipboard.writeText(vehicleDisplay);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-    };
+    }, [job.regnr, vehicleDisplay]);
+
+    const handleCardClick = React.useCallback(() => {
+        if (job.regnr) onOpenHistory(job.regnr, job.id, job);
+    }, [job.regnr, job.id, job, onOpenHistory]);
+
+    const handleMenuToggle = React.useCallback((e) => {
+        e.stopPropagation();
+        setMenuOpen(prev => !prev);
+    }, []);
 
     return (
         <div
-            onClick={() => job.regnr ? onOpenHistory(job.regnr, job.id, job) : null}
+            onClick={handleCardClick}
             className={`w-full relative active:scale-[0.97] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border rounded-2xl
                 ${isDone ? 'opacity-60 grayscale-[0.2] border-zinc-200 dark:border-white/5' : 
                   isUrgentDate ? 'border-orange-300 dark:border-orange-500/50 shadow-[0_4px_15px_-3px_rgba(249,115,22,0.1)]' : 
@@ -534,7 +537,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         <window.Badge status={job.status} />
                         
                         <div className="relative">
-                            <button onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full active:scale-90 -mr-2">
+                            <button onClick={handleMenuToggle} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full active:scale-90 -mr-2">
                                 <window.Icon name="more-horizontal" size={18} />
                             </button>
                             {menuOpen && (
@@ -654,7 +657,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                     </span>
                                 </div>
                                 
-                                {/* Svävande Tooltip (visas vid tryck på mobil) */}
                                 <div className="absolute left-0 bottom-full mb-2 w-max min-w-[250px] max-w-[320px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-bottom-left">
                                     <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
                                         <div className="shrink-0 mt-[2px] text-orange-500">
@@ -706,19 +708,19 @@ const dashboardPropsAreEqual = (prev, next) => {
     return prev.filteredJobs === next.filteredJobs && prev.activeFilter === next.activeFilter && prev.globalSearch === next.globalSearch && prev.statusCounts === next.statusCounts;
 };
 
-// --- SMART TEXTTOLK FÖR UPPGIFTER ---
+// FIX: Bättre regex för svenska regnr i texttolken
 window.TaskFormatter = React.memo(({ text, isDone }) => {
     const [copiedToken, setCopiedToken] = React.useState(null);
-    const regex = /(https?:\/\/[^\s]+|[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9])/g;
+    const regex = /(https?:\/\/[^\s]+|[A-Za-zÅÄÖåäö]{3}\s?\d{2}[A-Za-z0-9])/g;
     const parts = text.split(regex);
 
-    const handleCopy = (e, token) => {
+    const handleCopy = React.useCallback((e, token) => {
         e.stopPropagation();
         if (isDone) return; 
         navigator.clipboard.writeText(token);
         setCopiedToken(token);
         setTimeout(() => setCopiedToken(null), 1500);
-    };
+    }, [isDone]);
 
     return (
         <>
@@ -733,7 +735,7 @@ window.TaskFormatter = React.memo(({ text, isDone }) => {
                         </a>
                     );
                 }
-                if (/^[a-zA-ZåäöÅÄÖ]{3}\s?\d{2}[a-zA-Z0-9]$/.test(part)) {
+                if (/^[A-Za-zÅÄÖåäö]{3}\s?\d{2}[A-Za-z0-9]$/.test(part)) {
                     const cleanReg = part.replace(/\s+/g, '').toUpperCase();
                     const isCopied = copiedToken === cleanReg;
                     
@@ -1052,13 +1054,13 @@ window.DashboardView = React.memo(({
         setSortConfig({ key, direction });
     };
 
-    const handleCopyDesktop = (e, regnr, jobId) => {
+    const handleCopyDesktop = React.useCallback((e, regnr, jobId) => {
         e.stopPropagation();
         if (!regnr || regnr === '-') return;
         navigator.clipboard.writeText(regnr);
         setCopiedRegId(jobId);
         setTimeout(() => setCopiedRegId(null), 2000);
-    };
+    }, []);
 
     const tabsRef = React.useRef(null);
     const filters = ['ALLA', 'BOKAD', 'FAKTURERAS', 'OFFERERAD', 'KLAR'];
@@ -1223,7 +1225,6 @@ window.DashboardView = React.memo(({
                                 </div>
                             </div>
                             
-                            {/* NYTT: Omsättning & Snitt */}
                             <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5 flex items-center justify-between">
                                 <div>
                                     <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Omsättning</div>
@@ -1296,7 +1297,6 @@ window.DashboardView = React.memo(({
                                         </div>
                                     </div>
                                     
-                                    {/* NYTT: Nästa uppdrag */}
                                     <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5">
                                         <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-1.5">Nästa i kalendern</div>
                                         {nextUpcomingJob ? (
@@ -1373,11 +1373,15 @@ window.DashboardView = React.memo(({
                     </div>
 
                     <div className="bg-white dark:bg-[#1e293b] rounded-b-3xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col min-h-[500px]">
-                        <div className="flex-1 overflow-auto custom-scrollbar">
+                        <div className="flex-1 overflow-auto custom-scrollbar relative">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200 dark:border-white/10">
+                                {/* FIX: Sticky Header med check-kolumn */}
+                                <thead className="sticky top-0 z-20 bg-zinc-50/95 dark:bg-[#1e293b]/95 backdrop-blur-md text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200 dark:border-white/10 shadow-sm">
                                     <tr>
-                                        <th className="pl-8 pr-4 py-4 w-[25%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
+                                        <th className="pl-6 py-4 w-10">
+                                            <input type="checkbox" className="rounded border-zinc-300 text-orange-500 focus:ring-orange-500/20 cursor-pointer" title="Markera alla" />
+                                        </th>
+                                        <th className="pl-2 pr-4 py-4 w-[25%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
                                             <div className="flex items-center gap-1.5">
                                                 Kund
                                                 <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundnamn' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
@@ -1420,7 +1424,7 @@ window.DashboardView = React.memo(({
                                 {visibleJobs.length === 0 ? (
                                     <tbody>
                                         <tr>
-                                            <td colSpan="7" className="py-32 text-center">
+                                            <td colSpan="8" className="py-32 text-center">
                                                 <div className="flex flex-col items-center justify-center text-zinc-400">
                                                     <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center">
                                                         <window.Icon name="inbox" size={32} className="opacity-50" />
@@ -1454,7 +1458,7 @@ window.DashboardView = React.memo(({
                                                 <React.Fragment key={job.id}>
                                                     {showWaitingHeader && (
                                                         <tr>
-                                                            <td colSpan="7" className="py-8 relative">
+                                                            <td colSpan="8" className="py-8 relative">
                                                                 <div className="absolute inset-0 flex items-center px-4" aria-hidden="true">
                                                                     <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
                                                                 </div>
@@ -1470,10 +1474,15 @@ window.DashboardView = React.memo(({
 
                                                     <tr 
                                                         onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                        className={`group transition-colors duration-200 cursor-pointer relative bg-transparent hover:bg-zinc-50 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'opacity-70 hover:opacity-100' : ''}`}
+                                                        className={`group transition-colors duration-200 cursor-pointer relative hover:bg-orange-50/50 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'bg-zinc-50/50 dark:bg-black/20 opacity-70 hover:opacity-100' : 'bg-transparent'}`}
                                                     >
-                                                        <td className="pl-7 pr-4 py-4 align-middle relative">
+                                                        {/* FIX: Checkbox lagd till i första kolumnen */}
+                                                        <td className="pl-6 py-4 align-middle relative">
                                                             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
+                                                            <input type="checkbox" onClick={(e) => e.stopPropagation()} className="rounded border-zinc-300 text-orange-500 focus:ring-orange-500/20 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </td>
+
+                                                        <td className="pl-2 pr-4 py-4 align-middle">
                                                             <div className="flex items-center gap-4">
                                                                 <window.CustomerAvatar job={job} />
                                                                 <div>
