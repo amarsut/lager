@@ -241,11 +241,9 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
                     // 4. RIKTIGT API-ANROP TILL GOOGLE GEMINI (AI STUDIO)
                     try {
-                        // Klistra in din riktiga API-nyckel här:
-                        // 1. Här definierar vi variabeln (jag döper den till GEMINI_API_KEY för att vara övertydlig)
-                        const GEMINI_API_KEY = window.ENV.GEMINI_API_KEY;
-
-                        // 2. Här används exakt samma namn i anropet (${GEMINI_API_KEY})
+                        // Hämtar API-nyckeln från din globala config
+                        const GEMINI_API_KEY = window.ENV.GEMINI_API_KEY; 
+                    
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                             method: "POST",
                             headers: {
@@ -253,13 +251,15 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             },
                             body: JSON.stringify({
                                 systemInstruction: {
-                                    parts: [{ text: "Du är en expert på fordonsteknik och diagnostik. Oavsett vad användaren frågar om gällande bilar, svara ALLTID extremt kortfattat och exakt enligt denna mall. Ge INGEN annan text, inga hälsningar och inga förklaringar.\n\n**Orsak:** [Kort orsak]\n**Lösning:** [Kort lösning]" }]
+                                    parts: [{ 
+                                        text: "Du är en avancerad fordonsteknisk AI integrerad i verkstadssystemet AutoGrid. Du pratar med professionella mekaniker. Svara ALLTID extremt kortfattat, tekniskt korrekt och med högsta informationsdensitet. Inget fluff, inga hälsningar, inga friskrivningsklausuler.\n\nAnvänd EXAKT denna Markdown-mall för varje svar:\n\n**Komponent:** [Vilken del/system berörs]\n**Orsak:** [De 1-3 vanligaste orsakerna]\n**Diagnos:** [Snabbt test eller mätvärde att kolla i ODIS/VCDS eller motsvarande]\n**Åtgärd:** [Konkreta steg för att lösa problemet]" 
+                                    }]
                                 },
                                 contents: [{
                                     parts: [{ text: textToSend }]
                                 }],
                                 generationConfig: {
-                                    temperature: 0.2
+                                    temperature: 0.2 // Låg temperatur för exakta, tekniska svar
                                 }
                             })
                         });
