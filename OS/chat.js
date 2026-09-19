@@ -215,16 +215,73 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         setInputText("");
         setEditingId(null);
         
-        // Återfokusera inputen direkt för mobil användarvänlighet
         if (inputRef.current && !isMobile) inputRef.current.focus();
 
         try {
             if (currentEditId) {
                 await window.db.collection("notes").doc(currentEditId).update({ text: textToSend, isEdited: true });
             } else {
+                // 1. Spara ditt eget meddelande
                 await window.db.collection("notes").add({
                     text: textToSend, sender: user.email, timestamp: new Date().toISOString(), type: 'text'
                 });
+
+                // 2. Lyssna efter felkoder eller /ai
+                const dtcRegex = /\b[PBUC]\d{4,6}\b/i;
+                const isAiCommand = textToSend.toLowerCase().startsWith('/ai ');
+
+                if (dtcRegex.test(textToSend) || isAiCommand) {
+                    // 3. Visa "Söker..." i chatten
+                    const tempAiMsg = await window.db.collection("notes").add({
+                        text: "Söker i felkodsdatabasen...", 
+                        sender: "AutoGrid_AI", 
+                        timestamp: new Date().toISOString(), 
+                        type: 'text'
+                    });
+
+                    // 4. RIKTIGT API-ANROP TILL GOOGLE GEMINI (AI STUDIO)
+                    try {
+                        // Klistra in din riktiga API-nyckel här:
+                        // 1. Här definierar vi variabeln (jag döper den till GEMINI_API_KEY för att vara övertydlig)
+                        const GEMINI_API_KEY = window.ENV.GEMINI_API_KEY;
+
+                        // 2. Här används exakt samma namn i anropet (${GEMINI_API_KEY})
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                systemInstruction: {
+                                    parts: [{ text: "Du är en expert på fordonsteknik och diagnostik. Oavsett vad användaren frågar om gällande bilar, svara ALLTID extremt kortfattat och exakt enligt denna mall. Ge INGEN annan text, inga hälsningar och inga förklaringar.\n\n**Orsak:** [Kort orsak]\n**Lösning:** [Kort lösning]" }]
+                                },
+                                contents: [{
+                                    parts: [{ text: textToSend }]
+                                }],
+                                generationConfig: {
+                                    temperature: 0.2
+                                }
+                            })
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.candidates && data.candidates.length > 0) {
+                            const realAnswer = data.candidates[0].content.parts[0].text;
+                            // 5. Uppdatera chatten med det riktiga svaret från Gemini
+                            await window.db.collection("notes").doc(tempAiMsg.id).update({
+                                text: realAnswer
+                            });
+                        } else {
+                            throw new Error("Inget svar från AI");
+                        }
+                    } catch (aiError) {
+                        console.error("AI Error:", aiError);
+                        await window.db.collection("notes").doc(tempAiMsg.id).update({
+                            text: "Kunde inte hämta data. Kontrollera din API-nyckel eller nätverk."
+                        });
+                    }
+                }
             }
         } catch (error) { console.error("Action Error:", error); }
     };
@@ -266,9 +323,15 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
     const renderMessageText = (text) => {
         if (!text) return "";
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        return text.split(urlRegex).map((part, i) => {
-            if (part.match(urlRegex)) {
+        
+        // Regex för att hitta både webblänkar och **fetstil**
+        const tokenRegex = /(https?:\/\/[^\s]+|\*\*[^*]+\*\*)/g;
+        
+        return text.split(tokenRegex).map((part, i) => {
+            if (!part) return null;
+            
+            // Formatera länkar
+            if (part.match(/^https?:\/\//)) {
                 return (
                     <a key={i} href={part} target="_blank" rel="noopener noreferrer"
                         className="underline decoration-1 hover:opacity-70 break-all transition-opacity font-bold">
@@ -276,7 +339,14 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     </a>
                 );
             }
-            return part;
+            
+            // Formatera **fetstil**
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i} className="font-black tracking-wide">{part.slice(2, -2)}</strong>;
+            }
+            
+            // Vanlig text
+            return <span key={i}>{part}</span>;
         });
     };
 
@@ -374,8 +444,12 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                             {!isMe && (
                                                 <div className="w-7 h-7 shrink-0 mr-2 flex flex-col justify-end">
                                                     {!isSameSenderAsNext && (
-                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm ${getSenderColor(msg.sender)}`}>
-                                                            {getSenderName(msg).charAt(0)}
+                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm ${msg.sender === 'AutoGrid_AI' ? 'bg-zinc-900 dark:bg-white text-orange-500' : getSenderColor(msg.sender)}`}>
+                                                            {msg.sender === 'AutoGrid_AI' ? (
+                                                                <window.Icon name="cpu" size={14} className={msg.text.includes("Söker i") ? "animate-pulse" : ""} />
+                                                            ) : (
+                                                                getSenderName(msg).charAt(0)
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
