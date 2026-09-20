@@ -1,7 +1,6 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 // --- 1. HJÄLPFUNKTIONER ---
-
 const compressImage = async (file, maxWidth = 1000, quality = 0.7) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -30,12 +29,6 @@ const compressImage = async (file, maxWidth = 1000, quality = 0.7) => {
 
 const getSenderName = (msg) => msg?.sender?.split('@')[0].toUpperCase() || "SYSTEM";
 
-const formatTime = (ts) => {
-    if (!ts) return "";
-    const date = (typeof ts.toDate === 'function') ? ts.toDate() : new Date(ts);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
 const getDateLabel = (ts) => {
     if (!ts) return "";
     const date = (typeof ts.toDate === 'function') ? ts.toDate() : new Date(ts);
@@ -47,7 +40,13 @@ const getDateLabel = (ts) => {
     return date.toLocaleDateString([], { day: 'numeric', month: 'short' }).toUpperCase();
 };
 
-// Generera färg baserat på avsändare
+const getMessengerStyleTimestamp = (ts) => {
+    if (!ts) return "";
+    const date = (typeof ts.toDate === 'function') ? ts.toDate() : new Date(ts);
+    // Returnerar endast klockslaget (t.ex. "23:42") eftersom datumet redan finns i pillen.
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
 const getSenderColor = (email) => {
     if (!email) return 'bg-zinc-500';
     const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-rose-500', 'bg-cyan-500', 'bg-amber-500'];
@@ -56,15 +55,28 @@ const getSenderColor = (email) => {
     return colors[Math.abs(hash) % colors.length];
 };
 
-// --- 2. HUVUDKOMPONENT ---
+const hapticFeedback = () => {
+    if (navigator.vibrate) navigator.vibrate(50);
+};
 
+// --- 2. HUVUDKOMPONENT ---
 const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
     const [editingId, setEditingId] = useState(null);
+    const [replyTo, setReplyTo] = useState(null); 
+    
     const [activeImage, setActiveImage] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
+    
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    
+    const [showScrollBottom, setShowScrollBottom] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [isRecording, setIsRecording] = useState(false);
+    const [galleryTab, setGalleryTab] = useState('image'); 
     
     const [filter, setFilter] = useState(viewParams?.filter || 'all');
     
@@ -72,63 +84,62 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     const scrollRef = useRef(null);
     const menuRef = useRef(null);
     const inputRef = useRef(null);
+    const mediaRecorder = useRef(null);
+    const audioChunks = useRef([]);
     
     const stateRef = useRef({ activeImage, filter, viewParams });
     useEffect(() => { stateRef.current = { activeImage, filter, viewParams }; }, [activeImage, filter, viewParams]);
 
     useEffect(() => {
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-    }, [filter, isPopup, activeImage, messages, activeMenu]);
+        if (window.lucide) window.lucide.createIcons();
+    });
 
-    let lastDateLabel = null;
-    let lastSender = null;
-
-    // --- SCROLL FUNKTION (Mjuk Native-scroll) ---
     const scrollToBottom = useCallback((smooth = true) => {
         if (scrollRef.current) {
             scrollRef.current.scrollTo({
                 top: scrollRef.current.scrollHeight,
                 behavior: smooth ? 'smooth' : 'auto'
             });
+            setShowScrollBottom(false);
+            setUnreadCount(0);
         }
     }, []);
 
+    const handleScroll = () => {
+        if (!scrollRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+        setShowScrollBottom(!isNearBottom);
+        if (isNearBottom) setUnreadCount(0);
+    };
+
     useEffect(() => {
-        if (filter === 'all') {
-            // Vid första inladdning, vänta på DOM och scrolla snabbt ner
-            setTimeout(() => scrollToBottom(false), 100);
-        }
+        if (filter === 'all') setTimeout(() => scrollToBottom(false), 100);
     }, [filter, scrollToBottom]);
 
-    // Lyssna på nya meddelanden och scrolla ner mjukt
-    useEffect(() => {
-        if (messages.length > 0 && filter === 'all') {
-            setTimeout(() => scrollToBottom(true), 50);
-        }
-    }, [messages.length, filter, scrollToBottom]);
+    const handleInputResize = (e) => {
+        e.target.style.height = 'auto';
+        e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+    };
 
-    // --- HANTERA BAKÅT (Historik) ---
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleAction(e);
+        }
+    };
+
     useEffect(() => {
         const handlePopState = () => {
             if (isPopup) return; 
-            
             const { activeImage, filter, viewParams } = stateRef.current;
-            if (activeImage) {
-                setActiveImage(null);
-                return;
-            }
-            if (filter === 'image') {
-                setView('CHAT', { ...viewParams, filter: 'all' });
-            }
+            if (activeImage) { setActiveImage(null); return; }
+            if (filter === 'image') setView('CHAT', { ...viewParams, filter: 'all' });
         };
-
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, [isPopup, setView]);
 
-    // --- STÄNG MENY VID KLICK UTANFÖR ---
     useEffect(() => {
         const handleOutside = (event) => {
             if (activeMenu && menuRef.current && !menuRef.current.contains(event.target)) {
@@ -143,20 +154,9 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         };
     }, [activeMenu]);
 
-    // --- HÄMTA MEDDELANDEN ---
-    useEffect(() => {
-        const openImageId = viewParams?.openImage;
-        if (openImageId && !isPopup) {
-            const msg = messages.find(m => m.id === openImageId);
-            if (msg) setActiveImage(msg);
-        }
-    }, [viewParams, messages, isPopup]);
-
-    // --- FILTER & NAVIGATION ---
     const handleFilterChange = (newFilter) => {
         if (newFilter === filter) return;
         setFilter(newFilter);
-
         if (!isPopup) {
             if (newFilter === 'image') {
                  window.history.pushState({ gallery: true }, "", window.location.href);
@@ -180,29 +180,87 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     };
 
     const handleOpenImage = (e, msg) => {
+        if(msg.type === 'audio') return;
         e.stopPropagation();
         setActiveMenu(null);
         setActiveImage(msg); 
-        
-        if (!isPopup) {
-            window.history.pushState({ imageOpen: true }, "", window.location.href);
-        }
     };
 
     const closeImageViewer = (e) => {
         if (e) e.stopPropagation();
         setActiveImage(null);
-        if (!isPopup) window.history.back();
     };
 
-    // --- FIREBASE SUBSCRIPTION ---
+    const handleCopy = (text) => {
+        navigator.clipboard.writeText(text).then(() => setActiveMenu(null));
+        hapticFeedback();
+    };
+
     useEffect(() => {
         const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
             const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            if (docs.length > messages.length && messages.length > 0) {
+                const lastMsg = docs[docs.length - 1];
+                if (lastMsg.sender !== user.email && showScrollBottom) {
+                    setUnreadCount(prev => prev + 1);
+                } else {
+                    setTimeout(() => scrollToBottom(true), 100);
+                }
+            }
             setMessages(docs);
         });
         return () => unsubscribe();
-    }, []);
+    }, [showScrollBottom, messages.length, scrollToBottom, user.email]);
+
+    const toggleRecording = async () => {
+        hapticFeedback();
+        if (isRecording) {
+            if (mediaRecorder.current) {
+                mediaRecorder.current.stop();
+                mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
+            }
+            setIsRecording(false);
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder.current = new MediaRecorder(stream);
+                
+                mediaRecorder.current.ondataavailable = e => {
+                    if (e.data.size > 0) audioChunks.current.push(e.data);
+                };
+                
+                mediaRecorder.current.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
+                    audioChunks.current = [];
+                    
+                    if (audioBlob.size > 1000000) {
+                        alert("Ljudfilen är för stor (Max 1MB).");
+                        return;
+                    }
+                    
+                    setIsUploading(true);
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        await window.db.collection("notes").add({
+                            fileUrl: reader.result,
+                            type: 'audio',
+                            sender: user.email,
+                            timestamp: new Date().toISOString()
+                        });
+                        setIsUploading(false);
+                    };
+                    reader.readAsDataURL(audioBlob);
+                };
+                
+                mediaRecorder.current.start();
+                setIsRecording(true);
+            } catch (err) {
+                console.error("Microphone access denied:", err);
+                alert("Kunde inte starta mikrofonen. Saknar behörighet.");
+            }
+        }
+    };
 
     const handleAction = async (e) => {
         if (e) e.preventDefault();
@@ -211,74 +269,73 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
             if (editingId) { setEditingId(null); setInputText(""); }
             return;
         }
+        
+        hapticFeedback();
         const currentEditId = editingId;
+        const currentReplyTo = replyTo;
+        
         setInputText("");
         setEditingId(null);
+        setReplyTo(null);
         
-        if (inputRef.current && !isMobile) inputRef.current.focus();
+        if (inputRef.current) {
+            inputRef.current.style.height = 'auto'; 
+            if (!isMobile) inputRef.current.focus();
+        }
 
         try {
             if (currentEditId) {
                 await window.db.collection("notes").doc(currentEditId).update({ text: textToSend, isEdited: true });
             } else {
-                // 1. Spara ditt eget meddelande
                 await window.db.collection("notes").add({
-                    text: textToSend, sender: user.email, timestamp: new Date().toISOString(), type: 'text'
+                    text: textToSend, 
+                    sender: user.email, 
+                    timestamp: new Date().toISOString(), 
+                    type: 'text',
+                    replyTo: currentReplyTo ? { id: currentReplyTo.id, text: currentReplyTo.text, sender: currentReplyTo.sender } : null
                 });
 
-                // 2. Lyssna efter felkoder eller /ai
                 const dtcRegex = /\b[PBUC]\d{4,6}\b/i;
                 const isAiCommand = textToSend.toLowerCase().startsWith('/ai ');
 
                 if (dtcRegex.test(textToSend) || isAiCommand) {
-                    // 3. Visa "Söker..." i chatten
-                    const tempAiMsg = await window.db.collection("notes").add({
-                        text: "Söker i felkodsdatabasen...", 
-                        sender: "AutoGrid_AI", 
-                        timestamp: new Date().toISOString(), 
-                        type: 'text'
-                    });
-
-                    // 4. RIKTIGT API-ANROP TILL GOOGLE GEMINI (AI STUDIO)
-                    try {
-                        // Hämtar API-nyckeln från din globala config
-                        const GEMINI_API_KEY = window.ENV.GEMINI_API_KEY; 
+                    setIsAiLoading(true);
+                    scrollToBottom(true);
                     
+                    try {
+                        const GEMINI_API_KEY = window.ENV.GEMINI_API_KEY; 
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                             method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
+                            headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                                 systemInstruction: {
                                     parts: [{ 
                                         text: "Du är en avancerad fordonsteknisk AI integrerad i verkstadssystemet AutoGrid. Du pratar med professionella mekaniker. Svara ALLTID extremt kortfattat, tekniskt korrekt och med högsta informationsdensitet. Inget fluff, inga hälsningar, inga friskrivningsklausuler.\n\nAnvänd EXAKT denna Markdown-mall för varje svar:\n\n**Komponent:** [Vilken del/system berörs]\n**Orsak:** [De 1-3 vanligaste orsakerna]\n**Diagnos:** [Snabbt test eller mätvärde att kolla i ODIS/VCDS eller motsvarande]\n**Åtgärd:** [Konkreta steg för att lösa problemet]" 
                                     }]
                                 },
-                                contents: [{
-                                    parts: [{ text: textToSend }]
-                                }],
-                                generationConfig: {
-                                    temperature: 0.2 // Låg temperatur för exakta, tekniska svar
-                                }
+                                contents: [{ parts: [{ text: textToSend }] }],
+                                generationConfig: { temperature: 0.2 }
                             })
                         });
 
                         const data = await response.json();
+                        setIsAiLoading(false);
                         
                         if (data.candidates && data.candidates.length > 0) {
                             const realAnswer = data.candidates[0].content.parts[0].text;
-                            // 5. Uppdatera chatten med det riktiga svaret från Gemini
-                            await window.db.collection("notes").doc(tempAiMsg.id).update({
-                                text: realAnswer
+                            await window.db.collection("notes").add({
+                                text: realAnswer, sender: "AutoGrid_AI", timestamp: new Date().toISOString(), type: 'text',
+                                replyTo: { id: "user", text: textToSend, sender: user.email }
                             });
                         } else {
                             throw new Error("Inget svar från AI");
                         }
                     } catch (aiError) {
                         console.error("AI Error:", aiError);
-                        await window.db.collection("notes").doc(tempAiMsg.id).update({
-                            text: "Kunde inte hämta data. Kontrollera din API-nyckel eller nätverk."
+                        setIsAiLoading(false);
+                        await window.db.collection("notes").add({
+                            text: "Kunde inte hämta data. Kontrollera din API-nyckel eller nätverk.",
+                            sender: "AutoGrid_AI", timestamp: new Date().toISOString(), type: 'text'
                         });
                     }
                 }
@@ -295,7 +352,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(file);
             });
             if (fileData.length > 1048487) {
-                alert("Filen är för stor.");
+                alert("Filen är för stor (Max 1MB).");
                 setIsUploading(false); return;
             }
             await window.db.collection("notes").add({
@@ -308,6 +365,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     };
 
     const toggleReaction = async (id, emoji) => {
+        hapticFeedback();
         const msg = messages.find(m => m.id === id);
         if (!msg) return;
         const reactions = { ...(msg.reactions || {}) };
@@ -323,68 +381,69 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
     const renderMessageText = (text) => {
         if (!text) return "";
-        
-        // Regex för att hitta både webblänkar och **fetstil**
         const tokenRegex = /(https?:\/\/[^\s]+|\*\*[^*]+\*\*)/g;
-        
         return text.split(tokenRegex).map((part, i) => {
             if (!part) return null;
-            
-            // Formatera länkar
             if (part.match(/^https?:\/\//)) {
                 return (
                     <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                        className="underline decoration-1 hover:opacity-70 break-all transition-opacity font-bold">
+                        className="underline decoration-1 hover:opacity-80 break-all transition-opacity font-semibold">
                         {part}
                     </a>
                 );
             }
-            
-            // Formatera **fetstil**
             if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={i} className="font-black tracking-wide">{part.slice(2, -2)}</strong>;
+                return <strong key={i} className="font-black tracking-wide text-current">{part.slice(2, -2)}</strong>;
             }
-            
-            // Vanlig text
             return <span key={i}>{part}</span>;
         });
     };
 
+    const scrollToMessage = (id) => {
+        const el = document.getElementById(`msg-${id}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('bg-orange-500/20');
+            setTimeout(() => el.classList.remove('bg-orange-500/20'), 1500);
+        }
+    };
+
+    // 1. LÄGG TILL DENNA RAD
+    let lastDateLabel = "";
+
     // --- RENDERING ---
     return (
-        <div className={isPopup ? "w-full h-full flex flex-col bg-transparent" : "fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 bg-zinc-50 dark:bg-[#0f1522] animate-in fade-in duration-300 font-sans"}>
-            
-            {/* HUVUDCONTAINER */}
-            <div className={`w-full h-full flex flex-col bg-zinc-50 dark:bg-[#0f1522] ${isPopup ? 'border-none' : 'lg:w-[750px] lg:h-[calc(100vh-115px)] lg:rounded-2xl lg:border border-zinc-200 dark:border-white/5 lg:shadow-2xl'} overflow-hidden relative`}>
+    <div className={isPopup ? "w-full h-full flex flex-col bg-transparent" : "fixed inset-0 z-[1000] lg:relative lg:inset-auto lg:flex lg:items-start lg:justify-start lg:-mt-4 bg-zinc-50 dark:bg-[#090b10] animate-in fade-in duration-300 font-sans"}>
 
-                {/* HEADER - Native Style */}
-                <div className="h-[72px] bg-white/90 dark:bg-[#182032]/90 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20 shadow-sm transition-colors duration-300">
+            <div className={`w-full h-full flex flex-col bg-[#f0f2f5] dark:bg-[#0f1522] ${isPopup ? 'border-none' : 'lg:w-[1000px] lg:max-w-full lg:h-[calc(100vh-115px)] lg:rounded-2xl lg:border border-zinc-200 dark:border-white/5 lg:shadow-2xl'} overflow-hidden relative mx-auto`}>
+
+                {/* HEADER */}
+                <div className="h-[72px] bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20 shadow-sm transition-colors duration-300">
                     <div className="flex items-center gap-3 sm:gap-4">
                         {!isPopup && (
-                            <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] border border-transparent dark:border-white/5 text-zinc-500 hover:text-orange-500 dark:hover:text-white shadow-sm transition-all active:scale-95">
+                            <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-orange-500 dark:hover:text-white transition-all active:scale-95">
                                 <window.Icon name={filter === 'image' ? "grid" : "arrow-left"} size={20} className="pointer-events-none" />
                             </button>
                         )}
                         <div className="flex items-center gap-3">
                             <div className="relative group cursor-default shrink-0 hidden sm:block">
-                                <div className="absolute inset-0 bg-orange-500/40 blur-md rounded-full transition-all group-hover:bg-orange-500/60" />
+                                <div className="absolute inset-0 bg-orange-500/30 blur-md rounded-full transition-all group-hover:bg-orange-500/50" />
                                 <div className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
-                                    <window.Icon name="message-square" size={18} />
+                                    <window.Icon name="cpu" size={18} />
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <h2 className="text-[15px] sm:text-[16px] font-black uppercase tracking-tight text-zinc-900 dark:text-white leading-none">
-                                    System_<span className="text-zinc-400 dark:text-zinc-500 font-light">Chat</span>
+                                <h2 className="text-[15px] sm:text-[17px] font-black tracking-tight text-zinc-900 dark:text-white leading-none">
+                                    AutoGrid <span className="font-light text-zinc-500">AI</span>
                                 </h2>
-                                <span className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                    Mission_Log
+                                    Online
                                 </span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* Filter Tabs */}
                         <div className="flex bg-zinc-100 dark:bg-[#0f1522] p-1 rounded-xl border border-zinc-200 dark:border-white/5">
                             {['all', 'image'].map(f => (
                                 <button key={f} onClick={() => handleFilterChange(f)} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${filter === f ? 'bg-white dark:bg-[#1a2235] text-orange-500 shadow-sm border border-zinc-200/50 dark:border-white/10' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
@@ -392,11 +451,9 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                 </button>
                             ))}
                         </div>
-
-                        {/* Stäng-knapp för popup */}
                         {isPopup && (
                             <div className="pl-2 border-l border-zinc-200 dark:border-white/5 ml-1">
-                                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-[#1a2235] hover:bg-red-50 dark:hover:bg-red-500/10 text-zinc-500 hover:text-red-500 transition-colors">
+                                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-zinc-500 hover:text-red-500 transition-colors">
                                     <window.Icon name="x" size={20} className="pointer-events-none" />
                                 </button>
                             </div>
@@ -405,114 +462,194 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 </div>
 
                 {/* FLOW (Meddelandelista) */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar bg-transparent">
+                <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-transparent relative scroll-smooth">
                     {filter === 'image' ? (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 animate-in zoom-in duration-300">
-                            {messages.filter(m => m.type === 'image' || m.image).map(msg => (
-                                <div key={msg.id} className="relative group rounded-xl overflow-hidden border border-zinc-200 dark:border-white/10 aspect-square shadow-sm">
-                                    <img src={msg.fileUrl || msg.image} className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-500" alt="Gallery" onClick={(e) => handleOpenImage(e, msg)} />
-                                </div>
-                            ))}
+                        <div className="flex flex-col h-full animate-in zoom-in duration-300">
+                            {/* Flikar för Galleri */}
+                            <div className="flex gap-4 border-b border-zinc-200 dark:border-white/10 mb-4 pb-2 px-2">
+                                {['image', 'file', 'link'].map(tab => (
+                                    <button key={tab} onClick={() => setGalleryTab(tab)} className={`text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all ${galleryTab === tab ? 'border-orange-500 text-orange-500' : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
+                                        {tab === 'image' ? 'Bilder' : tab === 'file' ? 'Filer' : 'Länkar'}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                {messages.filter(m => {
+                                    if (galleryTab === 'image') return m.type === 'image' || m.image;
+                                    if (galleryTab === 'file') return m.type === 'file' || m.type === 'audio';
+                                    if (galleryTab === 'link') return m.text && m.text.includes('http');
+                                    return false;
+                                }).map(msg => (
+                                    <div key={msg.id} className="relative group rounded-xl overflow-hidden border border-zinc-200 dark:border-white/10 aspect-square shadow-sm bg-white dark:bg-[#1a2235] flex items-center justify-center">
+                                        {galleryTab === 'image' ? (
+                                            <img src={msg.fileUrl || msg.image} className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-500" alt="Gallery" onClick={(e) => handleOpenImage(e, msg)} />
+                                        ) : galleryTab === 'file' ? (
+                                            <div className="flex flex-col items-center p-2 text-center">
+                                                <window.Icon name={msg.type === 'audio' ? 'mic' : 'file-text'} size={24} className="text-orange-500 mb-2" />
+                                                <span className="text-[10px] font-bold text-zinc-600 truncate w-full">{msg.text || 'Ljudfil'}</span>
+                                            </div>
+                                        ) : (
+                                            (() => {
+                                                const linkMatch = msg.text.match(/(https?:\/\/[^\s]+)/);
+                                                if (!linkMatch) return null;
+                                                const linkUrl = linkMatch[0];
+                                                const domain = linkUrl.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+                                                return (
+                                                    <a href={linkUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-2 text-center hover:bg-zinc-50 dark:hover:bg-white/5 w-full h-full justify-center overflow-hidden">
+                                                        <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center mb-2 shrink-0">
+                                                            <window.Icon name="link" size={18} className="text-blue-500" />
+                                                        </div>
+                                                        <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200 truncate w-full px-1">
+                                                            {domain}
+                                                        </span>
+                                                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 truncate w-full mt-0.5 px-1">
+                                                            {linkUrl}
+                                                        </span>
+                                                    </a>
+                                                );
+                                            })()
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-1 pb-4">
+                        <div className="flex flex-col gap-1 pb-4 relative">
                             {messages.map((msg, index) => {
                                 const isMe = msg.sender === user.email;
                                 const isImage = msg.type === 'image' || msg.image;
+                                const isAudio = msg.type === 'audio';
+                                const isAi = msg.sender === 'AutoGrid_AI';
                                 
-                                const currentLabel = getDateLabel(msg.timestamp);
+                                let currentLabel = "";
+                                if (msg.timestamp) {
+                                    currentLabel = getDateLabel(msg.timestamp);
+                                }
                                 const showSeparator = currentLabel !== lastDateLabel;
                                 lastDateLabel = currentLabel;
 
-                                // Kolla om förra meddelandet var från samma person för att justera marginaler
                                 const isSameSenderAsPrev = index > 0 && messages[index - 1].sender === msg.sender && !showSeparator;
                                 const isSameSenderAsNext = index < messages.length - 1 && messages[index + 1].sender === msg.sender;
                                 
                                 return (
                                     <React.Fragment key={msg.id}>
-                                        {showSeparator && (
-                                            <div className="flex items-center justify-center mt-6 mb-4">
-                                                <span className="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest uppercase bg-zinc-200/50 dark:bg-white/5 text-zinc-500 border border-zinc-200/80 dark:border-white/5 shadow-sm">
-                                                    {currentLabel}
+                                        
+                                        {/* STICKY DATE HEADER */}
+                                        {/* MESSENGER STYLE TIMESTAMP */}
+                                        {!isSameSenderAsPrev && (
+                                            <div className="flex items-center justify-center mt-4 mb-2 z-10 pointer-events-none">
+                                                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                                                    {currentLabel} {getMessengerStyleTimestamp(msg.timestamp)}
                                                 </span>
                                             </div>
                                         )}
-                                        
-                                        <div className={`flex w-full animate-in slide-in-from-bottom-2 fade-in duration-300 ${isMe ? 'justify-end' : 'justify-start'} ${isSameSenderAsPrev ? 'mt-0.5' : 'mt-3'}`}>
-                                            
-                                            {/* Avatar för andra användare (Native iMessage-känsla) */}
-                                            {!isMe && (
-                                                <div className="w-7 h-7 shrink-0 mr-2 flex flex-col justify-end">
-                                                    {!isSameSenderAsNext && (
-                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm ${msg.sender === 'AutoGrid_AI' ? 'bg-zinc-900 dark:bg-white text-orange-500' : getSenderColor(msg.sender)}`}>
-                                                            {msg.sender === 'AutoGrid_AI' ? (
-                                                                <window.Icon name="cpu" size={14} className={msg.text.includes("Söker i") ? "animate-pulse" : ""} />
-                                                            ) : (
-                                                                getSenderName(msg).charAt(0)
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
 
-                                            <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] sm:max-w-[70%] group relative`}
-                                                 onMouseEnter={() => !isMobile && setActiveMenu(msg.id)}
-                                                 onMouseLeave={() => !isMobile && setActiveMenu(null)}
-                                                 onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
+                                        <div id={`msg-${msg.id}`} className={`flex w-full animate-in slide-in-from-bottom-2 fade-in duration-300 transition-colors ${activeMenu === msg.id ? 'relative z-50' : 'relative z-0'} flex-col ${isSameSenderAsPrev ? 'mt-[2px]' : 'mt-1'}`}>
+                                            
+                                            <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                 
-                                                {/* Namn överst (Bara om det är nytt meddelande från personen) */}
-                                                {!isMe && !isSameSenderAsPrev && (
-                                                    <span className="text-[10px] font-bold px-1 mb-1 uppercase tracking-widest text-zinc-500 dark:text-zinc-400 pl-2">
-                                                        {getSenderName(msg)}
-                                                    </span>
+                                                {/* Avatar */}
+                                                {!isMe && (
+                                                    <div className="w-8 h-8 shrink-0 mr-2 flex flex-col justify-end">
+                                                        {!isSameSenderAsNext && (
+                                                            isAi ? (
+                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-[#1a2235] border border-orange-500 shadow-sm relative overflow-hidden group-hover:shadow-md transition-all">
+                                                                    <div className="absolute inset-0 bg-orange-500/10"></div>
+                                                                    <window.Icon name="cpu" size={16} className="text-orange-500" />
+                                                                </div>
+                                                            ) : (
+                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold shadow-sm ${getSenderColor(msg.sender)}`}>
+                                                                    {getSenderName(msg).charAt(0)}
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 )}
 
-                                                <div className="relative max-w-max flex flex-col">
-                                                    {isImage ? (
-                                                        <img src={msg.fileUrl || msg.image} className={`max-w-[220px] sm:max-w-[300px] block shadow-sm cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
-                                                    ) : (
-                                                        <div className={`px-4 py-2.5 text-[14px] shadow-sm font-medium ${isMe ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white border border-orange-400/50 shadow-[0_4px_14px_rgba(249,115,22,0.2)]' : 'bg-white dark:bg-[#1a2235] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/5 shadow-sm'} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tr-[4px]') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-sm' : 'rounded-2xl rounded-tl-[4px]')}`}>
-                                                            <p className="leading-snug break-words whitespace-pre-wrap">{renderMessageText(msg.text)}</p>
-                                                        </div>
-                                                    )}
+                                                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] group relative`}
+                                                    onMouseEnter={() => !isMobile && setActiveMenu(msg.id)}
+                                                    onMouseLeave={() => !isMobile && setActiveMenu(null)}
+                                                    onClick={() => isMobile && setActiveMenu(activeMenu === msg.id ? null : msg.id)}>
                                                     
-                                                    {/* REAKTIONER/MENY */}
-                                                    {activeMenu === msg.id && (
-                                                        <div ref={menuRef} className={`absolute -top-12 ${isMe ? 'right-0' : 'left-0'} pb-2 z-[100] animate-in zoom-in-95 duration-150`}>
-                                                            <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl">
-                                                                {['👍', '🔥', '😂', '❓'].map(emoji => (
-                                                                    <button key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-lg hover:scale-110 transition-transform hover:bg-zinc-100 dark:hover:bg-white/5">{emoji}</button>
-                                                                ))}
-                                                                <div className="w-[1px] h-5 bg-zinc-200 dark:bg-white/10 mx-1"></div>
-                                                                {isMe && (
-                                                                    <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 transition-colors">
-                                                                        <window.Icon name="edit-2" size={14} />
-                                                                    </button>
-                                                                )}
-                                                                <button onClick={(e) => { e.stopPropagation(); window.db.collection("notes").doc(msg.id).delete(); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-colors">
-                                                                    <window.Icon name="trash-2" size={14} />
-                                                                </button>
+                                                    {!isMe && !isSameSenderAsPrev && (
+                                                        <span className="text-[11px] font-bold px-1 mb-1 tracking-wide text-zinc-500 dark:text-zinc-400 pl-2">
+                                                            {isAi ? "AutoGrid AI" : getSenderName(msg)}
+                                                        </span>
+                                                    )}
+
+                                                    {/* NYTT CITAT/REPLY OVANFÖR BUBBLAN (Messenger-stil) */}
+                                                    {msg.replyTo && (
+                                                        <div onClick={(e) => { e.stopPropagation(); scrollToMessage(msg.replyTo.id); }} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-1 cursor-pointer group/reply`}>
+                                                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1 px-1">
+                                                                <window.Icon name="reply" size={12} className="stroke-[2.5]" />
+                                                                {isMe ? (msg.replyTo.sender === user.email ? 'Du har svarat dig själv' : `Du svarade ${getSenderName(msg.replyTo)}`) : `${getSenderName(msg)} svarade`}
+                                                            </div>
+                                                            <div className={`px-4 py-2 text-[14px] rounded-2xl max-w-full shadow-sm transition-opacity group-hover/reply:opacity-100 ${isMe ? 'bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 opacity-80' : 'bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 opacity-80'}`}>
+                                                                <span className="line-clamp-2">{msg.replyTo.text || 'Ljud/Fil'}</span>
                                                             </div>
                                                         </div>
                                                     )}
-                                                </div>
 
-                                                {/* VISNING AV REAKTIONER & TID */}
-                                                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} mt-1`}>
-                                                    {(msg.reactions && Object.keys(msg.reactions).length > 0) && (
-                                                        <div className={`flex gap-1 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                            {Object.entries(msg.reactions).map(([emoji, count]) => (
-                                                                <div key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="px-1.5 py-0.5 rounded-full text-[11px] flex items-center gap-1 border border-zinc-200 dark:border-white/5 bg-white/50 dark:bg-[#1a2235]/50 backdrop-blur-md text-zinc-700 dark:text-zinc-300 shadow-sm cursor-pointer active:scale-95 transition-transform">
-                                                                    <span>{emoji}</span><span className="font-bold">{count}</span>
+                                                    <div className="relative w-full flex flex-col">
+                                                        {isImage ? (
+                                                            <img src={msg.fileUrl || msg.image} className={`max-w-[240px] sm:max-w-[350px] block shadow-sm cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
+                                                        ) : isAudio ? (
+                                                            <div className={`px-2 py-2 shadow-sm flex flex-col ${isMe ? 'bg-orange-500 text-white' : 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5'} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-[4px]' : 'rounded-2xl rounded-tr-[4px]') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-[4px]' : 'rounded-2xl rounded-tl-[4px]')}`}>
+                                                                <audio controls src={msg.fileUrl} className="h-10 w-[200px] sm:w-[250px] rounded-lg" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className={`px-4 py-2 text-[15px] shadow-sm flex flex-col ${isMe ? 'bg-orange-500 text-white' : (isAi ? 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5' : 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5')} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-[4px]' : 'rounded-2xl rounded-tr-xl') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-[4px]' : 'rounded-2xl rounded-tl-xl')}`}>
+
+                                                                <span className="leading-relaxed break-words whitespace-pre-wrap">{renderMessageText(msg.text)}</span>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* PILL-SHAPED MENY */}
+                                                        {activeMenu === msg.id && (
+                                                            <div ref={menuRef} className={`absolute -top-12 ${isMe ? 'right-0' : 'left-0'} pb-2 z-[100] animate-in zoom-in-95 duration-200`}>
+                                                                <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 p-1.5 rounded-full flex items-center shadow-xl">
+                                                                    {['👍', '🔥', '😂', '❓'].map(emoji => (
+                                                                        <button key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="w-8 h-8 flex items-center justify-center rounded-full text-lg hover:scale-110 transition-transform hover:bg-zinc-100 dark:hover:bg-white/5">{emoji}</button>
+                                                                    ))}
+                                                                    
+                                                                    <div className="w-[1px] h-5 bg-zinc-200 dark:bg-white/10 mx-1"></div>
+                                                                    <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); setActiveMenu(null); inputRef.current?.focus(); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-blue-500 transition-colors" title="Svara">
+                                                                        <window.Icon name="corner-up-left" size={14} />
+                                                                    </button>
+
+                                                                    {!isImage && !isAudio && (
+                                                                        <button onClick={(e) => { e.stopPropagation(); handleCopy(msg.text); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-800 dark:hover:text-white transition-colors" title="Kopiera text">
+                                                                            <window.Icon name="copy" size={14} />
+                                                                        </button>
+                                                                    )}
+
+                                                                    {isMe && !isAudio && (
+                                                                        <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 transition-colors" title="Redigera">
+                                                                            <window.Icon name="edit-2" size={14} />
+                                                                        </button>
+                                                                    )}
+                                                                    
+                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("notes").doc(msg.id).delete(); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-50 transition-colors" title="Ta bort">
+                                                                        <window.Icon name="trash-2" size={14} />
+                                                                    </button>
                                                                 </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {/* Visa tiden diskret om det är sista meddelandet i en klunga, eller om man hovrar */}
-                                                    <span className={`text-[9px] font-bold px-1 uppercase tracking-widest text-zinc-400 dark:text-zinc-600 transition-opacity duration-300 ${!isSameSenderAsNext || activeMenu === msg.id ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
-                                                        {formatTime(msg.timestamp)}
-                                                    </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Reaktioner */}
+                                                    <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} mt-1`}>
+                                                        {(msg.reactions && Object.keys(msg.reactions).length > 0) && (
+                                                            <div className={`flex gap-1 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                                {Object.entries(msg.reactions).map(([emoji, count]) => (
+                                                                    <div key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="px-1.5 py-0.5 rounded-full text-[12px] flex items-center gap-1 border border-zinc-200 dark:border-white/5 bg-white/80 dark:bg-[#1a2235]/80 backdrop-blur-md text-zinc-700 dark:text-zinc-300 shadow-sm cursor-pointer active:scale-95 transition-transform">
+                                                                        <span>{emoji}</span><span className="font-bold">{count}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -520,12 +657,21 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                 );
                             })}
                             
-                            {/* Loader när bild laddas upp */}
-                            {isUploading && (
-                                <div className="flex justify-end w-full mt-2 animate-in slide-in-from-bottom-2 fade-in">
-                                    <div className="bg-zinc-100 dark:bg-[#1a2235] px-4 py-3 rounded-2xl rounded-tr-sm flex items-center gap-2">
-                                        <window.Icon name="loader-2" size={16} className="animate-spin text-orange-500" />
-                                        <span className="text-xs font-bold text-zinc-500">Laddar upp...</span>
+                            {/* GEMINI LOADING SKELETON */}
+                            {isAiLoading && (
+                                <div className="flex w-full animate-in slide-in-from-bottom-2 fade-in duration-300 justify-start mt-4">
+                                    <div className="w-8 h-8 shrink-0 mr-2 flex flex-col justify-end">
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-[#1a2235] border border-orange-500 shadow-sm relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-orange-500/10"></div>
+                                            <window.Icon name="cpu" size={16} className="text-orange-500" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-start max-w-[85%]">
+                                        <div className="px-4 py-3 bg-white dark:bg-[#1a2235] rounded-2xl rounded-tl-[4px] border border-zinc-200/50 dark:border-white/5 shadow-sm flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -533,64 +679,112 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     )}
                 </div>
 
-                {/* FOOTER / INPUT (Native iMessage Style) */}
-                <div className="p-3 sm:p-4 bg-white/90 dark:bg-[#182032]/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-white/5 shrink-0 z-20 pb-safe">
-                    {editingId && (
-                        <div className="flex items-center justify-between mb-2 px-2 animate-in slide-in-from-bottom-2">
-                            <span className="text-[10px] font-black text-orange-500 tracking-widest uppercase flex items-center gap-2">
-                                <window.Icon name="edit-2" size={12} /> Redigerar meddelande
+                {/* SCROLL TO BOTTOM BUTTON */}
+                {showScrollBottom && (
+                    <button onClick={() => scrollToBottom(true)} className="absolute bottom-24 right-6 w-10 h-10 bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 rounded-full shadow-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-orange-500 hover:scale-105 transition-all z-40 animate-in fade-in slide-in-from-bottom-5">
+                        <window.Icon name="chevron-down" size={24} />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-orange-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold shadow-sm animate-in zoom-in">
+                                {unreadCount}
                             </span>
-                            <button onClick={() => { setEditingId(null); setInputText(""); }} className="text-zinc-400 hover:text-red-500 transition-colors bg-zinc-100 dark:bg-white/5 rounded-full p-1">
-                                <window.Icon name="x" size={12} />
-                            </button>
+                        )}
+                    </button>
+                )}
+
+                {/* FOOTER / INPUT */}
+                <div className="p-2 sm:p-3 bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border-t border-zinc-200 dark:border-white/5 shrink-0 z-50 pb-safe relative">
+                    
+                    {/* TYPING INDICATOR (SVÄVAR ÖVER INPUT) */}
+                    {isAiLoading && (
+                        <div className="absolute -top-7 left-4 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium animate-pulse flex items-center gap-1.5">
+                            <window.Icon name="cpu" size={12} className="text-orange-500" /> AutoGrid AI skriver...
                         </div>
                     )}
-                    <form onSubmit={handleAction} className="flex items-end gap-2 w-full max-w-4xl mx-auto relative">
-                        <div className="flex items-center shrink-0 mb-1">
-                            {!editingId && (
-                                <>
-                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
-                                        <window.Icon name="plus" size={24} />
-                                        <input type="file" className="hidden" onChange={handleFile} />
+
+                    {/* REDIGERINGS/SVAR-BAR */}
+                    {(editingId || replyTo) && (
+                        <div className="flex flex-col animate-in slide-in-from-bottom-2 px-1 mb-2 w-full">
+                            <div className="flex items-center justify-between mb-1.5 px-3">
+                                <span className="text-[13px] font-medium text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                                    {editingId ? 'Redigera meddelande' : `Svarar ${getSenderName(replyTo)}`}
+                                </span>
+                                <button type="button" onClick={() => { setEditingId(null); setReplyTo(null); setInputText(""); }} className="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-200/50 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:opacity-80 transition-all">
+                                    <window.Icon name="x" size={14} className="stroke-[3]" />
+                                </button>
+                            </div>
+                            {/* Visar endast orginalmeddelandet i en egen bubbla när man svarar */}
+                            {replyTo && (
+                                <div className="bg-zinc-100 dark:bg-[#1a2235]/80 rounded-2xl px-4 py-2 mx-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate border border-zinc-200/50 dark:border-white/5">
+                                    {replyTo.text || 'Ljud/Fil'}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleAction} className="flex items-end gap-2 w-full mx-auto relative">
+                        
+                        {/* SMARTA UPPLADDNINGSKNAPPAR */}
+                        {(!isFocused && inputText.length === 0 && !editingId && !replyTo) && (
+                            <div className="flex items-center shrink-0 mb-0.5 animate-in slide-in-from-left-4 fade-in duration-200">
+                                <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
+                                    <window.Icon name="plus" size={22} />
+                                    <input type="file" className="hidden" onChange={handleFile} />
+                                </label>
+                                {isMobile && (
+                                    <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
+                                        <window.Icon name="camera" size={20} />
+                                        <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
                                     </label>
-                                    {isMobile && (
-                                        <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
-                                            <window.Icon name="camera" size={20} />
-                                            <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
-                                        </label>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                        
-                        <div className="flex-1 min-h-[44px] bg-zinc-100 dark:bg-black/50 border border-zinc-200 dark:border-white/10 rounded-2xl flex items-center transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/10 shadow-inner overflow-hidden">
-                            <input
-                                ref={inputRef}
-                                autoFocus={!!editingId}
-                                value={inputText}
-                                onChange={(e) => setInputText(e.target.value)}
-                                placeholder={editingId ? "Redigera..." : "iMessage"}
-                                className="w-full bg-transparent border-none outline-none px-4 py-3 text-[15px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                                autoComplete="off"
-                            />
-                        </div>
-                        
-                        <button type="submit" disabled={!inputText.trim() && !isUploading} className="flex items-center justify-center w-11 h-11 mb-0.5 shrink-0 rounded-full bg-orange-500 hover:bg-orange-400 disabled:bg-zinc-200 disabled:dark:bg-white/5 disabled:text-zinc-400 dark:disabled:text-zinc-600 text-white shadow-sm transition-all active:scale-90 disabled:active:scale-100">
-                            {editingId ? (
-                                <window.Icon name="check" size={20} />
+                                )}
+                            </div>
+                        )}
+
+                        <div className={`flex-1 bg-zinc-100 dark:bg-black/30 border ${isRecording ? 'border-red-500 ring-2 ring-red-500/20' : 'border-zinc-200 dark:border-white/10'} rounded-2xl flex items-center transition-all focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 shadow-inner min-h-[40px]`}>
+                            {isRecording ? (
+                                <div className="w-full flex items-center px-4 animate-pulse text-red-500 text-[14px] font-bold">
+                                    <window.Icon name="mic" size={16} className="mr-2" /> Spelar in ljud...
+                                </div>
                             ) : (
-                                <window.Icon name="arrow-up" size={20} />
+                                <textarea
+                                    ref={inputRef}
+                                    value={inputText}
+                                    onChange={(e) => setInputText(e.target.value)}
+                                    onInput={handleInputResize}
+                                    onKeyDown={handleKeyDown}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+                                    placeholder="Skriv ett meddelande..."
+                                    rows={1}
+                                    style={{ minHeight: '40px', paddingTop: '9px', paddingBottom: '9px' }}
+                                    className="w-full bg-transparent border-none outline-none px-4 text-[15px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-600 resize-none custom-scrollbar leading-snug"
+                                />
                             )}
-                        </button>
+                        </div>
+                        
+                        {/* SKICKA ELLER MIKROFON */}
+                        {(inputText.trim() || isUploading || editingId || isRecording) ? (
+                            <button key="btn-send" type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`flex items-center justify-center w-10 h-10 mb-0.5 shrink-0 rounded-full text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-orange-500 hover:bg-orange-400 disabled:bg-zinc-200 disabled:dark:bg-white/5'}`}>
+                                {isRecording ? (
+                                    <span key="icon-stop" className="w-3 h-3 rounded-sm bg-white" onClick={toggleRecording}></span>
+                                ) : editingId ? (
+                                    <window.Icon key="icon-check" name="check" size={18} className="stroke-[2.5]" />
+                                ) : (
+                                    <window.Icon key="icon-send" name="send-horizontal" size={18} className="stroke-[2.5]" />
+                                )}
+                            </button>
+                        ) : (
+                            <button key="btn-mic" type="button" onClick={toggleRecording} className="flex items-center justify-center w-10 h-10 mb-0.5 shrink-0 rounded-full bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-400 hover:text-orange-500 transition-all active:scale-90">
+                                <window.Icon key="icon-mic" name="mic" size={20} className="stroke-[2]" />
+                            </button>
+                        )}
                     </form>
                 </div>
             </div>
-
-            {/* LIGHTBOX / BILDMODAL */}
+            
+            {/* LIGHTBOX */}
             {activeImage && activeImage.fileUrl && (
                 <div className="fixed inset-0 z-[1100] bg-black/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 font-sans" onClick={closeImageViewer}>
                     
-                    {/* KNAPPPLATTA */}
                     <div className={`absolute top-0 right-0 left-0 h-safe-top min-h-[80px] bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 z-50 lg:bg-transparent lg:top-4 lg:right-4 lg:left-auto lg:min-h-0 lg:p-2 lg:bg-black/60 lg:backdrop-blur-md lg:rounded-2xl lg:border lg:border-white/10`} onClick={e => e.stopPropagation()}>
                         
                         <button onClick={closeImageViewer} className="w-12 h-12 lg:hidden flex items-center justify-center rounded-xl active:scale-95 transition-transform text-white">
@@ -601,12 +795,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             <button onClick={(e) => {
                                 e.stopPropagation();
                                 if (activeImage.fileUrl.startsWith('data:')) {
-                                    fetch(activeImage.fileUrl)
-                                        .then(res => res.blob())
-                                        .then(blob => {
-                                            const url = URL.createObjectURL(blob);
-                                            window.open(url, '_blank');
-                                        }).catch(err => console.error("Kunde inte öppna bild", err));
+                                    fetch(activeImage.fileUrl).then(res => res.blob()).then(blob => window.open(URL.createObjectURL(blob), '_blank'));
                                 } else {
                                     window.open(activeImage.fileUrl, '_blank');
                                 }
@@ -615,7 +804,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             </button>
 
                             {activeImage.fileUrl.startsWith('data:') ? (
-                                 <a href={activeImage.fileUrl} download={activeImage.text || 'bifogad_fil'} title="Ladda ner fil" className="flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                                 <a href={activeImage.fileUrl} download={activeImage.text || 'bifogad_fil'} className="flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
                                     <window.Icon name="download" size={20} />
                                 </a>
                             ) : (
@@ -625,13 +814,11 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                         const blob = await response.blob();
                                         const url = window.URL.createObjectURL(blob);
                                         const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = activeImage.text || 'bifogad_fil';
-                                        document.body.appendChild(a);
-                                        a.click();
+                                        a.href = url; a.download = activeImage.text || 'bifogad_fil';
+                                        document.body.appendChild(a); a.click();
                                         window.URL.revokeObjectURL(url);
                                     } catch (e) { alert("Kunde inte ladda ner fil."); }
-                                }} title="Ladda ner fil" className="flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                                }} className="flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
                                     <window.Icon name="download" size={20} />
                                 </button>
                             )}
@@ -639,22 +826,18 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             {activeImage.sender === user.email && (
                                 <button onClick={(e) => { 
                                     e.stopPropagation(); 
-                                    if(confirm("Ta bort filen?")) { 
-                                        window.db.collection("notes").doc(activeImage.id).delete(); 
-                                        closeImageViewer(); 
-                                    } 
-                                }} title="Ta bort fil" className="flex w-10 h-10 items-center justify-center rounded-xl text-red-400 hover:text-red-300 hover:bg-white/10 active:scale-95 transition-all">
+                                    if(confirm("Ta bort filen?")) { window.db.collection("notes").doc(activeImage.id).delete(); closeImageViewer(); } 
+                                }} className="flex w-10 h-10 items-center justify-center rounded-xl text-red-400 hover:text-red-300 hover:bg-white/10 active:scale-95 transition-all">
                                     <window.Icon name="trash-2" size={20} />
                                 </button>
                             )}
 
-                            <button onClick={closeImageViewer} title="Stäng bild" className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
+                            <button onClick={closeImageViewer} className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all">
                                 <window.Icon name="x" size={24} />
                             </button>
                         </div>
                     </div>
 
-                    {/* BILDINNEHÅLL */}
                     <div className="w-full h-full flex flex-col items-center justify-center p-4 lg:p-12 z-10" onClick={closeImageViewer}>
                         {activeImage.type !== 'file' ? (
                             <img src={activeImage.fileUrl} alt={activeImage.text} className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg" onClick={e => e.stopPropagation()}/>
