@@ -445,56 +445,55 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 {/* GEMINI-STYLE HEADER (Med mjuk ut-toning / Frosted Glass) */}
                 <div className="sticky top-0 z-20 w-full pointer-events-none">
 
-                    {/* DEN MAGISKA BLUR-BAKGRUNDEN */}
-                    {/* h-[140px] gör att suddigheten dras ner hela 76px under själva headern */}
-                    <div 
-                        className="absolute top-0 left-0 right-0 h-[140px] bg-[#f0f2f5]/80 dark:bg-[#0f1522]/80 backdrop-blur-xl -z-10"
-                        style={{ 
-                            WebkitMaskImage: 'linear-gradient(to bottom, black 64px, transparent 100%)', 
-                            maskImage: 'linear-gradient(to bottom, black 64px, transparent 100%)' 
-                        }}
-                    ></div>
+                {/* DEN MAGISKA BLUR-BAKGRUNDEN - Nu dynamisk beroende på vy! */}
+                <div 
+                    className={`absolute top-0 left-0 right-0 ${filter === 'all' ? 'h-[140px]' : 'h-[64px] border-b border-zinc-200/50 dark:border-white/5'} bg-[#f0f2f5]/80 dark:bg-[#0f1522]/80 backdrop-blur-xl -z-10 transition-all duration-300`}
+                    style={filter === 'all' ? { 
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 64px, transparent 100%)', 
+                        maskImage: 'linear-gradient(to bottom, black 64px, transparent 100%)' 
+                    } : {}}
+                ></div>
+                
+                {/* Huvudinnehållet i Headern */}
+                <div className="h-[64px] flex items-center justify-between px-2 sm:px-4 pointer-events-auto relative">
                     
-                    {/* Huvudinnehållet i Headern (höjden är 64px) */}
-                    <div className="h-[64px] flex items-center justify-between px-2 sm:px-4 pointer-events-auto relative">
-                        
-                        {/* VÄNSTER: Tillbaka-knapp */}
-                        <div className="flex items-center justify-start w-1/4">
-                            {!isPopup && (
-                                <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95">
-                                    <window.Icon name="arrow-left" size={20} />
-                                </button>
-                            )}
-                        </div>
-                        
-                        {/* MITTEN: Centrerad Titel */}
-                        <div className="flex-1 flex justify-center mt-1">
-                            <div className="flex items-center gap-1.5 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 px-4 py-1.5 rounded-full transition-all active:scale-95">
-                                <h2 className="text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                    AutoGrid <span className="text-orange-500 font-medium">AI</span>
-                                    <window.Icon name="chevron-down" size={16} className="text-zinc-400" />
-                                </h2>
-                            </div>
-                        </div>
-
-                        {/* HÖGER: Galleri-piller & Stäng-knapp */}
-                        <div className="flex items-center justify-end gap-2 w-1/4">
-                            <div className="flex bg-white/50 dark:bg-white/5 p-1.5 rounded-full border border-zinc-300/30 dark:border-white/5 shadow-sm">
-                                {['all', 'image'].map(f => (
-                                    <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
-                                        <window.Icon name={f === 'all' ? 'list' : 'image'} size={18} className="pointer-events-none" />
-                                    </button>
-                                ))}
-                            </div>
-
-                            {isPopup && (
-                                <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
-                                    <window.Icon name="x" size={24} />
-                                </button>
-                            )}
+                    {/* VÄNSTER: Tillbaka-knapp */}
+                    <div className="flex items-center justify-start w-1/4">
+                        {!isPopup && (
+                            <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95">
+                                <window.Icon name="arrow-left" size={20} />
+                            </button>
+                        )}
+                    </div>
+                    
+                    {/* MITTEN: Centrerad Titel */}
+                    <div className="flex-1 flex justify-center mt-1">
+                        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 px-4 py-1.5 rounded-full transition-all active:scale-95">
+                            <h2 className="text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                AutoGrid <span className="text-orange-500 font-medium">AI</span>
+                                <window.Icon name="chevron-down" size={16} className="text-zinc-400" />
+                            </h2>
                         </div>
                     </div>
+
+                    {/* HÖGER: Galleri-piller & Stäng-knapp */}
+                    <div className="flex items-center justify-end gap-2 w-1/4">
+                        <div className="flex bg-white/50 dark:bg-white/5 p-1.5 rounded-full border border-zinc-300/30 dark:border-white/5 shadow-sm">
+                            {['all', 'image'].map(f => (
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
+                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={18} className="pointer-events-none" />
+                                </button>
+                            ))}
+                        </div>
+
+                        {isPopup && (
+                            <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
+                                <window.Icon name="x" size={24} />
+                            </button>
+                        )}
+                    </div>
                 </div>
+            </div>
 
                 {/* FLOW (Meddelandelista) */}
                 <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-4 pb-6 sm:pb-8 custom-scrollbar bg-transparent relative scroll-smooth">
