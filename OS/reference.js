@@ -73,17 +73,30 @@ window.ReferenceView = () => {
 
     const [viewMode, setViewMode] = useState('grid'); // 'grid' eller 'list'
 
-    // Hjälpfunktion för att kolla om en fil är PDF
-    const isPdf = (base64String) => {
-        return base64String && base64String.startsWith('data:application/pdf');
+    // Hjälpfunktioner för att identifiera filtyper (Både moln-länkar och gamla Base64)
+    const isPdf = (doc) => {
+        if (!doc) return false;
+        if (doc.fileType === 'application/pdf') return true;
+        if (doc.title && doc.title.toLowerCase().endsWith('.pdf')) return true;
+        return typeof doc.image === 'string' && doc.image.startsWith('data:application/pdf');
+    };
+
+    const isImg = (doc) => {
+        if (!doc) return false;
+        if (doc.fileType && doc.fileType.startsWith('image/')) return true;
+        return typeof doc.image === 'string' && doc.image.startsWith('data:image/');
     };
 
     // Räknar ut storlek på Base64-strängar
+    // Blixtsnabb kalkylator som använder Firebase Storage-data
     const storageStats = useMemo(() => {
         let totalBytes = 0;
         docs.forEach(doc => {
-            if (doc.image) {
-                // Base64 tar ca 3/4 av stränglängden i bytes. Ta bort 'data:image/...;base64,' i beräkningen.
+            if (doc.fileSize) {
+                // NYTT: Blixtsnabb avläsning av filstorleken vi nu sparar
+                totalBytes += doc.fileSize;
+            } else if (doc.image && doc.image.startsWith('data:')) {
+                // Bakåtkompatibilitet för dina gamla Base64-filer
                 const base64Data = doc.image.split(',')[1] || doc.image;
                 totalBytes += (base64Data.length * 3) / 4;
             }
@@ -91,7 +104,7 @@ window.ReferenceView = () => {
         });
 
         const mbUsed = (totalBytes / (1024 * 1024)).toFixed(1);
-        const maxMb = 50; // Visuell maxgräns (justera vid behov)
+        const maxMb = 5000; // Uppdaterad till 5GB (Gratiskvoten i Firebase Storage)
         const percentage = Math.min(100, Math.round((mbUsed / maxMb) * 100));
 
         return { mbUsed, percentage, maxMb };
@@ -110,10 +123,14 @@ window.ReferenceView = () => {
 
     useEffect(() => {
         if (!window.db) return;
-        const unsubscribe = window.db.collection("reference_docs").orderBy("timestamp", "desc").onSnapshot(snap => {
-            setDocs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setLoading(false);
-        });
+        // LIMIT 40 räddar din databaskvot och appens internminne!
+        const unsubscribe = window.db.collection("reference_docs")
+            .orderBy("timestamp", "desc")
+            .limit(40) 
+            .onSnapshot(snap => {
+                setDocs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                setLoading(false);
+            });
         return () => unsubscribe();
     }, []);
 
@@ -169,20 +186,30 @@ window.ReferenceView = () => {
         if (!formData.title) return;
         setUploading(true);
         try {
-            let fileBase64 = formData.image;
+            let fileUrl = formData.image; // Används om vi redigerar en befintlig fil
+            let fileType = formData.fileType || 'document';
+            let fileSize = formData.fileSize || 0;
 
+            // Om användaren har laddat upp en NY fil
             if (formData.file) {
-                // Om det är en bild, komprimera den
-                if (formData.file.type.startsWith('image/')) {
-                    fileBase64 = await compressReferenceImage(formData.file);
+                fileType = formData.file.type;
+                fileSize = formData.file.size; // Vi sparar storleken blixtsnabbt direkt från filen!
+
+                // Skapa en referens i Firebase Storage (Lägger dem i en mapp som heter "reference_docs")
+                const storageRef = window.firebase.storage().ref(`reference_docs/${Date.now()}_${formData.file.name}`);
+
+                if (fileType.startsWith('image/')) {
+                    // 1. Komprimera bilden som vanligt
+                    const base64Data = await compressReferenceImage(formData.file);
+                    fileSize = Math.round((base64Data.length * 3) / 4); // Uppdatera med komprimerad storlek
+                    
+                    // 2. Ladda upp till Firebase Storage istället för Firestore
+                    const snapshot = await storageRef.putString(base64Data, 'data_url');
+                    fileUrl = await snapshot.ref.getDownloadURL();
                 } else {
-                    // Om det är PDF eller annat dokument, läs in som ren Base64
-                    fileBase64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(formData.file);
-                        reader.onload = (event) => resolve(event.target.result);
-                        reader.onerror = reject;
-                    });
+                    // Om det är en PDF (Ingen Base64-konvertering krävs, direkt uppladdning!)
+                    const snapshot = await storageRef.put(formData.file, { contentType: fileType });
+                    fileUrl = await snapshot.ref.getDownloadURL();
                 }
             }
 
@@ -191,8 +218,9 @@ window.ReferenceView = () => {
                 category: formData.category, 
                 text: formData.text, 
                 link: formData.link,
-                image: fileBase64, // Lagrar filens data (eller bild)
-                fileType: formData.file ? formData.file.type : (formData.image ? 'image' : 'document'),
+                image: fileUrl, // NYTT: Nu sparar vi bara en kort, lätt nedladdningslänk!
+                fileType: fileType,
+                fileSize: fileSize, // NYTT: Vi sparar storleken så mätaren slipper räkna
                 timestamp: formData.id ? formData.timestamp : new Date().toISOString()
             };
 
@@ -484,15 +512,16 @@ window.ReferenceView = () => {
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 pb-2 shrink-0">
                                         {displayedFiles.map(doc => {
                                             const formattedDate = doc.timestamp ? new Date(doc.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-                                            const pdfFile = isPdf(doc.image);
-                                            const isHtmlFile = doc.title.toLowerCase().endsWith('.html') || (doc.image && doc.image.includes('text/html'));
+                                            const pdfFile = isPdf(doc);
+                                            const imgFile = isImg(doc);
+                                            const isHtmlFile = doc.title.toLowerCase().endsWith('.html') || (typeof doc.image === 'string' && doc.image.includes('text/html'));
                                             const isSelected = selectedFiles.includes(doc.id);
-                                            
+
                                             let topIcon = "file-text", topIconColor = "text-blue-500";
                                             if (pdfFile) { topIcon = "file-text"; topIconColor = "text-red-500"; }
                                             else if (isHtmlFile) { topIcon = "code"; topIconColor = "text-orange-500"; }
+                                            else if (imgFile) { topIcon = "image"; topIconColor = "text-emerald-500"; }
                                             else if (doc.link) { topIcon = "link"; topIconColor = "text-sky-500"; }
-                                            else if (doc.image && doc.image.startsWith('data:image/')) { topIcon = "image"; topIconColor = "text-emerald-500"; }
                                             else if (doc.text) { topIcon = "align-left"; topIconColor = "text-amber-500"; }
 
                                             return (
@@ -523,7 +552,7 @@ window.ReferenceView = () => {
                                                     </div>
 
                                                     <div className={`h-28 sm:h-36 md:h-40 w-full relative overflow-hidden flex items-center justify-center p-2 md:p-3 border-b ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-900/50' : 'bg-[#f0f4f9] dark:bg-[#0a0d14]/60 border-zinc-100 dark:border-white/5'}`}>
-                                                        {doc.image && doc.image.startsWith('data:image/') ? (
+                                                        {imgFile ? (
                                                             <img src={doc.image} className="w-full h-full object-cover rounded-md shadow-sm group-hover:scale-105 transition-transform duration-300" loading="lazy" alt={doc.title} />
                                                         ) : isHtmlFile ? (
                                                             <div className="w-full h-full relative pointer-events-none overflow-hidden rounded-md bg-white border border-zinc-200 shadow-sm">
@@ -580,7 +609,7 @@ window.ReferenceView = () => {
                                                     >
                                                         <div className="col-span-7 sm:col-span-6 flex items-center gap-2.5 md:gap-3 min-w-0 pr-2 sm:pr-4">
                                                             <div className={`w-8 h-8 md:w-9 md:h-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105 overflow-hidden`}>
-                                                                {doc.image && doc.image.startsWith('data:image/') ? <img src={doc.image} className="w-full h-full object-cover" alt="" /> : <window.Icon name={iconName} size={16} />}
+                                                                {imgFile ? <img src={doc.image} className="w-full h-full object-cover" alt="" /> : <window.Icon name={iconName} size={16} />}
                                                             </div>
                                                             <div className="flex flex-col min-w-0">
                                                                 <span className={`text-[12px] md:text-[13px] font-medium truncate transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-400' : 'text-zinc-900 dark:text-white group-hover:text-blue-500'}`}>{doc.title}</span>
@@ -673,13 +702,13 @@ window.ReferenceView = () => {
                             )}
 
                             <div className="w-full h-full max-w-6xl flex items-center justify-center">
-                                {isPdf(selectedDoc.image) || selectedDoc.title.toLowerCase().endsWith('.html') || (selectedDoc.image && selectedDoc.image.includes('text/html')) ? (
+                                {isPdf(selectedDoc) || selectedDoc.title.toLowerCase().endsWith('.html') || (typeof selectedDoc.image === 'string' && selectedDoc.image.includes('text/html')) ? (
                                     <iframe 
                                         src={selectedDoc.image} 
                                         className="w-full h-full bg-white rounded-lg shadow-2xl" 
                                         title={selectedDoc.title}
                                     />
-                                ) : selectedDoc.image ? (
+                                ) : isImg(selectedDoc) ? (
                                     <img
                                         src={selectedDoc.image}
                                         className="w-auto h-auto max-w-full max-h-full object-contain rounded-lg shadow-2xl drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300"
