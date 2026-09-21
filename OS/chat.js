@@ -720,7 +720,7 @@ Använd EXAKT denna Markdown-mall för dina svar:
                                                         {/* ÄNDRAD TILL w-fit */}
                                                         <div className="relative w-fit max-w-full flex flex-col">
                                                         {isImage ? (
-                                                            <img src={msg.fileUrl || msg.image} className={`max-w-[240px] sm:max-w-[350px] block shadow-sm cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
+                                                            <img src={msg.fileUrl || msg.image} className={`max-w-[240px] sm:max-w-[350px] max-h-[300px] object-cover block shadow-sm cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
                                                         ) : isAudio ? (
                                                             <div className={`px-2 py-2 shadow-sm flex flex-col ${isMe ? 'bg-orange-500 text-white' : 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5'} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-[4px]' : 'rounded-2xl rounded-tr-[4px]') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-[4px]' : 'rounded-2xl rounded-tl-[4px]')}`}>
                                                                 <audio controls src={msg.fileUrl} className="h-10 w-[200px] sm:w-[250px] rounded-lg" />
