@@ -771,14 +771,14 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
                     {/* SJÄLVA INMATNINGS-PILLRET */}
                     <form onSubmit={handleAction} className="pointer-events-auto flex items-center w-full max-w-4xl mx-auto relative shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-[32px] bg-white dark:bg-[#1e2330] border border-zinc-200/80 dark:border-white/5">
-                        
+    
                         <div className={`flex-1 flex items-end transition-all min-h-[56px] overflow-hidden px-1 py-1 ${isRecording ? 'ring-2 ring-red-500/50 rounded-[32px]' : ''}`}>
                             
                             {/* VÄNSTER: Plus-ikon */}
                             {!isRecording && (
                                 <div className="flex items-center shrink-0 h-[48px] px-1 animate-in fade-in zoom-in duration-200">
-                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 active:scale-95">
-                                        <window.Icon name="plus" size={24} />
+                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-700 dark:text-zinc-300 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 active:scale-95">
+                                        <window.Icon name="plus" size={24} className="stroke-[1.5]" />
                                         <input type="file" className="hidden" onChange={handleFile} />
                                     </label>
                                 </div>
@@ -806,11 +806,10 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                     placeholder="Fråga AutoGrid AI..."
                                     rows={1}
                                     style={{ minHeight: '24px' }}
-                                    className="flex-1 bg-transparent border-none outline-none text-[16px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 resize-none custom-scrollbar py-3.5 px-2 self-center leading-snug"
+                                    className="flex-1 bg-transparent border-none outline-none text-[16px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-400 resize-none custom-scrollbar py-3.5 px-2 self-center leading-snug"
                                 />
                             )}
                             
-                            {/* HÖGER: Mikrofon, Kamera eller Skicka */}
                             {/* HÖGER: Mikrofon, Kamera eller Skicka */}
                             <div className="flex items-center shrink-0 h-[48px] px-1 gap-0.5">
                                 {(inputText.trim() || isUploading || editingId || isRecording) ? (
@@ -820,20 +819,19 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                         ) : editingId ? (
                                             <window.Icon key="chk" name="check" size={20} className="stroke-[2.5]" />
                                         ) : (
-                                            /* RAK PIL ÅT HÖGER (Med 'key' för att tvinga React att rita om SVG:n) */
                                             <window.Icon key="arr" name="arrow-right" size={20} className="stroke-[2.5]" />
                                         )}
                                     </button>
                                 ) : (
                                     <>
                                         {isMobile && (
-                                            <label key="cam-btn" className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
-                                                <window.Icon name="camera" size={20} />
+                                            <label key="cam-btn" className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
+                                                <window.Icon name="camera" size={20} className="stroke-[1.5]" />
                                                 <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
                                             </label>
                                         )}
-                                        <button key="mic-btn" type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all active:scale-95">
-                                            <window.Icon key="mic" name="mic" size={20} />
+                                        <button key="mic-btn" type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all active:scale-95">
+                                            <window.Icon key="mic" name="mic" size={20} className="stroke-[1.5]" />
                                         </button>
                                     </>
                                 )}
