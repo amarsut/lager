@@ -446,15 +446,17 @@ Använd EXAKT denna Markdown-mall för dina svar:
                         console.error("AI Error:", aiError);
                         setIsAiLoading(false);
                         
-                        // Grundläggande felsvar som fångar Googles tekniska meddelande
-                        let uiErrorMessage = `**❌ AI-Anslutningsfel**\nNågot gick snett i kommunikationen med Google.\n\n*Teknisk orsak:*\n${aiError.message}`;
+                        let uiErrorMessage = `**Systemmeddelande: Anslutningsfel**\nEtt tekniskt fel uppstod: ${aiError.message}`;
+                        const errText = aiError.message.toLowerCase();
                         
-                        // Snygg svensk översättning för vanliga kvot- och stress-fel
-                        if (aiError.message.toLowerCase().includes("quota exceeded") || aiError.message.includes("429")) {
-                            uiErrorMessage = `**⏳ Vänta lite!**\nDu ställer frågor lite för snabbt. Gratiskvoten hos Google tillåter max 20 frågor per minut.\n\nVänta cirka en minut och skicka frågan igen.`;
+                        if (errText.includes("quota") || errText.includes("429")) {
+                            if (errText.includes("1500") || errText.includes("daily") || errText.includes("limit: 1500")) {
+                                uiErrorMessage = `**Systemmeddelande: Daglig kvot nådd**\nDen dagliga gränsen för AI-anrop är förbrukad. Systemet återställs kl. 09:00.`;
+                            } else {
+                                uiErrorMessage = `**Systemmeddelande: Hastighetsbegränsning**\nMax antal anrop per minut är nått. Vänligen vänta en minut.\nKvarstår felet är den dagliga kvoten förbrukad (återställs 09:00).`;
+                            }
                         }
 
-                        // Skicka felet som ett vanligt chattmeddelande så det syns på paddan/mobilen
                         await window.db.collection("notes").add({
                             text: uiErrorMessage,
                             sender: "AutoGrid_AI", 
