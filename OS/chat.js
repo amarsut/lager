@@ -465,27 +465,27 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     </div>
 
                     {/* HÖGER: Galleri-piller & Stäng-knapp (Tar upp 25% av bredden) */}
-                    <div className="flex items-center justify-end gap-1 sm:gap-2 w-1/4">
+                    <div className="flex items-center justify-end gap-2 w-1/4">
                         
-                        {/* Galleriknappar (Piller-stil) */}
-                        <div className="flex bg-zinc-100 dark:bg-white/5 p-1 rounded-full border border-zinc-200/50 dark:border-white/5 shadow-inner">
+                        {/* Galleriknappar (Piller-stil - STÖRRE) */}
+                        <div className="flex bg-zinc-100 dark:bg-white/5 p-1.5 rounded-full border border-zinc-200/50 dark:border-white/5 shadow-inner">
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
-                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={14} className="pointer-events-none" />
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
+                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={18} className="pointer-events-none" />
                                 </button>
                             ))}
                         </div>
 
                         {isPopup && (
-                            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
-                                <window.Icon name="x" size={20} />
+                            <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
+                                <window.Icon name="x" size={24} />
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* FLOW (Meddelandelista) */}
-                <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-transparent relative scroll-smooth">
+                <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-4 pb-6 sm:pb-8 custom-scrollbar bg-transparent relative scroll-smooth">
                     {filter === 'image' ? (
                         <div className="flex flex-col h-full animate-in zoom-in duration-300">
                             {/* Flikar för Galleri */}
@@ -538,7 +538,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-1 pb-4 relative">
+                        <div className="flex flex-col gap-1 pb-16 relative">
                             {messages.map((msg, index) => {
                                 const isMe = msg.sender === user.email;
                                 const isImage = msg.type === 'image' || msg.image;
@@ -727,29 +727,29 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
                 {/* FOOTER / INPUT */}
                 {/* GEMINI-STYLE FOOTER / INPUT */}
-                <div className="p-3 sm:p-4 shrink-0 z-50 bg-gradient-to-t from-[#f0f2f5] via-[#f0f2f5] dark:from-[#0f1522] dark:via-[#0f1522] to-transparent pt-6 relative pb-safe">
+                <div className="absolute bottom-0 left-0 right-0 z-[100] pb-4 sm:pb-6 px-3 sm:px-4 pointer-events-none flex flex-col justify-end">
                     
                     {/* TYPING INDICATOR */}
                     {isAiLoading && (
-                        <div className="absolute -top-4 left-6 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium animate-pulse flex items-center gap-1.5">
-                            <window.Icon name="cpu" size={12} className="text-orange-500" /> Tänker...
+                        <div className="pointer-events-auto self-start ml-4 mb-3 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium animate-pulse flex items-center gap-1.5 bg-white/90 dark:bg-[#1e2330]/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-zinc-200 dark:border-white/5">
+                            <window.Icon name="cpu" size={12} className="text-orange-500" /> AutoGrid AI tänker...
                         </div>
                     )}
 
                     {/* REDIGERINGS/SVAR-BAR */}
                     {(editingId || replyTo) && (
-                        <div className="flex flex-col animate-in slide-in-from-bottom-2 px-4 mb-3 w-full max-w-3xl mx-auto">
-                            <div className="flex items-center justify-between mb-1.5">
+                        <div className="pointer-events-auto flex flex-col animate-in slide-in-from-bottom-2 mb-3 w-full max-w-3xl mx-auto bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-zinc-200 dark:border-white/10">
+                            <div className="flex items-center justify-between mb-2 px-1">
                                 <span className="text-[12px] font-bold text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
-                                    <window.Icon name={editingId ? "edit-2" : "reply"} size={12} className="text-orange-500" />
+                                    <window.Icon name={editingId ? "edit-2" : "reply"} size={14} className="text-orange-500" />
                                     {editingId ? 'Redigera meddelande' : `Svarar ${getSenderName(replyTo)}`}
                                 </span>
-                                <button type="button" onClick={() => { setEditingId(null); setReplyTo(null); setInputText(""); }} className="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-200/50 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:opacity-80 transition-all">
-                                    <window.Icon name="x" size={12} className="stroke-[3]" />
+                                <button type="button" onClick={() => { setEditingId(null); setReplyTo(null); setInputText(""); }} className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/20 transition-all active:scale-95">
+                                    <window.Icon name="x" size={14} className="stroke-[3]" />
                                 </button>
                             </div>
                             {replyTo && (
-                                <div className="bg-white dark:bg-[#1a2235]/80 rounded-xl px-4 py-2 text-[13px] text-zinc-500 dark:text-zinc-400 truncate border border-zinc-200/50 dark:border-white/5 shadow-sm">
+                                <div className="bg-zinc-50 dark:bg-black/20 rounded-xl px-3 py-2 text-[13px] text-zinc-500 dark:text-zinc-400 truncate border border-zinc-200/50 dark:border-white/5">
                                     {replyTo.text || 'Ljud/Fil'}
                                 </div>
                             )}
@@ -757,21 +757,21 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     )}
 
                     {/* SJÄLVA INMATNINGS-PILLRET */}
-                    <form onSubmit={handleAction} className="flex items-center w-full max-w-4xl mx-auto relative shadow-lg shadow-black/5 dark:shadow-black/20 rounded-[28px] bg-white dark:bg-[#1e2330]">
+                    <form onSubmit={handleAction} className="pointer-events-auto flex items-center w-full max-w-4xl mx-auto relative shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-[32px] bg-white dark:bg-[#1e2330] border border-zinc-200/80 dark:border-white/5">
                         
-                        <div className={`flex-1 flex items-end transition-all min-h-[56px] overflow-hidden px-1 py-1 ${isRecording ? 'ring-2 ring-red-500/50' : 'focus-within:ring-2 focus-within:ring-zinc-200 dark:focus-within:ring-white/10'} rounded-[28px]`}>
+                        <div className={`flex-1 flex items-end transition-all min-h-[56px] overflow-hidden px-1 py-1 ${isRecording ? 'ring-2 ring-red-500/50 rounded-[32px]' : ''}`}>
                             
                             {/* VÄNSTER: Plus-ikon */}
                             {!isRecording && (
                                 <div className="flex items-center shrink-0 h-[48px] px-1 animate-in fade-in zoom-in duration-200">
-                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 active:scale-95">
+                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 active:scale-95">
                                         <window.Icon name="plus" size={24} />
                                         <input type="file" className="hidden" onChange={handleFile} />
                                     </label>
                                 </div>
                             )}
 
-                            {/* MITTEN: Textfält eller Inspelnings-status */}
+                            {/* MITTEN: Textfält */}
                             {isRecording ? (
                                 <div className="flex-1 flex items-center px-4 py-3 animate-pulse text-red-500 text-[15px] font-bold min-h-[48px]">
                                     <div className="flex items-center gap-1.5 mr-3">
@@ -800,7 +800,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             {/* HÖGER: Mikrofon, Kamera eller Skicka */}
                             <div className="flex items-center shrink-0 h-[48px] px-1 gap-0.5">
                                 {(inputText.trim() || isUploading || editingId || isRecording) ? (
-                                    <button type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-80 disabled:opacity-50'}`}>
+                                    <button type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50'}`}>
                                         {isRecording ? (
                                             <span className="w-3.5 h-3.5 rounded-sm bg-white" onClick={toggleRecording}></span>
                                         ) : editingId ? (
@@ -817,7 +817,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                                 <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
                                             </label>
                                         )}
-                                        <button type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
+                                        <button type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all active:scale-95">
                                             <window.Icon name="mic" size={20} />
                                         </button>
                                     </>
