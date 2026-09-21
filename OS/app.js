@@ -300,16 +300,49 @@ const App = () => {
 
     useEffect(() => {
         if (!user) return;
-        return db.collection("jobs").orderBy("datum", "desc").onSnapshot(snap => {
-            setAllJobs(snap.docs.map(doc => ({ ...doc.data(), id: doc.id })).filter(j => !j.deleted));
-        });
+
+        let recentJobs = [];
+        let activeJobs = [];
+
+        // Funktion för att slå ihop listorna och ta bort eventuella dubbletter
+        const updateJobs = () => {
+            const combined = [...recentJobs, ...activeJobs];
+            // Använder en Map för att garantera att varje ID bara finns en gång
+            const uniqueJobs = Array.from(new Map(combined.map(job => [job.id, job])).values());
+            setAllJobs(uniqueJobs.filter(j => !j.deleted));
+        };
+
+        // LYSSNARE 1: De 150 senaste jobben (ger oss färsk historik och nyligen avslutade jobb)
+        const unsubRecent = db.collection("jobs")
+            .orderBy("datum", "desc")
+            .limit(150)
+            .onSnapshot(snap => {
+                recentJobs = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                updateJobs();
+            });
+
+        // LYSSNARE 2: ALLA viktiga aktiva jobb, oavsett hur gamla de är
+        // (Inkluderar både små och stora bokstäver för säkerhets skull)
+        const unsubActive = db.collection("jobs")
+            .where("status", "in", ["BOKAD", "bokad", "OFFERERAD", "offererad", "FAKTURERAS", "faktureras"])
+            .onSnapshot(snap => {
+                activeJobs = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                updateJobs();
+            });
+
+        return () => {
+            unsubRecent();
+            unsubActive();
+        };
     }, [user]);
 
     useEffect(() => {
         if (!user) return;
-        return db.collection("lager").onSnapshot(snap => {
-            setAllLagerItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
+        return db.collection("lager")
+            .limit(200) // <--- Här är det viktiga skyddet
+            .onSnapshot(snap => {
+                setAllLagerItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            });
     }, [user]);
 
     const statusCounts = useMemo(() => {
