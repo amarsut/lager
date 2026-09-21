@@ -442,45 +442,44 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
             <div className={`w-full h-full flex flex-col bg-[#f0f2f5] dark:bg-[#0f1522] ${isPopup ? 'border-none' : 'lg:w-[1000px] lg:max-w-full lg:h-[calc(100vh-115px)] lg:rounded-2xl lg:border border-zinc-200 dark:border-white/5 lg:shadow-2xl'} overflow-hidden relative mx-auto`}>
 
                 {/* HEADER */}
-                <div className="h-[72px] bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20 shadow-sm transition-colors duration-300">
-                    <div className="flex items-center gap-3 sm:gap-4">
+                {/* GEMINI-STYLE HEADER */}
+                <div className="h-[64px] bg-white/95 dark:bg-[#121826]/95 backdrop-blur-md flex items-center justify-between px-2 sm:px-4 shrink-0 z-20 sticky top-0">
+                    
+                    {/* VÄNSTER: Tillbaka-knapp (Tar upp 25% av bredden för symmetri) */}
+                    <div className="flex items-center justify-start w-1/4">
                         {!isPopup && (
-                            <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-orange-500 dark:hover:text-white transition-all active:scale-95">
-                                <window.Icon name={filter === 'image' ? "grid" : "arrow-left"} size={20} className="pointer-events-none" />
+                            <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
+                                <window.Icon name="arrow-left" size={20} />
                             </button>
                         )}
-                        <div className="flex items-center gap-3">
-                            <div className="relative group cursor-default shrink-0 hidden sm:block">
-                                <div className="absolute inset-0 bg-orange-500/30 blur-md rounded-full transition-all group-hover:bg-orange-500/50" />
-                                <div className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg border border-white/20 bg-gradient-to-br from-orange-400 to-orange-600">
-                                    <window.Icon name="cpu" size={18} />
-                                </div>
-                            </div>
-                            <div className="flex flex-col">
-                                <h2 className="text-[15px] sm:text-[17px] font-black tracking-tight text-zinc-900 dark:text-white leading-none">
-                                    AutoGrid <span className="font-light text-zinc-500">AI</span>
-                                </h2>
-                                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                    Online
-                                </span>
-                            </div>
+                    </div>
+                    
+                    {/* MITTEN: Centrerad Titel */}
+                    <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 px-4 py-2 rounded-full transition-all active:scale-95">
+                            <h2 className="text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                AutoGrid <span className="text-orange-500 font-medium">AI</span>
+                                <window.Icon name="chevron-down" size={16} className="text-zinc-400" />
+                            </h2>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex bg-zinc-100 dark:bg-[#0f1522] p-1 rounded-xl border border-zinc-200 dark:border-white/5">
+
+                    {/* HÖGER: Galleri-piller & Stäng-knapp (Tar upp 25% av bredden) */}
+                    <div className="flex items-center justify-end gap-1 sm:gap-2 w-1/4">
+                        
+                        {/* Galleriknappar (Piller-stil) */}
+                        <div className="flex bg-zinc-100 dark:bg-white/5 p-1 rounded-full border border-zinc-200/50 dark:border-white/5 shadow-inner">
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${filter === f ? 'bg-white dark:bg-[#1a2235] text-orange-500 shadow-sm border border-zinc-200/50 dark:border-white/10' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
                                     <window.Icon name={f === 'all' ? 'list' : 'image'} size={14} className="pointer-events-none" />
                                 </button>
                             ))}
                         </div>
+
                         {isPopup && (
-                            <div className="pl-2 border-l border-zinc-200 dark:border-white/5 ml-1">
-                                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-zinc-500 hover:text-red-500 transition-colors">
-                                    <window.Icon name="x" size={20} className="pointer-events-none" />
-                                </button>
-                            </div>
+                            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
+                                <window.Icon name="x" size={20} />
+                            </button>
                         )}
                     </div>
                 </div>
@@ -727,59 +726,60 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 )}
 
                 {/* FOOTER / INPUT */}
-                <div className="p-2 sm:p-3 bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border-t border-zinc-200 dark:border-white/5 shrink-0 z-50 pb-safe relative">
+                {/* GEMINI-STYLE FOOTER / INPUT */}
+                <div className="p-3 sm:p-4 shrink-0 z-50 bg-gradient-to-t from-[#f0f2f5] via-[#f0f2f5] dark:from-[#0f1522] dark:via-[#0f1522] to-transparent pt-6 relative pb-safe">
                     
-                    {/* TYPING INDICATOR (SVÄVAR ÖVER INPUT) */}
+                    {/* TYPING INDICATOR */}
                     {isAiLoading && (
-                        <div className="absolute -top-7 left-4 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium animate-pulse flex items-center gap-1.5">
-                            <window.Icon name="cpu" size={12} className="text-orange-500" /> AutoGrid AI skriver...
+                        <div className="absolute -top-4 left-6 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium animate-pulse flex items-center gap-1.5">
+                            <window.Icon name="cpu" size={12} className="text-orange-500" /> Tänker...
                         </div>
                     )}
 
                     {/* REDIGERINGS/SVAR-BAR */}
                     {(editingId || replyTo) && (
-                        <div className="flex flex-col animate-in slide-in-from-bottom-2 px-1 mb-2 w-full">
-                            <div className="flex items-center justify-between mb-1.5 px-3">
-                                <span className="text-[13px] font-medium text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                        <div className="flex flex-col animate-in slide-in-from-bottom-2 px-4 mb-3 w-full max-w-3xl mx-auto">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[12px] font-bold text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                                    <window.Icon name={editingId ? "edit-2" : "reply"} size={12} className="text-orange-500" />
                                     {editingId ? 'Redigera meddelande' : `Svarar ${getSenderName(replyTo)}`}
                                 </span>
                                 <button type="button" onClick={() => { setEditingId(null); setReplyTo(null); setInputText(""); }} className="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-200/50 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:opacity-80 transition-all">
-                                    <window.Icon name="x" size={14} className="stroke-[3]" />
+                                    <window.Icon name="x" size={12} className="stroke-[3]" />
                                 </button>
                             </div>
-                            {/* Visar endast orginalmeddelandet i en egen bubbla när man svarar */}
                             {replyTo && (
-                                <div className="bg-zinc-100 dark:bg-[#1a2235]/80 rounded-2xl px-4 py-2 mx-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate border border-zinc-200/50 dark:border-white/5">
+                                <div className="bg-white dark:bg-[#1a2235]/80 rounded-xl px-4 py-2 text-[13px] text-zinc-500 dark:text-zinc-400 truncate border border-zinc-200/50 dark:border-white/5 shadow-sm">
                                     {replyTo.text || 'Ljud/Fil'}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <form onSubmit={handleAction} className="flex items-end gap-2 w-full mx-auto relative">
-    
-                        {/* INMATNINGSFÄLT MED INTEGRERADE IKONER */}
-                        <div className={`flex-1 bg-zinc-100 dark:bg-black/30 border ${isRecording ? 'border-red-500 ring-2 ring-red-500/20' : 'border-zinc-200 dark:border-white/10'} rounded-3xl flex items-end transition-all focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 shadow-inner min-h-[40px] overflow-hidden`}>
+                    {/* SJÄLVA INMATNINGS-PILLRET */}
+                    <form onSubmit={handleAction} className="flex items-center w-full max-w-4xl mx-auto relative shadow-lg shadow-black/5 dark:shadow-black/20 rounded-[28px] bg-white dark:bg-[#1e2330]">
+                        
+                        <div className={`flex-1 flex items-end transition-all min-h-[56px] overflow-hidden px-1 py-1 ${isRecording ? 'ring-2 ring-red-500/50' : 'focus-within:ring-2 focus-within:ring-zinc-200 dark:focus-within:ring-white/10'} rounded-[28px]`}>
                             
-                            {/* BIFOGA OCH KAMERA (Inuti fältet) */}
-                            {(!isFocused && inputText.length === 0 && !editingId && !replyTo) && (
-                                <div className="flex items-center shrink-0 mb-0.5 ml-1 animate-in slide-in-from-left-2 fade-in duration-200">
-                                    <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-200/50 dark:hover:bg-white/10 active:scale-95">
-                                        <window.Icon name="plus" size={22} />
+                            {/* VÄNSTER: Plus-ikon */}
+                            {!isRecording && (
+                                <div className="flex items-center shrink-0 h-[48px] px-1 animate-in fade-in zoom-in duration-200">
+                                    <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 active:scale-95">
+                                        <window.Icon name="plus" size={24} />
                                         <input type="file" className="hidden" onChange={handleFile} />
                                     </label>
-                                    {isMobile && (
-                                        <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-200/50 dark:hover:bg-white/10 active:scale-95">
-                                            <window.Icon name="camera" size={20} />
-                                            <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
-                                        </label>
-                                    )}
                                 </div>
                             )}
 
+                            {/* MITTEN: Textfält eller Inspelnings-status */}
                             {isRecording ? (
-                                <div className="w-full flex items-center px-4 py-2.5 animate-pulse text-red-500 text-[14px] font-bold min-h-[40px]">
-                                    <window.Icon name="mic" size={16} className="mr-2" /> Spelar in ljud...
+                                <div className="flex-1 flex items-center px-4 py-3 animate-pulse text-red-500 text-[15px] font-bold min-h-[48px]">
+                                    <div className="flex items-center gap-1.5 mr-3">
+                                        <span className="w-1 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                        <span className="w-1 h-4 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                        <span className="w-1 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                    </div>
+                                    Spelar in ljud...
                                 </div>
                             ) : (
                                 <textarea
@@ -790,30 +790,40 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                     onKeyDown={handleKeyDown}
                                     onFocus={() => setIsFocused(true)}
                                     onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-                                    placeholder="Skriv ett meddelande..."
+                                    placeholder="Fråga AutoGrid AI..."
                                     rows={1}
-                                    style={{ minHeight: '40px', paddingTop: '9px', paddingBottom: '9px' }}
-                                    className={`w-full bg-transparent border-none outline-none text-[15px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-600 resize-none custom-scrollbar leading-snug ${(!isFocused && inputText.length === 0 && !editingId && !replyTo) ? 'pl-1 pr-4' : 'px-4'}`}
+                                    style={{ minHeight: '24px' }}
+                                    className="flex-1 bg-transparent border-none outline-none text-[16px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 resize-none custom-scrollbar py-3.5 px-2 self-center leading-snug"
                                 />
                             )}
-                        </div>
-                        
-                        {/* SKICKA ELLER MIKROFON (Utanför fältet) */}
-                        {(inputText.trim() || isUploading || editingId || isRecording) ? (
-                            <button key="btn-send" type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`flex items-center justify-center w-10 h-10 mb-0.5 shrink-0 rounded-full text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-orange-500 hover:bg-orange-400 disabled:bg-zinc-200 disabled:dark:bg-white/5'}`}>
-                                {isRecording ? (
-                                    <span key="icon-stop" className="w-3 h-3 rounded-sm bg-white" onClick={toggleRecording}></span>
-                                ) : editingId ? (
-                                    <window.Icon key="icon-check" name="check" size={18} className="stroke-[2.5]" />
+                            
+                            {/* HÖGER: Mikrofon, Kamera eller Skicka */}
+                            <div className="flex items-center shrink-0 h-[48px] px-1 gap-0.5">
+                                {(inputText.trim() || isUploading || editingId || isRecording) ? (
+                                    <button type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-80 disabled:opacity-50'}`}>
+                                        {isRecording ? (
+                                            <span className="w-3.5 h-3.5 rounded-sm bg-white" onClick={toggleRecording}></span>
+                                        ) : editingId ? (
+                                            <window.Icon name="check" size={20} className="stroke-[2.5]" />
+                                        ) : (
+                                            <window.Icon name="arrow-up" size={20} className="stroke-[2.5]" />
+                                        )}
+                                    </button>
                                 ) : (
-                                    <window.Icon key="icon-send" name="send-horizontal" size={18} className="stroke-[2.5]" />
+                                    <>
+                                        {isMobile && (
+                                            <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
+                                                <window.Icon name="camera" size={20} />
+                                                <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
+                                            </label>
+                                        )}
+                                        <button type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
+                                            <window.Icon name="mic" size={20} />
+                                        </button>
+                                    </>
                                 )}
-                            </button>
-                        ) : (
-                            <button key="btn-mic" type="button" onClick={toggleRecording} className="flex items-center justify-center w-10 h-10 mb-0.5 shrink-0 rounded-full bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-400 hover:text-orange-500 transition-all active:scale-90">
-                                <window.Icon key="icon-mic" name="mic" size={20} className="stroke-[2]" />
-                            </button>
-                        )}
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
