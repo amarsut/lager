@@ -641,31 +641,32 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                                         
                                                         {/* PILL-SHAPED MENY */}
                                                         {activeMenu === msg.id && (
-                                                            <div ref={menuRef} className={`absolute -top-12 ${isMe ? 'right-0' : 'left-0'} pb-2 z-[100] animate-in zoom-in-95 duration-200`}>
-                                                                <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 p-1.5 rounded-full flex items-center shadow-xl">
-                                                                    {['👍', '🔥', '😂', '❓'].map(emoji => (
-                                                                        <button key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="w-8 h-8 flex items-center justify-center rounded-full text-lg hover:scale-110 transition-transform hover:bg-zinc-100 dark:hover:bg-white/5">{emoji}</button>
+                                                            <div ref={menuRef} className={`absolute -top-14 ${isMe ? 'right-0 origin-bottom-right' : 'left-0 origin-bottom-left'} pb-2.5 z-[100] animate-in zoom-in-95 duration-200 w-max`}>
+                                                                <div className="bg-white/95 dark:bg-[#182032]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 p-1.5 rounded-full flex items-center shadow-2xl gap-0.5">
+                                                                    {['✅', '❌', '👍', '❓'].map(emoji => (
+                                                                        <button key={emoji} onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }} className="w-9 h-9 flex items-center justify-center rounded-full text-lg hover:scale-110 transition-transform hover:bg-zinc-100 dark:hover:bg-white/10 active:scale-95 shrink-0">{emoji}</button>
                                                                     ))}
                                                                     
-                                                                    <div className="w-[1px] h-5 bg-zinc-200 dark:bg-white/10 mx-1"></div>
-                                                                    <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); setActiveMenu(null); inputRef.current?.focus(); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-blue-500 transition-colors" title="Svara">
-                                                                        <window.Icon name="corner-up-left" size={14} />
+                                                                    <div className="w-[1px] h-5 bg-zinc-200 dark:bg-white/10 mx-1 shrink-0"></div>
+                                                                    
+                                                                    <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); setActiveMenu(null); inputRef.current?.focus(); }} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-blue-500 transition-colors active:scale-95 shrink-0" title="Svara">
+                                                                        <window.Icon name="corner-up-left" size={15} />
                                                                     </button>
 
                                                                     {!isImage && !isAudio && (
-                                                                        <button onClick={(e) => { e.stopPropagation(); handleCopy(msg.text); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-800 dark:hover:text-white transition-colors" title="Kopiera text">
-                                                                            <window.Icon name="copy" size={14} />
+                                                                        <button onClick={(e) => { e.stopPropagation(); handleCopy(msg.text); }} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-800 dark:hover:text-white transition-colors active:scale-95 shrink-0" title="Kopiera text">
+                                                                            <window.Icon name="copy" size={15} />
                                                                         </button>
                                                                     )}
 
                                                                     {isMe && !isAudio && (
-                                                                        <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 transition-colors" title="Redigera">
-                                                                            <window.Icon name="edit-2" size={14} />
+                                                                        <button onClick={(e) => { e.stopPropagation(); setEditingId(msg.id); setInputText(msg.text); setActiveMenu(null); }} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 transition-colors active:scale-95 shrink-0" title="Redigera">
+                                                                            <window.Icon name="edit-2" size={15} />
                                                                         </button>
                                                                     )}
                                                                     
-                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("notes").doc(msg.id).delete(); }} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-50 transition-colors" title="Ta bort">
-                                                                        <window.Icon name="trash-2" size={14} />
+                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("notes").doc(msg.id).delete(); }} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-colors active:scale-95 shrink-0" title="Ta bort">
+                                                                        <window.Icon name="trash-2" size={15} />
                                                                     </button>
                                                                 </div>
                                                             </div>
