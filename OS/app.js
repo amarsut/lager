@@ -502,23 +502,27 @@ const App = () => {
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
                     {/* Svävande Chattbubbla */}
-                    <button 
-                        onClick={() => setIsChatOpen(!isChatOpen)} 
-                        className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full items-center justify-center transition-all duration-300 z-[600] animate-in zoom-in-50 duration-500 ${isChatOpen ? 'bg-zinc-800 text-white hover:scale-105 shadow-lg' : hasUnread ? 'bg-orange-500 text-white hover:scale-110 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-[pulse_2s_infinite]' : 'bg-orange-500 text-black hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.4)]'}`}
-                    >
-                        <window.Icon name={isChatOpen ? "x" : "message-square"} size={24} />
-                        {hasUnread && !isChatOpen && (
-                            <span className="absolute top-0 right-0 flex h-4 w-4">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-orange-500 shadow-sm"></span>
-                            </span>
-                        )}
-                    </button>
+                    {!isChatOpen && (
+                        <button 
+                            onClick={() => setIsChatOpen(!isChatOpen)} 
+                            className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full items-center justify-center transition-all duration-300 z-[600] animate-in zoom-in-50 duration-500 ${hasUnread ? 'bg-orange-500 text-white hover:scale-110 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-[pulse_2s_infinite]' : 'bg-orange-500 text-black hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.4)]'}`}
+                        >
+                            <window.Icon name="message-square" size={24} />
+                            {hasUnread && (
+                                <span className="absolute top-0 right-0 flex h-4 w-4">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-orange-500 shadow-sm"></span>
+                                </span>
+                            )}
+                        </button>
+                    )}
 
                     {isChatOpen && window.innerWidth >= 1024 && window.ChatView && (
                         <>
-                            <div className="fixed inset-0 z-[490]" onClick={() => setIsChatOpen(false)}></div>
-                            <div className="hidden lg:block fixed bottom-[104px] right-8 z-[500] w-[450px] h-[700px] max-h-[85vh] shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-[#2a3441] bg-white dark:bg-[#121826] ring-1 ring-black/5 animate-in slide-in-from-bottom-8 fade-in duration-300">
+                            <div className="fixed inset-0 z-[490] bg-zinc-900/60 dark:bg-black/75 cursor-default animate-in fade-in duration-300" onClick={() => setIsChatOpen(false)}></div>
+                            
+                            {/* NY DRAWER (Fullhöjd, klistrad till höger, glider in från höger) */}
+                            <div className="hidden lg:block fixed top-0 right-0 bottom-0 z-[500] w-[675px] shadow-[-20px_0_60px_rgba(0,0,0,0.4)] border-l border-zinc-200/80 dark:border-[#2a3441] bg-white dark:bg-[#121826] animate-in slide-in-from-right fade-in duration-300">
                                 <window.ChatView user={user} setView={navigateTo} viewParams={viewParams} isPopup={true} onClose={() => setIsChatOpen(false)} />
                             </div>
                         </>
