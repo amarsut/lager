@@ -528,9 +528,18 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                 }
                                 const showSeparator = currentLabel !== lastDateLabel;
                                 lastDateLabel = currentLabel;
-
-                                const isSameSenderAsPrev = index > 0 && messages[index - 1].sender === msg.sender && !showSeparator;
-                                const isSameSenderAsNext = index < messages.length - 1 && messages[index + 1].sender === msg.sender;
+                                
+                                // Hjälpfunktion för att läsa av millisekunder (stödjer både string och firebase-timestamp)
+                                const getTimeMs = (ts) => ts ? (typeof ts.toDate === 'function' ? ts.toDate().getTime() : new Date(ts).getTime()) : 0;
+                                const TIME_LIMIT = 60 * 60 * 1000; // 1 timme gräns (ändra 60 till 30 för halvtimme)
+                                
+                                // Räkna ut tidsskillnaden mellan nuvarande, föregående och nästa meddelande
+                                const timeDiffPrev = index > 0 ? (getTimeMs(msg.timestamp) - getTimeMs(messages[index - 1].timestamp)) : 0;
+                                const timeDiffNext = index < messages.length - 1 ? (getTimeMs(messages[index + 1].timestamp) - getTimeMs(msg.timestamp)) : 0;
+                                
+                                // Bryt grupperingen om mer än TIME_LIMIT har passerat
+                                const isSameSenderAsPrev = index > 0 && messages[index - 1].sender === msg.sender && !showSeparator && timeDiffPrev < TIME_LIMIT;
+                                const isSameSenderAsNext = index < messages.length - 1 && messages[index + 1].sender === msg.sender && timeDiffNext < TIME_LIMIT;
                                 
                                 return (
                                     <React.Fragment key={msg.id}>
