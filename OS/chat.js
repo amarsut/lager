@@ -612,19 +612,21 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                                     )}
 
                                                     {/* NYTT CITAT/REPLY OVANFÖR BUBBLAN (Messenger-stil) */}
-                                                    {msg.replyTo && (
-                                                        <div onClick={(e) => { e.stopPropagation(); scrollToMessage(msg.replyTo.id); }} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-1 cursor-pointer group/reply`}>
-                                                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1 px-1">
-                                                                <window.Icon name="reply" size={12} className="stroke-[2.5]" />
-                                                                {isMe ? (msg.replyTo.sender === user.email ? 'Du har svarat dig själv' : `Du svarade ${getSenderName(msg.replyTo)}`) : `${getSenderName(msg)} svarade`}
+                                                        {msg.replyTo && (
+                                                            <div onClick={(e) => { e.stopPropagation(); scrollToMessage(msg.replyTo.id); }} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} w-fit max-w-full mb-1 cursor-pointer group/reply`}>
+                                                                {/* Citat-innehållet förblir orört */}
+                                                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1 px-1">
+                                                                    <window.Icon name="reply" size={12} className="stroke-[2.5]" />
+                                                                    {isMe ? (msg.replyTo.sender === user.email ? 'Du har svarat dig själv' : `Du svarade ${getSenderName(msg.replyTo)}`) : `${getSenderName(msg)} svarade`}
+                                                                </div>
+                                                                <div className={`px-4 py-2 text-[14px] rounded-2xl max-w-full shadow-sm transition-opacity group-hover/reply:opacity-100 ${isMe ? 'bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 opacity-80' : 'bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 opacity-80'}`}>
+                                                                    <span className="line-clamp-2">{msg.replyTo.text || 'Ljud/Fil'}</span>
+                                                                </div>
                                                             </div>
-                                                            <div className={`px-4 py-2 text-[14px] rounded-2xl max-w-full shadow-sm transition-opacity group-hover/reply:opacity-100 ${isMe ? 'bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 opacity-80' : 'bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 opacity-80'}`}>
-                                                                <span className="line-clamp-2">{msg.replyTo.text || 'Ljud/Fil'}</span>
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                        )}
 
-                                                    <div className="relative w-full flex flex-col">
+                                                        {/* ÄNDRAD TILL w-fit */}
+                                                        <div className="relative w-fit max-w-full flex flex-col">
                                                         {isImage ? (
                                                             <img src={msg.fileUrl || msg.image} className={`max-w-[240px] sm:max-w-[350px] block shadow-sm cursor-pointer border border-zinc-200 dark:border-white/10 ${isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'}`} alt="Attachment" onClick={(e) => handleOpenImage(e, msg)} />
                                                         ) : isAudio ? (
