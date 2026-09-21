@@ -799,27 +799,29 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             )}
                             
                             {/* HÖGER: Mikrofon, Kamera eller Skicka */}
+                            {/* HÖGER: Mikrofon, Kamera eller Skicka */}
                             <div className="flex items-center shrink-0 h-[48px] px-1 gap-0.5">
                                 {(inputText.trim() || isUploading || editingId || isRecording) ? (
-                                    <button type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50'}`}>
+                                    <button key="action-btn" type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50'}`}>
                                         {isRecording ? (
-                                            <span className="w-3.5 h-3.5 rounded-sm bg-white" onClick={toggleRecording}></span>
+                                            <span key="rec" className="w-3.5 h-3.5 rounded-sm bg-white" onClick={toggleRecording}></span>
                                         ) : editingId ? (
-                                            <window.Icon name="check" size={20} className="stroke-[2.5]" />
+                                            <window.Icon key="chk" name="check" size={20} className="stroke-[2.5]" />
                                         ) : (
-                                            <window.Icon name="arrow-up" size={20} className="stroke-[2.5]" />
+                                            /* RAK PIL ÅT HÖGER (Med 'key' för att tvinga React att rita om SVG:n) */
+                                            <window.Icon key="arr" name="arrow-right" size={20} className="stroke-[2.5]" />
                                         )}
                                     </button>
                                 ) : (
                                     <>
                                         {isMobile && (
-                                            <label className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
+                                            <label key="cam-btn" className="w-10 h-10 rounded-full cursor-pointer flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all active:scale-95">
                                                 <window.Icon name="camera" size={20} />
                                                 <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
                                             </label>
                                         )}
-                                        <button type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all active:scale-95">
-                                            <window.Icon name="mic" size={20} />
+                                        <button key="mic-btn" type="button" onClick={toggleRecording} className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-400 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all active:scale-95">
+                                            <window.Icon key="mic" name="mic" size={20} />
                                         </button>
                                     </>
                                 )}
