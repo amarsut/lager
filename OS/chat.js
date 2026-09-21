@@ -59,6 +59,67 @@ const hapticFeedback = () => {
     if (navigator.vibrate) navigator.vibrate(50);
 };
 
+// --- NYA FELSÖKNINGS-KOMPONENTER ---
+const renderMessageText = (text) => {
+    if (!text) return "";
+    const tokenRegex = /(https?:\/\/[^\s]+|\*\*[^*]+\*\*)/g;
+    return text.split(tokenRegex).map((part, i) => {
+        if (!part) return null;
+        if (part.match(/^https?:\/\//)) {
+            return (
+                <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+                    className="underline decoration-1 hover:opacity-80 break-all transition-opacity font-semibold">
+                    {part}
+                </a>
+            );
+        }
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i} className="font-black tracking-wide text-current">{part.slice(2, -2)}</strong>;
+        }
+        return <span key={i}>{part}</span>;
+    });
+};
+
+const MessageBubble = ({ text }) => {
+    const [expanded, setExpanded] = useState(false);
+    if (!text) return null;
+
+    const parts = text.split('---MER---');
+    const summary = parts[0].trim();
+    const details = parts.length > 1 ? parts[1].trim() : null;
+
+    return (
+        <div className="flex flex-col w-full">
+            <span className="leading-relaxed break-words whitespace-pre-wrap text-[15px]">
+                {renderMessageText(summary)}
+            </span>
+            
+            {details && (
+                <div className="flex flex-col mt-2">
+                    {expanded && (
+                        <div className="mt-2 pt-3 border-t border-zinc-200/50 dark:border-white/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <span className="leading-relaxed break-words whitespace-pre-wrap text-[14px] text-zinc-700 dark:text-zinc-200">
+                                {renderMessageText(details)}
+                            </span>
+                        </div>
+                    )}
+                    
+                    <button 
+                        onClick={(e) => { 
+                            e.stopPropagation(); // Detta hindrar klicket från att öppna menyn för bubblan
+                            setExpanded(!expanded); 
+                        }}
+                        className="mt-3 text-[11px] font-bold uppercase tracking-widest text-orange-500 hover:text-orange-600 dark:hover:text-white self-start flex items-center gap-1.5 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/30 px-3 py-1.5 rounded-lg transition-all active:scale-95"
+                    >
+                        <window.Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={14} />
+                        {expanded ? 'Dölj felsökningsguide' : 'Visa full diagnos'}
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // --- 2. HUVUDKOMPONENT ---
 const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     const [messages, setMessages] = useState([]);
@@ -319,7 +380,8 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     replyTo: currentReplyTo ? { id: currentReplyTo.id, text: currentReplyTo.text, sender: currentReplyTo.sender } : null
                 });
 
-                const dtcRegex = /\b[PBUC]\d{4,6}\b/i;
+                // NY REGEX OCH PROMPT
+                const dtcRegex = /\b([PBUC]\d{4}[A-Z0-9]{0,2})\b|\b(BMW|VW|AUDI|VOLVO|MERCEDES|SKODA|SEAT|VAG|PORSCHE|MINI|RENAULT|PEUGEOT|FORD)\s+[A-Z0-9]{3,7}\b/i;
                 const isAiCommand = textToSend.toLowerCase().startsWith('/ai ');
 
                 if (dtcRegex.test(textToSend) || isAiCommand) {
@@ -327,14 +389,34 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     scrollToBottom(true);
                     
                     try {
-                        const GEMINI_API_KEY = window.ENV.GEMINI_API_KEY; 
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                        // https://dash.cloudflare.com/ inloggad via Google
+                        const response = await fetch("https://autogrid-ai-proxy.asut-ytube.workers.dev/", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                                 systemInstruction: {
                                     parts: [{ 
-                                        text: "Du är en avancerad fordonsteknisk AI integrerad i verkstadssystemet AutoGrid. Du pratar med professionella mekaniker. Svara ALLTID extremt kortfattat, tekniskt korrekt och med högsta informationsdensitet. Inget fluff, inga hälsningar, inga friskrivningsklausuler.\n\nAnvänd EXAKT denna Markdown-mall för varje svar:\n\n**Komponent:** [Vilken del/system berörs]\n**Orsak:** [De 1-3 vanligaste orsakerna]\n**Diagnos:** [Snabbt test eller mätvärde att kolla i ODIS/VCDS eller motsvarande]\n**Åtgärd:** [Konkreta steg för att lösa problemet]" 
+                                        text: `Du är "AutoGrid AI", en avancerad fordonsteknisk AI för professionella mekaniker. Svara extremt kortfattat och tekniskt korrekt. Inget fluff, inga hela meningar om det inte krävs. Använd telegrafisk stil.
+
+KRITISKA REGLER:
+1. Telegrafisk stil: Använd punktform, förkortningar och maximerad informationsdensitet.
+2. Konkret Felsökning: Ange ALLTID specifika mätvärdesblock, referensvärden eller pin-out. 
+3. Officiella Komponentkoder: Använd ALLTID tillverkarens officiella beteckningar från elscheman INUTI texten (t.ex. EGR N18, G450, B65, J949).
+4. Analys av kontext: Analysera märke och styrenhet för tillverkarspecifika B/U-koder för att undvika generiska fel (t.ex. SOS-modul vs krocksensor). Sätt troligaste felet först.
+5. Kända fel (TPI/TSB): Nämn alltid om felet är ett känt fabrikationsfel eller kräver mjukvaruuppdatering.
+
+Använd EXAKT denna Markdown-mall för dina svar:
+
+**Snabbsvar:** [Kortaste möjliga slutsats, t.ex. "Troligt fel: EGR-ventil (N18). Kontrollera kablage innan byte."]
+---MER---
+**Diagnos:**
+* [Diagnos/Mätvärde/Tolerans]
+* [Fysisk kontroll/Pin-mätning]
+
+**Åtgärd:**
+* [Konkret åtgärd]
+
+> **Verkstadstips:** [TPI/TSB, kodningskrav, adaption eller vanlig fallgrop. Tomt om inget finns.]` 
                                     }]
                                 },
                                 contents: [{ parts: [{ text: textToSend }] }],
@@ -344,22 +426,40 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
 
                         const data = await response.json();
                         setIsAiLoading(false);
-                        
+
+                        // Skriver ut hela Googles svar i Console-fliken
+                        console.log("Riktigt svar från Google:", data);
+
                         if (data.candidates && data.candidates.length > 0) {
                             const realAnswer = data.candidates[0].content.parts[0].text;
                             await window.db.collection("notes").add({
                                 text: realAnswer, sender: "AutoGrid_AI", timestamp: new Date().toISOString(), type: 'text',
                                 replyTo: { id: "user", text: textToSend, sender: user.email }
                             });
+                        } else if (data.error) {
+                            // Om Google skickade ett felmeddelande, kasta den exakta feltexten
+                            throw new Error(`Google API Fel: ${data.error.message}`);
                         } else {
-                            throw new Error("Inget svar från AI");
+                            throw new Error("Inget svar från AI (Saknar candidates och error-objekt).");
                         }
                     } catch (aiError) {
                         console.error("AI Error:", aiError);
                         setIsAiLoading(false);
+                        
+                        // Grundläggande felsvar som fångar Googles tekniska meddelande
+                        let uiErrorMessage = `**❌ AI-Anslutningsfel**\nNågot gick snett i kommunikationen med Google.\n\n*Teknisk orsak:*\n${aiError.message}`;
+                        
+                        // Snygg svensk översättning för vanliga kvot- och stress-fel
+                        if (aiError.message.toLowerCase().includes("quota exceeded") || aiError.message.includes("429")) {
+                            uiErrorMessage = `**⏳ Vänta lite!**\nDu ställer frågor lite för snabbt. Gratiskvoten hos Google tillåter max 20 frågor per minut.\n\nVänta cirka en minut och skicka frågan igen.`;
+                        }
+
+                        // Skicka felet som ett vanligt chattmeddelande så det syns på paddan/mobilen
                         await window.db.collection("notes").add({
-                            text: "Kunde inte hämta data. Kontrollera din API-nyckel eller nätverk.",
-                            sender: "AutoGrid_AI", timestamp: new Date().toISOString(), type: 'text'
+                            text: uiErrorMessage,
+                            sender: "AutoGrid_AI", 
+                            timestamp: new Date().toISOString(), 
+                            type: 'text'
                         });
                     }
                 }
@@ -401,26 +501,6 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         }
         await window.db.collection("notes").doc(id).update({ reactions });
         setActiveMenu(null);
-    };
-
-    const renderMessageText = (text) => {
-        if (!text) return "";
-        const tokenRegex = /(https?:\/\/[^\s]+|\*\*[^*]+\*\*)/g;
-        return text.split(tokenRegex).map((part, i) => {
-            if (!part) return null;
-            if (part.match(/^https?:\/\//)) {
-                return (
-                    <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                        className="underline decoration-1 hover:opacity-80 break-all transition-opacity font-semibold">
-                        {part}
-                    </a>
-                );
-            }
-            if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={i} className="font-black tracking-wide text-current">{part.slice(2, -2)}</strong>;
-            }
-            return <span key={i}>{part}</span>;
-        });
     };
 
     const scrollToMessage = (id) => {
@@ -644,9 +724,12 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                                                 <audio controls src={msg.fileUrl} className="h-10 w-[200px] sm:w-[250px] rounded-lg" />
                                                             </div>
                                                         ) : (
-                                                            <div className={`px-4 py-2 text-[15px] shadow-sm flex flex-col ${isMe ? 'bg-orange-500 text-white' : (isAi ? 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5' : 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5')} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-[4px]' : 'rounded-2xl rounded-tr-xl') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-[4px]' : 'rounded-2xl rounded-tl-xl')}`}>
-
-                                                                <span className="leading-relaxed break-words whitespace-pre-wrap">{renderMessageText(msg.text)}</span>
+                                                            <div className={`px-4 py-2 shadow-sm flex flex-col ${isMe ? 'bg-orange-500 text-white' : 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5'} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-[4px]' : 'rounded-2xl rounded-tr-xl') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-[4px]' : 'rounded-2xl rounded-tl-xl')}`}>
+                                                                {isAi ? (
+                                                                    <MessageBubble text={msg.text} />
+                                                                ) : (
+                                                                    <span className="leading-relaxed break-words whitespace-pre-wrap text-[15px]">{renderMessageText(msg.text)}</span>
+                                                                )}
                                                             </div>
                                                         )}
                                                         
