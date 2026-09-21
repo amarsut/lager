@@ -769,6 +769,7 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
         if (!window.db) return;
         const unsubscribe = window.db.collection("tasks")
             .orderBy("createdAt", "asc")
+            .limit(50) // Laddar max in de 50 senaste notiserna
             .onSnapshot(snap => {
                 const fetchedTasks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setTasks(fetchedTasks);
@@ -1193,7 +1194,7 @@ window.DashboardView = React.memo(({
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
-                            className="group w-64 bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-lg"
+                            className="group w-96 bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-lg"
                         >
                             <div className="flex items-center gap-2">
                                 <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-400 group-hover:text-orange-500 group-hover:rotate-12 transition-all duration-300" />
@@ -1326,51 +1327,47 @@ window.DashboardView = React.memo(({
                 <div className="flex flex-col flex-1 pb-10 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 pt-2 bg-transparent">
                     <div className="flex space-x-2">
-                            {filters.map(f => (
-                                <button 
-                                    key={f} 
-                                    data-tab={f} 
-                                    onClick={() => setActiveFilter(f)} 
-                                    className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-white/5 rounded-t-lg'}`}
-                                >
-                                    {f}
-                                    {(statusCounts[f] || 0) > 0 && (
-                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] transition-colors ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
-                                            {statusCounts[f]}
-                                        </span>
-                                    )}
-                                    {activeFilter === f && (
-                                        <span className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="relative group mb-2 sm:mb-0 shrink-0">
-                            <input 
-                                type="text" 
-                                placeholder="SÖK I LISTAN..." 
-                                className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 py-2.5 pl-10 pr-10 text-[11px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-72 transition-all uppercase tracking-widest placeholder:text-zinc-400 rounded-xl shadow-sm"
-                                value={globalSearch}
-                                onChange={(e) => setGlobalSearch(e.target.value)}
-                            />
-                            <window.Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
-                            
-                            {globalSearch ? (
-                                <button 
-                                    onClick={() => setGlobalSearch('')}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-red-500 bg-zinc-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all active:scale-95"
-                                    title="Rensa sökning"
-                                >
-                                    <window.Icon name="x" size={12} />
-                                </button>
-                            ) : (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
-                                    <kbd className="hidden sm:flex items-center justify-center px-1.5 py-0.5 text-[9px] font-sans font-bold text-zinc-400 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded text-center">⌘F</kbd>
-                                </div>
-                            )}
-                        </div>
+                        {filters.map(f => (
+                            <button 
+                                key={f} 
+                                data-tab={f} 
+                                onClick={() => setActiveFilter(f)} 
+                                className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-white/5 rounded-t-lg'}`}
+                            >
+                                {f}
+                                {(statusCounts[f] || 0) > 0 && (
+                                    <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] transition-colors ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
+                                        {statusCounts[f]}
+                                    </span>
+                                )}
+                                {activeFilter === f && (
+                                    <span className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
+                                )}
+                            </button>
+                        ))}
                     </div>
+
+                    <div className="relative group mb-2 sm:mb-0 shrink-0 border-b border-transparent hover:border-zinc-300 dark:hover:border-white/20 focus-within:border-orange-500 transition-colors">
+                        <input 
+                            type="text" 
+                            placeholder="Sök i listan..." 
+                            className="bg-transparent py-3 pl-8 pr-8 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-64 transition-all tracking-wide placeholder:text-zinc-400 placeholder:uppercase placeholder:text-[11px] placeholder:tracking-widest"
+                            value={globalSearch}
+                            onChange={(e) => setGlobalSearch(e.target.value)}
+                        />
+                        <window.Icon name="search" size={14} className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
+                        
+                        {globalSearch && (
+                            <button 
+                                onClick={() => setGlobalSearch('')}
+                                className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-orange-500 rounded-full transition-all active:scale-95"
+                                title="Rensa sökning"
+                            >
+                                <window.Icon name="x" size={14} />
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                     <div className="bg-white dark:bg-[#1e293b] rounded-b-3xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col min-h-[500px]">
                         <div className="flex-1 overflow-auto custom-scrollbar relative">
