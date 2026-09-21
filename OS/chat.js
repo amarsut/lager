@@ -196,22 +196,46 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         hapticFeedback();
     };
 
+    // 1. Referenser för att hålla koll på värden utan att starta om Firebase-lyssnaren
+    const prevMsgCount = useRef(0);
+    const isScrolledUp = useRef(showScrollBottom);
+
+    // Uppdatera referensen i bakgrunden när man scrollar
+    useEffect(() => {
+        isScrolledUp.current = showScrollBottom;
+    }, [showScrollBottom]);
+
+    // 2. Den optimerade Firebase-anslutningen
     useEffect(() => {
         const unsubscribe = window.db.collection("notes").orderBy("timestamp", "asc").onSnapshot(snap => {
             const docs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            if (docs.length > messages.length && messages.length > 0) {
-                const lastMsg = docs[docs.length - 1];
-                if (lastMsg.sender !== user.email && showScrollBottom) {
-                    setUnreadCount(prev => prev + 1);
-                } else {
-                    setTimeout(() => scrollToBottom(true), 100);
-                }
-            }
             setMessages(docs);
+
+            // Timeout behövs så att React hinner bygga klart alla meddelanden i vyn innan vi mäter höjden
+            setTimeout(() => {
+                if (prevMsgCount.current === 0) {
+                    // Första gången chatten laddas: Hoppa direkt längst ner (false = ingen animation)
+                    scrollToBottom(false);
+                } else if (docs.length > prevMsgCount.current) {
+                    // Ett nytt meddelande har skickats
+                    const lastMsg = docs[docs.length - 1];
+                    
+                    // Om vi har scrollat upp, och det inte är vi själva som skrev, visa notissiffran
+                    if (lastMsg.sender !== user.email && isScrolledUp.current) {
+                        setUnreadCount(prev => prev + 1);
+                    } else {
+                        // Annars scrollar vi ner snyggt och mjukt (true)
+                        scrollToBottom(true);
+                    }
+                }
+                // Spara det nya antalet till nästa gång
+                prevMsgCount.current = docs.length;
+            }, 100); 
         });
+
         return () => unsubscribe();
-    }, [showScrollBottom, messages.length, scrollToBottom, user.email]);
+    }, [user.email, scrollToBottom]); // VIKTIGT: Vi har tagit bort messages.length och showScrollBottom härifrån!
 
     const toggleRecording = async () => {
         hapticFeedback();
@@ -731,26 +755,28 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     )}
 
                     <form onSubmit={handleAction} className="flex items-end gap-2 w-full mx-auto relative">
-                        
-                        {/* SMARTA UPPLADDNINGSKNAPPAR */}
-                        {(!isFocused && inputText.length === 0 && !editingId && !replyTo) && (
-                            <div className="flex items-center shrink-0 mb-0.5 animate-in slide-in-from-left-4 fade-in duration-200">
-                                <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
-                                    <window.Icon name="plus" size={22} />
-                                    <input type="file" className="hidden" onChange={handleFile} />
-                                </label>
-                                {isMobile && (
-                                    <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-95">
-                                        <window.Icon name="camera" size={20} />
-                                        <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
+    
+                        {/* INMATNINGSFÄLT MED INTEGRERADE IKONER */}
+                        <div className={`flex-1 bg-zinc-100 dark:bg-black/30 border ${isRecording ? 'border-red-500 ring-2 ring-red-500/20' : 'border-zinc-200 dark:border-white/10'} rounded-3xl flex items-end transition-all focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 shadow-inner min-h-[40px] overflow-hidden`}>
+                            
+                            {/* BIFOGA OCH KAMERA (Inuti fältet) */}
+                            {(!isFocused && inputText.length === 0 && !editingId && !replyTo) && (
+                                <div className="flex items-center shrink-0 mb-0.5 ml-1 animate-in slide-in-from-left-2 fade-in duration-200">
+                                    <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-200/50 dark:hover:bg-white/10 active:scale-95">
+                                        <window.Icon name="plus" size={22} />
+                                        <input type="file" className="hidden" onChange={handleFile} />
                                     </label>
-                                )}
-                            </div>
-                        )}
+                                    {isMobile && (
+                                        <label className="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center transition-all text-zinc-400 hover:text-orange-500 hover:bg-zinc-200/50 dark:hover:bg-white/10 active:scale-95">
+                                            <window.Icon name="camera" size={20} />
+                                            <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFile} />
+                                        </label>
+                                    )}
+                                </div>
+                            )}
 
-                        <div className={`flex-1 bg-zinc-100 dark:bg-black/30 border ${isRecording ? 'border-red-500 ring-2 ring-red-500/20' : 'border-zinc-200 dark:border-white/10'} rounded-2xl flex items-center transition-all focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 shadow-inner min-h-[40px]`}>
                             {isRecording ? (
-                                <div className="w-full flex items-center px-4 animate-pulse text-red-500 text-[14px] font-bold">
+                                <div className="w-full flex items-center px-4 py-2.5 animate-pulse text-red-500 text-[14px] font-bold min-h-[40px]">
                                     <window.Icon name="mic" size={16} className="mr-2" /> Spelar in ljud...
                                 </div>
                             ) : (
@@ -765,12 +791,12 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                                     placeholder="Skriv ett meddelande..."
                                     rows={1}
                                     style={{ minHeight: '40px', paddingTop: '9px', paddingBottom: '9px' }}
-                                    className="w-full bg-transparent border-none outline-none px-4 text-[15px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-600 resize-none custom-scrollbar leading-snug"
+                                    className={`w-full bg-transparent border-none outline-none text-[15px] font-medium text-zinc-900 dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-600 resize-none custom-scrollbar leading-snug ${(!isFocused && inputText.length === 0 && !editingId && !replyTo) ? 'pl-1 pr-4' : 'px-4'}`}
                                 />
                             )}
                         </div>
                         
-                        {/* SKICKA ELLER MIKROFON */}
+                        {/* SKICKA ELLER MIKROFON (Utanför fältet) */}
                         {(inputText.trim() || isUploading || editingId || isRecording) ? (
                             <button key="btn-send" type="submit" disabled={(!inputText.trim() && !isRecording && !isUploading)} className={`flex items-center justify-center w-10 h-10 mb-0.5 shrink-0 rounded-full text-white shadow-sm transition-all active:scale-90 ${isRecording ? 'bg-red-500 hover:bg-red-400' : 'bg-orange-500 hover:bg-orange-400 disabled:bg-zinc-200 disabled:dark:bg-white/5'}`}>
                                 {isRecording ? (
