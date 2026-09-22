@@ -381,7 +381,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                 });
 
                 // NY REGEX OCH PROMPT
-                const dtcRegex = /\b([PBUC]\d{4}[A-Z0-9]{0,2})\b|\b(BMW|VW|AUDI|VOLVO|MERCEDES|SKODA|SEAT|VAG|PORSCHE|MINI|RENAULT|PEUGEOT|FORD)\s+[A-Z0-9]{3,7}\b/i;
+                const dtcRegex = /[PBUC]\s*[0-9A-Z]{4,6}|\b(BMW|VW|AUDI|VOLVO|MERCEDES|SKODA|SEAT|VAG|PORSCHE|TIGUAN)\b/i;
                 const isAiCommand = textToSend.toLowerCase().startsWith('/ai ');
 
                 if (dtcRegex.test(textToSend) || isAiCommand) {
@@ -787,25 +787,6 @@ Använd EXAKT denna Markdown-mall för dina svar:
                                     </React.Fragment>
                                 );
                             })}
-                            
-                            {/* GEMINI LOADING SKELETON */}
-                            {isAiLoading && (
-                                <div className="flex w-full animate-in slide-in-from-bottom-2 fade-in duration-300 justify-start mt-4">
-                                    <div className="w-8 h-8 shrink-0 mr-2 flex flex-col justify-end">
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-[#1a2235] border border-orange-500 shadow-sm relative overflow-hidden">
-                                            <div className="absolute inset-0 bg-orange-500/10"></div>
-                                            <window.Icon name="cpu" size={16} className="text-orange-500" />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-start max-w-[85%]">
-                                        <div className="px-4 py-3 bg-white dark:bg-[#1a2235] rounded-2xl rounded-tl-[4px] border border-zinc-200/50 dark:border-white/5 shadow-sm flex items-center gap-1.5">
-                                            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                                            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                                            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>
