@@ -140,6 +140,7 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     const [galleryTab, setGalleryTab] = useState('image'); 
     
     const [filter, setFilter] = useState(viewParams?.filter || 'all');
+    const [showAi, setShowAi] = useState(false); // NYTT: Döljer AI som standard
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const scrollRef = useRef(null);
@@ -372,20 +373,22 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
             if (currentEditId) {
                 await window.db.collection("notes").doc(currentEditId).update({ text: textToSend, isEdited: true });
             } else {
+                const dtcRegex = /[PBUC]\s*[0-9A-Z]{4,6}|\b(BMW|VW|AUDI|VOLVO|MERCEDES|SKODA|SEAT|VAG|PORSCHE|TIGUAN)\s+[A-Z0-9]{3,8}\b/i;
+                const isAiCommand = textToSend.toLowerCase().startsWith('/ai ');
+                const isAiTrigger = dtcRegex.test(textToSend) || isAiCommand;
+
                 await window.db.collection("notes").add({
                     text: textToSend, 
                     sender: user.email, 
                     timestamp: new Date().toISOString(), 
                     type: 'text',
+                    isAiTrigger: isAiTrigger, // NYTT: Flaggas i databasen
                     replyTo: currentReplyTo ? { id: currentReplyTo.id, text: currentReplyTo.text, sender: currentReplyTo.sender } : null
                 });
 
-                // NY REGEX OCH PROMPT
-                const dtcRegex = /[PBUC]\s*[0-9A-Z]{4,6}|\b(BMW|VW|AUDI|VOLVO|MERCEDES|SKODA|SEAT|VAG|PORSCHE|TIGUAN)\b/i;
-                const isAiCommand = textToSend.toLowerCase().startsWith('/ai ');
-
-                if (dtcRegex.test(textToSend) || isAiCommand) {
+                if (isAiTrigger) {
                     setIsAiLoading(true);
+                    setShowAi(true); // NYTT: Slår på filtret automatiskt när du söker
                     scrollToBottom(true);
                     
                     try {
@@ -396,27 +399,25 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                             body: JSON.stringify({
                                 systemInstruction: {
                                     parts: [{ 
-                                        text: `Du är "AutoGrid AI", en avancerad fordonsteknisk AI för professionella mekaniker. Svara extremt kortfattat och tekniskt korrekt. Inget fluff, inga hela meningar om det inte krävs. Använd telegrafisk stil.
+                                        text: `Du är "AutoGrid AI", en fordonsteknisk expert-AI för professionella mekaniker. Din huvuduppgift är att diagnostisera felkoder (DTC) med absolut högsta precision för ALLA bilmärken (Volvo, Mercedes, BMW, VAG, Ford, Toyota m.fl.).
 
 KRITISKA REGLER:
-1. Telegrafisk stil: Använd punktform, förkortningar och maximerad informationsdensitet.
-2. Konkret Felsökning: Ange ALLTID specifika mätvärdesblock, referensvärden eller pin-out. 
-3. Officiella Komponentkoder: Använd ALLTID tillverkarens officiella beteckningar från elscheman INUTI texten (t.ex. EGR N18, G450, B65, J949).
-4. Analys av kontext: Analysera märke och styrenhet för tillverkarspecifika B/U-koder för att undvika generiska fel (t.ex. SOS-modul vs krocksensor). Sätt troligaste felet först.
-5. Kända fel (TPI/TSB): Nämn alltid om felet är ett känt fabrikationsfel eller kräver mjukvaruuppdatering.
+1. Absolut Precision: När du får ett bilmärke och en kod (ex. "BMW 34FA00" eller "Volvo ECM-P0420"), agera exakt som tillverkarens egna diagnosverktyg (ISTA, VIDA, ODIS, Xentry). 
+2. Inga gissningar (Noll-tolerans): Om koden är en märkesspecifik hex-kod, ge den EXAKTA OEM-definitionen. Om du inte vet med 100% säkerhet vad koden betyder för just det bilmärket, svara: "Okänd tillverkarkod".
+3. Specifika komponenter: Använd tillverkarens officiella beteckningar från elscheman (t.ex. G450, N18, B65).
+4. Telegrafisk stil: Svara extremt kortfattat och tekniskt. 
 
 Använd EXAKT denna Markdown-mall för dina svar:
 
-**Snabbsvar:** [Kortaste möjliga slutsats, t.ex. "Troligt fel: EGR-ventil (N18). Kontrollera kablage innan byte."]
+**Snabbsvar:** [Kort och exakt OEM-beskrivning av felkoden. Ex: "Kommunikationsfel Telematics (TCB)"]
 ---MER---
 **Diagnos:**
-* [Diagnos/Mätvärde/Tolerans]
-* [Fysisk kontroll/Pin-mätning]
+* [Fysisk kontroll / Mätvärde / Pin-out]
 
 **Åtgärd:**
-* [Konkret åtgärd]
+* [Konkret nästa steg / Komponentbyte]
 
-> **Verkstadstips:** [TPI/TSB, kodningskrav, adaption eller vanlig fallgrop. Tomt om inget finns.]` 
+> **Verkstadstips:** [Ange specifika TPI/TSB/PUMA-åtgärder eller kända typfel om det existerar. Annars lämna tomt.]` 
                                     }]
                                 },
                                 contents: [{ parts: [{ text: textToSend }] }],
@@ -540,7 +541,7 @@ Använd EXAKT denna Markdown-mall för dina svar:
                 <div className="h-[64px] flex items-center justify-between px-2 sm:px-4 pointer-events-auto relative">
                     
                     {/* VÄNSTER: Tillbaka-knapp */}
-                    <div className="flex items-center justify-start w-1/4">
+                    <div className="flex items-center justify-start w-[60px] sm:w-[100px] shrink-0 z-10">
                         {!isPopup && (
                             <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95">
                                 <window.Icon name="arrow-left" size={20} />
@@ -548,29 +549,42 @@ Använd EXAKT denna Markdown-mall för dina svar:
                         )}
                     </div>
                     
-                    {/* MITTEN: Centrerad Titel */}
-                    <div className="flex-1 flex justify-center mt-1">
-                        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 px-4 py-1.5 rounded-full transition-all active:scale-95">
-                            <h2 className="text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                    {/* MITTEN: Centrerad Titel (anpassad för mobil) */}
+                    <div className="flex-1 flex justify-center items-center overflow-hidden px-1 z-0 mt-1">
+                        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 px-3 py-1.5 rounded-full transition-all active:scale-95">
+                            <h2 className="text-[14px] sm:text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1 whitespace-nowrap">
                                 AutoGrid <span className="text-orange-500 font-medium">AI</span>
-                                <window.Icon name="chevron-down" size={16} className="text-zinc-400" />
+                                <window.Icon name="chevron-down" size={14} className="text-zinc-400" />
                             </h2>
                         </div>
                     </div>
 
                     {/* HÖGER: Galleri-piller & Stäng-knapp */}
-                    <div className="flex items-center justify-end gap-2 w-1/4">
-                        <div className="flex bg-white/50 dark:bg-white/5 p-1.5 rounded-full border border-zinc-300/30 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center justify-end gap-1 sm:gap-2 w-auto shrink-0 z-10">
+                        <div className="flex bg-white/50 dark:bg-white/5 p-1 sm:p-1.5 rounded-full border border-zinc-300/30 dark:border-white/5 shadow-sm items-center">
+                            
+                            {/* AI-Filterknapp */}
+                            <button 
+                                onClick={() => setShowAi(!showAi)} 
+                                className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all relative ${showAi ? 'bg-white dark:bg-[#1e2330] shadow-sm' : 'hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                            >
+                                <window.Icon name="cpu" size={16} className={`pointer-events-none ${showAi ? 'text-orange-500' : 'text-zinc-400'}`} />
+                                {!showAi && <div className="absolute inset-0 m-auto w-5 h-[1.5px] bg-zinc-400 rotate-45 pointer-events-none rounded-full"></div>}
+                            </button>
+                            
+                            {/* Korrigerat streck */}
+                            <div className="w-[1px] h-5 bg-zinc-300 dark:bg-white/10 mx-0.5 sm:mx-1 shrink-0 rounded-full"></div>
+
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
-                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={18} className="pointer-events-none" />
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
+                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={16} className="pointer-events-none" />
                                 </button>
                             ))}
                         </div>
 
                         {isPopup && (
-                            <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
-                                <window.Icon name="x" size={24} />
+                            <button onClick={onClose} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
+                                <window.Icon name="x" size={20} />
                             </button>
                         )}
                     </div>
@@ -632,7 +646,11 @@ Använd EXAKT denna Markdown-mall för dina svar:
                         </div>
                     ) : (
                         <div className="flex flex-col gap-1 pb-16 relative">
-                            {messages.map((msg, index) => {
+                            {messages.filter(msg => {
+                                // Helt separerade vyer: AI för sig, vanliga chatten för sig.
+                                const isAiMessage = msg.sender === 'AutoGrid_AI' || msg.isAiTrigger;
+                                return showAi ? isAiMessage : !isAiMessage;
+                            }).map((msg, index, filteredMessages) => {
                                 const isMe = msg.sender === user.email;
                                 const isImage = msg.type === 'image' || msg.image;
                                 const isAudio = msg.type === 'audio';
@@ -650,12 +668,12 @@ Använd EXAKT denna Markdown-mall för dina svar:
                                 const TIME_LIMIT = 60 * 60 * 1000; // 1 timme gräns (ändra 60 till 30 för halvtimme)
                                 
                                 // Räkna ut tidsskillnaden mellan nuvarande, föregående och nästa meddelande
-                                const timeDiffPrev = index > 0 ? (getTimeMs(msg.timestamp) - getTimeMs(messages[index - 1].timestamp)) : 0;
-                                const timeDiffNext = index < messages.length - 1 ? (getTimeMs(messages[index + 1].timestamp) - getTimeMs(msg.timestamp)) : 0;
+                                const timeDiffPrev = index > 0 ? (getTimeMs(msg.timestamp) - getTimeMs(filteredMessages[index - 1].timestamp)) : 0;
+                                const timeDiffNext = index < filteredMessages.length - 1 ? (getTimeMs(filteredMessages[index + 1].timestamp) - getTimeMs(msg.timestamp)) : 0;
                                 
                                 // Bryt grupperingen om mer än TIME_LIMIT har passerat
-                                const isSameSenderAsPrev = index > 0 && messages[index - 1].sender === msg.sender && !showSeparator && timeDiffPrev < TIME_LIMIT;
-                                const isSameSenderAsNext = index < messages.length - 1 && messages[index + 1].sender === msg.sender && timeDiffNext < TIME_LIMIT;
+                                const isSameSenderAsPrev = index > 0 && filteredMessages[index - 1].sender === msg.sender && !showSeparator && timeDiffPrev < TIME_LIMIT;
+                                const isSameSenderAsNext = index < filteredMessages.length - 1 && filteredMessages[index + 1].sender === msg.sender && timeDiffNext < TIME_LIMIT;
                                 
                                 return (
                                     <React.Fragment key={msg.id}>
