@@ -10,29 +10,29 @@
            ======================================================= */
         :root {
             --color-primary: #333; 
-            --color-secondary: #004d99; 
-            --color-light-bg: #f5f5f5; 
-            --color-section-bg: #e9e9e9; 
-            --color-text: #333; 
-            --color-border-dark: #888; 
-            --color-border-light: #ccc; 
+            --color-secondary: #005b8a; /* erWin-blå */
+            --color-light-bg: #f5f5f5; /* Ljusare grå för zebraränder */
+            --color-section-bg: #005b8a; /* Samma blå för rubrikbakgrunder */
+            --color-text: #000; 
+            --color-border-dark: #666; 
+            --color-border-light: #999; /* Mörkare grå för skarpare tabellinjer */
             --color-red: #dc3545;
             --color-warning: #ffc107; 
             --color-success: #28a745; 
             --spacing-base: 8px;
-            --color-toggle-off: var(--color-primary); /* Samma färg som de andra knapparna när den är avstängd */
-            --color-toggle-on: var(--color-success);  /* Grön färg när den är påslagen */
+            --color-toggle-off: var(--color-primary);
+            --color-toggle-on: var(--color-success);
         }
 
         /* =======================================================
            BASSTILAR & TYPOGRAFI
            ======================================================= */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, Helvetica, sans-serif; /* Ändrad till Arial för att matcha erWin */
             margin: 20px auto;
             max-width: 1000px;
             color: var(--color-text);
-            background-color: #fff;
+            background-color: #d4d0c8; /* Klassisk skrivbordsgrå bakgrund */
         }
 
         .header {
@@ -57,7 +57,6 @@
             left: 0;
         }
 
-
         .inspection-title {
             text-align: center;
             font-weight: 600;
@@ -65,13 +64,12 @@
             margin: 20px 0 20px 0;
             border: 1px solid var(--color-border-light); 
             padding: 10px;
-            background-color: var(--color-section-bg); 
+            background-color: #e4e4e4; 
             color: var(--color-secondary); 
         }
         
-        /* NY CSS FÖR REDIGERBARA RUBRIKER */
         .editable-header {
-            padding: 0 !important; /* Ta bort padding från föräldern */
+            padding: 0 !important; 
         }
         
         .editable-header-input {
@@ -94,12 +92,12 @@
         .editable-header-input.section-style {
             padding: 3px 10px;
             text-align: left;
+            color: #ffffff; /* Vit text för blå bakgrund */
+            font-weight: bold;
         }
-        /* SLUT NY CSS */
         
-        /* STIL FÖR VARNINGSRAD (INTE OK) - Justerad opacitet för att synas över zebra-striping */
         .warning-row {
-            background-color: rgba(255, 193, 7, 0.2) !important; 
+            background-color: rgba(255, 193, 7, 0.4) !important; 
             border-left: 5px solid var(--color-warning); 
         }
 
@@ -112,7 +110,7 @@
             align-items: center;
             margin-bottom: 20px;
             gap: 10px;
-            flex-wrap: wrap; /* Tillåter radbrytning på små skärmar */
+            flex-wrap: wrap; 
         }
 
         .print-button-container {
@@ -122,38 +120,34 @@
             flex-wrap: wrap; 
         }
 
-        /* Standardstil för alla knappar */
         .top-buttons button {
-            padding: 10px 15px;
-            font-size: 14px;
+            padding: 6px 12px;
+            font-size: 13px;
             cursor: pointer;
-            background-color: var(--color-primary); /* Default färg för alla knappar (mörkgrå) */
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            background-color: #e4e4e4; /* Klassisk ljusgrå "system"-färg */
+            color: #000;
+            border: 1px solid #888; /* Hård och enkel ram */
+            border-radius: 0; /* Helt fyrkantiga hörn */
+            font-weight: normal; /* Standard textvikt */
             flex-shrink: 0;
         }
         
-        /* Standard Hover-färg för alla knappar (Blå) */
         .top-buttons button:hover {
-            background-color: var(--color-secondary); 
+            background-color: #d0d0d0; /* Lite mörkare grå när man håller över */
+            border-color: #555;
         }
-
-        /* NYTT: Styling för Separat servicebevis (Toggle Button) */
-        /* Denna regel är borttagen för att låta .top-buttons button hantera default-färg och hover */
         
         #toggle-service-bevis-btn.toggled-on {
-            background-color: var(--color-toggle-on); /* Grön färg när den är påslagen */
+            background-color: #c8e6c9; /* En mycket diskret, blekgrön färg för aktiverat läge */
+            color: #000;
+            border-color: #888;
         }
 
-        /* För att markera hover-effekten på den gröna knappen */
         #toggle-service-bevis-btn.toggled-on:hover {
-            background-color: #1e7e34; /* Mörkare grön vid hover */
+            background-color: #a5d6a7; 
+            border-color: #555;
         }
         
-        /* Stilar för den faktiska checkboxen (om de inte används) */
         .checkbox-option {
             display: flex;
             align-items: center;
@@ -171,22 +165,22 @@
         }
         
         .remove-row-btn {
-            background-color: var(--color-red); 
-            color: white;
+            background-color: transparent; 
+            color: #dc3545;
             border: none;
             padding: 2px 5px; 
-            font-size: 11px; 
+            font-size: 14px; 
+            font-weight: bold;
             cursor: pointer;
-            border-radius: 3px;
             margin-left: var(--spacing-base); 
             line-height: 1; 
             order: 3; 
             flex-shrink: 0; 
-            opacity: 0.7;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
-        .remove-row-btn:hover {
-            background-color: #c82333;
-            opacity: 1;
+        tr:hover .remove-row-btn {
+            opacity: 1; 
         }
 
         /* =======================================================
@@ -197,13 +191,12 @@
             display: grid;
             gap: 20px 30px; 
             margin-bottom: 30px;
-            padding: 15px 0;
-            border-top: 1px solid var(--color-border-light); 
-            border-bottom: 1px solid var(--color-border-light); 
+            padding: 15px;
+            border: 1px solid var(--color-border-light); 
+            background-color: #e4e4e4;
             font-size: 14px;
         }
         
-        /* NY STYLING: Gråmarkerad exempeltext */
         .info-item input::placeholder {
             color: #aaa; 
             opacity: 1; 
@@ -233,7 +226,6 @@
             box-sizing: border-box;
         }
         
-        /* Kopieringsikon-stil */
         .copy-icon-container {
             position: absolute;
             right: 0;
@@ -257,7 +249,6 @@
             content: "\1F4CB"; 
         }
         
-        /* Valideringsvarning */
         .input-warning-msg { 
             color: var(--color-red);
             font-size: 11px;
@@ -290,29 +281,36 @@
            TABELLSTRUKTUR & RAMAR
            ======================================================= */
         .custom-checkbox input[type="checkbox"] {
-            transform: scale(1.3); 
+            transform: scale(1.0); 
             margin: 0; 
             vertical-align: middle; 
             cursor: pointer;
+            border-radius: 0; 
             accent-color: var(--color-secondary); 
         }
         .custom-checkbox span {
             display: none; 
         }
+        
         .table-container {
-            border: 1px solid var(--color-border-light); 
+            background-color: transparent;
+            border: none; 
+            padding: 0; 
             margin-bottom: 25px; 
             overflow-x: auto; 
         }
+        
         .table-container table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
             min-width: 600px; 
+            background-color: #e4e4e4;
+            border: 1px solid #777;
         }
         th, td {
-            border: 1px solid var(--color-border-light); 
-            padding: 3px 8px; 
+            border: 1px solid #999; 
+            padding: 2px 6px; 
             text-align: left;
             vertical-align: middle;
         }
@@ -320,51 +318,50 @@
         /* =======================================================
            TABELL LÄSBARHET (ZEBRA & HOVER)
            ======================================================= */
-        /* Zebra-striping: Alternerande ljus bakgrundsfärg för varannan rad */
+        tbody tr {
+            background-color: #e6e6e6; 
+        }
         #static-rows-1 tr:nth-child(even), 
         #static-rows-2 tr:nth-child(even), 
         #static-rows-3 tr:nth-child(even),
         #dynamic-rows tr.dynamic-row:nth-child(even) {
-            background-color: var(--color-light-bg); 
+            background-color: #ffffff; 
         }
 
-        /* Förbättrad hover-effekt för alla rader */
         tbody tr:hover {
-            background-color: rgba(0, 77, 153, 0.05); 
+            background-color: rgba(0, 91, 138, 0.1); 
         }
+        
         /* =======================================================
            RESTEN AV CSS STYLING 
            ======================================================= */
         
         .section-header-title {
             text-align: left;
-            font-weight: 700;
-            font-size: 14px;
-            padding: 3px 10px; 
-            border-bottom: 1px solid var(--color-border-light) !important; 
-            color: var(--color-secondary); 
-            background-color: var(--color-section-bg) !important; 
-            border-right: 1px solid var(--color-border-light) !important; 
-            border-left: none !important;
-            border-top: 1px solid var(--color-border-light) !important; 
+            font-weight: bold;
+            font-size: 13px;
+            padding: 4px 10px; 
+            background-color: #0073a5 !important; 
+            color: #ffffff !important; 
+            border: 1px solid #999 !important;
+            border-right: 1px solid #fff !important; 
         }
         .header-checkbox-title {
             text-align: center;
-            font-weight: 700;
-            font-size: 13px;
-            padding: 3px 4px; 
-            border-bottom: 1px solid var(--color-border-light) !important; 
-            background-color: var(--color-section-bg) !important; 
-            color: var(--color-secondary); 
+            font-weight: normal;
+            font-size: 11px;
+            padding: 2px 4px; 
+            background-color: #0073a5 !important; 
+            color: #ffffff !important; 
+            border: 1px solid #999 !important;
+            border-left: 1px solid #fff !important;
             vertical-align: middle; 
-            white-space: nowrap; 
             line-height: 1.1;
         }
         .checkbox-cell, .action-column {
             text-align: center; 
-            width: 15px; 
-            flex-shrink: 0;
-            padding: 3px 2px; 
+            width: 40px; 
+            padding: 2px; 
         }
         .description-content-wrapper {
             display: flex;
@@ -372,24 +369,24 @@
             justify-content: flex-start;
             flex-grow: 1; 
             margin: -3px -8px; 
-            padding: 3px 8px; 
+            /* Här anger vi 15px på slutet för att trycka in texten från vänster */
+            padding: 3px 8px 3px 20px; 
         }
         .editable-text {
             border: none;
             background-color: transparent;
-            font-family: inherit; 
+            font-family: Arial, Helvetica, sans-serif; 
             font-size: inherit;  
             width: 100%; 
             flex-grow: 1; 
             padding: 0; 
             margin: 0;
             box-sizing: border-box;
-            font-weight: 600; 
+            font-weight: bold; 
             line-height: 1.3em; 
             order: 1;
         }
         
-        /* Gör readonly-inputs omöjliga att särskilja från vanlig text */
         .editable-text[readonly] {
             outline: none;
             cursor: default;
@@ -403,9 +400,6 @@
             flex-grow: 1;
             order: 1;
             white-space: pre-wrap; 
-        }
-        .dynamic-row, .asterisk-row {
-            background-color: #fcfcfc;
         }
         #row-template {
             display: none;
@@ -424,14 +418,77 @@
             backdrop-filter: blur(2px); 
         }
         .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto; 
-            padding: 20px; 
-            border: 1px solid var(--color-border-dark); 
+            background-color: #e4e4e4; /* Klassisk systemgrå */
+            margin: 10% auto; 
+            padding: 15px 20px; 
+            border: 2px solid #555; /* Kantig och hård ram */
             width: 90%; 
             max-width: 500px; 
-            border-radius: 8px;
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.3);
+            border-radius: 0; /* Fyrkantigt */
+            box-shadow: none; /* Ingen mjuk skugga */
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            color: #000;
+            float: right;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -3px;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #dc3545;
+            text-decoration: none;
+        }
+        .service-list {
+            list-style: none; 
+            padding: 0;
+            margin: 15px 0 0 0;
+            border: 1px solid #888 !important; /* Hård ram runt hela */
+            background-color: #fff !important; /* Tvinga vit bakgrund för tabellen */
+            max-height: 250px;
+            overflow-y: auto; 
+        }
+        .service-list li {
+            padding: 4px 8px !important; /* Tajtare system-padding */
+            margin: 0 !important; /* Tvinga bort allt mellanrum! */
+            border: none !important; /* Tvinga bort runda ramar */
+            border-bottom: 1px solid #eee !important; /* Endast en diskret avskiljare */
+            cursor: pointer;
+            font-size: 13px;
+            color: #000 !important; /* Svart text som standard */
+            background-color: transparent !important;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 !important; /* Tvinga bort runda hörn */
+        }
+        .service-list li:hover {
+            background-color: var(--color-secondary) !important; 
+            color: #fff !important; 
+        }
+        .service-list li:hover .asterisk {
+            color: #fff !important; 
+        }
+        .service-list .asterisk {
+            color: var(--color-red) !important;
+            font-weight: normal;
+        }
+        .service-list li.confirmed {
+            background-color: #e0e0e0 !important; /* Tydlig, mörkare grå för redan valda */
+            color: #555 !important; /* Mörkgrå text så att den går att läsa (inte vit!) */
+            pointer-events: none; 
+            font-style: italic; 
+            border-bottom: 1px solid #ccc !important;
         }
         .close-btn {
             color: #aaa;
@@ -464,7 +521,7 @@
             border-radius: 4px;
         }
         .service-list li:hover {
-            background-color: var(--color-section-bg); 
+            background-color: #e4e4e4; 
         }
         .service-list .asterisk {
             color: var(--color-red);
@@ -547,7 +604,6 @@
             padding-left: 5px;
         }
         
-        /* NYTT: Flytande notifiering vid sparning */
         #save-notification {
             position: fixed;
             bottom: 20px;
@@ -575,59 +631,104 @@
         .modal-button-container {
             display: flex; 
             justify-content: flex-end; 
-            gap: 10px; 
-            margin-top: 25px;
+            gap: 8px; 
+            margin-top: 20px;
+            border-top: 1px solid #aaa; /* Linje ovanför knapparna */
+            padding-top: 15px;
         }
 
         .modal-button {
-            padding: 10px 15px;
-            font-size: 14px;
+            padding: 6px 12px;
+            font-size: 13px;
             cursor: pointer;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            color: #000; /* Svart text */
+            background-color: #e4e4e4; /* Klassisk ljusgrå "system"-färg */
+            border: 1px solid #888; /* Hård ram */
+            border-radius: 0; /* Fyrkantiga */
+            font-weight: normal;
         }
 
         .modal-button.btn-cancel {
-            background-color: #6c757d; /* Neutral grå */
+            background-color: #e4e4e4; 
         }
         .modal-button.btn-cancel:hover {
-            background-color: #5a6268; /* Mörkare grå */
+            background-color: #d0d0d0; /* Mörkare grå */
+            border-color: #555;
         }
 
         .modal-button.btn-danger {
-            background-color: var(--color-red); /* Röd */
+            background-color: #e4e4e4; /* Ljusgrå knapp... */
+            color: #dc3545; /* ...men röd text för "Fara" */
         }
         .modal-button.btn-danger:hover {
-            background-color: #c82333; /* Mörkare röd */
+            background-color: #d0d0d0; 
+            border-color: #555;
         }
         
         /* =======================================================
            UTSKRIFTSSTYLING (Media Print) OCH SERVICEBEVIS
            ======================================================= */
         @media print {
-            body { margin: 0; }
+            /* 1. Sätt äkta pappersmarginal för att få mellanrum högst upp på ALLA sidor (även sida 2) */
+            @page { 
+                margin: 15mm 15mm 20mm 15mm !important; 
+            }
+            
+            /* 2. Ta bort inre padding från body eftersom @page nu sköter marginalerna */
+            body { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background-color: #fff; 
+            }
+            
+            /* 3. Korrekt tabellbrytning som behåller ramar och repeterar rubriker */
+            table {
+                page-break-inside: auto !important;
+            }
+            tr { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+            }
+            thead { 
+                /* Låter den blå sektionsrubriken repeteras om tabellen bryts till en ny sida */
+                display: table-header-group !important; 
+            }
+            
+            .footer-notes { margin-top: 60px !important; } /* Skapar ett rejält mellanrum ovanför kommentarerna */
+            .no-print { display: none !important; } /* Döljer inställningar som inte ska synas på papper */
             .modal, .top-buttons, .remove-row-btn, .date-picker-overlay, .copy-icon-container, #save-notification { display: none !important; }
+            .info-section { background-color: #fff; border: 1px solid #ccc; }
             .info-item input { border-bottom: 1px solid var(--color-border-dark) !important; padding-left: 2px; padding-right: 0 !important;}
-            .info-item input.input-warning { border: none !important; border-bottom: 1px solid var(--color-border-dark) !important; background-color: transparent !important; padding: 2px 0 !imporant;}
+            .info-item input.input-warning { border: none !important; border-bottom: 1px solid var(--color-border-dark) !important; background-color: transparent !important; padding: 2px 0 !important;}
             .input-warning-msg { display: none !important; } 
             input:required:not(:valid) { border-color: initial !important; box-shadow: none !important;}
             
-            /* Dölj input-fälten i wrapper, visa print-texten */
             .editable-text { display: none !important; }
             .print-text-only { display: block !important; }
+            .comment-area { display: none !important; } /* Dölj textrutan på papper */
+            #comment-area-print { display: block !important; } /* Visa rena texten på papper */
             
             .description-content-wrapper { display: block; margin: 0; padding: 0;}
-            .custom-checkbox input[type="checkbox"] { transform: scale(1.3) !important; -webkit-print-color-adjust: exact; color-adjust: exact; accent-color: var(--color-secondary) !important; }
+            .custom-checkbox input[type="checkbox"] { transform: scale(1.0) !important; -webkit-print-color-adjust: exact; color-adjust: exact; accent-color: var(--color-secondary) !important; }
             .comment-area, .table-container, .header, .header::after, .inspection-title, .section-header-title, .header-checkbox-title { -webkit-print-color-adjust: exact; color-adjust: exact; }
             .signature-input-date { border-bottom: 1px solid var(--color-primary) !important; }
             .info-section { grid-template-columns: repeat(4, 1fr) !important; } 
-            .warning-row { border-left: 5px solid var(--color-warning) !important; -webkit-print-color-adjust: exact; color-adjust: exact; } 
+            .warning-row { border-left: 5px solid var(--color-warning) !important; -webkit-print-color-adjust: exact; color-adjust: exact; background-color: transparent !important;} 
             
-            
-            /* --- SERVICEBEVIS NY STYLING (MATCHAR AUDI PDF V2) --- */
+            /* Använd padding istället för margin så att utrymmet alltid tvingas fram, även på ny sida */
+            .footer-notes { 
+                padding-top: 0px !important; 
+                margin-top: 0 !important; 
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .signature-section {
+                padding-top: 40px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* --- SERVICEBEVIS NY STYLING --- */
             
             #service-bevis-container {
                 page-break-before: always;
@@ -636,7 +737,7 @@
                 font-family: Arial, sans-serif; 
                 border: none; 
                 box-shadow: none;
-                font-size: 10pt; /* Justerat för att passa mer text */
+                font-size: 10pt; 
             }
             
             .service-bevis-header-block {
@@ -648,7 +749,6 @@
                 padding-bottom: 10px;
             }
             
-            /* Höger sida: "Er Audi" och "Servicebevis" */
             .sb-right-header {
                 text-align: right;
                 line-height: 1.1;
@@ -675,15 +775,12 @@
                 clear: both; 
             }
             
-            /* Vänster sida: Utrymme för bild/logotyp */
             .sb-left-header {
                 width: 150px; 
                 height: 50px; 
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                /* Stil för att markera utrymmet om ingen bild finns. */
-                /* border: 1px dashed #ccc; */ 
                 font-size: 8pt; 
                 color: #888;
                 overflow: hidden;
@@ -698,7 +795,6 @@
                 color: #000;
             }
             
-            /* Ny, renare data-sektion (ingen tabell) */
             .sb-data-section {
                 width: 100%;
                 margin-bottom: 15px;
@@ -730,18 +826,16 @@
                 text-align: left;
             }
             
-            /* Särskild stil för block med utökad text (t.ex. Utfört av) */
             .sb-value-block {
                 padding-top: 2px;
                 padding-bottom: 2px;
                 line-height: 1.3;
             }
 
-            /* Stilar för bockmarkering */
             .additional-work-list-bock {
                 margin: 0;
                 padding: 0;
-                list-style-type: none; /* Se till att inga punkter syns */
+                list-style-type: none; 
                 font-weight: 600;
             }
 
@@ -755,7 +849,6 @@
                 font-weight: normal;
             }
             
-            /* Underskrifter */
             .service-bevis-signatures {
                 display: flex;
                 justify-content: space-between;
@@ -785,28 +878,20 @@
                 padding-top: 5px;
             }
             
-             /* NYTT: Förhindra tom sida genom att helt dölja behållaren om den inte innehåller beviset */
             #service-bevis-container:empty {
                 display: none !important;
             }
-
         }
         
-        /* Media Query för att hantera 3 kolumner i smalare fönster */
         @media screen and (max-width: 900px) {
             .info-section {
                 grid-template-columns: repeat(3, 1fr); 
             }
         }
-        /* Media Query för att hantera 2 kolumner i smala fönster */
         @media screen and (max-width: 600px) {
             .info-section {
                 grid-template-columns: repeat(2, 1fr); 
             }
-            
-            /* --- MOBIL FÖRBÄTTRINGAR START --- */
-            
-            /* 1. Sidomarginal/Padding */
             body { 
                 margin: 0;
                 padding: 10px 10px; 
@@ -820,36 +905,26 @@
                 font-size: 14px;
                 margin: 15px 0 15px 0;
             }
-            
-            /* 2. Knappar: Gör större och stapla på varandra */
             .top-buttons {
                 flex-direction: column; 
                 align-items: stretch; 
                 gap: 5px;
             }
-            
             .print-button-container {
                 flex-direction: column; 
                 gap: 5px;
                 width: 100%;
-                /* Lägg till checkbox-option i print-button-container för att den ska staplas */
                 align-items: stretch; 
             }
-
             .checkbox-option {
-                 margin-right: 0; /* Tar bort höger marginal på mobil */
+                 margin-right: 0; 
             }
-            
-            /* Se till att knapparna tar upp hela bredden i mobilvy */
             .print-button-container button {
                 width: 100%;
             }
-
-            .top-buttons > button { /* Rensa protokoll-knappen */
+            .top-buttons > button { 
                  width: 100%;
             }
-            
-            /* 3. Mindre fontstorlek i tabeller */
             .table-container table {
                 font-size: 12px; 
             }
@@ -862,8 +937,6 @@
             .header-checkbox-title {
                 font-size: 11px;
             }
-            
-            /* 4. Justeringar för övriga element */
             .service-list li {
                 font-size: 13px;
             }
@@ -879,10 +952,7 @@
             .signature-input-date {
                 max-width: 100%;
             }
-            
-            /* --- MOBIL FÖRBÄTTRINGAR SLUT --- */
         }
-
     </style>
 </head>
 <body onload="loadData(); validateRequiredFields(); generateStaticRows();">
@@ -891,17 +961,10 @@
 
     <div class="top-buttons">
         <div class="print-button-container">
-            
             <button class="print-button" onclick="submitForm(event)">Skriv ut</button>
-            
-            <!-- NY MEJL-KNAPP START -->
             <button type="button" onclick="sendEmail()">Skicka via mejl</button>
-            <!-- NY MEJL-KNAPP SLUT -->
-            
             <button onclick="openServiceModal()">+ Lägg till extra tillägg</button>
-            
             <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()">Separat servicebevis</button>
-            
         </div>
         <button class="clear-button" onclick="clearProtocol()">Rensa protokoll</button>
     </div>
@@ -911,49 +974,45 @@
             Serviceprotokoll
         </div>
         <div class="info-section" id="info-section-inputs">
-            
             <div class="info-item">
                 <label for="order-nr">Ordernr</label>
                 <input type="text" id="order-nr" name="order-nr" data-persist="true" value="" onchange="saveData()">
                 <div class="copy-icon-container" onclick="copyToClipboard('order-nr')"></div>
             </div>
-            
             <div class="info-item"><label for="modellkod">Modellkod</label><input type="text" id="modellkod" name="modellkod" data-persist="true" value="" onchange="saveData()"></div>
-            
             <div class="info-item">
                 <label for="registrering-nr">Registreringsnr <span class="red-text">*</span></label>
                 <input type="text" id="registrering-nr" name="registrering-nr" data-persist="true" value="" onchange="saveData(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" required>
                 <div class="copy-icon-container" onclick="copyToClipboard('registrering-nr')"></div>
                 <div id="registrering-nr-alert" class="input-warning-msg">Registreringsnr saknas!</div>
             </div>
-            
             <div class="info-item"><label for="registrering-datum">Registrering</label><input type="text" id="registrering-datum" name="registrering-datum" data-persist="true" placeholder="2017-08-22" onchange="saveData()"></div>
-
             <div class="info-item">
                 <label for="chassinummer">Chassinummer <span class="red-text">*</span></label>
                 <input type="text" id="chassinummer" name="chassinummer" data-persist="true" value="" onchange="saveData(); checkRequiredInput('chassinummer', 'Chassinummer saknas!'); decodeVINToYear();" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('chassinummer', 'Chassinummer saknas!'); decodeVINToYear();" required>
                 <div class="copy-icon-container" onclick="copyToClipboard('chassinummer')"></div>
                 <div id="chassinummer-alert" class="input-warning-msg">Chassinummer saknas!</div>
             </div>
-            
             <div class="info-item"><label for="mmb">MMB</label><input type="text" id="mmb" name="mmb" data-persist="true" placeholder="CFGB (motorkod)" onchange="saveData()" oninput="this.value = this.value.toUpperCase()"></div>
-            
             <div class="info-item">
                 <label for="mätarställning">Mätarställning<span class="red-text">*</span></label>
                 <input type="text" id="mätarställning" name="mätarställning" data-persist="true" value="" onchange="saveData(); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" inputmode="numeric">
                 <div id="mätarställning-alert" class="input-warning-msg">Mätarställning saknas!</div>
             </div>
-            
             <div class="info-item"><label for="serviceutgivare">Servicerådgivare</label><input type="text" id="serviceutgivare" name="serviceutgivare" data-persist="true" value="" onchange="saveData()"></div>
-
             <div class="info-item"><label for="modellkod-2">Modell</label><input type="text" id="modellkod-2" name="modellkod-2" data-persist="true" placeholder="2.0 TDI 4Motion" onchange="saveData()"></div>
             <div class="info-item"><label for="vmb">VMB</label><input type="text" id="vmb" name="vmb" data-persist="true" placeholder="SYK" onchange="saveData()" oninput="this.value = this.value.toUpperCase()"></div>
             <div class="info-item"><label for="årsmodell">Årsmodell</label><input type="text" id="årsmodell" name="årsmodell" data-persist="true" value="" onchange="saveData()" placeholder="2018"></div>
-            
             <div class="info-item">
                 <label for="datum">Datum <span class="red-text">*</span></label>
                 <input type="date" id="datum" name="datum" data-persist="true" value="" onchange="saveData(); checkRequiredInput('datum', 'Datum saknas!');" oninput="checkRequiredInput('datum', 'Datum saknas!');" required>
                 <div id="datum-alert" class="input-warning-msg">Datum saknas!</div>
+            </div>
+            
+            <!-- Nytt inmatningsfält som inte syns på den vanliga utskriften -->
+            <div class="info-item no-print" style="grid-column: span 2;">
+                <label for="company-name">Företagsnamn (Servicebevis)</label>
+                <input type="text" id="company-name" name="company-name" data-persist="true" value="VAG Specialisten Skåne" onchange="saveData()">
             </div>
         </div>
 
@@ -963,7 +1022,7 @@
                    class="editable-header-input title-style"
                    data-persist="true" 
                    onchange="saveData()" 
-                   value="Inspektion med oljebyte">
+                   value="Inspektion med oljebyte" style="color: #005b8a;">
         </div>
 
         <div class="table-container">
@@ -976,7 +1035,7 @@
                                    class="editable-header-input section-style"
                                    data-persist="true"
                                    onchange="saveData()"
-                                   value="Fordon framför verkstadslyft">
+                                   value="Bilen invändigt">
                         </th> 
                         <th class="header-checkbox-title">Ok/<br>genomförd</th> 
                         <th class="header-checkbox-title">Inte<br>ok</th> 
@@ -984,7 +1043,6 @@
                     </tr>
                 </thead>
                 <tbody id="static-rows-1">
-                    <!-- ÄNDRING: Alla rader nedan har fått ny HTML-struktur för att inkludera X-knappen -->
                     <tr data-row-id="s1_1">
                         <td class="description-column" colspan="2">
                             <div class="description-content-wrapper">
@@ -1065,7 +1123,7 @@
         </div>
 
         <div class="top-buttons">
-            <button type="button" onclick="addRow('Fordon framför verkstadslyft')">+ Lägg till egen rad</button>
+            <button type="button" onclick="addRow('Extra åtgärd')">+ Lägg till egen rad</button>
         </div>
 
         <div class="table-container">
@@ -1078,7 +1136,7 @@
                                    class="editable-header-input section-style"
                                    data-persist="true"
                                    onchange="saveData()"
-                                   value="Fordon på verkstadslyft">
+                                   value="Bilen utvändigt">
                         </th> 
                         <th class="header-checkbox-title">Ok/<br>genomförd</th>
                         <th class="header-checkbox-title">Inte<br>ok</th>
@@ -1086,7 +1144,6 @@
                     </tr>
                 </thead>
                 <tbody id="static-rows-2">
-                    <!-- ÄNDRING: Alla rader nedan har fått ny HTML-struktur för att inkludera X-knappen (förutom de som redan hade det) -->
                     <tr data-row-id="s2_1">
                         <td class="description-column" colspan="2">
                             <div class="description-content-wrapper">
@@ -1100,7 +1157,6 @@
                         <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
                     </tr>
                     
-                    <!-- Denna rad hade redan rätt struktur -->
                     <tr data-row-id="s2_2">
                         <td class="description-column" colspan="2">
                             <div class="description-content-wrapper">
@@ -1201,7 +1257,6 @@
                         <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
                     </tr>
                     
-                    <!-- Denna rad hade redan rätt struktur -->
                     <tr data-row-id="s2_14">
                         <td class="description-column" colspan="2">
                              <div class="description-content-wrapper">
@@ -1229,7 +1284,7 @@
                                    class="editable-header-input section-style"
                                    data-persist="true"
                                    onchange="saveData()"
-                                   value="Avslutande arbeten">
+                                   value="Bilen underifrån">
                         </th> 
                         <th class="header-checkbox-title">Ok/<br>genomförd</th>
                         <th class="header-checkbox-title">Inte<br>ok</th>
@@ -1237,7 +1292,6 @@
                     </tr>
                 </thead>
                 <tbody id="static-rows-3">
-                    <!-- ÄNDRING: Alla rader nedan har fått ny HTML-struktur för att inkludera X-knappen -->
                     <tr data-row-id="s3_1">
                         <td class="description-column" colspan="2">
                             <div class="description-content-wrapper">
@@ -1269,6 +1323,8 @@
         <div class="footer-notes">
             <p><strong>Underhållskommentar:</strong></p>
             <textarea id="comment-area" class="comment-area" name="comment-area" data-persist="true" onchange="saveData()" placeholder="Eventuella anmärkningar, rekommendationer eller ytterligare information..."></textarea>
+            <!-- Denna div syns bara på papper -->
+            <div id="comment-area-print" style="display: none; text-align: center; white-space: pre-wrap; font-size: 14px; margin-top: 10px; line-height: 1.5;"></div>
         </div>
         
         <div class="footer-notes">
@@ -1315,7 +1371,6 @@
         </tbody>
     </table>
 
-    <!-- NY MODAL FÖR RENSNINGSBEKRÄFTELSE START -->
     <div id="clearConfirmModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModalByName('clearConfirmModal')">&times;</span>
@@ -1323,7 +1378,6 @@
             <p style="margin-top: 15px; font-size: 14px; line-height: 1.4;">
                 Är du säker på att du vill rensa hela protokollet? All sparad data i webbläsaren kommer att raderas permanent.
             </p>
-            <!-- ÄNDRAD HTML HÄR -->
             <div class="modal-button-container">
                 <button type="button" class="modal-button btn-cancel" onclick="closeModalByName('clearConfirmModal')">
                     Avbryt
@@ -1332,10 +1386,8 @@
                     Ja, rensa protokoll
                 </button>
             </div>
-            <!-- ÄNDRING SLUT -->
         </div>
     </div>
-    <!-- NY MODAL FÖR RENSNINGSBEKRÄFTELSE SLUT -->
 
     <div id="serviceModal" class="modal">
         <div class="modal-content">
@@ -1364,7 +1416,7 @@
                 <li data-predefined-id="predefined-7" onclick="addPredefinedRow('Direktväxellåda (DSG): Byt DSG-olja och filter', this)">
                     Direktväxellåda (DSG): Byt DSG-olja och filter <span class="asterisk">*</span>
                 </li>
-		<li data-predefined-id="predefined-8" onclick="addPredefinedRow('Tändstift: Byta', this)">
+		        <li data-predefined-id="predefined-8" onclick="addPredefinedRow('Tändstift: Byta', this)">
                     Tändstift: Byta <span class="asterisk">*</span>
                 </li>
             </ul>
@@ -1381,14 +1433,8 @@
         const STORAGE_KEY = 'serviceProtocolDataV3'; 
         let saveNotificationTimeout; 
         
-        // NY VARIABEL: Håller koll på om servicebeviset ska inkluderas (initialt false)
         let includeServiceBevis = false; 
 
-        // =======================================================
-        // == ÄNDRING GJORD HÄR ==
-        // Denna array innehåller nu ID för ALLA statiska rader,
-        // vilket gör att 'removeRow'-funktionen fungerar på samtliga.
-        // =======================================================
         const removableStaticIds = [
             's1_1', 's1_2', 's1_3', 's1_4', 's1_5', 's1_6',
             's2_1', 's2_2', 's2_4', 's2_5_ny', 's2_9', 's2_10', 's2_11', 's2_12', 's2_13', 's2_14',
@@ -1399,11 +1445,8 @@
             // Statiska rader är inbäddade i HTML.
         }
 
-        // =======================================================
-        // NY FUNKTION: Toggle Servicebevis-knappen
-        // =======================================================
         function toggleServiceBevis() {
-            includeServiceBevis = !includeServiceBevis; // Invertera status
+            includeServiceBevis = !includeServiceBevis; 
             const button = document.getElementById('toggle-service-bevis-btn');
             
             if (includeServiceBevis) {
@@ -1412,23 +1455,17 @@
                 button.classList.remove('toggled-on');
             }
             
-            // Spara den nya statusen
             saveData();
         }
 
-        // =======================================================
-        // FUNKTION: Genererar Servicebeviset
-        // =======================================================
         function generateServiceBevis() {
             const container = document.getElementById('service-bevis-container');
             
-            // KONTROLL: Töm behållaren och avsluta om bevis inte ska inkluderas
             if (!container || !includeServiceBevis) {
                 if (container) container.innerHTML = ''; 
                 return;
             }
             
-            // Hämta data från formulärfälten
             const data = {
                 chassinummer: document.getElementById('chassinummer').value.toUpperCase() || 'WAUZZZF...',
                 typBeteckning: document.getElementById('modellkod-2').value || '-',
@@ -1440,12 +1477,11 @@
                 signerKund: document.getElementById('signer-kund').value || '-',
                 registreringNr: document.getElementById('registrering-nr').value.toUpperCase() || 'ABC 123',
                 mmb: document.getElementById('mmb').value || '-',
+                companyName: document.getElementById('company-name') ? document.getElementById('company-name').value : 'VAG Specialisten Skåne'
             };
             
-            // Hämta utförda tilläggsarbeten
             const utfordaArbeten = [];
             
-            // Inkludera dynamiska rader
             document.querySelectorAll('#dynamic-rows tr.dynamic-row').forEach(row => {
                 const descriptionInput = row.querySelector('.editable-text');
                 const description = descriptionInput ? descriptionInput.value.trim() : '';
@@ -1460,7 +1496,6 @@
                 }
             });
             
-            // Format work as a list with Checkmarks (Bockar)
             let utfordaArbetenList;
             if (utfordaArbeten.length > 0) {
                  utfordaArbetenList = `<div class="sb-value-block"><div class="additional-work-list-bock">${utfordaArbeten.map(item => `<p>✔ ${item}</p>`).join('')}</div></div>`;
@@ -1469,7 +1504,6 @@
             }
             
 
-            // Huvud HTML
             const serviceBevisHTML = `
                 <div class="service-bevis-header-block">
                     <div class="sb-left-header">
@@ -1521,7 +1555,7 @@
                     <div class="sb-data-row">
                         <span class="sb-label">Utfört av</span>
                         <span class="sb-value sb-value-block">
-                            VAG Specialisten Skåne<br>
+                            ${data.companyName}<br>
                             SE
                         </span>
                     </div>
@@ -1534,10 +1568,6 @@
             
             container.innerHTML = serviceBevisHTML;
         }
-
-        // =======================================================
-        // Resten av din Javascript-kod
-        // =======================================================
 
         function showSaveNotification() {
             const notification = document.getElementById('save-notification');
@@ -1582,15 +1612,14 @@
             }
         }
         
-        // UPPDATERAD FÖR FLERA MODALER
         window.onclick = function(event) {
             const serviceModal = document.getElementById('serviceModal');
-            const clearModal = document.getElementById('clearConfirmModal'); // NY
+            const clearModal = document.getElementById('clearConfirmModal'); 
             
             if (event.target == serviceModal) {
                 closeModalByName('serviceModal');
             }
-            if (event.target == clearModal) { // NY
+            if (event.target == clearModal) { 
                 closeModalByName('clearConfirmModal');
             }
         }
@@ -1634,7 +1663,6 @@
                 data[input.id] = input.type === 'checkbox' ? input.checked : input.value;
             });
             
-            // Spara statusen för servicebeviset i Local Storage
             data.includeServiceBevisStatus = includeServiceBevis;
             
             const staticRowData = {};
@@ -1651,7 +1679,6 @@
             });
             data.staticRows = staticRowData;
 
-            // NYTT: Spara status för borttagbara statiska rader
             data.removedStaticRows = [];
             removableStaticIds.forEach(id => {
                 const row = document.querySelector(`tr[data-row-id="${id}"]`);
@@ -1686,19 +1713,16 @@
             const data = savedData ? JSON.parse(savedData) : {};
             const button = document.getElementById('toggle-service-bevis-btn');
 
-            // Ladda status för servicebeviset
             if (data.includeServiceBevisStatus !== undefined) {
                  includeServiceBevis = data.includeServiceBevisStatus;
             } else {
-                 includeServiceBevis = false; // Standardvärde (ej intryckt)
+                 includeServiceBevis = false; 
             }
-            // Uppdatera knappens utseende
             if (includeServiceBevis) {
                  button.classList.add('toggled-on');
             } else {
                  button.classList.remove('toggled-on');
             }
-
 
             document.querySelectorAll('[data-persist="true"]').forEach(element => {
                 if (data[element.id] !== undefined) {
@@ -1735,12 +1759,11 @@
                 });
             }
 
-            // NYTT: Göm statiska rader som sparats som borttagna
             if (data.removedStaticRows && Array.isArray(data.removedStaticRows)) {
                 data.removedStaticRows.forEach(id => {
                     const row = document.querySelector(`tr[data-row-id="${id}"]`);
                     if (row) {
-                        row.style.display = 'none'; // Göm raden
+                        row.style.display = 'none'; 
                     }
                 });
             }
@@ -1774,13 +1797,12 @@
             }
             
             setTodayDateIfEmpty(); 
-            validateRequiredFields(); 
-            // Uppdatera print-text för de statiska rader som nu har inputs
+            generateOrderNrIfEmpty();
+            validateRequiredFields();
             updatePrintValueForReadOnlyRows();
             console.log("Data laddad från Local Storage (V3).");
         }
 
-        // NY FUNKTION: Uppdaterar print-spans för de (nu) readonly-raderna
         function updatePrintValueForReadOnlyRows() {
             removableStaticIds.forEach(id => {
                 const row = document.querySelector(`tr[data-row-id="${id}"]`);
@@ -1793,6 +1815,18 @@
             });
         }
 
+
+        function generateOrderNrIfEmpty() {
+            const orderInput = document.getElementById('order-nr');
+            if (orderInput && orderInput.value.trim() === "") {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                orderInput.value = `${year}00${month}${day}`;
+                saveData();
+            }
+        }
 
         function setTodayDateIfEmpty() {
             const dateInput = document.getElementById('datum');
@@ -1810,7 +1844,6 @@
         }
         
         function updatePrintValue(inputElement) {
-            // Kontrollera att wrapper och span finns
             const wrapper = inputElement.closest('.description-content-wrapper');
             if (!wrapper) return;
             const printSpan = wrapper.querySelector('.print-text-only');
@@ -1879,7 +1912,6 @@
 
             const isDuplicate = dynamicBody.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
             if (isDuplicate) {
-                // Använd inte alert()
                 console.warn("Denna serviceåtgärd har redan lagts till.");
                 return; 
             }
@@ -1890,7 +1922,6 @@
             listItem.classList.add('confirmed');
         }
 
-        // ÄNDRAD: Öppnar nu bekräftelsemodalen
         function clearProtocol() {
             const modal = document.getElementById('clearConfirmModal');
             if (modal) {
@@ -1898,25 +1929,22 @@
             }
         }
 
-        // NY FUNKTION: Utför själva rensningen efter bekräftelse
         function executeClearProtocol() {
             localStorage.removeItem(STORAGE_KEY);
             
             const form = document.getElementById('protocol-form');
             form.reset(); 
             
-            // NYTT: Återställ borttagna statiska rader
             removableStaticIds.forEach(id => {
                 const row = document.querySelector(`tr[data-row-id="${id}"]`);
                 if (row) {
-                    row.style.display = ''; // Återställer till default (synlig)
+                    row.style.display = ''; 
                 }
             });
             
             const dynamicBody = document.getElementById('dynamic-rows');
             dynamicBody.innerHTML = '';
             
-            // Återställ JS-variabeln och knappen
             includeServiceBevis = false; 
             document.getElementById('toggle-service-bevis-btn').classList.remove('toggled-on');
             
@@ -1929,22 +1957,19 @@
             dynamicRowCounter = 0;
             validateRequiredFields(); 
 
-            // Stäng modalen när rensningen är klar
             closeModalByName('clearConfirmModal');
         }
         
-        // UPPDATERAD FUNKTION
         function removeRow(button) {
             const row = button.closest('tr');
             if (row) {
                 const predefinedId = row.dataset.predefinedId; 
                 const rowId = row.dataset.rowId;
 
-                // NY LOGIK: Göm statiska rader, ta bort dynamiska
                 if (removableStaticIds.includes(rowId)) {
-                    row.style.display = 'none'; // Göm istället för ta bort
+                    row.style.display = 'none'; 
                 } else {
-                    row.remove(); // Ta bort dynamisk rad som vanligt
+                    row.remove(); 
                 }
 
                 saveData(); 
@@ -1973,18 +1998,16 @@
             let namePart = currentValue;
             let datePart = '';
 
-            // Om fältet är tomt, eller bara innehåller ett datum, fråga efter namn
             if (currentValue === "" || currentValue === placeholder || currentValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
                 let newName = prompt(`Ange ${targetInput.name.includes('tekniker') ? 'Service Teknikers' : 'Kundens'} namn:`, "");
                 if (newName) {
                     namePart = newName.trim();
                 } else if (currentValue === "" || currentValue === placeholder) {
-                    return; // Avbröt prompten och fältet var tomt
+                    return; 
                 } else {
-                    namePart = currentValue; // Behåll befintligt värde om prompt avbryts
+                    namePart = currentValue; 
                 }
             } else {
-                // Extrahera namndelen om det redan finns ett namn och datum
                 const parts = currentValue.split(', ');
                 namePart = parts[0];
                 if (parts.length > 1) {
@@ -2034,7 +2057,6 @@
              checkRequiredInput('datum', 'Datum saknas!');
         }
         
-        // VIN-avkodning för årsmodell
         function decodeVINToYear() {
             const vinInput = document.getElementById('chassinummer');
             const yearInput = document.getElementById('årsmodell');
@@ -2043,15 +2065,12 @@
             
             const vin = vinInput.value.trim().toUpperCase();
             
-            // VIN måste vara minst 10 tecken för att innehålla årsmodell-koden
             if (vin.length < 10) {
                 return;
             }
             
-            // Position 10 (index 9) innehåller årsmodell-koden
             const yearCode = vin.charAt(9);
             
-            // VIN år-kodning (position 10)
             const yearMap = {
                 'A': [2010, 1980], 'B': [2011, 1981], 'C': [2012, 1982], 'D': [2013, 1983],
                 'E': [2014, 1984], 'F': [2015, 1985], 'G': [2016, 1986], 'H': [2017, 1987],
@@ -2064,10 +2083,8 @@
             };
             
             if (yearMap[yearCode]) {
-                // Använd det mest sannolika året (senaste)
                 const decodedYear = yearMap[yearCode][0];
                 
-                // Fyll bara i om fältet är tomt (låt användaren ha kontroll)
                 if (!yearInput.value || yearInput.value.trim() === '') {
                     yearInput.value = decodedYear.toString();
                     saveData();
@@ -2079,41 +2096,32 @@
             const inputElement = document.getElementById(elementId);
             if (inputElement) {
                 navigator.clipboard.writeText(inputElement.value).then(() => {
-                    // Använd inte alert()
                     console.log(`Värdet för ${inputElement.name || inputElement.id} har kopierats!`);
-                    // Du kan visa din 'save-notification' här istället om du vill
-                    // showSaveNotification("Kopierat!"); // (Skulle kräva modifiering av showSaveNotification)
                 }).catch(err => {
                     console.error('Kunde inte kopiera text: ', err);
                 });
             }
         }
         
-        // =======================================================
-        // NY FUNKTION: Skicka protokoll via mejl
-        // =======================================================
         function sendEmail() {
             validateRequiredFields(); 
             const form = document.getElementById('protocol-form');
             
             if (!form.checkValidity()) {
                 form.reportValidity();
-                return; // Stoppa om obligatoriska fält saknas
+                return; 
             }
 
-            // 1. Hämta nyckeldata
             const regNr = document.getElementById('registrering-nr').value.toUpperCase();
             const chassiNr = document.getElementById('chassinummer').value.toUpperCase();
             const mätarställning = document.getElementById('mätarställning').value;
             const datum = document.getElementById('datum').value;
 
-            // 2. Skapa ämnesrad
             let subject = `Serviceprotokoll för ${regNr || 'fordon'}`;
             if (chassiNr) {
                 subject += ` (${chassiNr})`;
             }
 
-            // 3. Skapa mejl-body med instruktioner och sammanfattning
             let body = `Hej,\n\n**VÄNLIGEN BIFOGA DET UTSKRIVNA PDF-PROTOKOLLET I DETTA MEJL.**\n`;
             body += `(Du kan skapa en PDF genom att klicka på 'Skriv ut' i protokollet och välja 'Spara som PDF'.)\n\n`;
             body += `--------------------------------------------------\n`;
@@ -2129,12 +2137,11 @@
             
             notOkRows.forEach(row => {
                 let description = '';
-                // Hitta beskrivningstext, hantera både statiska och dynamiska rader
                 const wrapper = row.querySelector('.description-content-wrapper');
-                if (wrapper) { // Dynamisk ELLER modifierad statisk rad
+                if (wrapper) { 
                     const input = wrapper.querySelector('.editable-text');
                     if(input) description = input.value.trim();
-                } else { // Gammal statisk rad
+                } else { 
                     const descCol = row.querySelector('.description-column');
                     if (descCol) {
                         description = descCol.textContent.trim();
@@ -2155,10 +2162,8 @@
             body += `\n--------------------------------------------------\n`;
             body += `\nMed vänlig hälsning,\n\n`;
             
-            // 4. Skapa och öppna mailto-länken
             const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             
-            // Använd window.open för att vara lite säkrare än window.location.href
             window.open(mailtoLink, '_self');
         }
 
@@ -2171,7 +2176,6 @@
                 return;
             }
 
-            // 1. Generera beviset baserat på JS-variabeln (som styrs av den nya knappen)
             generateServiceBevis(); 
 
             const nonPrintingPlaceholderIds = [
@@ -2184,6 +2188,13 @@
                 'årsmodell'
             ];
             
+            // Kopiera över texten till utskriftsvyn
+            const commentArea = document.getElementById('comment-area');
+            const commentAreaPrint = document.getElementById('comment-area-print');
+            if (commentArea && commentAreaPrint) {
+                commentAreaPrint.textContent = commentArea.value;
+            }
+
             const inputsToModify = nonPrintingPlaceholderIds.map(id => document.getElementById(id)).filter(e => e !== null);
             const originalPlaceholders = [];
 
@@ -2203,7 +2214,6 @@
                 originalPlaceholders.forEach(item => {
                     item.element.setAttribute('placeholder', item.placeholder);
                 });
-                // 2. Rensa beviset efter utskrift/återgång till skärmvy
                 const bevisContainer = document.getElementById('service-bevis-container');
                 if (bevisContainer) bevisContainer.innerHTML = '';
             }, 100); 
