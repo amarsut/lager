@@ -35,26 +35,67 @@
             background-color: #d4d0c8; /* Klassisk skrivbordsgrå bakgrund */
         }
 
+        /* --- HUVUDRUBRIK & LOGGA --- */
         .header {
             text-align: center;
             font-size: 28px;
             font-weight: 700;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--color-border-dark); 
-            padding-bottom: 5px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--color-secondary); 
+            padding-bottom: 12px;
+            padding-top: 12px;
+            min-height: 50px; 
             position: relative;
             letter-spacing: 0.5px;
             color: var(--color-secondary); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .header::after {
             content: '';
             display: block;
             width: 100%;
-            height: 3px;
+            height: 3px; /* Tjockare bottenlinje */
             background-color: var(--color-secondary);
             position: absolute;
             bottom: -5px; 
             left: 0;
+        }
+        
+        .brand-logo-container {
+            position: absolute;
+            right: 0; 
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+        }
+        
+        #brand-logo-img {
+            height: 52px; 
+            width: 75px;  
+            object-fit: contain; 
+            object-position: right center; 
+            transition: transform 0.1s ease; /* Snygg och mjuk övergång om den byts */
+        }
+        
+        /* Justering för mobila skärmar */
+        @media screen and (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                padding-top: 20px;
+                padding-bottom: 60px; /* Gör plats för loggan under texten */
+            }
+            .brand-logo-container {
+                top: auto;
+                bottom: 10px;
+                transform: none;
+                right: auto;
+                justify-content: center;
+            }
         }
 
         .inspection-title {
@@ -109,15 +150,24 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            background-color: var(--color-bg);
+            padding: 5px 0;
+            flex-wrap: nowrap; /* Tvingar allt att hålla sig på samma rad på stora skärmar */
             gap: 10px;
-            flex-wrap: wrap; 
         }
 
         .print-button-container {
-            display: flex; 
-            gap: 10px;
-            align-items: center; 
-            flex-wrap: wrap; 
+            display: flex;
+            gap: 8px; /* Lite tightare avstånd mellan knapparna så allt får plats */
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+        
+        /* Gör att knapparna och rullgardinen smälter in snyggt i raden */
+        .top-buttons button, .top-buttons select {
+            padding: 6px 10px;
+            font-size: 13px;
+            white-space: nowrap; /* Förhindrar att texten bryts på flera rader */
         }
 
         .top-buttons button {
@@ -897,6 +947,18 @@
             #service-bevis-container:empty {
                 display: none !important;
             }
+
+            /* Håller loggan på plats vid utskrift */
+            .brand-logo-container { 
+                right: 0 !important; 
+                top: 50% !important; 
+                transform: translateY(-50%) !important;
+            }
+            #brand-logo-img { 
+                height: 48px !important; 
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important;
+            }
         }
         
         @media screen and (max-width: 900px) {
@@ -959,8 +1021,22 @@
                 <button type="button" onclick="sendEmail()">Skicka via mejl</button>
                 <button onclick="openServiceModal()">+ Lägg till extra tillägg</button>
                 <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()">Separat servicebevis</button>
-                <!-- NY KNAPP -->
-                <button type="button" onclick="triggerPasteFunction()" style="background-color: var(--color-secondary); color: white; border-color: #004060;">Klistra in fordonsdata (Ctrl+V)</button>
+                <button type="button" onclick="triggerPasteFunction()" style="background-color: var(--color-secondary); color: white; border-color: #004060;">Fordonsdata (Ctrl+V)</button>
+                
+                <!-- Rullgardinsmenyn för märke flyttad hit upp -->
+                <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="padding: 5px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
+                    <option value="">-- Välj bilmärke --</option>
+                    <option value="audi">Audi</option>
+                    <option value="bmw">BMW</option>
+                    <option value="ford">Ford</option>
+                    <option value="mercedes">Mercedes</option>
+                    <option value="peugeot">Peugeot</option>
+                    <option value="renault">Renault</option>
+                    <option value="seat">Seat</option>
+                    <option value="skoda">Škoda</option>
+                    <option value="volkswagen">Volkswagen</option>
+                    <option value="volvo">Volvo</option>
+                </select>
             </div>
             <button class="clear-button" onclick="clearProtocol()">Rensa protokoll</button>
         </div>
@@ -969,6 +1045,10 @@
     <form id="protocol-form" onsubmit="return false;">
         <div class="header">
             Serviceprotokoll
+            
+            <div class="brand-logo-container">
+                <img id="brand-logo-img" src="" alt="Bil-logga" style="display: none;" />
+            </div>
         </div>
         <div class="info-section" id="info-section-inputs">
             <div class="info-item">
@@ -1852,6 +1932,7 @@
             generateOrderNrIfEmpty();
             validateRequiredFields();
             updatePrintValueForReadOnlyRows();
+            updateBrandLogo(); // Uppdaterar loggan direkt när sidan laddas
             console.log("Data laddad från Local Storage (V3).");
         }
 
@@ -1969,6 +2050,51 @@
             // Lägger automatiskt till extra-val i första tabellen (Fordon framför verkstadslyft)
             addRowToSection('static-rows-1', predefinedId, cleanDescription); 
             listItem.classList.add('confirmed');
+        }
+
+        // Objekt med externa länkar till officiella SVG-loggor
+        // Objekt med externa länkar till officiella loggor (PNG/SVG)
+        // Objekt med stabila direktlänkar till optimerade billoggor från GitHub
+        // Stabila direktlänkar med högre upplösning
+        const brandLogos = {
+            "audi": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/audi.png",
+            "bmw": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/bmw.png",
+            "ford": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/ford.png",
+            "mercedes": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/mercedes-benz.png",
+            "peugeot": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/peugeot.png",
+            "renault": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/renault.png",
+            "seat": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/seat.png",
+            "skoda": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/skoda.png",
+            "volkswagen": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/volkswagen.png",
+            "volvo": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/volvo.png"
+        };
+
+        function updateBrandLogo() {
+            const selector = document.getElementById('brand-selector');
+            const img = document.getElementById('brand-logo-img');
+            const brand = selector.value;
+
+            if (brand && brandLogos[brand]) {
+                img.src = brandLogos[brand];
+                img.style.display = 'block';
+                
+                // Individuell storleksanpassning (Skala) baserat på märkets inbyggda marginaler
+                let scaleMultiplier = 1.0;
+                
+                if (brand === 'skoda') {
+                    scaleMultiplier = 1.5; // Förstorar Skoda extra mycket eftersom filen har mycket tomrum
+                } else if (brand === 'mercedes') {
+                    scaleMultiplier = 1.3; // Förstorar Mercedes lite
+                } else if (brand === 'audi' || brand === 'volkswagen') {
+                    scaleMultiplier = 1.1; 
+                }
+                
+                img.style.transform = `scale(${scaleMultiplier})`;
+            } else {
+                img.src = "";
+                img.style.display = 'none';
+                img.style.transform = 'scale(1)';
+            }
         }
 
         function clearProtocol() {
@@ -2298,13 +2424,20 @@
         
         document.addEventListener('paste', function(e) {
             const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-            if (pastedText && pastedText.trim().length > 0) {
-                processPastedText(pastedText);
+            if (pastedText && pastedText.trim().length > 20) {
+                // Skicka texten till vår processor
+                const success = processPastedText(pastedText);
+                
+                // Om vi hittade fordonsdata, blockera webbläsaren från att 
+                // klistra in råtexten i det fält som råkar vara markerat just nu
+                if (success) {
+                    e.preventDefault();
+                }
             }
         });
 
         function processPastedText(pastedText) {
-            if(pastedText.length < 20) return; 
+            if(pastedText.length < 20) return false;
 
             console.log("Läser av inklistrad text...");
             let hittadData = false;
@@ -2403,12 +2536,36 @@
                 hittadData = true;
             }
 
+            // AUTOMATISKT VAL AV LOGGA
+            if (cleanModel) {
+                const lowerModel = cleanModel.toLowerCase();
+                let foundBrand = "";
+                const brandKeys = Object.keys(brandLogos);
+                
+                for (let i = 0; i < brandKeys.length; i++) {
+                    const key = brandKeys[i];
+                    // Hantera "VW" som Volkswagen
+                    if (key === 'volkswagen' && (lowerModel.includes('vw') || lowerModel.includes('volkswagen'))) {
+                        foundBrand = key; break;
+                    } else if (lowerModel.includes(key)) {
+                        foundBrand = key; break;
+                    }
+                }
+                
+                if (foundBrand) {
+                    document.getElementById('brand-selector').value = foundBrand;
+                    updateBrandLogo();
+                }
+            }
+
             if(hittadData) {
                 saveData();
                 validateRequiredFields();
                 showPasteNotification("✅ Data ifylld från urklipp!");
+                return true;
             } else {
                 showPasteNotification("⚠️ Ingen data hittades i urklippet.", true);
+                return false;
             }
         }
 
