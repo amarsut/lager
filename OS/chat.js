@@ -176,8 +176,11 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
     };
 
     useEffect(() => {
-        if (filter === 'all') setTimeout(() => scrollToBottom(false), 100);
-    }, [filter, scrollToBottom]);
+        // Körs varje gång vi byter galleri-vy ELLER slår av/på AI-filtret
+        if (filter === 'all') {
+            setTimeout(() => scrollToBottom(false), 100);
+        }
+    }, [filter, showAi, scrollToBottom]); // NYTT: showAi har lagts till i beroendelistan
 
     const handleInputResize = (e) => {
         e.target.style.height = 'auto';
@@ -348,6 +351,78 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
         }
     };
 
+    // NYTT: Egen funktion för AI-anropet så vi kan återanvända den
+    const triggerAiFetch = async (textToFetch) => {
+        setIsAiLoading(true);
+        scrollToBottom(true);
+        
+        try {
+            const response = await fetch("https://autogrid-ai-proxy.asut-ytube.workers.dev/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    systemInstruction: {
+                        parts: [{ 
+                            text: `Du är "AutoGrid AI", en fordonsteknisk expert-AI för professionella mekaniker. Din huvuduppgift är att diagnostisera felkoder (DTC) med absolut högsta precision för ALLA bilmärken (Volvo, Mercedes, BMW, VAG, Ford, Toyota m.fl.).\n\nKRITISKA REGLER:\n1. Absolut Precision: När du får ett bilmärke och en kod (ex. "BMW 34FA00" eller "Volvo ECM-P0420"), agera exakt som tillverkarens egna diagnosverktyg (ISTA, VIDA, ODIS, Xentry). \n2. Inga gissningar (Noll-tolerans): Om koden är en märkesspecifik hex-kod, ge den EXAKTA OEM-definitionen. Om du inte vet med 100% säkerhet vad koden betyder för just det bilmärket, svara: "Okänd tillverkarkod".\n3. Specifika komponenter: Använd tillverkarens officiella beteckningar från elscheman (t.ex. G450, N18, B65).\n4. Telegrafisk stil: Svara extremt kortfattat och tekniskt. \n\nAnvänd EXAKT denna Markdown-mall för dina svar:\n\n**Snabbsvar:** [Kort och exakt OEM-beskrivning av felkoden. Ex: "Kommunikationsfel Telematics (TCB)"]\n---MER---\n**Diagnos:**\n* [Fysisk kontroll / Mätvärde / Pin-out]\n\n**Åtgärd:**\n* [Konkret nästa steg / Komponentbyte]\n\n> **Verkstadstips:** [Ange specifika TPI/TSB/PUMA-åtgärder eller kända typfel om det existerar. Annars lämna tomt.]` 
+                        }]
+                    },
+                    contents: [{ parts: [{ text: textToFetch }] }],
+                    generationConfig: { temperature: 0.2 }
+                })
+            });
+
+            const data = await response.json();
+            setIsAiLoading(false);
+
+            if (data.candidates && data.candidates.length > 0) {
+                const realAnswer = data.candidates[0].content.parts[0].text;
+                await window.db.collection("notes").add({
+                    text: realAnswer, sender: "AutoGrid_AI", timestamp: new Date().toISOString(), type: 'text',
+                    replyTo: { id: "user", text: textToFetch, sender: user.email }
+                });
+            } else if (data.error) {
+                throw new Error(`Google API Fel: ${data.error.message}`);
+            } else {
+                throw new Error("Inget svar från AI (Saknar candidates och error-objekt).");
+            }
+        } catch (aiError) {
+            console.error("AI Error:", aiError);
+            setIsAiLoading(false);
+            
+            let uiErrorMessage = `**Systemmeddelande: Anslutningsfel**\nEtt tekniskt fel uppstod: ${aiError.message}`;
+            const errText = aiError.message.toLowerCase();
+            
+            if (errText.includes("quota") || errText.includes("429")) {
+                if (errText.includes("1500") || errText.includes("daily") || errText.includes("limit: 1500")) {
+                    uiErrorMessage = `**Systemmeddelande: Daglig kvot nådd**\nDen dagliga gränsen för AI-anrop är förbrukad. Systemet återställs kl. 09:00.`;
+                } else {
+                    uiErrorMessage = `**Systemmeddelande: Hastighetsbegränsning**\nMax antal anrop per minut är nått. Vänligen vänta en minut.`;
+                }
+            }
+
+            await window.db.collection("notes").add({
+                text: uiErrorMessage,
+                sender: "AutoGrid_AI", 
+                timestamp: new Date().toISOString(), 
+                type: 'text',
+                isAiError: true,           // NYTT: Flaggas för gränssnittet
+                originalPrompt: textToFetch // NYTT: Sparar din text så vi kan försöka igen
+            });
+        }
+    };
+
+    // NYTT: Funktionen som triggas när du klickar "Försök igen"
+    const handleRetry = async (errorMsg) => {
+        hapticFeedback();
+        if (!errorMsg.originalPrompt) return;
+        
+        // Ta bort felmeddelandet från chatten
+        try { await window.db.collection("notes").doc(errorMsg.id).delete(); } catch(e) {}
+        
+        // Kör API-anropet igen
+        triggerAiFetch(errorMsg.originalPrompt);
+    };
+
     const handleAction = async (e) => {
         if (e) e.preventDefault();
         const textToSend = inputText.trim();
@@ -382,89 +457,14 @@ const ChatView = ({ user, setView, viewParams, isPopup, onClose }) => {
                     sender: user.email, 
                     timestamp: new Date().toISOString(), 
                     type: 'text',
-                    isAiTrigger: isAiTrigger, // NYTT: Flaggas i databasen
+                    isAiTrigger: isAiTrigger,
                     replyTo: currentReplyTo ? { id: currentReplyTo.id, text: currentReplyTo.text, sender: currentReplyTo.sender } : null
                 });
 
                 if (isAiTrigger) {
-                    setIsAiLoading(true);
-                    setShowAi(true); // NYTT: Slår på filtret automatiskt när du söker
-                    scrollToBottom(true);
-                    
-                    try {
-                        // https://dash.cloudflare.com/ inloggad via Google
-                        const response = await fetch("https://autogrid-ai-proxy.asut-ytube.workers.dev/", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                systemInstruction: {
-                                    parts: [{ 
-                                        text: `Du är "AutoGrid AI", en fordonsteknisk expert-AI för professionella mekaniker. Din huvuduppgift är att diagnostisera felkoder (DTC) med absolut högsta precision för ALLA bilmärken (Volvo, Mercedes, BMW, VAG, Ford, Toyota m.fl.).
-
-KRITISKA REGLER:
-1. Absolut Precision: När du får ett bilmärke och en kod (ex. "BMW 34FA00" eller "Volvo ECM-P0420"), agera exakt som tillverkarens egna diagnosverktyg (ISTA, VIDA, ODIS, Xentry). 
-2. Inga gissningar (Noll-tolerans): Om koden är en märkesspecifik hex-kod, ge den EXAKTA OEM-definitionen. Om du inte vet med 100% säkerhet vad koden betyder för just det bilmärket, svara: "Okänd tillverkarkod".
-3. Specifika komponenter: Använd tillverkarens officiella beteckningar från elscheman (t.ex. G450, N18, B65).
-4. Telegrafisk stil: Svara extremt kortfattat och tekniskt. 
-
-Använd EXAKT denna Markdown-mall för dina svar:
-
-**Snabbsvar:** [Kort och exakt OEM-beskrivning av felkoden. Ex: "Kommunikationsfel Telematics (TCB)"]
----MER---
-**Diagnos:**
-* [Fysisk kontroll / Mätvärde / Pin-out]
-
-**Åtgärd:**
-* [Konkret nästa steg / Komponentbyte]
-
-> **Verkstadstips:** [Ange specifika TPI/TSB/PUMA-åtgärder eller kända typfel om det existerar. Annars lämna tomt.]` 
-                                    }]
-                                },
-                                contents: [{ parts: [{ text: textToSend }] }],
-                                generationConfig: { temperature: 0.2 }
-                            })
-                        });
-
-                        const data = await response.json();
-                        setIsAiLoading(false);
-
-                        // Skriver ut hela Googles svar i Console-fliken
-                        console.log("Riktigt svar från Google:", data);
-
-                        if (data.candidates && data.candidates.length > 0) {
-                            const realAnswer = data.candidates[0].content.parts[0].text;
-                            await window.db.collection("notes").add({
-                                text: realAnswer, sender: "AutoGrid_AI", timestamp: new Date().toISOString(), type: 'text',
-                                replyTo: { id: "user", text: textToSend, sender: user.email }
-                            });
-                        } else if (data.error) {
-                            // Om Google skickade ett felmeddelande, kasta den exakta feltexten
-                            throw new Error(`Google API Fel: ${data.error.message}`);
-                        } else {
-                            throw new Error("Inget svar från AI (Saknar candidates och error-objekt).");
-                        }
-                    } catch (aiError) {
-                        console.error("AI Error:", aiError);
-                        setIsAiLoading(false);
-                        
-                        let uiErrorMessage = `**Systemmeddelande: Anslutningsfel**\nEtt tekniskt fel uppstod: ${aiError.message}`;
-                        const errText = aiError.message.toLowerCase();
-                        
-                        if (errText.includes("quota") || errText.includes("429")) {
-                            if (errText.includes("1500") || errText.includes("daily") || errText.includes("limit: 1500")) {
-                                uiErrorMessage = `**Systemmeddelande: Daglig kvot nådd**\nDen dagliga gränsen för AI-anrop är förbrukad. Systemet återställs kl. 09:00.`;
-                            } else {
-                                uiErrorMessage = `**Systemmeddelande: Hastighetsbegränsning**\nMax antal anrop per minut är nått. Vänligen vänta en minut.\nKvarstår felet är den dagliga kvoten förbrukad (återställs 09:00).`;
-                            }
-                        }
-
-                        await window.db.collection("notes").add({
-                            text: uiErrorMessage,
-                            sender: "AutoGrid_AI", 
-                            timestamp: new Date().toISOString(), 
-                            type: 'text'
-                        });
-                    }
+                    setShowAi(true); 
+                    // Vi anropar den nya funktionen istället för att ha all logik här
+                    triggerAiFetch(textToSend);
                 }
             }
         } catch (error) { console.error("Action Error:", error); }
@@ -688,9 +688,8 @@ Använd EXAKT denna Markdown-mall för dina svar:
                                                     <div className="w-8 h-8 shrink-0 mr-2 flex flex-col justify-end">
                                                         {!isSameSenderAsNext && (
                                                             isAi ? (
-                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-[#1a2235] border border-orange-500 shadow-sm relative overflow-hidden group-hover:shadow-md transition-all">
-                                                                    <div className="absolute inset-0 bg-orange-500/10"></div>
-                                                                    <window.Icon name="cpu" size={16} className="text-orange-500" />
+                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 shadow-sm relative overflow-hidden group-hover:shadow-md transition-all p-1.5">
+                                                                    <img src="https://www.gstatic.com/lamda/images/sparkle_resting_v2_darkmode_2bdb7df2724e450073ede.gif" alt="Gemini" className="w-full h-full object-contain" />
                                                                 </div>
                                                             ) : (
                                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold shadow-sm ${getSenderColor(msg.sender)}`}>
@@ -737,7 +736,18 @@ Använd EXAKT denna Markdown-mall för dina svar:
                                                         ) : (
                                                             <div className={`px-4 py-2 shadow-sm flex flex-col ${isMe ? 'bg-orange-500 text-white' : 'bg-white dark:bg-[#1a2235] text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-white/5'} ${isMe ? (isSameSenderAsPrev ? 'rounded-2xl rounded-tr-[4px]' : 'rounded-2xl rounded-tr-xl') : (isSameSenderAsPrev ? 'rounded-2xl rounded-tl-[4px]' : 'rounded-2xl rounded-tl-xl')}`}>
                                                                 {isAi ? (
-                                                                    <MessageBubble text={msg.text} />
+                                                                    <>
+                                                                        <MessageBubble text={msg.text} />
+                                                                        {/* NYTT: Försök igen-knapp om det är ett fel */}
+                                                                        {msg.isAiError && (
+                                                                            <button 
+                                                                                onClick={() => handleRetry(msg)} 
+                                                                                className="mt-3 text-[11px] font-bold uppercase tracking-widest text-orange-500 hover:text-orange-600 dark:hover:text-white self-start flex items-center gap-1.5 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/30 px-3 py-1.5 rounded-lg transition-all active:scale-95"
+                                                                            >
+                                                                                <window.Icon name="refresh-cw" size={14} /> Försök igen
+                                                                            </button>
+                                                                        )}
+                                                                    </>
                                                                 ) : (
                                                                     <span className="leading-relaxed break-words whitespace-pre-wrap text-[15px]">{renderMessageText(msg.text)}</span>
                                                                 )}
@@ -796,6 +806,27 @@ Använd EXAKT denna Markdown-mall för dina svar:
                                     </React.Fragment>
                                 );
                             })}
+                            
+                            {/* NYTT: Skeleton Loader (Skugg-bubbla med tre hoppande prickar) */}
+                            {isAiLoading && (
+                                <div className="flex w-full justify-start mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    <div className="w-8 h-8 shrink-0 mr-2 flex flex-col justify-end">
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-[#1a2235] border border-zinc-200 dark:border-white/10 shadow-sm relative overflow-hidden p-1.5">
+                                            <img src="https://www.gstatic.com/lamda/images/sparkle_resting_v2_darkmode_2bdb7df2724e450073ede.gif" alt="Gemini" className="w-full h-full object-contain animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-start max-w-[85%] sm:max-w-[75%] lg:max-w-[500px] xl:max-w-[600px]">
+                                        <span className="text-[11px] font-bold px-1 mb-1 tracking-wide text-zinc-500 dark:text-zinc-400 pl-2">
+                                            AutoGrid AI
+                                        </span>
+                                        <div className="px-4 py-3.5 shadow-sm flex items-center gap-1.5 bg-white dark:bg-[#1a2235] rounded-2xl rounded-tl-xl border border-zinc-200/50 dark:border-white/5 h-[44px]">
+                                            <div className="w-1.5 h-1.5 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                            <div className="w-1.5 h-1.5 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                            <div className="w-1.5 h-1.5 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -815,13 +846,6 @@ Använd EXAKT denna Markdown-mall för dina svar:
                 {/* FOOTER / INPUT */}
                 {/* GEMINI-STYLE FOOTER / INPUT */}
                 <div className="absolute bottom-0 left-0 right-0 z-[100] pb-4 sm:pb-6 px-3 sm:px-4 pointer-events-none flex flex-col justify-end">
-                    
-                    {/* TYPING INDICATOR */}
-                    {isAiLoading && (
-                        <div className="pointer-events-auto self-start ml-4 mb-3 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium animate-pulse flex items-center gap-1.5 bg-white/90 dark:bg-[#1e2330]/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-zinc-200 dark:border-white/5">
-                            <window.Icon name="cpu" size={12} className="text-orange-500" /> AutoGrid AI tänker...
-                        </div>
-                    )}
 
                     {/* REDIGERINGS/SVAR-BAR */}
                     {(editingId || replyTo) && (
