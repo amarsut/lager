@@ -538,10 +538,11 @@ Använd EXAKT denna Markdown-mall för dina svar:
                 ></div>
                 
                 {/* Huvudinnehållet i Headern */}
+                {/* Huvudinnehållet i Headern */}
                 <div className="h-[64px] flex items-center justify-between px-2 sm:px-4 pointer-events-auto relative">
                     
                     {/* VÄNSTER: Tillbaka-knapp */}
-                    <div className="flex items-center justify-start w-[60px] sm:w-[100px] shrink-0 z-10">
+                    <div className="flex items-center justify-start flex-1">
                         {!isPopup && (
                             <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95">
                                 <window.Icon name="arrow-left" size={20} />
@@ -549,42 +550,32 @@ Använd EXAKT denna Markdown-mall för dina svar:
                         )}
                     </div>
                     
-                    {/* MITTEN: Centrerad Titel (anpassad för mobil) */}
-                    <div className="flex-1 flex justify-center items-center overflow-hidden px-1 z-0 mt-1">
-                        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 px-3 py-1.5 rounded-full transition-all active:scale-95">
-                            <h2 className="text-[14px] sm:text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1 whitespace-nowrap">
+                    {/* MITTEN: Centrerad Titel fungerar nu som AI-knapp */}
+                    <div className="flex justify-center shrink-0 mt-1">
+                        <div 
+                            onClick={() => setShowAi(!showAi)}
+                            className={`flex items-center gap-1.5 cursor-pointer px-4 py-1.5 rounded-full transition-all active:scale-95 ${showAi ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                        >
+                            <h2 className="text-[16px] font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 whitespace-nowrap">
                                 AutoGrid <span className="text-orange-500 font-medium">AI</span>
-                                <window.Icon name="chevron-down" size={14} className="text-zinc-400" />
+                                <window.Icon name={showAi ? "chevron-up" : "chevron-down"} size={16} className={showAi ? "text-orange-500" : "text-zinc-400"} />
                             </h2>
                         </div>
                     </div>
 
-                    {/* HÖGER: Galleri-piller & Stäng-knapp */}
-                    <div className="flex items-center justify-end gap-1 sm:gap-2 w-auto shrink-0 z-10">
-                        <div className="flex bg-white/50 dark:bg-white/5 p-1 sm:p-1.5 rounded-full border border-zinc-300/30 dark:border-white/5 shadow-sm items-center">
-                            
-                            {/* AI-Filterknapp */}
-                            <button 
-                                onClick={() => setShowAi(!showAi)} 
-                                className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all relative ${showAi ? 'bg-white dark:bg-[#1e2330] shadow-sm' : 'hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
-                            >
-                                <window.Icon name="cpu" size={16} className={`pointer-events-none ${showAi ? 'text-orange-500' : 'text-zinc-400'}`} />
-                                {!showAi && <div className="absolute inset-0 m-auto w-5 h-[1.5px] bg-zinc-400 rotate-45 pointer-events-none rounded-full"></div>}
-                            </button>
-                            
-                            {/* Korrigerat streck */}
-                            <div className="w-[1px] h-5 bg-zinc-300 dark:bg-white/10 mx-0.5 sm:mx-1 shrink-0 rounded-full"></div>
-
+                    {/* HÖGER: Galleri-piller (Återställd till originalet) & Stäng-knapp */}
+                    <div className="flex items-center justify-end gap-2 flex-1">
+                        <div className="flex bg-white/50 dark:bg-white/5 p-1.5 rounded-full border border-zinc-300/30 dark:border-white/5 shadow-sm">
                             {['all', 'image'].map(f => (
-                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
-                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={16} className="pointer-events-none" />
+                                <button key={f} onClick={() => handleFilterChange(f)} className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${filter === f ? 'bg-white dark:bg-[#1e2330] text-orange-500 shadow-sm' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>
+                                    <window.Icon name={f === 'all' ? 'list' : 'image'} size={18} className="pointer-events-none" />
                                 </button>
                             ))}
                         </div>
 
                         {isPopup && (
-                            <button onClick={onClose} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
-                                <window.Icon name="x" size={20} />
+                            <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 ml-1">
+                                <window.Icon name="x" size={24} />
                             </button>
                         )}
                     </div>
