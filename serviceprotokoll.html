@@ -183,6 +183,37 @@
             opacity: 1; 
         }
 
+        .remove-section-btn {
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.6;
+            margin-right: 5px;
+            padding: 0 5px;
+            border: none;
+            background: transparent;
+        }
+        .remove-section-btn:hover {
+            opacity: 1;
+            color: #ffcccc;
+        }
+        
+        .add-row-small-btn {
+            width: 100%;
+            padding: 6px;
+            background-color: #f0f0f0;
+            border: none;
+            border-top: 1px solid #999;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        .add-row-small-btn:hover {
+            background-color: #e4e4e4;
+        }
+
         /* =======================================================
            FORDONSINFORMATION
            ======================================================= */
@@ -324,7 +355,7 @@
         #static-rows-1 tr:nth-child(even), 
         #static-rows-2 tr:nth-child(even), 
         #static-rows-3 tr:nth-child(even),
-        #dynamic-rows tr.dynamic-row:nth-child(even) {
+        tr.dynamic-row:nth-child(even) {
             background-color: #ffffff; 
         }
 
@@ -369,7 +400,6 @@
             justify-content: flex-start;
             flex-grow: 1; 
             margin: -3px -8px; 
-            /* Här anger vi 15px på slutet för att trycka in texten från vänster */
             padding: 3px 8px 3px 20px; 
         }
         .editable-text {
@@ -484,57 +514,15 @@
             font-weight: normal;
         }
         .service-list li.confirmed {
-            background-color: #e0e0e0 !important; /* Tydlig, mörkare grå för redan valda */
-            color: #555 !important; /* Mörkgrå text så att den går att läsa (inte vit!) */
+            background-color: #e8f5e9 !important; /* Ljusgrön bas */
+            color: #1e7e34 !important; /* Mörkgrön text */
             pointer-events: none; 
-            font-style: italic; 
-            border-bottom: 1px solid #ccc !important;
+            font-weight: bold !important; 
+            font-style: normal !important;
+            border: 1px solid #28a745 !important; /* Grön ram runt om */
+            border-radius: 2px !important; /* Liiiite mjukare kant just för markeringen */
+            box-shadow: inset 0 0 0 1px #28a745 !important; /* Skapar en starkare inre grön markering */
         }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: var(--color-red);
-            text-decoration: none;
-        }
-        .service-list {
-            list-style: none; 
-            padding: 0;
-            margin: 15px 0 0 0;
-        }
-        .service-list li {
-            padding: 10px 15px;
-            margin-bottom: 5px; 
-            border: 1px solid #ddd; 
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 14px;
-            background-color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 4px;
-        }
-        .service-list li:hover {
-            background-color: #e4e4e4; 
-        }
-        .service-list .asterisk {
-            color: var(--color-red);
-            font-weight: bold;
-        }
-        .service-list li.confirmed {
-            background-color: #d4edda !important; 
-            color: #155724; 
-            border: 2px solid var(--color-success); 
-            pointer-events: none; 
-            font-weight: 600; 
-        }
-
         .comment-area {
             width: 100%;
             min-height: 100px;
@@ -709,7 +697,7 @@
             
             .footer-notes { margin-top: 60px !important; } /* Skapar ett rejält mellanrum ovanför kommentarerna */
             .no-print { display: none !important; } /* Döljer inställningar som inte ska synas på papper */
-            .modal, .top-buttons, .remove-row-btn, .date-picker-overlay, .copy-icon-container, #save-notification, .clear-signature-btn { display: none !important; }
+            .modal, .top-buttons, .remove-row-btn, .date-picker-overlay, .copy-icon-container, #save-notification, .clear-signature-btn, .remove-section-btn, .add-row-small-btn { display: none !important; }
             .info-section { background-color: #fff; border: 1px solid #ccc; }
             .info-item input { border-bottom: 1px solid var(--color-border-dark) !important; padding-left: 2px; padding-right: 0 !important;}
             .info-item input.input-warning { border: none !important; border-bottom: 1px solid var(--color-border-dark) !important; background-color: transparent !important; padding: 2px 0 !important;}
@@ -1043,12 +1031,10 @@
                 <thead>
                     <tr>
                         <th class="section-header-title editable-header" colspan="2">
-                            <input type="text"
-                                   id="section-title-1"
-                                   class="editable-header-input section-style"
-                                   data-persist="true"
-                                   onchange="saveData()"
-                                   value="Fordon framför verkstadslyft">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <input type="text" id="section-title-1" class="editable-header-input section-style" data-persist="true" onchange="saveData()" value="Fordon framför verkstadslyft">
+                                <span class="remove-section-btn" onclick="removeSection(this)" title="Ta bort denna kategori">✖</span>
+                            </div>
                         </th> 
                         <th class="header-checkbox-title">Ok/<br>genomförd</th> 
                         <th class="header-checkbox-title">Inte<br>ok</th> 
@@ -1129,14 +1115,8 @@
                         <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
                     </tr>
                 </tbody>
-
-                <tbody id="dynamic-rows">
-                </tbody>
             </table>
-        </div>
-
-        <div class="top-buttons">
-            <button type="button" onclick="addRow('Extra åtgärd')">+ Lägg till egen rad</button>
+            <button type="button" class="add-row-small-btn" onclick="addRowToSection('static-rows-1')">+ Lägg till rad i denna sektion</button>
         </div>
 
         <div class="table-container">
@@ -1144,12 +1124,10 @@
                 <thead>
                     <tr>
                         <th class="section-header-title editable-header" colspan="2">
-                             <input type="text"
-                                   id="section-title-2"
-                                   class="editable-header-input section-style"
-                                   data-persist="true"
-                                   onchange="saveData()"
-                                   value="Fordon på verkstadslyft">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <input type="text" id="section-title-2" class="editable-header-input section-style" data-persist="true" onchange="saveData()" value="Fordon på verkstadslyft">
+                                <span class="remove-section-btn" onclick="removeSection(this)" title="Ta bort denna kategori">✖</span>
+                            </div>
                         </th> 
                         <th class="header-checkbox-title">Ok/<br>genomförd</th>
                         <th class="header-checkbox-title">Inte<br>ok</th>
@@ -1285,6 +1263,7 @@
                     
                 </tbody>
             </table>
+            <button type="button" class="add-row-small-btn" onclick="addRowToSection('static-rows-2')">+ Lägg till rad i denna sektion</button>
         </div>
 
         <div class="table-container">
@@ -1292,12 +1271,10 @@
                 <thead>
                     <tr>
                         <th class="section-header-title editable-header" colspan="2">
-                            <input type="text"
-                                   id="section-title-3"
-                                   class="editable-header-input section-style"
-                                   data-persist="true"
-                                   onchange="saveData()"
-                                   value="Avslutande arbeten">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <input type="text" id="section-title-3" class="editable-header-input section-style" data-persist="true" onchange="saveData()" value="Avslutande arbeten">
+                                <span class="remove-section-btn" onclick="removeSection(this)" title="Ta bort denna kategori">✖</span>
+                            </div>
                         </th> 
                         <th class="header-checkbox-title">Ok/<br>genomförd</th>
                         <th class="header-checkbox-title">Inte<br>ok</th>
@@ -1331,6 +1308,7 @@
                     </tr>
                 </tbody>
             </table>
+            <button type="button" class="add-row-small-btn" onclick="addRowToSection('static-rows-3')">+ Lägg till rad i denna sektion</button>
         </div>
 
         <div class="footer-notes">
@@ -1497,7 +1475,7 @@
             
             const utfordaArbeten = [];
             
-            document.querySelectorAll('#dynamic-rows tr.dynamic-row').forEach(row => {
+            document.querySelectorAll('tbody[id^="static-rows-"] tr.dynamic-row').forEach(row => {
                 const descriptionInput = row.querySelector('.editable-text');
                 const description = descriptionInput ? descriptionInput.value.trim() : '';
 
@@ -1598,14 +1576,13 @@
         }
 
         function checkServiceListConfirmation() {
-            const dynamicRows = document.getElementById('dynamic-rows');
             const modalItems = document.querySelectorAll('#serviceModal .service-list li');
 
             modalItems.forEach(item => {
                 const predefinedId = item.dataset.predefinedId;
                 if (!predefinedId) return;
 
-                const existsInTable = dynamicRows.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
+                const existsInTable = document.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
                 
                 if (existsInTable) {
                     item.classList.add('confirmed');
@@ -1702,14 +1679,21 @@
                 }
             });
             
+            data.removedSections = [];
+            document.querySelectorAll('.table-container').forEach((container, index) => {
+                if (container.style.display === 'none') data.removedSections.push(index);
+            });
+
             const dynamicRows = [];
-            document.querySelectorAll('#dynamic-rows tr.dynamic-row').forEach(row => {
+            document.querySelectorAll('tbody[id^="static-rows-"] tr.dynamic-row').forEach(row => {
+                const tbodyId = row.closest('tbody').id;
                 const description = row.querySelector('.editable-text').value;
                 const predefinedId = row.dataset.predefinedId || null; 
                 const checkboxes = row.querySelectorAll('input[type="checkbox"]');
                 dynamicRows.push({
                     desc: description,
                     id: predefinedId, 
+                    target: tbodyId,
                     c1: checkboxes[0] ? checkboxes[0].checked : false,
                     c2: checkboxes[1] ? checkboxes[1].checked : false,
                     c3: checkboxes[2] ? checkboxes[2].checked : false,
@@ -1782,30 +1766,38 @@
                     }
                 });
             }
+            
+            if (data.removedSections && Array.isArray(data.removedSections)) {
+                document.querySelectorAll('.table-container').forEach((container, index) => {
+                    if (data.removedSections.includes(index)) container.style.display = 'none';
+                });
+            }
 
-            const dynamicBody = document.getElementById('dynamic-rows');
-            dynamicBody.innerHTML = '';
+            document.querySelectorAll('tbody[id^="static-rows-"] tr.dynamic-row').forEach(r => r.remove());
             
             if (data.dynamicRows && Array.isArray(data.dynamicRows)) {
                 data.dynamicRows.forEach(rowData => {
                     const predefinedId = rowData.id; 
-                    const newRow = createNewRow('dynamic-rows', false); 
+                    const targetBodyId = rowData.target || 'static-rows-1';
+                    const targetBody = document.getElementById(targetBodyId);
                     
-                    if (newRow) {
-                        if (predefinedId) newRow.setAttribute('data-predefined-id', predefinedId); 
+                    if (targetBody) {
+                        const newRow = createNewRow(targetBodyId, false); 
+                        if (newRow) {
+                            if (predefinedId) newRow.setAttribute('data-predefined-id', predefinedId); 
+                            const editableText = newRow.querySelector('.editable-text');
+                            editableText.value = rowData.desc;
+                            updatePrintValue(editableText); 
 
-                        const editableText = newRow.querySelector('.editable-text');
-                        editableText.value = rowData.desc;
-                        updatePrintValue(editableText); 
-
-                        const checkboxes = newRow.querySelectorAll('input[type="checkbox"]');
-                        if (checkboxes[0]) checkboxes[0].checked = rowData.c1;
-                        if (checkboxes[1]) {
-                             checkboxes[1].checked = rowData.c2;
-                             if (rowData.c2) newRow.classList.add('warning-row');
+                            const checkboxes = newRow.querySelectorAll('input[type="checkbox"]');
+                            if (checkboxes[0]) checkboxes[0].checked = rowData.c1;
+                            if (checkboxes[1]) {
+                                 checkboxes[1].checked = rowData.c2;
+                                 if (rowData.c2) newRow.classList.add('warning-row');
+                            }
+                            if (checkboxes[2]) checkboxes[2].checked = rowData.c3;
+                            targetBody.appendChild(newRow);
                         }
-                        if (checkboxes[2]) checkboxes[2].checked = rowData.c3;
-                        dynamicBody.appendChild(newRow);
                     }
                 });
                 dynamicRowCounter = data.dynamicRows.length;
@@ -1895,15 +1887,11 @@
             return newRow;
         }
 
-        function addRow(sectionTitle, predefinedId = null, description = null) {
-            const newRow = createNewRow('dynamic-rows', true); 
+        function addRowToSection(targetBodyId, predefinedId = null, description = null) {
+            const newRow = createNewRow(targetBodyId, true); 
             if (!newRow) return;
-
-            newRow.setAttribute('data-section', sectionTitle);
             
-            if (predefinedId) {
-                newRow.setAttribute('data-predefined-id', predefinedId);
-            }
+            if (predefinedId) newRow.setAttribute('data-predefined-id', predefinedId);
             
             if (description) {
                 const editableText = newRow.querySelector('.editable-text');
@@ -1911,29 +1899,30 @@
                 updatePrintValue(editableText); 
             }
 
-            const targetBody = document.getElementById('dynamic-rows');
-            if (targetBody) {
-                targetBody.appendChild(newRow);
-            } else {
-                console.error("Kunde inte hitta måltabellen för raden.");
-            }
+            const targetBody = document.getElementById(targetBodyId);
+            if (targetBody) targetBody.appendChild(newRow);
             saveData(); 
             return newRow;
         }
         
+        function removeSection(btn) {
+            if(confirm('Är du säker på att du vill ta bort hela denna kategori från protokollet?')) {
+                const container = btn.closest('.table-container');
+                if (container) {
+                    container.style.display = 'none';
+                    saveData();
+                }
+            }
+        }
+        
         function addPredefinedRow(description, listItem) {
             const predefinedId = listItem.dataset.predefinedId;
-            const dynamicBody = document.getElementById('dynamic-rows');
-
-            const isDuplicate = dynamicBody.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
-            if (isDuplicate) {
-                console.warn("Denna serviceåtgärd har redan lagts till.");
-                return; 
-            }
+            const isDuplicate = document.querySelector(`tr[data-predefined-id="${predefinedId}"]`);
+            if (isDuplicate) return; 
 
             const cleanDescription = description.replace(/ \*$/, ''); 
-            addRow('Extra Service', predefinedId, cleanDescription);
-
+            // Lägger automatiskt till extra-val i första tabellen (Fordon framför verkstadslyft)
+            addRowToSection('static-rows-1', predefinedId, cleanDescription); 
             listItem.classList.add('confirmed');
         }
 
@@ -1957,8 +1946,11 @@
                 }
             });
             
-            const dynamicBody = document.getElementById('dynamic-rows');
-            dynamicBody.innerHTML = '';
+            document.querySelectorAll('.table-container').forEach(container => {
+                container.style.display = '';
+            });
+            
+            document.querySelectorAll('tbody[id^="static-rows-"] tr.dynamic-row').forEach(r => r.remove());
             
             includeServiceBevis = false; 
             document.getElementById('toggle-service-bevis-btn').classList.remove('toggled-on');
