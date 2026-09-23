@@ -72,7 +72,8 @@ const NAV_GROUPS = [
         title: 'Register',
         items: [
             { id: 'CUSTOMERS', icon: 'users', label: 'Kunder' },
-            { id: 'LAGER', icon: 'package', label: 'Lager' }
+            { id: 'LAGER', icon: 'package', label: 'Lager' },
+            { id: 'SERVICE_PROTOKOLL', icon: 'clipboard', label: 'Serviceprotokoll', url: 'https://amarsut.github.io/lager/serviceprotokoll.html?sidebar=true' }
         ]
     },
     {
@@ -457,11 +458,11 @@ const App = () => {
                                     )}
 
                                     {group.items.map(item => {
-                                        const isActive = view === item.id;
-                                        return (
-                                            <div key={item.id} 
-                                                onClick={() => navigateTo(item.id)} 
-                                                className={`flex items-center px-6 py-3 cursor-pointer transition-all duration-300 group relative ${item.mobileHide ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06]' : 'hover:bg-white/[0.03]'}`}>                                
+                                    const isActive = view === item.id;
+                                    return (
+                                        <div key={item.id} 
+                                            onClick={() => item.url ? window.location.href = item.url : navigateTo(item.id)} 
+                                            className={`flex items-center px-6 py-3 cursor-pointer transition-all duration-300 group relative ${item.mobileHide ? 'lg:hidden' : ''} ${isActive ? 'bg-white/[0.06]' : 'hover:bg-white/[0.03]'}`}>                     
 
                                                 <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-orange-500 rounded-r-full shadow-[0_0_12px_rgba(249,115,22,0.8)] transition-all duration-300 ${isActive ? 'h-7 opacity-100' : 'h-0 opacity-0 group-hover:h-3 group-hover:opacity-50'}`}></div>
 
