@@ -3472,7 +3472,9 @@
             const urlParams = new URLSearchParams(window.location.search);
             const forceSidebar = urlParams.get('sidebar') === 'true';
 
-            const isFromAutoGrid = referrer.includes('amarsut.github.io/lager') || forceSidebar;
+            // Kontrollerar att det är en datorskärm (större än 768px) innan sidebaren tänds
+            const isDesktop = window.innerWidth > 768;
+            const isFromAutoGrid = (referrer.includes('amarsut.github.io/lager') || forceSidebar) && isDesktop;
 
             if (isFromAutoGrid) {
                 document.body.classList.add('has-sidebar');
