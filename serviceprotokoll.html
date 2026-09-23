@@ -2221,7 +2221,8 @@
                 signerKund: document.getElementById('signer-kund').value || '-',
                 registreringNr: document.getElementById('registrering-nr').value.toUpperCase() || 'ABC 123',
                 mmb: document.getElementById('mmb').value || '-',
-                companyName: document.getElementById('company-name') ? document.getElementById('company-name').value : 'VAG Specialisten Skåne'
+                companyName: document.getElementById('company-name') ? document.getElementById('company-name').value : 'VAG Specialisten Skåne',
+                huvudtitel: document.getElementById('main-inspection-title') ? document.getElementById('main-inspection-title').value : 'Inspektion med oljebyte'
             };
             
             const utfordaArbeten = [];
@@ -2283,7 +2284,7 @@
                     </div>
                 </div>
                 
-                <h3 class="service-bevis-small-header">Inspektion med oljebyte</h3>
+                <h3 class="service-bevis-small-header">${data.huvudtitel}</h3>
                 <div class="sb-data-section">
                     <div class="sb-data-row">
                         <span class="sb-label">Datum</span>
