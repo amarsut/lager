@@ -1649,12 +1649,13 @@
             transform: translateX(0.125rem);
         }
 
-        /* Behåll original-inställningarna för huvudytan från backupen! */
+        /* Anpassar protokollets bredd när sidebaren är öppen */
         body.has-sidebar .main-protocol-wrapper {
             flex-grow: 1;
             padding: 30px 40px;
             box-sizing: border-box;
-            max-width: 1000px;
+            /* Ökar maxbredden från 1000px till 1250px så att knapparna får plats på en rad */
+            max-width: 1100px; 
             margin: 0 auto;
         }
 
