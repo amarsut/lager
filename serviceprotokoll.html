@@ -3429,7 +3429,7 @@
                                     <div class="ag-nav-group">
                                         <div class="ag-nav-title">Navigering</div>
                                         
-                                        <div class="ag-nav-item" onclick="window.location.href='https://amarsut.github.io/lager/OS/'">
+                                        <div class="ag-nav-item" onclick="if(document.referrer.includes('amarsut.github.io')) { window.history.back(); } else { window.location.href='https://amarsut.github.io/lager/OS/'; }">
                                             <div class="ag-nav-indicator"></div>
                                             <div class="ag-nav-icon">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -3460,7 +3460,7 @@
                                 </div>
                                 
                                 <!-- PROFILE -->
-                                <div class="ag-profile-row" onclick="window.location.href='https://amarsut.github.io/lager/OS/'">
+                                <div class="ag-profile-row" onclick="if(document.referrer.includes('amarsut.github.io')) { window.history.back(); } else { window.location.href='https://amarsut.github.io/lager/OS/'; }">
                                     <div class="ag-profile-info">
                                         <div class="ag-avatar">A</div>
                                         <div class="ag-profile-text">
