@@ -364,14 +364,45 @@
         /* =======================================================
            TABELLSTRUKTUR & RAMAR
            ======================================================= */
+        /* --- VAG-STIL CHECKBOXAR (Klassisk 3D-form med grön bock) --- */
         .custom-checkbox input[type="checkbox"] {
-            transform: scale(1.0); 
-            margin: 0; 
-            vertical-align: middle; 
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px; 
+            height: 15px;
+            border: 1px solid #333; 
+            border-radius: 0; /* Helt fyrkantiga skarpa hörn */
+            
+            /* Skapar den klassiska "insjunkna" 3D-effekten inuti rutan */
+            background: linear-gradient(180deg, #b8b8b8 0%, #f0f0f0 40%, #ffffff 100%);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+            
+            display: inline-grid;
+            place-content: center;
+            margin: 0 auto; 
             cursor: pointer;
-            border-radius: 0; 
-            accent-color: var(--color-secondary); 
         }
+
+        /* Skapar den gröna bocken */
+        .custom-checkbox input[type="checkbox"]::before {
+            content: "✔";
+            transform: scale(0);
+            color: #1a7a28; /* VAG Mörkgrön */
+            font-size: 13px; /* Mindre och skarpare bock */
+            font-weight: 900; /* Tjockare font-vikt */
+            line-height: 1;
+            transition: 0.1s transform ease-in-out;
+        }
+
+        /* Visar bocken när rutan är i-kryssad */
+        .custom-checkbox input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+        
+        .custom-checkbox input[type="checkbox"]:focus {
+            outline: none; 
+        }
+
         .custom-checkbox span {
             display: none; 
         }
@@ -735,36 +766,75 @@
            UTSKRIFTSSTYLING (Media Print) OCH SERVICEBEVIS
            ======================================================= */
         @media print {
-            /* 1. Sätt äkta pappersmarginal för att få mellanrum högst upp på ALLA sidor (även sida 2) */
-            @page { 
-                margin: 15mm 7mm 20mm 7mm !important;
+            /* Sätter exakta pappersmarginaler: 25mm vänster (för hålslag), 15mm på övriga */
+            @page {
+                size: A4;
+                margin: 15mm 15mm 15mm 25mm !important; 
+            }
+
+            /* Tvingar innehållet att fylla exakt 100% av utrymmet mellan marginalerna ovan */
+            html, body {
+                width: 100% !important;
+                max-width: none !important; /* Tar bort 1000px-begränsningen på papper */
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* TVINGA FRAM MÖRKARE BLÅ VID UTSKRIFT (VAG Original) */
+            :root {
+                --color-primary: #002840 !important; 
+                --color-secondary: #002840 !important; 
             }
             
-            /* 2. Ta bort inre padding från body eftersom @page nu sköter marginalerna */
-            body { 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                background-color: #fff; 
+            .header, .header-service-bevis, th, .section-title {
+                color: #002840 !important;
+                border-color: #002840 !important;
+            }
+
+            th {
+                background-color: #002840 !important;
+                color: white !important;
             }
             
-            /* 3. Korrekt tabellbrytning som behåller ramar och repeterar rubriker */
-            table {
-                page-break-inside: auto !important;
+            /* Tvinga linjerna under inmatningsfälten att bli mörkare på papper */
+            input[type="text"], input[type="date"], select, .read-only-print {
+                border-bottom: 1px solid #333 !important; 
             }
-            tr { 
-                page-break-inside: avoid !important; 
-                break-inside: avoid !important; 
+
+            /* Garantera att checkboxarna behåller sin VAG-stil på papper */
+            input[type="checkbox"] {
+                border: 1px solid #333 !important;
+                background-color: transparent !important;
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
             }
-            thead { 
-                /* Låter den blå sektionsrubriken repeteras om tabellen bryts till en ny sida */
-                display: table-header-group !important; 
+            input[type="checkbox"]:checked::before {
+                color: #1a7a28 !important; /* Grön bock */
             }
-            
-            .footer-notes { margin-top: 60px !important; } /* Skapar ett rejält mellanrum ovanför kommentarerna */
-            .no-print { display: none !important; } /* Döljer inställningar som inte ska synas på papper */
+
+            .no-print {
+                display: none !important;
+            }
             .modal, .top-buttons, .remove-row-btn, .date-picker-overlay, .copy-icon-container, #save-notification, .clear-signature-btn, .remove-section-btn, .add-row-small-btn { display: none !important; }
-            .info-section { background-color: #fff; border: 1px solid #ccc; }
-            .info-item input { border-bottom: 1px solid var(--color-border-dark) !important; padding-left: 2px; padding-right: 0 !important;}
+            /* Krymper mellanrummet mellan kolumnerna för att ge långa ord (som chassinr) mer plats */
+            .info-section { 
+                grid-template-columns: repeat(4, 1fr) !important; 
+                gap: 15px 8px !important; 
+            }
+            
+            /* Drar ner textstorleken en aning på papper för att garantera att allt ryms */
+            .info-item input { 
+                border-bottom: 1px solid var(--color-border-dark) !important; 
+                padding-left: 2px; 
+                padding-right: 0 !important;
+                font-size: 12px !important; 
+            }
+            
+            /* Extrem-säkring för chassinumret så 17 tecken alltid får plats utan att klippas */
+            #chassinummer {
+                letter-spacing: -0.3px !important;
+            }
             .info-item input.input-warning { border: none !important; border-bottom: 1px solid var(--color-border-dark) !important; background-color: transparent !important; padding: 2px 0 !important;}
             .input-warning-msg { display: none !important; } 
             input:required:not(:valid) { border-color: initial !important; box-shadow: none !important;}
@@ -775,8 +845,38 @@
             #comment-area-print { display: block !important; } /* Visa rena texten på papper */
             
             .description-content-wrapper { display: block; margin: 0; padding: 0;}
-            .custom-checkbox input[type="checkbox"] { transform: scale(1.0) !important; -webkit-print-color-adjust: exact; color-adjust: exact; accent-color: var(--color-secondary) !important; }
+            /* Tvingar utskriften att acceptera vår egna gröna bock istället för webbläsarens blåa */
+            /* Tvingar utskriften att behålla 3D-looken och den gröna bocken */
+            .custom-checkbox input[type="checkbox"] { 
+                transform: scale(1.0) !important; 
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important; 
+                border: 1px solid #333 !important; 
+                border-radius: 0 !important; /* Fyrkantig ram på papper */
+                
+                /* Tvingar fram skuggningen även vid utskrift */
+                background: linear-gradient(180deg, #b8b8b8 0%, #f0f0f0 40%, #ffffff 100%) !important;
+                box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important;
+            }
             .comment-area, .table-container, .header, .header::after, .inspection-title, .section-header-title, .header-checkbox-title { -webkit-print-color-adjust: exact; color-adjust: exact; }
+
+            /* FIX FÖR BORTKLIPPT HÖGERKANT OCH TABELLBREDD PÅ PAPPER */
+            /* FIX FÖR BORTKLIPPT HÖGERKANT OCH TABELLBREDD PÅ PAPPER */
+            .table-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: visible !important; 
+                padding-right: 1px !important; /* Ger millimetern som krävs för att rita högerkanten */
+            }
+            .table-container table {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-collapse: collapse !important;
+                border-right: 1.5px solid #002840 !important; 
+            }
+            th:last-child, td:last-child {
+                border-right: 1.5px solid #002840 !important; 
+            }
             .signature-input-date { border-bottom: 1px solid var(--color-primary) !important; }
             .info-section { grid-template-columns: repeat(4, 1fr) !important; } 
             .warning-row { border-left: 5px solid var(--color-warning) !important; -webkit-print-color-adjust: exact; color-adjust: exact; background-color: transparent !important;} 
@@ -1387,11 +1487,24 @@
             <button type="button" class="add-row-small-btn" onclick="addRowToSection('static-rows-3')">+ Lägg till rad i denna sektion</button>
         </div>  
 
-        <div class="footer-notes">
-            <p><strong>Underhållskommentar:</strong></p>
-            <textarea id="comment-area" class="comment-area" name="comment-area" data-persist="true" onchange="saveData()" placeholder="Eventuella anmärkningar, rekommendationer eller ytterligare information..."></textarea>
+        <!-- VAG Original Informations- och Kommentarsdel -->
+        <div class="vag-footer-legend" style="text-align: center; margin-top: 25px; margin-bottom: 15px; font-size: 12px; font-family: Arial, sans-serif;">
+            <div style="margin-bottom: 4px;">
+                <span style="color: #900; font-size: 16px; vertical-align: middle; line-height: 1;">●</span> <strong style="font-size: 12px;">Extraarbete mot separat räkning</strong>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="font-size: 16px; vertical-align: middle; line-height: 1;">👁️</span> <strong style="font-size: 12px;">Okulärkontroll</strong>
+            </div>
+            <div style="font-size: 12px;">
+                <strong>Ok/genomförd</strong> = Ok &nbsp;&nbsp;&nbsp;&nbsp; <strong>Inte ok</strong> = Inte ok, se underhållsanvisningarna &nbsp;&nbsp;&nbsp;&nbsp; <strong>åtgärdat</strong> = Felet har åtgärdats
+            </div>
+        </div>
+
+        <div class="footer-notes" style="text-align: center; border-top: none; padding-top: 0;">
+            <p style="font-weight: bold; margin-bottom: 8px; font-size: 13px;">Underhållskommentar</p>
+            <textarea id="comment-area" class="comment-area" name="comment-area" data-persist="true" onchange="saveData()" style="text-align: center; min-height: 80px;" placeholder="- Skriv kommentarer här..."></textarea>
             <!-- Denna div syns bara på papper -->
-            <div id="comment-area-print" style="display: none; text-align: center; white-space: pre-wrap; font-size: 14px; margin-top: 10px; line-height: 1.5;"></div>
+            <div id="comment-area-print" style="display: none; text-align: center; white-space: pre-wrap; font-size: 13px; margin-top: 5px; line-height: 1.5; font-weight: bold;"></div>
         </div>
         
         <div class="footer-notes">
