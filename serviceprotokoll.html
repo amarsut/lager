@@ -155,10 +155,11 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            background-color: var(--color-bg);
+            background-color: transparent;
             padding: 5px 0;
-            flex-wrap: nowrap; /* Tvingar allt att hålla sig på samma rad på stora skärmar */
-            gap: 10px;
+            flex-wrap: nowrap !important;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .print-button-container {
@@ -988,11 +989,13 @@
             
             /* Använd padding istället för margin så att utrymmet alltid tvingas fram, även på ny sida */
             /* Tvinga webbläsaren att aldrig klippa förklaringstexten eller botten på mitten */
+            /* Säkrar att legenden och kommentarsrutan hålls intakta och inte klipps av vid sidbyte */
             .vag-footer-legend, .footer-notes { 
-                padding-top: 0px !important; 
-                margin-top: 15px !important; 
+                padding-top: 5px !important; 
+                margin-top: 10px !important; 
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                page-break-before: auto !important;
             }
             .signature-section {
                 padding-top: 30px !important;
@@ -1229,16 +1232,15 @@
 
     <div class="top-buttons-wrapper">
         <button type="button" class="mobile-menu-toggle" onclick="toggleMobileMenu()">Verktyg ▼</button>
-        <div class="top-buttons" id="top-buttons-container">
-            <div class="print-button-container">
-                <button class="print-button" onclick="submitForm(event)">Skriv ut</button>
-                <button type="button" onclick="sendEmail()">Skicka via mejl</button>
-                <button onclick="openServiceModal()">+ Lägg till extra tillägg</button>
-                <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()">Separat servicebevis</button>
-                <button type="button" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border-color: #004060;">Fordonsdata (Ctrl+V)</button>
+        <div class="top-buttons" id="top-buttons-container" style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 20px;">
+            
+            <!-- RAD 1: Huvudfunktioner (naturlig bredd, centrerade eller vänsterställda) -->
+            <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                <button class="print-button" onclick="submitForm(event)" style="padding: 6px 12px;">Skriv ut</button>
+                <button onclick="openServiceModal()" style="padding: 6px 12px;">+ Lägg till extra tillägg</button>
+                <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()" style="padding: 6px 12px;">Separat servicebevis</button>
                 
-                <!-- Rullgardinsmenyn för märke flyttad hit upp -->
-                <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="padding: 5px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
+                <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
                     <option value="">-- Välj bilmärke --</option>
                     <option value="audi">Audi</option>
                     <option value="bmw">BMW</option>
@@ -1251,8 +1253,20 @@
                     <option value="volkswagen">Volkswagen</option>
                     <option value="volvo">Volvo</option>
                 </select>
+                <select id="car-history-selector" class="no-print" onchange="loadFromHistory(this.value)" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer; width: 220px;">
+                    <option value="">-- Sparade bilar --</option>
+                </select>
+                <button type="button" onclick="saveToHistory()" style="background-color: #e4e4e4; color: #000; border: 1px solid #888; padding: 6px 12px; cursor: pointer;" title="Spara nuvarande bil">Spara bil</button>
+                <div style="margin-left: auto;">
+                    <button class="clear-button" onclick="clearProtocol()" style="padding: 6px 12px;">Rensa protokoll</button>
+                </div>
             </div>
-            <button class="clear-button" onclick="clearProtocol()">Rensa protokoll</button>
+
+            <!-- RAD 2: Fordonsdata, Historik & Märkesval -->
+            <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                <button type="button" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border-color: #004060; padding: 6px 12px;">Fordonsdata (Ctrl+V)</button>
+            </div>
+
         </div>
     </div>
 
@@ -1655,7 +1669,6 @@
             <tr class="dynamic-row" data-section="">
                 <td class="description-column" colspan="2">
                     <div class="description-content-wrapper">
-                        <span class="extra-work-dot">●</span>
                         <input type="text" class="editable-text" placeholder="Skriv in serviceåtgärd...">
                         <span class="print-text-only"></span>
                         <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
@@ -2282,8 +2295,22 @@
             if (isDuplicate) return; 
 
             const cleanDescription = description.replace(/ \*$/, ''); 
-            // Lägger automatiskt till extra-val i första tabellen (Fordon framför verkstadslyft)
-            addRowToSection('static-rows-1', predefinedId, cleanDescription); 
+            const newRow = addRowToSection('static-rows-1', predefinedId, cleanDescription);
+            
+            if (newRow && !newRow.querySelector('.extra-work-dot')) {
+                const wrapper = newRow.querySelector('.description-content-wrapper');
+                const dot = document.createElement('span');
+                dot.className = 'extra-work-dot';
+                dot.textContent = '●';
+                dot.title = 'Klicka för att ta bort prick';
+                dot.onclick = function(event) { 
+                    event.stopPropagation(); 
+                    this.remove(); 
+                    saveData(); 
+                };
+                wrapper.insertBefore(dot, wrapper.firstChild);
+            }
+
             listItem.classList.add('confirmed');
         }
 
@@ -2804,7 +2831,122 @@
             }
         }
 
+        // Gör så att man kan klicka i vänstermarginalen för att lägga till/ta bort röd prick
+        document.addEventListener('click', function(e) {
+            const td = e.target.closest('.description-column');
+            if (!td) return;
+
+            // Kontrollera om klicket skedde i den tomma vänstermarginalen (första 30 pixlarna)
+            const rect = td.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+
+            if (clickX <= 30) {
+                const wrapper = td.querySelector('.description-content-wrapper');
+                const existingDot = wrapper.querySelector('.extra-work-dot');
+
+                if (existingDot) {
+                    existingDot.remove(); // Ta bort pricken om den finns
+                } else {
+                    const dot = document.createElement('span');
+                    dot.className = 'extra-work-dot';
+                    dot.textContent = '●';
+                    dot.title = 'Klicka för att ta bort prick';
+                    dot.onclick = function(event) { 
+                        event.stopPropagation(); // Förhindrar att cell-klicket triggas igen
+                        this.remove(); 
+                        saveData(); 
+                    };
+                    wrapper.insertBefore(dot, wrapper.firstChild); // Lägg till pricken
+                }
+                saveData();
+            }
+        });
+
+        // --- FUNKTIONER FÖR BILHISTORIK (LOCALSTORAGE) ---
+        const HISTORY_STORAGE_KEY = 'vagServiceProtocolHistoryV1';
+
+        function saveToHistory() {
+            const regNr = document.getElementById('registrering-nr').value.trim().toUpperCase();
+            if (!regNr) {
+                alert('Ange minst ett registreringsnummer för att spara bilen i historiken.');
+                return;
+            }
+
+            let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)) || {};
+            
+            // Samla in nuvarande formulärdata
+            const currentData = {};
+            document.querySelectorAll('[data-persist="true"]').forEach(input => {
+                currentData[input.id] = input.type === 'checkbox' ? input.checked : input.value;
+            });
+            currentData.includeServiceBevisStatus = includeServiceBevis;
+
+            history[regNr] = {
+                date: new Date().toLocaleDateString(),
+                model: document.getElementById('modellkod-2').value || regNr,
+                data: currentData
+            };
+
+            localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+            updateHistoryDropdown();
+            showPasteNotification(`✅ Bil ${regNr} sparad i historiken!`);
+        }
+
+        function updateHistoryDropdown() {
+            const selector = document.getElementById('car-history-selector');
+            if (!selector) return;
+
+            let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)) || {};
+            
+            // Töm nuvarande alternativ förutom det första
+            selector.innerHTML = '<option value="">-- Sparade bilar --</option>';
+
+            Object.keys(history).forEach(regNr => {
+                const item = history[regNr];
+                const option = document.createElement('option');
+                option.value = regNr;
+                option.textContent = `${regNr} (${item.model})`;
+                selector.appendChild(option);
+            });
+        }
+
+        function loadFromHistory(regNr) {
+            if (!regNr) return;
+            let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)) || {};
+            const savedEntry = history[regNr];
+
+            if (!savedEntry || !savedEntry.data) return;
+
+            const data = savedEntry.data;
+            
+            // Fyll i fälten baserat på sparad data
+            document.querySelectorAll('[data-persist="true"]').forEach(element => {
+                if (data[element.id] !== undefined) {
+                    if (element.type === 'checkbox') {
+                         element.checked = data[element.id];
+                    } else {
+                         element.value = data[element.id];
+                    }
+                }
+            });
+
+            if (data.includeServiceBevisStatus !== undefined) {
+                 includeServiceBevis = data.includeServiceBevisStatus;
+                 const button = document.getElementById('toggle-service-bevis-btn');
+                 if (includeServiceBevis) button.classList.add('toggled-on');
+                 else button.classList.remove('toggled-on');
+            }
+
+            updateBrandLogo();
+            validateRequiredFields();
+            showPasteNotification(`📂 Laddade protokoll för ${regNr}`);
+        }
+
+        // Kör funktionen som fyller historik-menyn direkt när sidan laddas
+        window.addEventListener('DOMContentLoaded', () => {
+            updateHistoryDropdown();
+        });
+
     </script>
 </body>
 </html>
- 
