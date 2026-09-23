@@ -1225,11 +1225,366 @@
                 padding: 3px 5px 3px 5px; 
             }
         }
+
+        /* --- SIDEBAR INTEGRATION (AUTOGRID BILD 2 - FINSLIPAD) --- */
+        body.has-sidebar {
+            display: flex;
+            margin: 0;
+            max-width: 100% !important;
+            background-color: #d4d0c8;
+            align-items: flex-start; 
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+
+        .autogrid-sidebar {
+            width: 285px; 
+            background-color: #0b0f19; 
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.05); 
+            flex-shrink: 0;
+            position: sticky; 
+            top: 0;
+            user-select: none;
+        }
+
+        /* 1. Logo Row (Mindre ikon, tydligare text) */
+        .ag-logo-row {
+            height: 5rem; /* h-20 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+        .ag-logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px; 
+            cursor: pointer;
+        }
+        .ag-logo-svg {
+            width: 32px; /* Krympt från 40px */
+            height: 32px; 
+            filter: drop-shadow(0 0 12px rgba(249,115,22,0.4));
+            transition: all 0.3s;
+        }
+        .ag-logo-group:hover .ag-logo-svg {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px rgba(249,115,22,0.8));
+        }
+        .ag-logo-text {
+            font-weight: 700;
+            letter-spacing: 0.15em; /* Lite luftigare */
+            font-size: 16px; /* Uppskalad från 14px */
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        .ag-close-btn {
+            width: 1.75rem; 
+            height: 1.75rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            color: #71717a; 
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ag-close-btn:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 2. Scrollable Middle */
+        .ag-middle-section {
+            flex: 1 1 0%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .ag-middle-section::-webkit-scrollbar { display: none; } 
+
+        /* CTA Button (Tunnare och skarpare) */
+        .ag-cta-wrapper {
+            padding: 24px 16px 16px 16px; 
+            flex-shrink: 0;
+        }
+        .ag-cta-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 16px; /* Minskad padding för en tunnare knapp */
+            background: linear-gradient(to right, #f97316, #ea580c);
+            color: black;
+            border-radius: 12px; 
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+        .ag-cta-btn:hover {
+            background: linear-gradient(to right, #fb923c, #f97316);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+        }
+        .ag-cta-btn:active {
+            transform: scale(0.95);
+        }
+        .ag-cta-text {
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 11px; /* Lite skarpare */
+            font-weight: 750;
+            margin-top: 2px;
+        }
+
+        /* Nav Area */
+        .ag-nav-area {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem; 
+            flex-shrink: 0;
+        }
+        .ag-nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem; 
+        }
+        .ag-nav-title {
+            padding: 0 1.5rem;
+            font-size: 11px;
+            font-weight: 700;
+            color: #71717a; 
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            margin-top: 0.25rem;
+        }
+        .ag-nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem; 
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .ag-nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        .ag-nav-item.active {
+            background-color: rgba(255, 255, 255, 0.06);
+            cursor: default;
+        }
+
+        .ag-nav-indicator {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0.25rem; 
+            background-color: #f97316;
+            border-top-right-radius: 9999px;
+            border-bottom-right-radius: 9999px;
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.8);
+            transition: all 0.3s;
+            height: 0;
+            opacity: 0;
+        }
+        .ag-nav-item.active .ag-nav-indicator {
+            height: 1.75rem; 
+            opacity: 1;
+        }
+        .ag-nav-item:hover:not(.active) .ag-nav-indicator {
+            height: 0.75rem; 
+            opacity: 0.5;
+        }
+
+        .ag-nav-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+            color: #a1a1aa; 
+        }
+        .ag-nav-item.active .ag-nav-icon {
+            color: #f97316;
+            transform: scale(1.1);
+        }
+        .ag-nav-item:hover:not(.active) .ag-nav-icon {
+            transform: translateX(0.25rem);
+            color: #fb923c;
+        }
+
+        .ag-nav-text {
+            margin-left: 1rem;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.025em;
+            transition: all 0.3s;
+            z-index: 10;
+            color: #d4d4d8;
+        }
+        .ag-nav-item.active .ag-nav-text {
+            color: white;
+        }
+        .ag-nav-item:hover:not(.active) .ag-nav-text {
+            transform: translateX(0.25rem);
+            color: white;
+        }
+
+        /* 3. Bottom Section (Profile & Tools - Matchar Bild 2) */
+        .ag-bottom-section {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ag-tools-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 12px 16px; /* Mer utrymme */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 8px;
+        }
+        .ag-tool-btn {
+            padding: 0.5rem;
+            border-radius: 0.75rem; 
+            color: #71717a; 
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ag-tool-btn:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .ag-profile-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px; /* Tydligt luftigare */
+            gap: 12px; 
+            cursor: pointer;
+        }
+        .ag-profile-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .ag-avatar {
+            min-width: 36px; /* Lite större */
+            width: 36px;
+            height: 36px;
+            background-color: #27272a; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: transform 0.3s;
+        }
+        .ag-profile-row:hover .ag-avatar {
+            transform: scale(1.05);
+        }
+        .ag-profile-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .ag-profile-name {
+            font-size: 12px; /* Upp från 10px, mycket tydligare */
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ag-profile-email {
+            font-size: 8px; /* Tydligare */
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.05em; 
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+        .ag-logout-btn {
+            padding: 0.5rem;
+            color: #ef4444; 
+            background: transparent;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .ag-logout-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        .ag-logout-btn svg {
+            transition: transform 0.15s;
+        }
+        .ag-logout-btn:hover svg {
+            transform: translateX(0.125rem);
+        }
+
+        /* Behåll original-inställningarna för huvudytan från backupen! */
+        body.has-sidebar .main-protocol-wrapper {
+            flex-grow: 1;
+            padding: 30px 40px;
+            box-sizing: border-box;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        @media print {
+            .autogrid-sidebar { display: none !important; }
+            body.has-sidebar .main-protocol-wrapper { padding: 0 !important; max-width: 100% !important; margin: 0; }
+            body.has-sidebar { display: block; }
+        }
     </style>
 </head>
-<body onload="loadData(); validateRequiredFields(); generateStaticRows();">
+<body onload="initSidebar(); loadData(); validateRequiredFields(); generateStaticRows();">
 
-    <div id="save-notification">💾 Sparat!</div>
+    <!-- Sidebaren hamnar här om man kommer från AutoGrid -->
+    <div id="sidebar-container"></div>
+
+    <!-- Omslutande wrapper för att hålla protokollet till höger -->
+    <div class="main-protocol-wrapper">
+
+    <div id="save-notification">💾 Sparat i systemet</div>
     <div id="paste-notification" class="toast-notification">✅ Data ifylld!</div>
 
     <div class="top-buttons-wrapper">
@@ -2949,6 +3304,105 @@
             updateHistoryDropdown();
         });
 
+        function initSidebar() {
+            const referrer = document.referrer;
+            const urlParams = new URLSearchParams(window.location.search);
+            const forceSidebar = urlParams.get('sidebar') === 'true';
+
+            const isFromAutoGrid = referrer.includes('amarsut.github.io/lager') || forceSidebar;
+
+            if (isFromAutoGrid) {
+                document.body.classList.add('has-sidebar');
+
+                const sidebarContainer = document.getElementById('sidebar-container');
+                if (sidebarContainer) {
+                    sidebarContainer.innerHTML = `
+                        <div class="autogrid-sidebar">
+                            
+                            <!-- 1. LOGO & CLOSE -->
+                            <div class="ag-logo-row">
+                                <div class="ag-logo-group" onclick="window.location.href='https://amarsut.github.io/lager/OS/'">
+                                    <svg class="ag-logo-svg" viewBox="0 0 100 100">
+                                        <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" stroke-width="3" opacity="0.6"/>
+                                        <polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" stroke-width="1" opacity="0.3"/>
+                                        <path d="M50 25 L28 75 L40 75 L50 50 L60 75 L72 75 Z" fill="white" />
+                                        <path d="M35 60 L65 60" stroke="#f97316" stroke-width="5" stroke-linecap="round" />
+                                    </svg>
+                                    <span class="ag-logo-text">AUTO<span style="color: #f97316; font-weight: 300;">GRID</span></span>
+                                </div>
+                                <button class="ag-close-btn" onclick="document.body.classList.remove('has-sidebar'); document.getElementById('sidebar-container').innerHTML = '';" title="Dölj meny">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                            </div>
+
+                            <!-- 2. MIDDLE (Scrollbar Area) -->
+                            <div class="ag-middle-section">
+                                
+                                <!-- CTA BUTTON (Skapa Nytt Jobb) -->
+                                <div class="ag-cta-wrapper">
+                                    <button class="ag-cta-btn" onclick="window.location.href='https://amarsut.github.io/lager/OS/#new_job'">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        <span class="ag-cta-text">Skapa Nytt Jobb</span>
+                                    </button>
+                                </div>
+
+                                <!-- NAV LINKS -->
+                                <div class="ag-nav-area">
+                                    <div class="ag-nav-group">
+                                        <div class="ag-nav-title">Navigering</div>
+                                        
+                                        <div class="ag-nav-item" onclick="window.location.href='https://amarsut.github.io/lager/OS/'">
+                                            <div class="ag-nav-indicator"></div>
+                                            <div class="ag-nav-icon">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                            </div>
+                                            <span class="ag-nav-text">Tillbaka till AutoGrid</span>
+                                        </div>
+
+                                        <div class="ag-nav-item active">
+                                            <div class="ag-nav-indicator"></div>
+                                            <div class="ag-nav-icon">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                                            </div>
+                                            <span class="ag-nav-text">Serviceprotokoll</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- 3. BOTTOM SECTION (Tools & Profile) -->
+                            <div class="ag-bottom-section">
+                                
+                                <!-- TOOLS (Eye, Moon, Settings) -->
+                                <div class="ag-tools-row">
+                                    <button class="ag-tool-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                                    <button class="ag-tool-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+                                    <button class="ag-tool-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+                                </div>
+                                
+                                <!-- PROFILE -->
+                                <div class="ag-profile-row" onclick="window.location.href='https://amarsut.github.io/lager/OS/'">
+                                    <div class="ag-profile-info">
+                                        <div class="ag-avatar">A</div>
+                                        <div class="ag-profile-text">
+                                            <span class="ag-profile-name">Operator</span>
+                                            <span class="ag-profile-email">AMAR.SUT@GMAIL.COM</span>
+                                        </div>
+                                    </div>
+                                    <button class="ag-logout-btn" title="Logga ut">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
     </script>
+    </div> <!-- Stänger main-protocol-wrapper -->
 </body>
 </html>
