@@ -1227,13 +1227,21 @@
         }
 
         /* --- SIDEBAR INTEGRATION (AUTOGRID BILD 2 - FINSLIPAD) --- */
+        /* --- SIDEBAR INTEGRATION (AUTOGRID BILD 2 - FINSLIPAD) --- */
         body.has-sidebar {
             display: flex;
             margin: 0;
             max-width: 100% !important;
             background-color: #d4d0c8;
-            align-items: flex-start; 
+            align-items: stretch; /* FIX: Låter sidebaren sträcka ut sig hela vägen ner till dokumentets slut */
+            min-height: 100vh;
             font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+
+        /* FIX: Tvingar den yttre behållaren att vara svart så du slipper den grå kanten */
+        body.has-sidebar #sidebar-container {
+            background-color: #0b0f19;
+            flex-shrink: 0;
         }
 
         .autogrid-sidebar {
@@ -1248,6 +1256,13 @@
             position: sticky; 
             top: 0;
             user-select: none;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Mjuk animation */
+            overflow: hidden; /* Döljer texten som hamnar utanför vid indragning */
+        }
+
+        /* Förhindrar text från att hoppa ner på två rader när menyn krymper */
+        .ag-logo-text, .ag-cta-text, .ag-nav-text, .ag-profile-name, .ag-profile-email {
+            white-space: nowrap;
         }
 
         /* 1. Logo Row (Mindre ikon, tydligare text) */
@@ -1567,6 +1582,67 @@
             box-sizing: border-box;
             max-width: 1000px;
             margin: 0 auto;
+        }
+
+        /* --- INFÄLLT LÄGE (COLLAPSED) --- */
+        body.sidebar-collapsed .autogrid-sidebar {
+            width: 80px; /* Krymper bredden (motsvarar w-20) */
+        }
+
+        /* Döljer alla text-element och stäng-knappen */
+        body.sidebar-collapsed .ag-logo-text,
+        body.sidebar-collapsed .ag-close-btn,
+        body.sidebar-collapsed .ag-cta-text,
+        body.sidebar-collapsed .ag-nav-title,
+        body.sidebar-collapsed .ag-nav-text,
+        body.sidebar-collapsed .ag-profile-text,
+        body.sidebar-collapsed .ag-logout-btn {
+            display: none;
+        }
+
+        /* Centrerar loggan */
+        body.sidebar-collapsed .ag-logo-row {
+            justify-content: center;
+            padding: 0;
+        }
+
+        /* Kvadratisk, centrerad orange knapp */
+        body.sidebar-collapsed .ag-cta-wrapper {
+            padding: 24px 18px 16px 18px; 
+        }
+        body.sidebar-collapsed .ag-cta-btn {
+            padding: 0;
+            height: 44px; /* Exakt 44x44px fyrkant */
+            border-radius: 12px;
+        }
+        body.sidebar-collapsed .ag-cta-btn svg {
+            margin: 0;
+        }
+
+        /* Centrerar meny-ikonerna */
+        body.sidebar-collapsed .ag-nav-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        body.sidebar-collapsed .ag-nav-icon {
+            margin: 0;
+        }
+
+        /* Staplar verktygsikonerna i botten vertikalt */
+        body.sidebar-collapsed .ag-tools-row {
+            flex-direction: column;
+            padding: 16px 0;
+            gap: 16px;
+        }
+
+        /* Centrerar avataren */
+        body.sidebar-collapsed .ag-profile-row {
+            justify-content: center;
+            padding: 24px 0;
+        }
+        body.sidebar-collapsed .ag-profile-info {
+            gap: 0;
         }
 
         @media print {
@@ -3321,7 +3397,8 @@
                             
                             <!-- 1. LOGO & CLOSE -->
                             <div class="ag-logo-row">
-                                <div class="ag-logo-group" onclick="window.location.href='https://amarsut.github.io/lager/OS/'">
+                                <!-- FIX: Klickar man på loggan fälls menyn in/ut -->
+                                <div class="ag-logo-group" onclick="document.body.classList.toggle('sidebar-collapsed');" title="Fäll in / ut meny">
                                     <svg class="ag-logo-svg" viewBox="0 0 100 100">
                                         <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#f97316" stroke-width="3" opacity="0.6"/>
                                         <polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#f97316" stroke-width="1" opacity="0.3"/>
@@ -3330,7 +3407,8 @@
                                     </svg>
                                     <span class="ag-logo-text">AUTO<span style="color: #f97316; font-weight: 300;">GRID</span></span>
                                 </div>
-                                <button class="ag-close-btn" onclick="document.body.classList.remove('has-sidebar'); document.getElementById('sidebar-container').innerHTML = '';" title="Dölj meny">
+                                <!-- FIX: Stängknappen lägger nu bara till klassen 'sidebar-collapsed' -->
+                                <button class="ag-close-btn" onclick="document.body.classList.add('sidebar-collapsed');" title="Fäll in meny">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                 </button>
                             </div>
