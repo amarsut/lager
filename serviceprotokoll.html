@@ -194,14 +194,14 @@
         }
         
         #toggle-service-bevis-btn.toggled-on {
-            background-color: #c8e6c9; /* En mycket diskret, blekgrön färg för aktiverat läge */
-            color: #000;
-            border-color: #888;
+            background-color: #c8e6c9 !important; 
+            color: #000 !important;
+            border-color: #888 !important;
         }
 
         #toggle-service-bevis-btn.toggled-on:hover {
-            background-color: #a5d6a7; 
-            border-color: #555;
+            background-color: #a5d6a7 !important; 
+            border-color: #555 !important;
         }
         
         .checkbox-option {
@@ -1190,40 +1190,113 @@
             body { padding: 10px; margin: 0;}
             .info-section { grid-template-columns: repeat(2, 1fr); gap: 15px;}
             
-            /* Dölj de uppradade knapparna, visa menyknappen */
-            .mobile-menu-toggle { display: block; }
-            .top-buttons { 
-                display: none; /* Döljs från början på mobil */
-                flex-direction: column; 
-                align-items: stretch; 
-                gap: 5px;
-                background-color: #e4e4e4;
-                padding: 10px;
-                border: 1px solid #999;
-                margin-bottom: 20px;
+            /* --- PERFEKT MOBIL-MENY (2 RADER) --- */
+            .mobile-menu-toggle { 
+                display: block !important; 
             }
-            .top-buttons.show { display: flex; } /* Klass som läggs till med Javascript */
             
-            .print-button-container {
-                flex-direction: column; 
-                gap: 5px;
+            .mobile-primary-row {
+                display: flex !important; 
+                flex-wrap: wrap !important; /* Tillåter knapparna att hoppa ner på en ny rad */
+                gap: 8px;
                 width: 100%;
-                align-items: stretch; 
+                margin-bottom: 10px;
             }
-            .print-button-container button, .clear-button { width: 100%; }
             
-            /* Lösningen för tabellerna: Tvinga dem att inte krympa för mycket */
-            .table-container {
-                /* Gör så tabellen går att svepa i sidled om skärmen är väldigt smal */
-                overflow-x: auto; 
+            /* De två översta knapparna (Skriv ut & Fordonsdata) delar exakt 50/50 på utrymmet */
+            .mobile-primary-row button:nth-child(1),
+            .mobile-primary-row button:nth-child(2) {
+                flex: 1 1 calc(50% - 4px);
+                padding: 10px 4px !important;
+                font-size: 13px !important;
+                border-radius: 4px;
             }
-            .table-container table {
-                /* Sätter en minsta bredd så att texten och boxarna alltid får plats */
-                min-width: 500px; 
+
+            /* Verktyg-knappen tar upp 100% av raden under */
+            .mobile-primary-row .mobile-menu-toggle {
+                flex: 1 1 100%;
+                padding: 10px !important;
+                font-size: 14px !important;
+                border-radius: 4px;
             }
-            .description-content-wrapper {
-                /* Fortfarande lite padding, men inte extremt mycket på små skärmar */
-                padding: 3px 5px 3px 5px; 
+            
+            .hide-on-mobile {
+                display: none !important; /* Döljer original-knapparna för datorn */
+            }
+            
+            .top-buttons { 
+                display: none !important; /* Döljer dropdownen tills man klickar */
+                flex-direction: column !important; 
+                align-items: stretch !important; 
+                gap: 8px !important;
+                background-color: #ececec !important;
+                padding: 15px !important;
+                border: 1px solid #999 !important;
+                box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            }
+            .top-buttons.show { display: flex !important; } 
+            
+            .desktop-row-1 { flex-direction: column !important; align-items: stretch !important; gap: 8px !important;}
+            .desktop-row-1 button, .desktop-row-1 select { width: 100% !important; padding: 10px !important; font-size: 14px !important; margin: 0 !important; }
+            .clear-btn-wrapper { margin-left: 0 !important; width: 100% !important; }
+            .clear-btn-wrapper button { width: 100% !important; }
+            
+            .table-container { overflow-x: auto; }
+            .table-container table { min-width: 500px; }
+            .description-content-wrapper { padding: 3px 5px 3px 5px; }
+
+            /* --- MODAL (POPUP) FÖR MOBIL - SKARPT SYSTEMUTSEENDE --- */
+            .modal {
+                padding-top: 0 !important; 
+            }
+            
+            .modal-content {
+                position: absolute !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 100% !important; 
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 15px 15px 35px 15px !important; 
+                border: none !important;
+                border-top: 3px solid #555 !important; /* Hård, kantig ram i toppen */
+                border-radius: 0 !important; /* Tvingar tillbaka de raka fyrkantiga hörnen */
+                box-sizing: border-box;
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.3) !important; 
+                animation: slideUpModal 0.2s ease-out forwards; 
+            }
+            
+            @keyframes slideUpModal {
+                from { transform: translateY(100%); }
+                to { transform: translateY(0); }
+            }
+
+            .modal-content h2 {
+                font-size: 16px !important;
+                text-align: left !important; /* Återställer vänsterställningen */
+                border-bottom: 1px solid #aaa !important; /* Den klassiska hårda linjen under rubriken */
+                padding-bottom: 8px !important;
+                margin-top: 0 !important;
+            }
+
+            .close-btn {
+                position: absolute;
+                top: 12px;
+                right: 15px;
+                font-size: 24px;
+                color: #000;
+            }
+
+            .service-list {
+                max-height: 60vh !important; 
+                margin-top: 15px !important;
+                border-radius: 0 !important; /* Tvingar bort alla runda hörn på listan */
+            }
+            
+            .service-list li {
+                padding: 14px 12px !important; 
+                font-size: 13px !important; 
+                line-height: 1.3 !important;
             }
         }
 
@@ -1664,15 +1737,23 @@
     <div id="save-notification">💾 Sparat i systemet</div>
     <div id="paste-notification" class="toast-notification">✅ Data ifylld!</div>
 
-    <div class="top-buttons-wrapper">
-        <button type="button" class="mobile-menu-toggle" onclick="toggleMobileMenu()">Verktyg ▼</button>
-        <div class="top-buttons" id="top-buttons-container" style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 20px;">
+    <div class="top-buttons-wrapper" style="margin-bottom: 20px; width: 100%;">
+        
+        <!-- MOBIL: Denna rad är BARA synlig på mobilen -->
+        <div class="mobile-primary-row" style="display: none;">
+            <button onclick="submitForm(event)" style="background-color: #e4e4e4; color: #000; border: 1px solid #888;">Skriv ut</button>
+            <button onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border: 1px solid #004060;">Fordonsdata</button>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" style="background-color: #e4e4e4; color: #000; border: 1px solid #888; font-weight: bold;">Verktyg ▼</button>
+        </div>
+
+        <!-- DESKTOP: Original-layouten (Döljs och fälls ut på mobil) -->
+        <div class="top-buttons" id="top-buttons-container" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
             
-            <!-- RAD 1: Huvudfunktioner (naturlig bredd, centrerade eller vänsterställda) -->
-            <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
-                <button class="print-button" onclick="submitForm(event)" style="padding: 6px 12px;">Skriv ut</button>
-                <button onclick="openServiceModal()" style="padding: 6px 12px;">+ Lägg till extra tillägg</button>
-                <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()" style="padding: 6px 12px;">Separat servicebevis</button>
+            <!-- RAD 1 (Dator) -->
+            <div class="desktop-row-1" style="display: flex; gap: 8px; align-items: center; width: 100%; flex-wrap: wrap;">
+                <button class="print-button hide-on-mobile" onclick="submitForm(event)" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Skriv ut</button>
+                <button onclick="openServiceModal()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">+ Lägg till extra tillägg</button>
+                <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Separat servicebevis</button>
                 
                 <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
                     <option value="">-- Välj bilmärke --</option>
@@ -1687,18 +1768,21 @@
                     <option value="volkswagen">Volkswagen</option>
                     <option value="volvo">Volvo</option>
                 </select>
+                
                 <select id="car-history-selector" class="no-print" onchange="loadFromHistory(this.value)" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer; width: 220px;">
                     <option value="">-- Sparade bilar --</option>
                 </select>
+                
                 <button type="button" onclick="saveToHistory()" style="background-color: #e4e4e4; color: #000; border: 1px solid #888; padding: 6px 12px; cursor: pointer;" title="Spara nuvarande bil">Spara bil</button>
-                <div style="margin-left: auto;">
-                    <button class="clear-button" onclick="clearProtocol()" style="padding: 6px 12px;">Rensa protokoll</button>
+                
+                <div class="clear-btn-wrapper" style="margin-left: auto;">
+                    <button class="clear-button" onclick="clearProtocol()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Rensa protokoll</button>
                 </div>
             </div>
 
-            <!-- RAD 2: Fordonsdata, Historik & Märkesval -->
-            <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
-                <button type="button" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border-color: #004060; padding: 6px 12px;">Fordonsdata (Ctrl+V)</button>
+            <!-- RAD 2 (Dator) -->
+            <div class="desktop-row-2 hide-on-mobile" style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                <button type="button" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border: 1px solid #004060; padding: 6px 12px; cursor: pointer;">Fordonsdata (Ctrl+V)</button>
             </div>
 
         </div>
