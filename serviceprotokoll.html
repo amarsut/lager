@@ -9,10 +9,10 @@
            CSS VARIABLER (ANPASSAD FÄRG PALETT FÖR MER DISKRET UTSEENDE)
            ======================================================= */
         :root {
-            --color-primary: #333; 
-            --color-secondary: #005b8a; /* erWin-blå */
-            --color-light-bg: #f5f5f5; /* Ljusare grå för zebraränder */
-            --color-section-bg: #005b8a; /* Samma blå för rubrikbakgrunder */
+            --color-primary: #000; 
+            --color-secondary: #000; /* Svart för en renare original-look */
+            --color-light-bg: #f5f5f5; 
+            --color-section-bg: #f0f0f0;
             --color-text: #000; 
             --color-border-dark: #666; 
             --color-border-light: #999; /* Mörkare grå för skarpare tabellinjer */
@@ -100,13 +100,18 @@
 
         .inspection-title {
             text-align: center;
-            font-weight: 600;
-            font-size: 16px;
-            margin: 20px 0 20px 0;
-            border: 1px solid var(--color-border-light); 
-            padding: 10px;
-            background-color: #e4e4e4; 
-            color: var(--color-secondary); 
+            font-weight: bold;
+            font-size: 14px; 
+            margin: 12px 0; /* Drar ihop utrymmet över och under */
+            border: 1.5px solid #000 !important; /* Skarp svart ram */
+            padding: 0; /* Tar bort all inre utfyllnad så rutan blir tajtare */
+            background-color: transparent !important; 
+            color: #000 !important; 
+        }
+        .editable-header-input.title-style {
+            padding: 4px; /* Endast 4px luft inuti själva inmatningsfältet */
+            text-align: center;
+            color: #000 !important; 
         }
         
         .editable-header {
@@ -434,7 +439,7 @@
            TABELL LÄSBARHET (ZEBRA & HOVER)
            ======================================================= */
         tbody tr {
-            background-color: #e6e6e6; 
+            background-color: #f6f6f6; /* Mycket ljusare grå så det bara blir en subtil brytning */
         }
         #static-rows-1 tr:nth-child(even), 
         #static-rows-2 tr:nth-child(even), 
@@ -451,40 +456,77 @@
            RESTEN AV CSS STYLING 
            ======================================================= */
         
+        /* --- SKÄRM-VY (Tydliga mörkblå rubriker vid redigering) --- */
         .section-header-title {
             text-align: left;
             font-weight: bold;
             font-size: 13px;
             padding: 4px 10px; 
-            background-color: #0073a5 !important; 
-            color: #ffffff !important; 
+            background-color: #005b8a !important; /* Mörkblå på skärmen */
+            color: #ffffff !important; /* Vit text på skärmen */
             border: 1px solid #999 !important;
-            border-right: 1px solid #fff !important; 
+            border-right: none !important; 
         }
         .header-checkbox-title {
             text-align: center;
             font-weight: normal;
-            font-size: 11px;
+            font-size: 10px;
             padding: 2px 4px; 
-            background-color: #0073a5 !important; 
-            color: #ffffff !important; 
+            background-color: #005b8a !important; /* Mörkblå på skärmen */
+            color: #ffffff !important; /* Vit text på skärmen */
             border: 1px solid #999 !important;
             border-left: 1px solid #fff !important;
-            vertical-align: middle; 
+            vertical-align: bottom; 
             line-height: 1.1;
+        }
+        .editable-header-input.section-style {
+            padding: 3px 10px;
+            text-align: left;
+            color: #ffffff !important; /* Vit text i inmatningsfältet på skärmen */
+            font-weight: bold;
         }
         .checkbox-cell, .action-column {
             text-align: center; 
             width: 40px; 
             padding: 2px; 
         }
+        /* --- SKÄRM: Den inre vertikala linjen och röd prick --- */
+        .description-column {
+            position: relative !important;
+            padding-left: 35px !important; /* Skapar plats för linjen och pricken till vänster */
+        }
+        
+        /* Ritar den inre vertikala blåa linjen på själva cellen så den aldrig bryts */
+        .description-column::before {
+            content: '';
+            position: absolute;
+            left: 25px; /* Placerar linjen exakt 25px in */
+            top: 0;
+            bottom: 0;
+            border-left: 1px solid #005b8a; /* VAG-blå färg */
+            z-index: 1;
+        }
+
         .description-content-wrapper {
             display: flex;
             align-items: center; 
             justify-content: flex-start;
             flex-grow: 1; 
-            margin: -3px -8px; 
-            padding: 3px 8px 3px 20px; 
+            margin: 0; 
+            padding: 2px 0; 
+        }
+        
+        /* Låser fast den röda pricken till vänster om den blåa linjen */
+        .extra-work-dot {
+            position: absolute;
+            left: 7px; 
+            top: 50%;
+            transform: translateY(-50%); /* Centrerar pricken perfekt på höjden */
+            color: #990000 !important; 
+            font-size: 15px;
+            line-height: 1;
+            user-select: none; 
+            z-index: 2;
         }
         .editable-text {
             border: none;
@@ -587,7 +629,7 @@
             border-radius: 0 !important; /* Tvinga bort runda hörn */
         }
         .service-list li:hover {
-            background-color: var(--color-secondary) !important; 
+            background-color: #005b8a !important; /* Återställd till VAG-blå */
             color: #fff !important; 
         }
         .service-list li:hover .asterisk {
@@ -766,25 +808,22 @@
            UTSKRIFTSSTYLING (Media Print) OCH SERVICEBEVIS
            ======================================================= */
         @media print {
-            /* Sätter exakta pappersmarginaler: 25mm vänster (för hålslag), 15mm på övriga */
             @page {
                 size: A4;
-                margin: 15mm 15mm 15mm 25mm !important; 
+                margin: 10mm; 
             }
 
-            /* Tvingar innehållet att fylla exakt 100% av utrymmet mellan marginalerna ovan */
-            html, body {
-                width: 100% !important;
-                max-width: none !important; /* Tar bort 1000px-begränsningen på papper */
-                margin: 0 !important;
-                padding: 0 !important;
+            /* Breddare layout: Minskad in-skjutning för att ligga närmare hålen */
+            body {
+                padding-left: 17mm !important; 
+                padding-right: 5mm !important; 
                 box-sizing: border-box !important;
             }
 
-            /* TVINGA FRAM MÖRKARE BLÅ VID UTSKRIFT (VAG Original) */
+            /* CLEAN SVARTVIT UTSKRIFT */
             :root {
-                --color-primary: #002840 !important; 
-                --color-secondary: #002840 !important; 
+                --color-primary: #000 !important; 
+                --color-secondary: #000 !important; 
             }
             
             .header, .header-service-bevis, th, .section-title {
@@ -817,6 +856,12 @@
                 display: none !important;
             }
             .modal, .top-buttons, .remove-row-btn, .date-picker-overlay, .copy-icon-container, #save-notification, .clear-signature-btn, .remove-section-btn, .add-row-small-btn { display: none !important; }
+            
+            /* Döljer de röda stjärnorna för obligatoriska fält vid utskrift */
+            .info-item .red-text { display: none !important; }
+            /* Döljer den sista rutan i botten med förklaringen om obligatoriska fält */
+            .footer-notes:last-of-type { display: none !important; }
+
             /* Krymper mellanrummet mellan kolumnerna för att ge långa ord (som chassinr) mer plats */
             .info-section { 
                 grid-template-columns: repeat(4, 1fr) !important; 
@@ -840,59 +885,128 @@
             input:required:not(:valid) { border-color: initial !important; box-shadow: none !important;}
             
             .editable-text { display: none !important; }
-            .print-text-only { display: block !important; }
-            .comment-area { display: none !important; } /* Dölj textrutan på papper */
-            #comment-area-print { display: block !important; } /* Visa rena texten på papper */
+            .print-text-only { 
+                display: block !important; 
+                flex-grow: 1;
+            }
+            .comment-area { display: none !important; } 
+            #comment-area-print { display: block !important; } 
             
-            .description-content-wrapper { display: block; margin: 0; padding: 0;}
+            /* Tvingar fram indrag och layout exakt som på skärmen */
+            /* --- UTSKRIFT: Inre linjen och röda pricken --- */
+            /* --- UTSKRIFT: Inre blå linjen och röd prick --- */
+            .description-column {
+                position: relative !important;
+                padding-left: 35px !important; 
+            }
+            
+            .description-column::before {
+                content: '';
+                position: absolute;
+                left: 25px !important;
+                top: 0;
+                bottom: 0;
+                border-left: 1px solid #005b8a !important; /* Blå linje på papper */
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important;
+                z-index: 1;
+            }
+
+            .description-content-wrapper { 
+                display: flex !important; 
+                align-items: flex-start !important;
+                margin: 0 !important; 
+                padding: 0 !important; 
+            }
+            
+            .extra-work-dot {
+                position: absolute !important;
+                left: 7px !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important;
+                color: #990000 !important; 
+                z-index: 2;
+            }
             /* Tvingar utskriften att acceptera vår egna gröna bock istället för webbläsarens blåa */
             /* Tvingar utskriften att behålla 3D-looken och den gröna bocken */
+            /* CLEAN CHECKBOXAR (Helt plana fyrkanter på utskrift) */
             .custom-checkbox input[type="checkbox"] { 
                 transform: scale(1.0) !important; 
                 -webkit-print-color-adjust: exact !important; 
                 color-adjust: exact !important; 
-                border: 1px solid #333 !important; 
-                border-radius: 0 !important; /* Fyrkantig ram på papper */
-                
-                /* Tvingar fram skuggningen även vid utskrift */
-                background: linear-gradient(180deg, #b8b8b8 0%, #f0f0f0 40%, #ffffff 100%) !important;
-                box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important;
+                border: 1px solid #000 !important; /* Skarp svart ram */
+                border-radius: 0 !important; 
+                background: #fff !important; /* Helt vita inuti */
+                box-shadow: none !important; /* Ingen 3D-skugga */
             }
             .comment-area, .table-container, .header, .header::after, .inspection-title, .section-header-title, .header-checkbox-title { -webkit-print-color-adjust: exact; color-adjust: exact; }
 
-            /* FIX FÖR BORTKLIPPT HÖGERKANT OCH TABELLBREDD PÅ PAPPER */
-            /* FIX FÖR BORTKLIPPT HÖGERKANT OCH TABELLBREDD PÅ PAPPER */
+            /* --- RENA UTSKRIFTSRUBRIKER (Enligt originalprotokollet) --- */
+            .section-header-title, 
+            .header-checkbox-title {
+                background-color: #f2f2f2 !important; 
+                color: #000 !important; 
+            }
+            .header-checkbox-title {
+                border-left: 1px solid #005b8a !important; /* Endast inre vertikala linjen är blå */
+            }
+            .editable-header-input.section-style {
+                color: #000 !important; 
+            }
+            .inspection-title {
+                background-color: #f2f2f2 !important; 
+                color: #000 !important;
+                border: 1.5px solid #000 !important; /* SVART yttre ram runt huvudtiteln */
+            }
+
+            /* FIX FÖR TABELLRAMAR (Svart yttre, blå inre) */
             .table-container {
                 width: 100% !important;
-                max-width: 100% !important;
-                overflow: visible !important; 
-                padding-right: 1px !important; /* Ger millimetern som krävs för att rita högerkanten */
+                padding-right: 2px !important; 
+                overflow: visible !important;
             }
             .table-container table {
-                width: 100% !important;
+                width: 100% !important; 
                 max-width: 100% !important;
                 border-collapse: collapse !important;
-                border-right: 1.5px solid #002840 !important; 
+                border: 1.5px solid #000 !important; /* Skarp SVART yttre ram */
             }
-            th:last-child, td:last-child {
-                border-right: 1.5px solid #002840 !important; 
+            th, td {
+                border: 1px solid #005b8a !important; /* BLÅA inre cellramar */
             }
+            /* Tvingar de absolut yttersta kanterna på cellerna att bli svarta så de sluter tätt mot tabellens yttre ram */
+            th:first-child, td:first-child { border-left: 1.5px solid #000 !important; }
+            th:last-child, td:last-child { border-right: 1.5px solid #000 !important; }
+            tr:last-child td { border-bottom: 1.5px solid #000 !important; }
+            thead tr:first-child th { border-top: 1.5px solid #000 !important; }
+
             .signature-input-date { border-bottom: 1px solid var(--color-primary) !important; }
             .info-section { grid-template-columns: repeat(4, 1fr) !important; } 
             .warning-row { border-left: 5px solid var(--color-warning) !important; -webkit-print-color-adjust: exact; color-adjust: exact; background-color: transparent !important;} 
             
             /* Använd padding istället för margin så att utrymmet alltid tvingas fram, även på ny sida */
-            .footer-notes { 
+            /* Tvinga webbläsaren att aldrig klippa förklaringstexten eller botten på mitten */
+            .vag-footer-legend, .footer-notes { 
                 padding-top: 0px !important; 
-                margin-top: 0 !important; 
-                page-break-inside: avoid;
-                break-inside: avoid;
+                margin-top: 15px !important; 
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
             .signature-section {
-                padding-top: 40px !important;
-                page-break-inside: avoid;
-                break-inside: avoid;
+                padding-top: 30px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
+            /* Garanterar en liten extra säkerhetsmarginal precis i botten av hela papperet */
+            #protocol-form {
+                padding-bottom: 20px !important;
+            }
+            
+            /* Tvingar fram den ljusare grå färgen för zebraränder även på papper */
+            tbody tr { background-color: #f6f6f6 !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+            #static-rows-1 tr:nth-child(even), #static-rows-2 tr:nth-child(even), #static-rows-3 tr:nth-child(even), tr.dynamic-row:nth-child(even) { background-color: #ffffff !important; }
 
             /* --- SERVICEBEVIS NY STYLING --- */
             
@@ -983,8 +1097,8 @@
             
             .sb-label {
                 width: 35%;
-                font-weight: normal; 
-                color: #555;
+                font-weight: normal !important; /* Tunnare och mer finstilt text */
+                color: #000 !important; /* Knivskarp svart färg */
             }
             .sb-value {
                 width: 65%;
@@ -1121,7 +1235,7 @@
                 <button type="button" onclick="sendEmail()">Skicka via mejl</button>
                 <button onclick="openServiceModal()">+ Lägg till extra tillägg</button>
                 <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()">Separat servicebevis</button>
-                <button type="button" onclick="triggerPasteFunction()" style="background-color: var(--color-secondary); color: white; border-color: #004060;">Fordonsdata (Ctrl+V)</button>
+                <button type="button" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border-color: #004060;">Fordonsdata (Ctrl+V)</button>
                 
                 <!-- Rullgardinsmenyn för märke flyttad hit upp -->
                 <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="padding: 5px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
@@ -1199,7 +1313,7 @@
                    class="editable-header-input title-style"
                    data-persist="true" 
                    onchange="saveData()" 
-                   value="Inspektion med oljebyte" style="color: #005b8a;">
+                   value="Inspektion med oljebyte">
         </div>
 
         <div class="table-container">
@@ -1541,6 +1655,7 @@
             <tr class="dynamic-row" data-section="">
                 <td class="description-column" colspan="2">
                     <div class="description-content-wrapper">
+                        <span class="extra-work-dot">●</span>
                         <input type="text" class="editable-text" placeholder="Skriv in serviceåtgärd...">
                         <span class="print-text-only"></span>
                         <button type="button" class="remove-row-btn" onclick="removeRow(this)">X</button>
@@ -1686,15 +1801,22 @@
             }
             
 
+            // Hämtar nuvarande bilmärke för att skriva ut namnet snyggt (t.ex. Volkswagen, Volvo etc.)
+            const brandSelector = document.getElementById('brand-selector');
+            const brandName = brandSelector.options[brandSelector.selectedIndex].text !== '-- Välj bilmärke --' 
+                ? brandSelector.options[brandSelector.selectedIndex].text 
+                : data.companyName;
+            
+            const currentLogoUrl = brandSelector.value && brandLogos[brandSelector.value] ? brandLogos[brandSelector.value] : '';
+
             const serviceBevisHTML = `
                 <div class="service-bevis-header-block">
-                    <div class="sb-left-header">
-                        </div>
-                    <div class="sb-right-header">
-                        <h1>Er Bil</h1>
-                        <h2 class="service-bevis-title">Servicebevis</h2>
-                        <span class="service-bevis-sub-title">Separat bevis</span>
-<h1></h1>
+                    <div class="sb-left-header-text">
+                        <h2 class="service-bevis-brand-title" style="font-size: 16pt; font-weight: bold; margin: 0; color: #000;">${brandName}</h2>
+                        <span class="service-bevis-title" style="font-size: 10pt; font-weight: normal; color: #000;">Servicebevis</span>
+                    </div>
+                    <div class="sb-right-header-logo">
+                        ${currentLogoUrl ? `<img src="${currentLogoUrl}" alt="Logga" style="max-height: 45px; max-width: 90px; object-fit: contain;" />` : ''}
                     </div>
                 </div>
                 
