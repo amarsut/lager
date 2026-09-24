@@ -1785,6 +1785,14 @@
             .exact-date-input {
                 border-bottom: 1px solid #333 !important;
             }
+
+            /* Dölj platshållartexten (åååå-mm-dd) på tomma datumfält vid utskrift */
+            input[type="date"]::-webkit-datetime-edit {
+                color: transparent;
+            }
+            input[type="date"]:valid::-webkit-datetime-edit {
+                color: inherit;
+            }
         }
     </style>
 </head>
@@ -3783,6 +3791,26 @@
                 
                 showPasteNotification("✅ AutoSearch: Fordon ifyllt!");
             }
+        });
+
+        // Körs automatiskt precis innan utskrift/PDF-skapande startar
+        window.addEventListener('beforeprint', function () {
+            var dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(function (input) {
+                if (!input.value) {
+                    input.dataset.wasDate = 'true';
+                    input.type = 'text'; // Växlar till vanligt textfält så "åååå-mm-dd" försvinner
+                }
+            });
+        });
+
+        // Återställer datumfältet efter att utskriftsrutan stängts
+        window.addEventListener('afterprint', function () {
+            var convertedInputs = document.querySelectorAll('input[data-was-date="true"]');
+            convertedInputs.forEach(function (input) {
+                input.type = 'date'; // Återställer till datumväljare på skärmen
+                delete input.dataset.wasDate;
+            });
         });
 
     </script>
