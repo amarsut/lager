@@ -96,6 +96,20 @@
                 right: auto;
                 justify-content: center;
             }
+
+            .table-container table {
+                min-width: 100% !important; /* Låser tabellen till skärmens bredd */
+                table-layout: fixed;
+            }
+            th.header-checkbox-title, td.checkbox-cell, td.action-column {
+                width: 32px !important; /* Gör checkbox-kolumnerna slimmade */
+                padding: 1px !important;
+                font-size: 9px !important;
+            }
+            .description-column {
+                width: auto !important;
+                padding-left: 28px !important;
+            }
         }
 
         .inspection-title {
