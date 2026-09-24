@@ -1218,6 +1218,17 @@
         }
         @media screen and (max-width: 600px) {
             body { padding: 10px; margin: 0;}
+
+            /* --- SWAP FÖR REG-NR TEXT --- */
+            .desktop-text { display: none !important; }
+            .mobile-text { display: inline !important; }
+            
+            /* Finslipning av knappen för små skärmar */
+            .car-info-btn { 
+                font-size: 8px !important; 
+                padding: 2px 4px !important; 
+                right: 0px !important; 
+            }
             .info-section { grid-template-columns: repeat(2, 1fr); gap: 15px;}
             
             /* --- PERFEKT MOBIL-MENY (2 RADER) --- */
@@ -1856,7 +1867,11 @@
             </div>
             <div class="info-item"><label for="modellkod">Modellkod</label><input type="text" id="modellkod" name="modellkod" data-persist="true" value="" onchange="saveData()"></div>
             <div class="info-item">
-                <label for="registrering-nr">Registreringsnr <span class="red-text">*</span></label>
+                <label for="registrering-nr">
+                    <span class="desktop-text">Registreringsnr</span>
+                    <span class="mobile-text" style="display: none;">Reg-nr</span> 
+                    <span class="red-text">*</span>
+                </label>
                 <input type="text" id="registrering-nr" name="registrering-nr" data-persist="true" value="" onchange="saveData(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchCarInfo(); }" required>
                 
                 <!-- NY KNAPP -->
