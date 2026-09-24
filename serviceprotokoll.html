@@ -344,12 +344,11 @@
             background-color: #005b8a; 
             color: #fff;
             font-size: 9px;
-            font-weight: bold;
             padding: 3px 6px; /* Mer luft inuti själva knappen */
-            border-radius: 4px; /* Lite mjukare, modernare hörn */
+            border-radius: 0px; /* Lite mjukare, modernare hörn */
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.5px; /* Gör texten mer lättläst */
+            letter-spacing: 0.8px; /* Gör texten mer lättläst */
             box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
             transition: all 0.2s;
         }
@@ -831,6 +830,11 @@
             font-size: 14px;
             cursor: pointer;
             margin-bottom: 10px;
+        }
+
+        .info-item input:focus {
+            border-bottom: 2px solid #005b8a !important; /* VAG-blå och lite tjockare bottenlinje */
+            background-color: rgba(0, 91, 138, 0.03); /* En extremt svag blå ton i bakgrunden */
         }
         
         /* =======================================================
@@ -3162,12 +3166,17 @@
 
         function copyToClipboard(elementId) {
             const inputElement = document.getElementById(elementId);
-            if (inputElement) {
+            if (inputElement && inputElement.value) {
                 navigator.clipboard.writeText(inputElement.value).then(() => {
-                    console.log(`Värdet för ${inputElement.name || inputElement.id} har kopierats!`);
+                    // Använder ditt befintliga toast-system för att visa bekräftelsen
+                    showPasteNotification(`✅ Kopierat: ${inputElement.value}`);
                 }).catch(err => {
+                    showPasteNotification("❌ Kunde inte kopiera texten", true);
                     console.error('Kunde inte kopiera text: ', err);
                 });
+            } else {
+                // Om fältet är tomt
+                showPasteNotification("⚠️ Inget att kopiera", true);
             }
         }
         
