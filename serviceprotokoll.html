@@ -1760,12 +1760,32 @@
                     <option value="">-- Välj bilmärke --</option>
                     <option value="audi">Audi</option>
                     <option value="bmw">BMW</option>
+                    <option value="chevrolet">Chevrolet</option>
+                    <option value="citroen">Citroën</option>
+                    <option value="cupra">Cupra</option>
+                    <option value="dacia">Dacia</option>
+                    <option value="fiat">Fiat</option>
                     <option value="ford">Ford</option>
+                    <option value="honda">Honda</option>
+                    <option value="hyundai">Hyundai</option>
+                    <option value="kia">Kia</option>
+                    <option value="landrover">Land Rover</option>
+                    <option value="mazda">Mazda</option>
                     <option value="mercedes">Mercedes</option>
+                    <option value="mini">MINI</option>
+                    <option value="mitsubishi">Mitsubishi</option>
+                    <option value="nissan">Nissan</option>
+                    <option value="opel">Opel</option>
                     <option value="peugeot">Peugeot</option>
+                    <option value="porsche">Porsche</option>
                     <option value="renault">Renault</option>
+                    <option value="saab">Saab</option>
                     <option value="seat">Seat</option>
                     <option value="skoda">Škoda</option>
+                    <option value="subaru">Subaru</option>
+                    <option value="suzuki">Suzuki</option>
+                    <option value="tesla">Tesla</option>
+                    <option value="toyota">Toyota</option>
                     <option value="volkswagen">Volkswagen</option>
                     <option value="volvo">Volvo</option>
                 </select>
@@ -2834,48 +2854,72 @@
             listItem.classList.add('confirmed');
         }
 
-        // Objekt med externa länkar till officiella SVG-loggor
-        // Objekt med externa länkar till officiella loggor (PNG/SVG)
-        // Objekt med stabila direktlänkar till optimerade billoggor från GitHub
-        // Stabila direktlänkar med högre upplösning
         const brandLogos = {
-            "audi": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/audi.png",
-            "bmw": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/bmw.png",
-            "ford": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/ford.png",
-            "mercedes": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/mercedes-benz.png",
-            "peugeot": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/peugeot.png",
-            "renault": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/renault.png",
-            "seat": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/seat.png",
-            "skoda": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/skoda.png",
-            "volkswagen": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/volkswagen.png",
-            "volvo": "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/volvo.png"
+            "audi": "https://cdn.simpleicons.org/audi",
+            "bmw": "https://cdn.simpleicons.org/bmw",
+            "chevrolet": "https://cdn.simpleicons.org/chevrolet",
+            "citroen": "https://cdn.simpleicons.org/citroen",
+            "cupra": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Cupra.svg/330px-Cupra.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20230619120818",
+            "dacia": "https://cdn.simpleicons.org/dacia",
+            "fiat": "https://cdn.simpleicons.org/fiat",
+            "ford": "https://cdn.simpleicons.org/ford",
+            "honda": "https://cdn.simpleicons.org/honda",
+            "hyundai": "https://cdn.simpleicons.org/hyundai",
+            "kia": "https://cdn.simpleicons.org/kia",
+            "landrover": "https://www.svgrepo.com/show/330818/landrover.svg",
+            "mazda": "https://cdn.simpleicons.org/mazda",
+            "mercedes": "https://www.svgrepo.com/show/446899/mercedes-benz.svg",
+            "mitsubishi": "https://cdn.simpleicons.org/mitsubishi",
+            "mini": "https://cdn.simpleicons.org/mini",
+            "nissan": "https://cdn.simpleicons.org/nissan",
+            "opel": "https://cdn.simpleicons.org/opel",
+            "peugeot": "https://cdn.simpleicons.org/peugeot",
+            "porsche": "https://cdn.simpleicons.org/porsche",
+            "renault": "https://cdn.simpleicons.org/renault",
+            "saab": "https://www.svgrepo.com/show/446918/saab-alt.svg",
+            "seat": "https://cdn.simpleicons.org/seat",
+            "skoda": "https://cdn.simpleicons.org/skoda",
+            "subaru": "https://cdn.simpleicons.org/subaru",
+            "suzuki": "https://cdn.simpleicons.org/suzuki",
+            "tesla": "https://cdn.simpleicons.org/tesla",
+            "toyota": "https://cdn.simpleicons.org/toyota",
+            "volkswagen": "https://cdn.simpleicons.org/volkswagen",
+            "volvo": "https://cdn.simpleicons.org/volvo"
         };
 
         function updateBrandLogo() {
             const selector = document.getElementById('brand-selector');
             const img = document.getElementById('brand-logo-img');
+            
+            if (!selector || !img) return;
+
             const brand = selector.value;
 
             if (brand && brandLogos[brand]) {
                 img.src = brandLogos[brand];
                 img.style.display = 'block';
                 
-                // Individuell storleksanpassning (Skala) baserat på märkets inbyggda marginaler
-                let scaleMultiplier = 1.0;
+                img.style.transform = 'none';
+                img.style.width = 'auto'; 
+                img.style.maxWidth = '150px'; // Ökad maximal tillåten bredd så Audi får plats
+
+                // Nya uppkalibrerade storlekar (större och tyngre överlag)
+                if (brand === 'audi' || brand === 'ford'
+                     || brand === 'chevrolet'  || brand === 'dacia'
+                      || brand === 'hyundai'  || brand === 'kia'
+                       || brand === 'mini'  || brand === 'landrover'
+                ) {
+                    img.style.height = '70px'; // Kraftigt ökad för Audi
+                } else if (brand === 'renault' || brand === 'peugeot') {
+                    img.style.height = '50px'; 
                 
-                if (brand === 'skoda') {
-                    scaleMultiplier = 1.5; // Förstorar Skoda extra mycket eftersom filen har mycket tomrum
-                } else if (brand === 'mercedes') {
-                    scaleMultiplier = 1.3; // Förstorar Mercedes lite
-                } else if (brand === 'audi' || brand === 'volkswagen') {
-                    scaleMultiplier = 1.1; 
+                } else {
+                    // Ny, maffigare standardhöjd för VW, Volvo, BMW, Skoda och Seat
+                    img.style.height = '48px'; 
                 }
-                
-                img.style.transform = `scale(${scaleMultiplier})`;
             } else {
                 img.src = "";
                 img.style.display = 'none';
-                img.style.transform = 'scale(1)';
             }
         }
 
