@@ -1766,6 +1766,26 @@
             body.has-sidebar .main-protocol-wrapper { padding: 0 !important; max-width: 100% !important; margin: 0; }
             body.has-sidebar { display: block; }
         }
+
+        .exact-date-input {
+            border: none !important;
+            border-bottom: 1px solid var(--color-border-dark) !important;
+            padding: 2px 0 !important;
+            font-size: 14px !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            background-color: transparent !important;
+            outline: none !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            color: inherit !important;
+        }
+        
+        /* Säkerställer att datumfältet ser helt enhetligt ut vid utskrift */
+        @media print {
+            .exact-date-input {
+                border-bottom: 1px solid #333 !important;
+            }
+        }
     </style>
 </head>
 <body onload="initSidebar(); loadData(); validateRequiredFields(); generateStaticRows();">
@@ -1832,7 +1852,7 @@
                     <option value="volvo">Volvo</option>
                 </select>
                 
-                <select id="car-history-selector" class="no-print" onchange="loadFromHistory(this.value)" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer; width: 220px;">
+                <select id="car-history-selector" class="no-print" onchange="loadFromHistory(this.value)" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer; width: 160px;">
                     <option value="">-- Sparade bilar --</option>
                 </select>
                 
@@ -1880,7 +1900,10 @@
                 <div class="copy-icon-container" onclick="copyToClipboard('registrering-nr')"></div>
                 <div id="registrering-nr-alert" class="input-warning-msg">Registreringsnr saknas!</div>
             </div>
-            <div class="info-item"><label for="registrering-datum">Registrering</label><input type="text" id="registrering-datum" name="registrering-datum" data-persist="true" placeholder="2017-08-22" onchange="saveData()"></div>
+            <div class="info-item">
+                <label for="registrering-datum">Registrering</label>
+                <input type="date" id="registrering-datum" name="registrering-datum" data-persist="true" class="exact-date-input" onchange="saveData()">
+            </div>
             <div class="info-item">
                 <label for="chassinummer">Chassinummer <span class="red-text">*</span></label>
                 <input type="text" id="chassinummer" name="chassinummer" data-persist="true" value="" onchange="saveData(); checkRequiredInput('chassinummer', 'Chassinummer saknas!'); decodeVINToYear();" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('chassinummer', 'Chassinummer saknas!'); decodeVINToYear();" required>
@@ -1899,7 +1922,7 @@
             <div class="info-item"><label for="årsmodell">Årsmodell</label><input type="text" id="årsmodell" name="årsmodell" data-persist="true" value="" onchange="saveData()" placeholder="2018"></div>
             <div class="info-item">
                 <label for="datum">Datum <span class="red-text">*</span></label>
-                <input type="date" id="datum" name="datum" data-persist="true" value="" onchange="saveData(); checkRequiredInput('datum', 'Datum saknas!');" oninput="checkRequiredInput('datum', 'Datum saknas!');" required>
+                <input type="date" id="datum" name="datum" data-persist="true" class="exact-date-input" onchange="saveData(); checkRequiredInput('datum', 'Datum saknas!');" oninput="checkRequiredInput('datum', 'Datum saknas!');" required>
                 <div id="datum-alert" class="input-warning-msg">Datum saknas!</div>
             </div>
             
@@ -3553,7 +3576,8 @@
             // Töm nuvarande alternativ förutom det första
             selector.innerHTML = '<option value="">-- Sparade bilar --</option>';
 
-            Object.keys(history).forEach(regNr => {
+            // Vi hämtar bilarna, vänder på listan med .reverse() och ritar ut dem
+            Object.keys(history).reverse().forEach(regNr => {
                 const item = history[regNr];
                 const option = document.createElement('option');
                 option.value = regNr;
