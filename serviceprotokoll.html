@@ -1804,6 +1804,53 @@
                 color: inherit;
             }
         }
+
+        .signature-canvas {
+            border-bottom: 1px dashed var(--color-border-dark);
+            cursor: crosshair;
+            background-color: #fafafa;
+            touch-action: none; /* Kritiskt: Blockerar att skärmen scrollar när man drar fingret */
+            display: block;
+            margin: 0 auto 5px auto;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .signature-clarification {
+            border: none;
+            width: 100%;
+            max-width: 280px;
+            text-align: center;
+            font-size: 13px;
+            background: transparent;
+            color: #333;
+            outline: none;
+            padding-bottom: 2px;
+        }
+
+        @media print {
+            .signature-canvas {
+                border-bottom: 1px solid #000;
+                background-color: transparent !important;
+            }
+        }
+
+        @media print {
+            /* Tar bort linjen under själva ritytan vid utskrift så vi bara får en linje totalt */
+            .signature-canvas {
+                border-bottom: none !important;
+                background-color: transparent !important;
+            }
+            
+            /* Döljer den grå placeholder-texten på papperet om mekanikern inte skrivit ett namn */
+            .signature-clarification::-webkit-input-placeholder {
+                color: transparent !important;
+            }
+            
+            /* Säkrar att det bara är en skarp, svart linje under namnförtydligandet */
+            .signature-clarification {
+                border-bottom: 1px solid #000 !important;
+            }
+        }
     </style>
 </head>
 <body onload="initSidebar(); loadData(); validateRequiredFields(); generateStaticRows();">
@@ -2271,21 +2318,22 @@
         </div>
         
         <div class="signature-section">
-            
             <div class="signature-box-wrapper">
                 <div class="signature-box">
-                    <span class="clear-signature-btn" onclick="clearSignature('signer-service-tekniker')" title="Rensa">✖</span>
-                    <input type="date" class="date-picker-overlay" onchange="updateSignatureDate('signer-service-tekniker', this.value)">
-                    <input type="text" id="signer-service-tekniker" name="signer-service-tekniker" class="signature-input-date" data-persist="true" onchange="saveData()" onfocus="updateSignatureDate('signer-service-tekniker')" placeholder="Namn och datum">
+                    <span class="clear-signature-btn" onclick="clearCanvas('tekniker')" title="Rensa">✖</span>
+                    <canvas id="canvas-tekniker" class="signature-canvas" width="280" height="70"></canvas>
+                    <input type="hidden" id="signer-service-tekniker" data-persist="true">
+                    <input type="text" id="datum-tekniker" data-persist="true" class="signature-clarification" placeholder="Namnförtydligande / Datum" onchange="saveData()">
                     <span class="signature-label">Datum/underskrift (ansvarig)</span>
                 </div>
             </div>
             
             <div class="signature-box-wrapper">
                 <div class="signature-box">
-                    <span class="clear-signature-btn" onclick="clearSignature('signer-kund')" title="Rensa">✖</span>
-                    <input type="date" class="date-picker-overlay" onchange="updateSignatureDate('signer-kund', this.value)">
-                    <input type="text" id="signer-kund" name="signer-kund" class="signature-input-date" data-persist="true" onchange="saveData()" onfocus="updateSignatureDate('signer-kund')" placeholder="Namn och datum">
+                    <span class="clear-signature-btn" onclick="clearCanvas('kund')" title="Rensa">✖</span>
+                    <canvas id="canvas-kund" class="signature-canvas" width="280" height="70"></canvas>
+                    <input type="hidden" id="signer-kund" data-persist="true">
+                    <input type="text" id="datum-kund" data-persist="true" class="signature-clarification" placeholder="Namnförtydligande / Datum" onchange="saveData()">
                     <span class="signature-label">Datum/underskrift (slutkontroll)</span>
                 </div>
             </div>
@@ -2842,6 +2890,7 @@
             validateRequiredFields();
             updatePrintValueForReadOnlyRows();
             updateBrandLogo(); // Uppdaterar loggan direkt när sidan laddas
+            restoreCanvasImages();
             console.log("Data laddad från Local Storage (V3).");
         }
 
@@ -3826,6 +3875,89 @@
                 delete input.dataset.wasDate;
             });
         });
+
+        // Initialiserar båda signaturytorna
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCanvas('canvas-tekniker', 'signer-service-tekniker');
+            setupCanvas('canvas-kund', 'signer-kund');
+        });
+
+        function setupCanvas(canvasId, hiddenInputId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const hiddenInput = document.getElementById(hiddenInputId);
+            let isDrawing = false;
+
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+
+            const startDraw = (e) => {
+                isDrawing = true;
+                draw(e);
+            };
+
+            const stopDraw = () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    ctx.beginPath();
+                    // Spara bilden som en Base64-sträng till det dolda fältet och localStorage
+                    hiddenInput.value = canvas.toDataURL();
+                    saveData();
+                }
+            };
+
+            const draw = (e) => {
+                if (!isDrawing) return;
+                e.preventDefault(); 
+                
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                ctx.lineTo(clientX - rect.left, clientY - rect.top);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(clientX - rect.left, clientY - rect.top);
+            };
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseout', stopDraw);
+
+            canvas.addEventListener('touchstart', startDraw, {passive: false});
+            canvas.addEventListener('touchmove', draw, {passive: false});
+            canvas.addEventListener('touchend', stopDraw);
+        }
+
+        function clearCanvas(type) {
+            const canvasId = type === 'tekniker' ? 'canvas-tekniker' : 'canvas-kund';
+            const hiddenId = type === 'tekniker' ? 'signer-service-tekniker' : 'signer-kund';
+            const textId = type === 'tekniker' ? 'datum-tekniker' : 'datum-kund';
+            
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById(hiddenId).value = '';
+            document.getElementById(textId).value = '';
+            saveData();
+        }
+        
+        function restoreCanvasImages() {
+            ['signer-service-tekniker', 'signer-kund'].forEach(id => {
+                const hiddenInput = document.getElementById(id);
+                if (hiddenInput && hiddenInput.value && hiddenInput.value.startsWith('data:image')) {
+                    const canvasId = id === 'signer-service-tekniker' ? 'canvas-tekniker' : 'canvas-kund';
+                    const canvas = document.getElementById(canvasId);
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = () => ctx.drawImage(img, 0, 0);
+                    img.src = hiddenInput.value;
+                }
+            });
+        }
 
     </script>
     </div> <!-- Stänger main-protocol-wrapper -->
