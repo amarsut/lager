@@ -3518,18 +3518,27 @@
 
             // 6. MODELL
             let cleanModel = "";
+            let detectedBrand = ""; // Ny variabel för att spara märket separat!
             const brands = "Volvo|Volkswagen|VW|Audi|Skoda|Škoda|Seat|Cupra|BMW|Mercedes|Benz|Porsche|Kia|Toyota|Ford|Peugeot|Renault|Nissan|Hyundai|Mazda|Honda|Polestar|Tesla|Dacia|Lexus|Mini|Land\\sRover|Range\\sRover|Mitsubishi|Subaru|Suzuki";
             
-            const buTableRegex = /Fabrikat\s+([A-ZÅÄÖ0-9\s\-]+?)\s+Modell\s+([A-ZÅÄÖ0-9\s\-]+?)\s+Variant\s+([A-ZÅÄÖ0-9\s\-]+?)\s+Originalnamn/i;
-            const buTableMatch = normalizedText.match(buTableRegex);
+            // NYTT: Fångar upp om det står rent "Modell: [Text]" i texten
+            const directModelMatch = normalizedText.match(/Modell:\s*([A-ZÅÄÖ0-9\s\-\,\.]+?)(?=\s+(?:Motorkod|Årsmodell|Mätarställning|Oljevolym|Chassinummer|$))/i);
+            if (directModelMatch) {
+                cleanModel = directModelMatch[1].trim();
+            } else {
+                const buTableRegex = /Fabrikat\s+([A-ZÅÄÖ0-9\s\-]+?)\s+Modell\s+([A-ZÅÄÖ0-9\s\-]+?)\s+Variant\s+([A-ZÅÄÖ0-9\s\-]+?)\s+Originalnamn/i;
+                const buTableMatch = normalizedText.match(buTableRegex);
 
-            if (buTableMatch) {
-                cleanModel = (buTableMatch[1] + " " + buTableMatch[2] + " " + buTableMatch[3]).trim();
-            } else if (regnrStr) {
-                const carInfoRegex = new RegExp("\\b" + regnrStr + "\\s+((?:" + brands + ")[^,]{2,35})", "i");
-                const carInfoMatch = normalizedText.match(carInfoRegex);
-                if (carInfoMatch) {
-                    cleanModel = carInfoMatch[1].trim();
+                if (buTableMatch) {
+                    detectedBrand = buTableMatch[1].trim();
+                    cleanModel = (buTableMatch[2] + " " + buTableMatch[3]).trim(); // Plockar bort märket (del 1) från texten
+                } else if (regnrStr) {
+                    const carInfoRegex = new RegExp("\\b" + regnrStr + "\\s+(" + brands + ")\\s+([^,]{2,35})", "i");
+                    const carInfoMatch = normalizedText.match(carInfoRegex);
+                    if (carInfoMatch) {
+                        detectedBrand = carInfoMatch[1].trim();
+                        cleanModel = carInfoMatch[2].trim(); // Bara modellen
+                    }
                 }
             }
 
@@ -3537,11 +3546,16 @@
                 const titleRegex = new RegExp("\\b(" + brands + ")\\s+([^,]{2,30}?)\\s*,\\s*\\d{2,4}\\s*hk", "i");
                 const titleMatch = normalizedText.match(titleRegex);
                 if (titleMatch) {
-                    cleanModel = (titleMatch[1] + " " + titleMatch[2]).trim();
+                    detectedBrand = titleMatch[1].trim();
+                    cleanModel = titleMatch[2].trim(); // Bara modellen
                 }
             }
 
             if (cleanModel) {
+                // Säkerhetstvätt som tvingar bort bilmärket om det smög sig med i början
+                const stripBrandRegex = new RegExp("^(Volvo|Volkswagen|VW|Audi|Skoda|Škoda|Seat|Cupra|BMW|Mercedes\\-Benz|Mercedes|Benz|Porsche|Kia|Toyota|Ford|Peugeot|Renault|Nissan|Hyundai|Mazda|Honda|Polestar|Tesla|Dacia|Lexus|Mini|Land\\sRover|Range\\sRover|Mitsubishi|Subaru|Suzuki)\\s+", "i");
+                cleanModel = cleanModel.replace(stripBrandRegex, '').trim();
+
                 cleanModel = cleanModel.replace(/[\-\|]+$/, '').replace(/\s+/g, ' ').trim();
                 if (cleanModel.length > 35) cleanModel = cleanModel.substring(0, 35).trim();
                 document.getElementById('modellkod-2').value = cleanModel;
@@ -3549,17 +3563,17 @@
             }
 
             // AUTOMATISKT VAL AV LOGGA
-            if (cleanModel) {
-                const lowerModel = cleanModel.toLowerCase();
+            let textToSearchForBrand = detectedBrand ? detectedBrand.toLowerCase() : (cleanModel ? cleanModel.toLowerCase() : "");
+            
+            if (textToSearchForBrand) {
                 let foundBrand = "";
                 const brandKeys = Object.keys(brandLogos);
                 
                 for (let i = 0; i < brandKeys.length; i++) {
                     const key = brandKeys[i];
-                    // Hantera "VW" som Volkswagen
-                    if (key === 'volkswagen' && (lowerModel.includes('vw') || lowerModel.includes('volkswagen'))) {
+                    if (key === 'volkswagen' && (textToSearchForBrand.includes('vw') || textToSearchForBrand.includes('volkswagen'))) {
                         foundBrand = key; break;
-                    } else if (lowerModel.includes(key)) {
+                    } else if (textToSearchForBrand.includes(key)) {
                         foundBrand = key; break;
                     }
                 }
@@ -3568,6 +3582,14 @@
                     document.getElementById('brand-selector').value = foundBrand;
                     updateBrandLogo();
                 }
+            }
+
+            // 7. MOTORKOD (MMB)
+            const engineCodeRegex = /(?:Motorkod|Motor kod)[\s:\-]*([A-Z0-9]{3,6})\b/i;
+            const engineCodeMatch = normalizedText.match(engineCodeRegex);
+            if (engineCodeMatch) {
+                document.getElementById('mmb').value = engineCodeMatch[1].toUpperCase();
+                hittadData = true;
             }
 
             if(hittadData) {
@@ -3817,7 +3839,12 @@
 
                 setVal('registrering-nr', payload.regnr);
                 setVal('chassinummer', payload.vin);
-                setVal('modellkod-2', payload.bilmodell);
+                let extModel = payload.bilmodell || "";
+                if (extModel) {
+                    const stripBrandRegex = new RegExp("^(Volvo|Volkswagen|VW|Audi|Skoda|Škoda|Seat|Cupra|BMW|Mercedes\\-Benz|Mercedes|Benz|Porsche|Kia|Toyota|Ford|Peugeot|Renault|Nissan|Hyundai|Mazda|Honda|Polestar|Tesla|Dacia|Lexus|Mini|Land\\sRover|Range\\sRover|Mitsubishi|Subaru|Suzuki)\\s+", "i");
+                    extModel = extModel.replace(stripBrandRegex, '').trim();
+                }
+                setVal('modellkod-2', extModel);
                 setVal('mmb', payload.motorkod);
                 setVal('årsmodell', payload.årsmodell);
 
