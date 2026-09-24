@@ -313,30 +313,56 @@
             box-sizing: border-box;
         }
         
+        /* --- KOPIERA-IKONEN --- */
         .copy-icon-container {
             position: absolute;
-            right: 0px;
-            top: 0px; /* Flyttad till övre högra hörnet i rutan */
-            width: 20px;
-            height: 20px;
+            right: -2px; /* Skjuter ut den marginellt för bättre marginal */
+            top: 12px;   /* Lyfter upp den så den linjerar perfekt med rubriktexten */
+            width: 24px;
+            height: 24px;
             cursor: pointer;
             color: var(--color-border-dark);
-            font-size: 12px;
+            font-size: 13px; /* Större och tydligare ikon */
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.1s;
         }
         .copy-icon-container:hover {
             color: var(--color-secondary);
+            transform: scale(1.1); /* Liten interaktiv inzoomning vid hover */
         }
-
-        .copy-icon-container:hover {
-            color: var(--color-primary);
-        }
-        
         .copy-icon-container::after {
             content: "\1F4CB"; 
+        }
+
+        /* --- CAR.INFO KNAPPEN --- */
+        .car-info-btn {
+            position: absolute;
+            right: 1px; /* Ger lite mer luft mellan knappen och kopiera-ikonen */
+            top: -2px;   /* Linjerar upp snyggt i höjd med rubriken */
+            background-color: #005b8a; 
+            color: #fff;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 3px 6px; /* Mer luft inuti själva knappen */
+            border-radius: 4px; /* Lite mjukare, modernare hörn */
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px; /* Gör texten mer lättläst */
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        
+        .car-info-btn:hover {
+            background-color: #003d5c;
+            transform: translateY(-1px); /* Litet lyft när man håller musen över */
+            box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* Ökar inre marginalen i fältet så ett långt reg-nr aldrig glider in under knappen */
+        #registrering-nr {
+            padding-right: 90px !important; 
         }
         
         .input-warning-msg { 
@@ -1175,7 +1201,7 @@
                 transform: translateY(-50%) !important;
             }
             #brand-logo-img { 
-                height: 48px !important; 
+                /* Låter JavaScriptets 70px/48px styra storleken fritt på utskriften */
                 -webkit-print-color-adjust: exact !important; 
                 color-adjust: exact !important;
             }
@@ -1768,6 +1794,7 @@
                     <option value="ford">Ford</option>
                     <option value="honda">Honda</option>
                     <option value="hyundai">Hyundai</option>
+                    <option value="iveco">Iveco</option>
                     <option value="kia">Kia</option>
                     <option value="landrover">Land Rover</option>
                     <option value="mazda">Mazda</option>
@@ -1826,7 +1853,11 @@
             <div class="info-item"><label for="modellkod">Modellkod</label><input type="text" id="modellkod" name="modellkod" data-persist="true" value="" onchange="saveData()"></div>
             <div class="info-item">
                 <label for="registrering-nr">Registreringsnr <span class="red-text">*</span></label>
-                <input type="text" id="registrering-nr" name="registrering-nr" data-persist="true" value="" onchange="saveData(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" required>
+                <input type="text" id="registrering-nr" name="registrering-nr" data-persist="true" value="" onchange="saveData(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" oninput="this.value = this.value.toUpperCase(); checkRequiredInput('registrering-nr', 'Registreringsnr saknas!');" onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchCarInfo(); }" required>
+                
+                <!-- NY KNAPP -->
+                <div class="car-info-btn no-print" onclick="searchCarInfo()" title="Slå upp på Car.info">Sök Car.info</div>
+                
                 <div class="copy-icon-container" onclick="copyToClipboard('registrering-nr')"></div>
                 <div id="registrering-nr-alert" class="input-warning-msg">Registreringsnr saknas!</div>
             </div>
@@ -1840,7 +1871,7 @@
             <div class="info-item"><label for="mmb">MMB</label><input type="text" id="mmb" name="mmb" data-persist="true" placeholder="CFGB (motorkod)" onchange="saveData()" oninput="this.value = this.value.toUpperCase()"></div>
             <div class="info-item">
                 <label for="mätarställning">Mätarställning<span class="red-text">*</span></label>
-                <input type="text" id="mätarställning" name="mätarställning" data-persist="true" value="" onchange="saveData(); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" inputmode="numeric">
+                <input type="text" id="mätarställning" name="mätarställning" data-persist="true" value="" onchange="saveData(); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkRequiredInput('mätarställning', 'Mätarställning saknas!');" inputmode="numeric" required>
                 <div id="mätarställning-alert" class="input-warning-msg">Mätarställning saknas!</div>
             </div>
             <div class="info-item"><label for="serviceutgivare">Servicerådgivare</label><input type="text" id="serviceutgivare" name="serviceutgivare" data-persist="true" value="" onchange="saveData()"></div>
@@ -2360,7 +2391,20 @@
                 ? brandSelector.options[brandSelector.selectedIndex].text 
                 : data.companyName;
             
-            const currentLogoUrl = brandSelector.value && brandLogos[brandSelector.value] ? brandLogos[brandSelector.value] : '';
+            const brand = brandSelector.value;
+            const currentLogoUrl = brand && brandLogos[brand] ? brandLogos[brand] : '';
+
+            // --- TILLÄMPA DIN KALIBRERING ÄVEN PÅ SERVICEBEVISET ---
+            let logoStyle = "height: 48px; width: auto; max-width: 150px; object-fit: contain;"; // Din standard
+
+            if (brand === 'audi' || brand === 'ford' || brand === 'iveco') {
+                logoStyle = "height: 70px; width: auto; max-width: 150px; object-fit: contain;";
+            } else if (brand === 'renault' || brand === 'peugeot' || brand === 'porsche') {
+                logoStyle = "height: 50px; width: auto; max-width: 150px; object-fit: contain;";
+            } else if (brand === 'mercedes') {
+                logoStyle = "height: 55px; width: auto; max-width: 150px; object-fit: contain;";
+            }
+            // ---------------------------------------------------------
 
             const serviceBevisHTML = `
                 <div class="service-bevis-header-block">
@@ -2369,7 +2413,7 @@
                         <span class="service-bevis-title" style="font-size: 10pt; font-weight: normal; color: #000;">Servicebevis</span>
                     </div>
                     <div class="sb-right-header-logo">
-                        ${currentLogoUrl ? `<img src="${currentLogoUrl}" alt="Logga" style="max-height: 45px; max-width: 90px; object-fit: contain;" />` : ''}
+                        ${currentLogoUrl ? `<img src="${currentLogoUrl}" alt="Logga" style="${logoStyle}" />` : ''}
                     </div>
                 </div>
                 
@@ -2526,6 +2570,23 @@
             } catch (err) {
                 // Om webbläsaren blockerar knappen av säkerhetsskäl
                 showPasteNotification("❌ Saknar behörighet. Använd Ctrl+V.", true);
+            }
+        }
+
+        function searchCarInfo() {
+            const regNrInput = document.getElementById('registrering-nr');
+            if (!regNrInput) return;
+            
+            const regNr = regNrInput.value.trim().replace(/\s+/g, '').toUpperCase();
+            
+            if (regNr.length >= 3) {
+                // Notera #bmg_export på slutet – detta triggar ditt tillägg att stänga rutan!
+                const url = `https://www.car.info/sv-se/license-plate/S/${regNr}#bmg_export`;
+                window.open(url, '_blank');
+                
+                showPasteNotification("⏳ Väntar på data från AutoSearch...", false);
+            } else {
+                alert('Skriv in ett giltigt registreringsnummer först.');
             }
         }
         
@@ -2865,6 +2926,7 @@
             "ford": "https://cdn.simpleicons.org/ford",
             "honda": "https://cdn.simpleicons.org/honda",
             "hyundai": "https://cdn.simpleicons.org/hyundai",
+            "iveco": "https://cdn.simpleicons.org/iveco",
             "kia": "https://cdn.simpleicons.org/kia",
             "landrover": "https://www.svgrepo.com/show/330818/landrover.svg",
             "mazda": "https://cdn.simpleicons.org/mazda",
@@ -2908,6 +2970,7 @@
                      || brand === 'chevrolet'  || brand === 'dacia'
                       || brand === 'hyundai'  || brand === 'kia'
                        || brand === 'mini'  || brand === 'landrover'
+                       || brand === 'iveco'
                        
                 ) {
                     img.style.height = '70px';
@@ -3613,6 +3676,66 @@
                 }
             }
         }
+
+        // --- LYSSNA PÅ CHROME-TILLÄGGET (AutoSearch) ---
+        window.addEventListener('message', function(event) {
+            const payload = event.data;
+            
+            // Säkerställ att meddelandet faktiskt kommer från ditt skrapar-tillägg
+            if (payload && payload.source === 'Car.info_Extension') {
+                console.log("Data mottagen från AutoSearch:", payload);
+
+                // Fyller i formuläret direkt från tilläggets strukturerade data
+                const setVal = (id, val) => {
+                    if (val && document.getElementById(id)) {
+                        document.getElementById(id).value = val;
+                    }
+                };
+
+                setVal('registrering-nr', payload.regnr);
+                setVal('chassinummer', payload.vin);
+                setVal('modellkod-2', payload.bilmodell);
+                setVal('mmb', payload.motorkod);
+                setVal('årsmodell', payload.årsmodell);
+
+                // Mätarställning: Tillägget skickar ofta formatet "1234 mil". 
+                // Om du vill ha det i kilometer på protokollet multiplicerar vi det:
+                if (payload.miltal) {
+                    let milValue = payload.miltal.replace(/[^0-9]/g, '');
+                    if (payload.miltal.toLowerCase().includes('mil')) {
+                        milValue = (parseInt(milValue) * 10).toString(); 
+                    }
+                    setVal('mätarställning', milValue);
+                }
+
+                // Avkoda eventuella årsmodeller från VIN om det saknades
+                decodeVINToYear();
+
+                // Välj rätt bilmärkeslogga automatiskt
+                if (payload.bilmodell) {
+                    const lowerModel = payload.bilmodell.toLowerCase();
+                    let foundBrand = "";
+                    const brandKeys = Object.keys(brandLogos);
+                    for (let key of brandKeys) {
+                        if (key === 'volkswagen' && (lowerModel.includes('vw') || lowerModel.includes('volkswagen'))) {
+                            foundBrand = key; break;
+                        } else if (lowerModel.includes(key)) {
+                            foundBrand = key; break;
+                        }
+                    }
+                    if (foundBrand) {
+                        document.getElementById('brand-selector').value = foundBrand;
+                        updateBrandLogo();
+                    }
+                }
+
+                // Spara och validera
+                saveData();
+                validateRequiredFields();
+                
+                showPasteNotification("✅ AutoSearch: Fordon ifyllt!");
+            }
+        });
 
     </script>
     </div> <!-- Stänger main-protocol-wrapper -->
