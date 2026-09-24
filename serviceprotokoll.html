@@ -141,11 +141,6 @@
             color: #ffffff; /* Vit text för blå bakgrund */
             font-weight: bold;
         }
-        
-        .warning-row {
-            background-color: rgba(255, 193, 7, 0.4) !important; 
-            border-left: 5px solid var(--color-warning); 
-        }
 
         /* =======================================================
            KNAPPAR & NAVIGERING
@@ -513,18 +508,8 @@
         }
         .checkbox-cell, .action-column {
             text-align: center; 
-            width: 45px; 
-            padding: 0 !important; /* Tar bort padding från cellen... */
-        }
-        
-        .custom-checkbox {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            min-height: 35px; /* ...och gör hela boxen stor och klickbar */
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            width: 40px; 
+            padding: 2px; 
         }
         /* --- SKÄRM: Den inre vertikala linjen och röd prick --- */
         .description-column {
@@ -1028,7 +1013,6 @@
 
             .signature-input-date { border-bottom: 1px solid var(--color-primary) !important; }
             .info-section { grid-template-columns: repeat(4, 1fr) !important; } 
-            .warning-row { border-left: 5px solid var(--color-warning) !important; -webkit-print-color-adjust: exact; color-adjust: exact; background-color: transparent !important;} 
             
             /* Använd padding istället för margin så att utrymmet alltid tvingas fram, även på ny sida */
             /* Tvinga webbläsaren att aldrig klippa förklaringstexten eller botten på mitten */
@@ -1805,11 +1789,14 @@
             }
         }
 
+        /* =======================================================
+           SIGNATUR CANVAS
+           ======================================================= */
         .signature-canvas {
             border-bottom: 1px dashed var(--color-border-dark);
             cursor: crosshair;
             background-color: #fafafa;
-            touch-action: none; /* Kritiskt: Blockerar att skärmen scrollar när man drar fingret */
+            touch-action: none; /* Blockerar att skärmen scrollar när man drar fingret */
             display: block;
             margin: 0 auto 5px auto;
             border-radius: 4px 4px 0 0;
@@ -1829,26 +1816,24 @@
 
         @media print {
             .signature-canvas {
-                border-bottom: 1px solid #000;
-                background-color: transparent !important;
-            }
-        }
-
-        @media print {
-            /* Tar bort linjen under själva ritytan vid utskrift så vi bara får en linje totalt */
-            .signature-canvas {
                 border-bottom: none !important;
                 background-color: transparent !important;
+                margin-bottom: -10px !important; /* Drar signaturen mycket närmare bottenlinjen */
             }
             
-            /* Döljer den grå placeholder-texten på papperet om mekanikern inte skrivit ett namn */
-            .signature-clarification::-webkit-input-placeholder {
-                color: transparent !important;
-            }
-            
-            /* Säkrar att det bara är en skarp, svart linje under namnförtydligandet */
             .signature-clarification {
                 border-bottom: 1px solid #000 !important;
+                padding-bottom: 2px !important;
+                color: #000 !important;
+            }
+
+            .signature-clarification::-webkit-input-placeholder {
+                color: #aaa !important;
+                font-style: italic !important;
+            }
+
+            .signature-label {
+                margin-top: 4px !important; 
             }
         }
     </style>
@@ -2323,7 +2308,7 @@
                     <span class="clear-signature-btn" onclick="clearCanvas('tekniker')" title="Rensa">✖</span>
                     <canvas id="canvas-tekniker" class="signature-canvas" width="280" height="70"></canvas>
                     <input type="hidden" id="signer-service-tekniker" data-persist="true">
-                    <input type="text" id="datum-tekniker" data-persist="true" class="signature-clarification" placeholder="Namnförtydligande / Datum" onchange="saveData()">
+                    <input type="text" id="datum-tekniker" data-persist="true" class="signature-clarification" placeholder="" onchange="saveData()" ondblclick="this.value = new Date().toLocaleDateString('sv-SE'); saveData();" title="Dubbelklicka för dagens datum">
                     <span class="signature-label">Datum/underskrift (ansvarig)</span>
                 </div>
             </div>
@@ -2333,7 +2318,7 @@
                     <span class="clear-signature-btn" onclick="clearCanvas('kund')" title="Rensa">✖</span>
                     <canvas id="canvas-kund" class="signature-canvas" width="280" height="70"></canvas>
                     <input type="hidden" id="signer-kund" data-persist="true">
-                    <input type="text" id="datum-kund" data-persist="true" class="signature-clarification" placeholder="Namnförtydligande / Datum" onchange="saveData()">
+                    <input type="text" id="datum-kund" data-persist="true" class="signature-clarification" placeholder="" onchange="saveData()" ondblclick="this.value = new Date().toLocaleDateString('sv-SE'); saveData();" title="Dubbelklicka för dagens datum">
                     <span class="signature-label">Datum/underskrift (slutkontroll)</span>
                 </div>
             </div>
@@ -2461,8 +2446,8 @@
                 datum: document.getElementById('datum').value || 'ÅÅÅÅ-MM-DD',
                 mätarställning: document.getElementById('mätarställning').value ? document.getElementById('mätarställning').value + ' km' : '0 km',
                 ordernr: document.getElementById('order-nr').value || '-',
-                signerTekniker: document.getElementById('signer-service-tekniker').value || '-',
-                signerKund: document.getElementById('signer-kund').value || '-',
+                signerTekniker: document.getElementById('datum-tekniker').value || '-',
+                signerKund: document.getElementById('datum-kund').value || '-',
                 registreringNr: document.getElementById('registrering-nr').value.toUpperCase() || 'ABC 123',
                 mmb: document.getElementById('mmb').value || '-',
                 companyName: (document.getElementById('company-name') && document.getElementById('company-name').value.trim() !== "") ? document.getElementById('company-name').value : 'VAG Specialisten Skåne',
@@ -2721,7 +2706,7 @@
                 if (c3) c3.checked = false;
             }
             
-            if (c2.checked) {
+            if (c2.checked && !c3.checked) {
                 row.classList.add('warning-row'); 
             } else {
                 row.classList.remove('warning-row'); 
@@ -3109,6 +3094,27 @@
             const form = document.getElementById('protocol-form');
             form.reset(); 
             
+            // --- Rensa båda canvas-ritytorna OCH de dolda bild-koderna ---
+            const canvasTekniker = document.getElementById('canvas-tekniker');
+            const canvasKund = document.getElementById('canvas-kund');
+            
+            if (canvasTekniker) {
+                canvasTekniker.getContext('2d').clearRect(0, 0, canvasTekniker.width, canvasTekniker.height);
+                document.getElementById('signer-service-tekniker').value = '';
+            }
+            if (canvasKund) {
+                canvasKund.getContext('2d').clearRect(0, 0, canvasKund.width, canvasKund.height);
+                document.getElementById('signer-kund').value = '';
+            }
+            
+            // --- Rensa rullgardinerna i toppmenyn och dölj loggan ---
+            const historySelector = document.getElementById('car-history-selector');
+            const brandSelector = document.getElementById('brand-selector');
+            if (historySelector) historySelector.selectedIndex = 0;
+            if (brandSelector) brandSelector.selectedIndex = 0;
+            updateBrandLogo();
+            // --------------------------------------------------------------
+            
             removableStaticIds.forEach(id => {
                 const row = document.querySelector(`tr[data-row-id="${id}"]`);
                 if (row) {
@@ -3361,8 +3367,6 @@
             generateServiceBevis(); 
 
             const nonPrintingPlaceholderIds = [
-                'signer-service-tekniker',
-                'signer-kund',
                 'registrering-datum', 
                 'mmb',               
                 'modellkod-2',       
@@ -3876,7 +3880,9 @@
             });
         });
 
-        // Initialiserar båda signaturytorna
+        // ==========================================
+        // CANVAS SIGNATUR LOGIK
+        // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
             setupCanvas('canvas-tekniker', 'signer-service-tekniker');
             setupCanvas('canvas-kund', 'signer-kund');
