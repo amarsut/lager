@@ -2137,7 +2137,7 @@
         }
 
         @media print {
-            .autogrid-sidebar {
+            .autogrid-sidebar, .bmg-sidebar {
                 display: none !important;
             }
 
@@ -2616,11 +2616,17 @@
                     <div id="datum-alert" class="input-warning-msg">Datum saknas!</div>
                 </div>
 
-                <!-- Nytt inmatningsfält som inte syns på den vanliga utskriften -->
+                <!-- Företagsnamn och Org.nr (syns ej på vanlig utskrift) -->
                 <div class="info-item no-print" style="grid-column: span 2;">
                     <label for="company-name">Företagsnamn (Servicebevis)</label>
-                    <input type="text" id="company-name" name="company-name" data-persist="true"
-                        placeholder="VAG Specialisten Skåne" value="" onchange="saveData()">
+                    <input type="text" id="company-name" name="company-name" data-persist="true" placeholder="VAG Specialisten Skåne" value="" onchange="saveData()" style="padding-right: 40px;">
+                    <!-- NY KNAPP: Fyller i BMG och Orgnr automatiskt -->
+            <div class="car-info-btn no-print" onclick="document.getElementById('company-name').value='BMG Motorgrupp AB'; document.getElementById('org-nr').value='559502-0594'; saveData();" title="Fyll i BMG Motorgrupp AB" style="background-color: #ea580c;">BMG</div>
+                </div>
+                
+                <div class="info-item no-print" style="grid-column: span 2;">
+                    <label for="org-nr">Organisationsnummer</label>
+                    <input type="text" id="org-nr" name="org-nr" data-persist="true" placeholder="559000-0000" value="" onchange="saveData()">
                 </div>
             </div>
 
@@ -3316,6 +3322,7 @@
                     registreringNr: document.getElementById('registrering-nr').value.toUpperCase() || 'ABC 123',
                     mmb: document.getElementById('mmb').value || '-',
                     companyName: (document.getElementById('company-name') && document.getElementById('company-name').value.trim() !== "") ? document.getElementById('company-name').value : 'VAG Specialisten Skåne',
+                    orgNr: (document.getElementById('org-nr') && document.getElementById('org-nr').value.trim() !== "") ? document.getElementById('org-nr').value.trim() : '',
                     huvudtitel: document.getElementById('main-inspection-title') ? document.getElementById('main-inspection-title').value : 'Inspektion med oljebyte'
                 };
 
@@ -3418,6 +3425,12 @@
                             SE
                         </span>
                     </div>
+                    ${data.orgNr ? `
+                    <div class="sb-data-row" style="border-top: none; padding-top: 0;">
+                        <span class="sb-label">Org.nummer</span>
+                        <span class="sb-value">${data.orgNr}</span>
+                    </div>
+                    ` : ''}
                     <div class="sb-data-row" style="border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 5px;">
                         <span class="sb-label">Auktoriserad servicepartner</span>
                         <span class="sb-value">Nej</span>
