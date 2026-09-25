@@ -535,6 +535,7 @@
         #static-rows-1 tr:nth-child(even),
         #static-rows-2 tr:nth-child(even),
         #static-rows-3 tr:nth-child(even),
+        #static-rows-oil tr:nth-child(even),
         tr.dynamic-row:nth-child(even) {
             background-color: #ffffff;
         }
@@ -661,7 +662,7 @@
             line-height: 1.3em;
             flex-grow: 1;
             order: 1;
-            white-space: pre-wrap;
+            white-space: normal; /* <-- Ändrad från pre-wrap till normal */
         }
 
         #row-template {
@@ -1285,6 +1286,7 @@
             #static-rows-1 tr:nth-child(even),
             #static-rows-2 tr:nth-child(even),
             #static-rows-3 tr:nth-child(even),
+            #static-rows-oil tr:nth-child(even),
             tr.dynamic-row:nth-child(even) {
                 background-color: #ffffff !important;
             }
@@ -4998,6 +5000,33 @@
                 }
             }
 
+            // --- MARKERA ALL TEXT VID KLICK ---
+            document.addEventListener('focusin', function(e) {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                    e.target.select();
+                }
+            });
+
+            // --- 15. AUTOMATISK PDF-NAMNGIVNING ---
+            const originalTitle = document.title; // Spara originaltiteln ("Serviceprotokoll")
+
+            window.addEventListener('beforeprint', () => {
+                // Hämta reg-nummer (om fältet är tomt döper vi den till "Okand")
+                const regNrInput = document.getElementById('registrering-nr');
+                let regNr = regNrInput && regNrInput.value ? regNrInput.value.replace(/\s+/g, '').toUpperCase() : 'Okand';
+                
+                // Hämta datumet från fältet (eller använd dagens datum som reserv)
+                const dateInput = document.getElementById('datum') || document.getElementById('date');
+                let docDate = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0];
+                
+                // Byt sidans titel till vårt snygga filnamn
+                document.title = `Serviceprotokoll_${regNr}_${docDate}`;
+            });
+
+            window.addEventListener('afterprint', () => {
+                // Återställ titeln i webbläsarens flik när utskriftsrutan stängs
+                document.title = originalTitle;
+            });
         </script>
     </div> <!-- Stänger main-protocol-wrapper -->
 </body>
