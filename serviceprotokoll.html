@@ -97,7 +97,7 @@
                 justify-content: center;
             }
 
-            .table-container table {
+            .table-container table, .oilchange-wrapper table {
                 min-width: 100% !important; /* Låser tabellen till skärmens bredd */
                 table-layout: fixed;
             }
@@ -447,7 +447,7 @@
             display: none; 
         }
         
-        .table-container {
+        .table-container, .oilchange-wrapper {
             background-color: transparent;
             border: none; 
             padding: 0; 
@@ -455,7 +455,7 @@
             overflow-x: auto; 
         }
         
-        .table-container table {
+        .table-container table, .oilchange-wrapper table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
@@ -1285,13 +1285,13 @@
             }
             .top-buttons.show { display: flex !important; } 
             
-            .desktop-row-1 { flex-direction: column !important; align-items: stretch !important; gap: 8px !important;}
-            .desktop-row-1 button, .desktop-row-1 select { width: 100% !important; padding: 10px !important; font-size: 14px !important; margin: 0 !important; }
+            .desktop-row-1, .desktop-row-2 { flex-direction: column !important; align-items: stretch !important; gap: 8px !important;}
+            .desktop-row-1 button, .desktop-row-1 select, .desktop-row-2 button { width: 100% !important; padding: 10px !important; font-size: 14px !important; margin: 0 !important; }
             .clear-btn-wrapper { margin-left: 0 !important; width: 100% !important; }
             .clear-btn-wrapper button { width: 100% !important; }
             
-            .table-container { overflow-x: auto; }
-            .table-container table { min-width: 500px; }
+            .table-container, .oilchange-wrapper { overflow-x: auto; }
+            .table-container table, .oilchange-wrapper table { min-width: 500px; }
             .description-content-wrapper { padding: 3px 5px 3px 5px; }
 
             /* --- MODAL (POPUP) FÖR MOBIL - SKARPT SYSTEMUTSEENDE --- */
@@ -1876,12 +1876,22 @@
         <div class="top-buttons" id="top-buttons-container" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
             
             <!-- RAD 1 (Dator) -->
-            <div class="desktop-row-1" style="display: flex; gap: 8px; align-items: center; width: 100%; flex-wrap: wrap;">
-                <button class="print-button hide-on-mobile" onclick="submitForm(event)" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Skriv ut</button>
-                <button onclick="openServiceModal()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">+ Lägg till extra tillägg</button>
-                <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Separat servicebevis</button>
+            <!-- RAD 1 (Dator & Mobil) -->
+            <!-- RAD 1 (Dator & Mobil) -->
+            <!-- NYTT: margin-bottom: 8px; för luft mot rad 2 -->
+            <div class="desktop-row-1" style="display: flex; gap: 8px; align-items: center; width: 100%; flex-wrap: wrap; margin-bottom: 8px;">
                 
-                <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
+                <button class="print-button hide-on-mobile" onclick="submitForm(event)" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Skriv ut</button>
+                
+                <select id="protocol-type-selector" class="no-print" onchange="changeProtocolType(this.value); saveData();" data-persist="true" style="padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
+                    <option value="inspection">Inspektion med oljebyte</option>
+                    <option value="oilchange">Oljebytesservice</option>
+                </select>
+
+                <button onclick="openServiceModal()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">+ Lägg till extra tillägg</button>
+
+                <!-- NYTT: margin-left: auto; trycker denna och resten av bil-knapparna till höger -->
+                <select id="brand-selector" class="no-print" onchange="updateBrandLogo(); saveData();" data-persist="true" style="margin-left: auto; padding: 6px; font-size: 13px; border: 1px solid #888; background-color: #e4e4e4; cursor: pointer;">
                     <option value="">-- Välj bilmärke --</option>
                     <option value="audi">Audi</option>
                     <option value="bmw">BMW</option>
@@ -1921,15 +1931,17 @@
                 </select>
                 
                 <button type="button" onclick="saveToHistory()" style="background-color: #e4e4e4; color: #000; border: 1px solid #888; padding: 6px 12px; cursor: pointer;" title="Spara nuvarande bil">Spara bil</button>
-                
-                <div class="clear-btn-wrapper" style="margin-left: auto;">
-                    <button class="clear-button" onclick="clearProtocol()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Rensa protokoll</button>
-                </div>
             </div>
 
-            <!-- RAD 2 (Dator) -->
-            <div class="desktop-row-2 hide-on-mobile" style="display: flex; gap: 8px; align-items: center; width: 100%;">
-                <button type="button" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border: 1px solid #004060; padding: 6px 12px; cursor: pointer;">Fordonsdata (Ctrl+V)</button>
+            <!-- RAD 2 (Dator & Mobil) -->
+            <div class="desktop-row-2" style="display: flex; gap: 8px; align-items: center; width: 100%; flex-wrap: wrap;">
+                <button type="button" class="hide-on-mobile" onclick="triggerPasteFunction()" style="background-color: #005b8a; color: white; border: 1px solid #004060; padding: 6px 12px; cursor: pointer;">Fordonsdata (Ctrl+V)</button>
+                
+                <button id="toggle-service-bevis-btn" onclick="toggleServiceBevis()" style="padding: 6px 12px; background-color: #e4e4e4; color: #000; border: 1px solid #888; cursor: pointer;">Separat servicebevis</button>
+                
+                <div class="clear-btn-wrapper" style="margin-left: auto;">
+                    <button class="clear-button" onclick="clearProtocol()" style="padding: 6px 12px; background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; cursor: pointer;" title="Varning: Rensar hela protokollet">Rensa protokoll</button>
+                </div>
             </div>
 
         </div>
@@ -2291,6 +2303,68 @@
             <button type="button" class="add-row-small-btn" onclick="addRowToSection('static-rows-3')">+ Lägg till rad i denna sektion</button>
         </div>  
 
+        <!-- SEKTION FÖR ENBART OLJEBYTESSERVICE -->
+        <div class="oilchange-wrapper" id="oilchange-container" style="display: none;">
+            <table class="inspection-table">
+                <thead>
+                    <tr>
+                        <th class="section-header-title" colspan="2">
+                            <input type="text" id="section-title-oil" value="" class="section-title-input" style="background: transparent; border: none; color: inherit; width: 100%; font-weight: bold;">
+                        </th>
+                        <th class="header-checkbox-title">Ok/ genomförd</th>
+                        <th class="header-checkbox-title">Inte ok</th>
+                        <th class="header-checkbox-title">Åtgärdat</th>
+                    </tr>
+                </thead>
+                <tbody id="static-rows-oil">
+                    <tr>
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="VARNING! MOTOROLJA: bara TÖMMA, ALDRIG suga upp; byta oljefilter" readonly>
+                                <span class="print-text-only">VARNING! MOTOROLJA: bara TÖMMA, ALDRIG suga upp; byta oljefilter</span>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" checked onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr>
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Motorolja: Fylla på" readonly>
+                                <span class="print-text-only">Motorolja: Fylla på</span>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" checked onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr>
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Bromsbeläggens tjocklek och bromsskivornas skick fram och bak: Kontrollera" readonly>
+                                <span class="print-text-only">Bromsbeläggens tjocklek och bromsskivornas skick fram och bak: Kontrollera</span>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" checked onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                    <tr>
+                        <td class="description-column" colspan="2">
+                            <div class="description-content-wrapper">
+                                <input type="text" class="editable-text" value="Serviceintervallsindikering: Återställa Oljebytesservice. Observera PR-nummer i fordonsdata." readonly>
+                                <span class="print-text-only">Serviceintervallsindikering: Återställa Oljebytesservice. Observera PR-nummer i fordonsdata.</span>
+                            </div>
+                        </td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c1" checked onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="checkbox-cell"><label class="custom-checkbox"><input type="checkbox" data-col="c2" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                        <td class="action-column"><label class="custom-checkbox"><input type="checkbox" data-col="c3" onchange="handleCheckboxClick(this)"><span></span></label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <!-- VAG Original Informations- och Kommentarsdel -->
         <div class="vag-footer-legend" style="text-align: center; margin-top: 25px; margin-bottom: 15px; font-size: 12px; font-family: Arial, sans-serif;">
             <div style="margin-bottom: 4px;">
@@ -2311,7 +2385,7 @@
             <div id="comment-area-print" style="display: none; text-align: center; white-space: pre-wrap; font-size: 13px; margin-top: 5px; line-height: 1.5; font-weight: bold;"></div>
         </div>
         
-        <div class="footer-notes">
+        <div class="footer-notes no-print">
             <p><span class="red-text">*</span> = Obligatoriskt fält.</p>
             <p><span class="red-text">**</span> = Denna serviceåtgärd utförs enligt särskilt angivet schema/intervall.</p>
         </div>
@@ -2890,6 +2964,13 @@
             updatePrintValueForReadOnlyRows();
             updateBrandLogo(); // Uppdaterar loggan direkt när sidan laddas
             restoreCanvasImages();
+            
+            // NYTT: Säkrar att rätt vy läses in och visas direkt vid sidladdning
+            const protoSelector = document.getElementById('protocol-type-selector');
+            if (protoSelector) {
+                changeProtocolType(protoSelector.value);
+            }
+            
             console.log("Data laddad från Local Storage (V3).");
         }
 
@@ -3127,6 +3208,13 @@
             if (historySelector) historySelector.selectedIndex = 0;
             if (brandSelector) brandSelector.selectedIndex = 0;
             updateBrandLogo();
+
+            // Återställ rullgardinen för protokolltyp till standard
+            const protocolSelector = document.getElementById('protocol-type-selector');
+            if (protocolSelector) {
+                protocolSelector.value = 'inspection';
+                changeProtocolType('inspection');
+            }
             // --------------------------------------------------------------
             
             removableStaticIds.forEach(id => {
@@ -3154,6 +3242,7 @@
             dynamicRowCounter = 0;
             validateRequiredFields(); 
 
+            saveData(); // Sparar det nollställda läget direkt!
             closeModalByName('clearConfirmModal');
         }
         
@@ -4004,6 +4093,28 @@
                     img.src = hiddenInput.value;
                 }
             });
+        }
+
+        function changeProtocolType(type) {
+            const mainTitle = document.getElementById('main-inspection-title');
+            const standardContainers = document.querySelectorAll('.table-container');
+            const oilContainer = document.getElementById('oilchange-container');
+            
+            if (type === 'oilchange') {
+                if (mainTitle) mainTitle.value = "Oljebytesservice";
+                
+                // Dölj standardtabellerna
+                standardContainers.forEach(c => c.style.display = 'none');
+                // Visa oljebytestabellen
+                if (oilContainer) oilContainer.style.display = 'block';
+            } else {
+                if (mainTitle) mainTitle.value = "Inspektion med oljebyte";
+                
+                // Visa standardtabellerna igen
+                standardContainers.forEach(c => c.style.display = '');
+                // Dölj oljebytestabellen
+                if (oilContainer) oilContainer.style.display = 'none';
+            }
         }
 
     </script>
