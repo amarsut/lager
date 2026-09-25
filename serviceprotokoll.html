@@ -2071,8 +2071,7 @@
 
         /* --- INFÄLLT LÄGE (COLLAPSED) --- */
         body.sidebar-collapsed .autogrid-sidebar {
-            width: 80px;
-            /* Krymper bredden (motsvarar w-20) */
+            width: 78px; /* Krymper bredden för att matcha app.js slimmade look */
         }
 
         /* Döljer alla text-element och stäng-knappen */
@@ -2086,24 +2085,31 @@
             display: none;
         }
 
-        /* Centrerar loggan */
+        /* 1. LOGGAN (Ändra width/height här för att justera storleken på Hexagonen) */
         body.sidebar-collapsed .ag-logo-row {
             justify-content: center;
             padding: 0;
         }
-
-        /* Kvadratisk, centrerad orange knapp */
-        body.sidebar-collapsed .ag-cta-wrapper {
-            padding: 24px 18px 16px 18px;
+        body.sidebar-collapsed .ag-logo-svg {
+            width: 40px;  /* Uppskalad från 32px */
+            height: 40px;
         }
 
+        /* 2. ORANGEA KNAPPEN */
+        body.sidebar-collapsed .ag-cta-wrapper {
+            padding: 24px 0 16px 0; /* Tar bort sidopaddingen */
+            display: flex;
+            justify-content: center; /* Centrerar knappen */
+        }
         body.sidebar-collapsed .ag-cta-btn {
             padding: 0;
-            height: 44px;
-            /* Exakt 44x44px fyrkant */
+            width: 44px !important;  /* Tvingar exakt bredd (w-11) */
+            height: 44px !important; /* Tvingar exakt höjd (h-11) */
             border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
         body.sidebar-collapsed .ag-cta-btn svg {
             margin: 0;
         }
@@ -2114,26 +2120,39 @@
             padding-left: 0;
             padding-right: 0;
         }
-
         body.sidebar-collapsed .ag-nav-icon {
             margin: 0;
         }
 
-        /* Staplar verktygsikonerna i botten vertikalt */
+        /* 3. MÖRKA BOTTENSEKTIONEN & ÖGAT (Ändra padding/gap här för att ändra höjden) */
         body.sidebar-collapsed .ag-tools-row {
             flex-direction: column;
-            padding: 16px 0;
-            gap: 16px;
+            padding: 12px 0; /* Drar ihop höjden (var 16px) */
+            gap: 12px;       /* Krymper avståndet mellan ögat och månen (var 16px) */
+        }
+        
+        /* Ikonerna (Ögat, månen) */
+        body.sidebar-collapsed .ag-tool-btn svg {
+            width: 18px;     /* Justera denna för att göra ögat/månen större eller mindre */
+            height: 18px;
+            opacity: 0.6;    /* Gör dem lite dovare så de smälter in snyggare */
         }
 
-        /* Centrerar avataren */
+        /* 4. A-IKONEN / AVATAREN (Ändra width/height här för storlek) */
         body.sidebar-collapsed .ag-profile-row {
             justify-content: center;
-            padding: 24px 0;
+            padding: 16px 0 16px 0; /* Styr marginalen ovanför och under A-ikonen */
         }
-
         body.sidebar-collapsed .ag-profile-info {
             gap: 0;
+        }
+        body.sidebar-collapsed .ag-avatar {
+            min-width: 32px;  /* Krympt från 36px */
+            width: 32px;
+            height: 32px;
+            font-size: 13px;  /* Mindre bokstav */
+            border-radius: 8px;
+            background-color: #27272a;
         }
 
         @media print {
@@ -4617,19 +4636,27 @@
                 const referrer = document.referrer;
                 const urlParams = new URLSearchParams(window.location.search);
 
-                // Fångar upp parametrar för att lätt kunna testa direkt i URL:en
                 const forceAutoGrid = urlParams.get('sidebar') === 'true';
                 const forceBMG = urlParams.get('bmg') === 'true';
 
-                // Kontrollerar att det är en datorskärm (större än 768px) innan sidebaren tänds
                 const isDesktop = window.innerWidth > 768;
 
                 const isFromAutoGrid = (referrer.includes('amarsut.github.io/lager') || forceAutoGrid) && isDesktop;
                 const isFromBMG = (referrer.includes('bmgmotorgrupp') || referrer.includes('admin.html') || forceBMG) && isDesktop;
 
+                // NYTT: Funktion som tvingar sidebaren att fällas in/ut baserat på bredd
+                function updateSidebarState() {
+                    if (window.innerWidth <= 1300) {
+                        document.body.classList.add('sidebar-collapsed');
+                    } else {
+                        document.body.classList.remove('sidebar-collapsed');
+                    }
+                }
+
                 // --- BMG INTELLIGENCE SIDEBAR ---
                 if (isFromBMG) {
                     document.body.classList.add('has-sidebar');
+                    updateSidebarState(); // Körs direkt när menyn ritas upp!
 
                     const sidebarContainer = document.getElementById('sidebar-container');
                     if (sidebarContainer) {
@@ -4658,22 +4685,18 @@
 
                             <div class="bmg-nav">
                                 <div class="ag-nav-item" onclick="window.history.back();">
-                                            <div class="ag-nav-indicator"></div>
-                                            <div class="ag-nav-icon">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                                            </div>
-                                            <span class="ag-nav-text">Tillbaka till BMG</span>
-                                        </div>
-                                
-                                
+                                    <div class="ag-nav-indicator"></div>
+                                    <div class="ag-nav-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                    </div>
+                                    <span class="ag-nav-text">Tillbaka till BMG</span>
+                                </div>
                                 
                                 <!-- Denna flik sätts som aktiv när vi är i Serviceprotokollet -->
                                 <button class="bmg-tab-btn active">
                                     <span class="bmg-icon"><i data-lucide="clipboard"></i></span>
                                     <span class="bmg-text">Serviceprotokoll</span>
                                 </button>
-                                
-                                
                             </div>
 
                             <div class="bmg-footer">
@@ -4697,6 +4720,7 @@
                 // --- AUTOGRID SIDEBAR ---
                 else if (isFromAutoGrid) {
                     document.body.classList.add('has-sidebar');
+                    updateSidebarState(); // Körs direkt när menyn ritas upp!
 
                     const sidebarContainer = document.getElementById('sidebar-container');
                     if (sidebarContainer) {
@@ -4774,6 +4798,11 @@
                         </div>
                     `;
                     }
+                }
+
+                // Lyssna på fönsterändringar ifall användaren vrider på surfplattan/förminskar webbläsaren
+                if (isFromAutoGrid || isFromBMG) {
+                    window.addEventListener('resize', updateSidebarState);
                 }
             }
 
