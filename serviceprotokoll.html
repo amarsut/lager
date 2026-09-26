@@ -3572,11 +3572,9 @@
                 const regNr = regNrInput.value.trim().replace(/\s+/g, '').toUpperCase();
 
                 if (regNr.length >= 3) {
-                    // Notera #bmg_export på slutet – detta triggar ditt tillägg att stänga rutan!
-                    const url = `https://www.car.info/sv-se/license-plate/S/${regNr}#bmg_export`;
-                    window.open(url, '_blank');
-
-                    showPasteNotification("⏳ Väntar på data från AutoSearch...", false);
+                    // NYTT: Fjärrstyr Chrome-tillägget (Kombo-sökning) direkt från webbsidan
+                    window.postMessage({ action: 'BMG_REMOTE_SEARCH', regnr: regNr }, '*');
+                    showPasteNotification("⏳ AutoSearch skrapar data...", false);
                 } else {
                     alert('Skriv in ett giltigt registreringsnummer först.');
                 }
@@ -4812,8 +4810,8 @@
             window.addEventListener('message', function (event) {
                 const payload = event.data;
 
-                // Säkerställ att meddelandet faktiskt kommer från ditt skrapar-tillägg
-                if (payload && payload.source === 'Car.info_Extension') {
+                // Acceptera data från AutoSearch oavsett om det är gamla eller nya källnamnet
+                if (payload && (payload.source === 'Car.info_Extension' || payload.source === 'AutoSearch_Extension')) {
                     console.log("Data mottagen från AutoSearch:", payload);
 
                     // Fyller i formuläret direkt från tilläggets strukturerade data
