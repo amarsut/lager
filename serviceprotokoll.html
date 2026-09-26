@@ -3689,8 +3689,8 @@
                 });
                 data.dynamicRows = dynamicRows;
 
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                console.log("Data sparad till Local Storage (V3).");
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                console.log("Data sparad till Session Storage.");
 
                 showSaveNotification();
             }
@@ -3758,7 +3758,7 @@
             }
 
             function loadData() {
-                const savedData = localStorage.getItem(STORAGE_KEY);
+                const savedData = sessionStorage.getItem(STORAGE_KEY);
                 const data = savedData ? JSON.parse(savedData) : {};
                 const button = document.getElementById('toggle-service-bevis-btn');
 
@@ -4082,7 +4082,7 @@
             }
 
             function executeClearProtocol() {
-                localStorage.removeItem(STORAGE_KEY);
+                sessionStorage.removeItem(STORAGE_KEY);
 
                 const form = document.getElementById('protocol-form');
                 form.reset();
