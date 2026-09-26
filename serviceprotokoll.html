@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sv">
 
@@ -3694,6 +3695,68 @@
                 showSaveNotification();
             }
 
+            // NYTT: Smart cache-koll som känner av om bilen redan finns i AutoSearch-historiken!
+            function handleUrlParameters() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const regParam = urlParams.get('reg');
+                const orderParam = urlParams.get('order');
+
+                let modified = false;
+
+                if (orderParam) {
+                    const orderInput = document.getElementById('order-nr');
+                    if (orderInput && orderInput.value !== orderParam) {
+                        orderInput.value = orderParam;
+                        modified = true;
+                    }
+                }
+
+                if (regParam) {
+                    const cleanReg = regParam.toUpperCase().trim();
+                    const regInput = document.getElementById('registrering-nr');
+                    if (regInput) {
+                        regInput.value = cleanReg;
+                        modified = true;
+                    }
+
+                    // 1. Kolla om tillägget har sparat denna bil i mappen/historiken (Local Storage)
+                    chrome.storage.local.get(['os_search_history'], (res) => {
+                        const history = res.os_search_history || [];
+                        const foundCar = history.find(h => h.regnr === cleanReg);
+
+                        if (foundCar) {
+                            console.log("Bilen hittades i AutoSearch-cachen! Fyller i direkt...");
+                            
+                            // Fyll i fälten direkt från cachen
+                            if (foundCar.motorkod) document.getElementById('motorkod').value = foundCar.motorkod;
+                            if (foundCar.oljevolym) document.getElementById('oljevolym').value = foundCar.oljevolym;
+                            if (foundCar.vin) document.getElementById('chassinr').value = foundCar.vin;
+                            if (foundCar.bilmodell) document.getElementById('modell').value = foundCar.bilmodell;
+                            if (foundCar.arsmodell) document.getElementById('arsmodell').value = foundCar.arsmodell;
+                            
+                            saveData();
+                            
+                            // Visar en snabb liten notis om att cachen användes
+                            if (typeof showToast === 'function') {
+                                showToast(`Hämtade sparad data för ${cleanReg}!`, 'success');
+                            } else {
+                                console.log(`Hämtade sparad data för ${cleanReg}!`);
+                            }
+                        } else {
+                            console.log("Bilen fanns inte i cachen. Startar ny sökning...");
+                            // 2. Finns den inte sparas gör vi den vanliga sökningen
+                            setTimeout(() => {
+                                searchCarInfo();
+                            }, 800);
+                        }
+                    });
+                }
+
+                if (modified) {
+                    saveData();
+                }
+            }
+
             function loadData() {
                 const savedData = localStorage.getItem(STORAGE_KEY);
                 const data = savedData ? JSON.parse(savedData) : {};
@@ -3804,6 +3867,9 @@
                 }
 
                 console.log("Data laddad från Local Storage (V3).");
+
+                // Kör URL-kontrollen direkt efter att lagrad data har lästs in
+                handleUrlParameters();
             }
 
             function updatePrintValueForReadOnlyRows() {
