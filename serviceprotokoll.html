@@ -1644,10 +1644,27 @@
                 color: #000;
             }
 
+            /* NYTT: Enorma och lättryckta knappar för bekräftelserutor på mobilen */
+            .modal-button-container {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 12px !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+
+            .modal-button {
+                flex: 1 !important; /* Gör att knapparna tar upp exakt 50% av ytan var */
+                padding: 16px 10px !important; /* Massiv klickyta i höjd */
+                font-size: 15px !important;
+                font-weight: bold !important;
+                border-radius: 6px !important; /* Lite mjukare hörn på mobilen */
+                text-align: center !important;
+            }
+
             .service-list {
                 max-height: 60vh !important;
                 margin-top: 15px !important;
-                border-radius: 0 !important;
                 /* Tvingar bort alla runda hörn på listan */
             }
 
@@ -2587,8 +2604,7 @@
                         onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchCarInfo(); }" required>
 
                     <!-- NY KNAPP -->
-                    <div class="car-info-btn no-print" onclick="searchCarInfo()" title="Slå upp på Car.info">Sök
-                        Car.info</div>
+                    <div id="autosearch-btn" class="car-info-btn no-print" onclick="searchCarInfo()" title="Hämta data via AutoSearch" style="background-color: #ea580c;">car.info</div>
 
                     <div class="copy-icon-container" onclick="copyToClipboard('registrering-nr')"></div>
                     <div id="registrering-nr-alert" class="input-warning-msg">Registreringsnr saknas!</div>
@@ -3572,7 +3588,14 @@
                 const regNr = regNrInput.value.trim().replace(/\s+/g, '').toUpperCase();
 
                 if (regNr.length >= 3) {
-                    // NYTT: Fjärrstyr Chrome-tillägget (Kombo-sökning) direkt från webbsidan
+                    const btn = document.getElementById('autosearch-btn');
+                    if (btn) {
+                        btn.innerText = 'HÄMTAR...';
+                        btn.style.pointerEvents = 'none';
+                        btn.style.opacity = '0.7';
+                    }
+                    
+                    // Fjärrstyr Chrome-tillägget (Kombo-sökning) direkt från webbsidan
                     window.postMessage({ action: 'BMG_REMOTE_SEARCH', regnr: regNr }, '*');
                     showPasteNotification("⏳ AutoSearch skrapar data...", false);
                 } else {
@@ -4807,12 +4830,44 @@
             }
 
             // --- LYSSNA PÅ CHROME-TILLÄGGET (AutoSearch) ---
+            // --- LYSSNA PÅ CHROME-TILLÄGGET (AutoSearch) ---
             window.addEventListener('message', function (event) {
                 const payload = event.data;
 
-                // Acceptera data från AutoSearch oavsett om det är gamla eller nya källnamnet
                 if (payload && (payload.source === 'Car.info_Extension' || payload.source === 'AutoSearch_Extension')) {
+                    
+                    // NYTT: Hantera tyst bakgrundssynk (Fyller bara historiken, rör inte skärmen)
+                    if (payload.silentSync) {
+                        let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)) || {};
+                        if (!history[payload.regnr]) {
+                            history[payload.regnr] = {
+                                date: new Date().toLocaleDateString(),
+                                model: payload.bilmodell || payload.regnr,
+                                data: {
+                                    'registrering-nr': payload.regnr,
+                                    'chassinummer': payload.vin,
+                                    'modellkod-2': payload.bilmodell,
+                                    'mmb': payload.motorkod,
+                                    'årsmodell': payload.årsmodell,
+                                    'mätarställning': payload.miltal ? payload.miltal.replace(/[^0-9]/g, '') : '',
+                                    'datum': new Date().toISOString().split('T')[0]
+                                }
+                            };
+                            localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+                            updateHistoryDropdown(); // Uppdaterar rullgardinen tyst
+                        }
+                        return; // Avbryt här så den inte klistrar in datan på skärmen!
+                    }
+
                     console.log("Data mottagen från AutoSearch:", payload);
+
+                    // Återställ sökknappen
+                    const btn = document.getElementById('autosearch-btn');
+                    if (btn) {
+                        btn.innerText = 'CAR.INFO';
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.opacity = '1';
+                    }
 
                     // Fyller i formuläret direkt från tilläggets strukturerade data
                     const setVal = (id, val) => {
@@ -4832,8 +4887,7 @@
                     setVal('mmb', payload.motorkod);
                     setVal('årsmodell', payload.årsmodell);
 
-                    // Mätarställning: Tillägget skickar ofta formatet "1234 mil". 
-                    // Om du vill ha det i kilometer på protokollet multiplicerar vi det:
+                    // Mätarställning: Renar bort "mil" och räknar om till rätt format
                     if (payload.miltal) {
                         let milValue = payload.miltal.replace(/[^0-9]/g, '');
                         if (payload.miltal.toLowerCase().includes('mil')) {
@@ -4842,10 +4896,8 @@
                         setVal('mätarställning', milValue);
                     }
 
-                    // Avkoda eventuella årsmodeller från VIN om det saknades
                     decodeVINToYear();
 
-                    // Välj rätt bilmärkeslogga automatiskt
                     if (payload.bilmodell) {
                         const lowerModel = payload.bilmodell.toLowerCase();
                         let foundBrand = "";
@@ -4863,7 +4915,6 @@
                         }
                     }
 
-                    // Spara och validera
                     saveData();
                     validateRequiredFields();
 
