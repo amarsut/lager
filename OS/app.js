@@ -58,6 +58,97 @@ const SplashScreen = memo(() => (
     </div>
 ));
 
+// UNIVERSAL-MENYN FÖR DATAHÄMTNING
+window.AutoSearchMenu = React.memo(({ regnr, variant = 'icon', onSearchStart }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [isSearching, setIsSearching] = React.useState(false);
+    const menuRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) setIsOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    React.useEffect(() => {
+        const handleDone = (event) => {
+            if (event.data && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension', 'Biluppgifter.se', 'AutoSearch_Extension', 'KOMBINERAD DATA'].includes(event.data.source)) {
+                setIsSearching(false);
+            }
+        };
+        window.addEventListener('message', handleDone);
+        return () => window.removeEventListener('message', handleDone);
+    }, []);
+
+    const handleSearch = (engine) => {
+        if (!regnr || String(regnr).replace(/\s+/g, '').length < 4) {
+            alert("Ange ett giltigt registreringsnummer först!");
+            return;
+        }
+        setIsOpen(false);
+        setIsSearching(true);
+        if (onSearchStart) onSearchStart();
+
+        window.postMessage({ action: 'BMG_REMOTE_SEARCH', regnr: regnr.replace(/\s+/g, ''), engine: engine }, '*');
+        setTimeout(() => setIsSearching(false), 15000);
+    };
+
+    const engines = [
+        { id: 'combo-ci-om', label: 'Smart Sökning (CI+OM)', icon: 'zap', color: 'text-orange-500' },
+        { id: 'combo', label: 'Smart Sökning (BU+OM)', icon: 'zap', color: 'text-blue-500' },
+        { id: 'ci', label: 'Car.info', icon: 'file-text', color: 'text-zinc-600 dark:text-zinc-300' },
+        { id: 'bu', label: 'Biluppgifter', icon: 'book', color: 'text-zinc-600 dark:text-zinc-300' },
+        { id: 'ts', label: 'Transportstyrelsen', icon: 'shield', color: 'text-zinc-600 dark:text-zinc-300' },
+        { id: 'om', label: 'Oljemagasinet', icon: 'droplet', color: 'text-zinc-600 dark:text-zinc-300' }
+    ];
+
+    const isFull = variant === 'full';
+
+    return (
+        <div className={`relative ${isFull ? 'w-full' : 'h-full flex items-stretch'}`} ref={menuRef}>
+            {isFull ? (
+                <button 
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); !isSearching && setIsOpen(!isOpen); }}
+                    disabled={isSearching}
+                    className={`w-full h-10 md:h-12 rounded-xl flex items-center justify-center gap-2 transition-all group shadow-sm active:scale-95 min-w-0 border ${isSearching ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-500/50' : 'bg-orange-50 dark:bg-white/5 border-orange-200 dark:border-orange-500/20 hover:border-orange-400 dark:hover:border-orange-500/40 hover:bg-orange-100 dark:hover:bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}
+                >
+                    {isSearching ? <window.Icon name="loader-2" size={14} className="animate-spin text-orange-500 shrink-0" /> : <window.Icon name="zap" size={14} className="text-orange-500 group-hover:scale-110 transition-transform shrink-0" />}
+                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest truncate">
+                        {isSearching ? 'Hämtar data...' : 'Hämta Fordonsdata'}
+                    </span>
+                </button>
+            ) : (
+                <button 
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); !isSearching && setIsOpen(!isOpen); }}
+                    disabled={isSearching}
+                    title="Hämta fordonsdata"
+                    className={`shrink-0 w-12 h-full min-h-[42px] rounded-lg lg:rounded-xl flex items-center justify-center transition-all border shadow-sm ${isSearching ? 'bg-orange-50 dark:bg-orange-500/20 text-orange-500 border-orange-200 dark:border-orange-500/30' : 'bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 hover:border-orange-200 dark:hover:border-orange-500/30 text-zinc-500'}`}
+                >
+                    {isSearching ? <window.Icon name="loader-2" size={16} className="animate-spin" /> : <window.Icon name="zap" size={16} />}
+                </button>
+            )}
+
+            {isOpen && (
+                <div className={`absolute top-full mt-2 ${isFull ? 'left-0 right-0 w-full' : 'right-0 w-56'} bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-[9999] p-1.5`}>
+                    {engines.map(eng => (
+                        <button 
+                            key={eng.id} type="button" onClick={(e) => { e.stopPropagation(); handleSearch(eng.id); }}
+                            className="flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors group"
+                        >
+                            <window.Icon name={eng.icon} size={14} className={`${eng.color} group-hover:scale-110 transition-transform`} />
+                            <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase">{eng.label}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+});
+
 // NY STRUKTUR: Grupperad navigering för bättre översikt och kortare namn
 const NAV_GROUPS = [
     {
@@ -140,6 +231,67 @@ const App = () => {
 
     useEffect(() => {
         window.openVehicleProfile = (regnr, highlightId = null) => setGlobalVehicle({ regnr, highlightId });
+    }, []);
+
+    // DEN GLOBALA HJÄRNAN FÖR FORDONSDATA
+    useEffect(() => {
+        const handleGlobalData = (event) => {
+            const fordonData = event.data;
+            if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension', 'Biluppgifter.se', 'AutoSearch_Extension', 'KOMBINERAD DATA'].includes(fordonData.source)) {
+                
+                const rawReg = String(fordonData.regnr || '').toUpperCase().trim();
+                const cleanReg = rawReg.replace(/\s+/g, '');
+                if (!cleanReg) return;
+
+                const isValid = (val) => val && String(val).trim() !== '' && String(val).toUpperCase() !== 'SAKNAS' && String(val) !== '-';
+                
+                // 1. Läs in befintlig data för att kunna skydda bra data från att skrivas över av sämre källor
+                let existing = {};
+                try { existing = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}')[cleanReg] || {}; } catch(e) {}
+                
+                // 2. Är källan "stark" gällande motor/olja?
+                const isStrongSource = ['AutoSearch_Extension', 'KOMBINERAD DATA', 'Oljemagasinet_Extension'].includes(fordonData.source);
+
+                const specUpdates = {};
+
+                // 3. SMART UPPDATERING: Skriv bara över om källan är stark, eller om fältet tidigare var tomt!
+                if (isValid(fordonData.motorkod) && (!existing.engine || isStrongSource)) specUpdates.engine = String(fordonData.motorkod);
+                if (isValid(fordonData.oljevolym) && (!existing.oil || isStrongSource)) specUpdates.oil = String(fordonData.oljevolym).includes('l') ? String(fordonData.oljevolym) : `${fordonData.oljevolym} l`;
+                
+                // NYTT: Fångar upp Oljetyp!
+                if (isValid(fordonData.oljetyp) && (!existing.oil_type || isStrongSource)) specUpdates.oil_type = String(fordonData.oljetyp);
+                
+                if (isValid(fordonData.miltal) && (!existing.mileage || isStrongSource)) specUpdates.mileage = String(fordonData.miltal);
+                if (isValid(fordonData.årsmodell) || isValid(fordonData.arsmodell)) specUpdates.year = String(fordonData.årsmodell || fordonData.arsmodell);
+                if (isValid(fordonData.vin)) specUpdates.vin = String(fordonData.vin);
+                if (isValid(fordonData.bilmodell) && (!existing.model || isStrongSource)) specUpdates.model = String(fordonData.bilmodell);
+                
+                // Transportstyrelsens tekniska data (Dessa skrivs alltid över då de anses vara "facit")
+                if (isValid(fordonData.fordonsstatus)) specUpdates.ts_status = String(fordonData.fordonsstatus);
+                if (isValid(fordonData.besiktning_senast)) specUpdates.ts_inspection = String(fordonData.besiktning_senast);
+                if (isValid(fordonData.växellåda)) specUpdates.ts_gearbox = String(fordonData.växellåda);
+                if (isValid(fordonData.drivmedel)) specUpdates.ts_fuel = String(fordonData.drivmedel);
+
+                if (Object.keys(specUpdates).length > 0) {
+                    specUpdates.updatedAt = new Date().toISOString();
+                    
+                    // Spara till den lokala cachen blixtsnabbt
+                    try {
+                        const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+                        cache[cleanReg] = { ...(cache[cleanReg] || {}), ...specUpdates };
+                        localStorage.setItem('os_vehicle_cache', JSON.stringify(cache));
+                    } catch(e) {}
+
+                    // Spara permanent till databasen
+                    if (window.db) {
+                        window.db.collection('vehicleSpecs').doc(cleanReg).set(specUpdates, { merge: true }).catch(()=>{});
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('message', handleGlobalData);
+        return () => window.removeEventListener('message', handleGlobalData);
     }, []);
 
     const triggerHaptic = useCallback(() => {
