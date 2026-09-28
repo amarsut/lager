@@ -130,6 +130,7 @@ const RichNoteEditor = ({ value, onChange }) => {
 };
 
 window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
+    // 1. Deklarera State ALLRA FÖRST för att slippa krascher!
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = React.useState({
         kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
@@ -145,64 +146,43 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [suggestions, setSuggestions] = React.useState([]);
     const [regnrSuggestions, setRegnrSuggestions] = React.useState([]);
     const [oilLiters, setOilLiters] = React.useState(4.3);
-    
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
 
+    // Ladda in existerande jobb eller caching
     React.useEffect(() => {
         const rawReg = formData.regnr || '';
         const cleanReg = String(rawReg).toUpperCase().replace(/\s+/g, '');
         let isMounted = true;
         let unsubscribe = () => {};
 
-        // 1. Nollställ direkt om regnumret är för kort
         if (cleanReg.length < 5) {
             setFetchedCarInfo(null);
             return;
         }
 
-        // 2. Läs från lokalt minne (Samma super-snabba cache som garage.js använder!)
         const getLocalCache = (reg) => {
-            try {
-                const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
-                return cache[reg] || {};
-            } catch(e) { return {}; }
+            try { return JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}')[reg] || {}; } catch(e) { return {}; }
         };
         const localData = getLocalCache(cleanReg);
 
-        // 3. Leta upp bilen i systemets historik
-        const previousJobs = allJobs
-            .filter(j => String(j.regnr || '').toUpperCase().replace(/\s+/g, '') === cleanReg)
-            .sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
+        const previousJobs = allJobs.filter(j => String(j.regnr || '').toUpperCase().replace(/\s+/g, '') === cleanReg).sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
         const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
 
-        // Hjälpfunktion för att sammanställa och rita ut datan
-        // Hjälpfunktion för att sammanställa och rita ut datan
         const updateCarInfo = (specs) => {
             if (!isMounted) return;
             const isHistoryUnknown = lastJob && lastJob.bilmodell && lastJob.bilmodell.toLowerCase().includes('okänd');
 
             setFetchedCarInfo(prev => {
-                const updated = prev ? { ...prev } : {
-                    regnr: rawReg, bilmodell: "", motorkod: "", miltal: "", oljevolym: "", årsmodell: "", vin: "", isNewData: false
-                };
+                const updated = prev ? { ...prev } : { regnr: rawReg, bilmodell: "", motorkod: "", miltal: "", oljevolym: "", oljetyp: "", årsmodell: "", vin: "", isNewData: false };
                 
-                if (specs.model) updated.bilmodell = specs.model;
-                else if (!updated.bilmodell && lastJob && !isHistoryUnknown) updated.bilmodell = lastJob.bilmodell;
-
-                if (specs.engine) updated.motorkod = specs.engine;
-                else if (!updated.motorkod && lastJob?.motorkod) updated.motorkod = lastJob.motorkod;
-
-                if (specs.mileage) updated.miltal = specs.mileage;
-                else if (!updated.miltal && lastJob?.miltal) updated.miltal = lastJob.miltal;
-
-                if (specs.year) updated.årsmodell = specs.year;
-                else if (!updated.årsmodell && lastJob?.årsmodell) updated.årsmodell = lastJob.årsmodell;
-
-                if (specs.vin || specs.chassinummer) updated.vin = specs.vin || specs.chassinummer;
-                else if (!updated.vin && lastJob?.vin) updated.vin = lastJob.vin;
-
-                if (specs.oil) updated.oljevolym = String(specs.oil).replace(' l', '');
-                else if (!updated.oljevolym && lastJob?.oljevolym) updated.oljevolym = String(lastJob.oljevolym).replace(' l', '');
+                if (specs.model) updated.bilmodell = specs.model; else if (!updated.bilmodell && lastJob && !isHistoryUnknown) updated.bilmodell = lastJob.bilmodell;
+                if (specs.engine) updated.motorkod = specs.engine; else if (!updated.motorkod && lastJob?.motorkod) updated.motorkod = lastJob.motorkod;
+                if (specs.mileage) updated.miltal = specs.mileage; else if (!updated.miltal && lastJob?.miltal) updated.miltal = lastJob.miltal;
+                if (specs.year) updated.årsmodell = specs.year; else if (!updated.årsmodell && lastJob?.årsmodell) updated.årsmodell = lastJob.årsmodell;
+                if (specs.vin || specs.chassinummer) updated.vin = specs.vin || specs.chassinummer; else if (!updated.vin && lastJob?.vin) updated.vin = lastJob.vin;
+                
+                if (specs.oil) updated.oljevolym = String(specs.oil).replace(' l', ''); else if (!updated.oljevolym && lastJob?.oljevolym) updated.oljevolym = String(lastJob.oljevolym).replace(' l', '');
+                if (specs.oil_type) updated.oljetyp = specs.oil_type; else if (!updated.oljetyp && lastJob?.oljetyp) updated.oljetyp = lastJob.oljetyp;
 
                 return updated;
             });
@@ -213,30 +193,22 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             }
         };
 
-        // Visa omedelbart det vi har från cache/historik
         updateCarInfo(localData);
 
-        // 4. Koppla upp LIVE mot Firebase för att se om det finns nyare data
         if (window.db) {
             unsubscribe = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(doc => {
                 if (doc.exists) updateCarInfo(doc.data());
             });
         }
 
-        // 5. Lyssna LIVE på Chrome-tillägget (när man trycker på Blixten)
-
-        return () => {
-            isMounted = false;
-            unsubscribe();
-        };
+        return () => { isMounted = false; unsubscribe(); };
     }, [formData.regnr]);
 
     React.useEffect(() => {
         const loadExistingJob = async () => {
             if (editingJob) {
                 setFormData(prev => ({ 
-                    ...prev,
-                    ...editingJob, 
+                    ...prev, ...editingJob, 
                     datum: editingJob.datum ? editingJob.datum.split('T')[0] : '',
                     tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '16:30' 
                 }));
@@ -245,30 +217,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     let loadedExpenses = editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad }));
                     while (loadedExpenses.length < 3) loadedExpenses.push({ desc: '', amount: '' });
                     setExpenses(loadedExpenses);
-                } else {
-                    setExpenses(emptyExpenses);
-                }
+                } else setExpenses(emptyExpenses);
 
-                if (editingJob.delbetalningar && editingJob.delbetalningar.length > 0) {
-                    setPayments(editingJob.delbetalningar);
-                } else if (editingJob.betaltBelopp > 0) {
-                    setPayments([{ desc: 'Tidigare inbetalning', amount: editingJob.betaltBelopp }]);
-                } else {
-                    setPayments(emptyPayments);
-                }
+                if (editingJob.delbetalningar && editingJob.delbetalningar.length > 0) setPayments(editingJob.delbetalningar);
+                else if (editingJob.betaltBelopp > 0) setPayments([{ desc: 'Tidigare inbetalning', amount: editingJob.betaltBelopp }]);
+                else setPayments(emptyPayments);
                 
                 setOilLiters(editingJob.oljevolym || 4.3);
                 
                 let specs = {};
                 const cleanReg = String(editingJob.regnr || '').toUpperCase().replace(/\s+/g, '');
-                
-                // 1. Läs in från den lokala blixtsnabba cachen (som garage.js nyss sparade i)
-                try {
-                    const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
-                    if (cache[cleanReg]) specs = { ...cache[cleanReg] };
-                } catch(e) {}
+                try { const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}'); if (cache[cleanReg]) specs = { ...cache[cleanReg] }; } catch(e) {}
 
-                // 2. Läs in från Firebase och slå ihop
                 if (window.db && cleanReg) {
                     const doc = await window.db.collection('vehicleSpecs').doc(cleanReg).get();
                     if (doc.exists) specs = { ...specs, ...doc.data() };
@@ -276,30 +236,20 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                 if (editingJob.bilmodell || editingJob.motorkod || editingJob.miltal || Object.keys(specs).length > 0) {
                     setFetchedCarInfo({
-                        // Färsk fordonsdata (specs) måste ALLTID vinna över det gamla jobbets data!
                         bilmodell: specs.model || editingJob.bilmodell || "",
                         motorkod: specs.engine || editingJob.motorkod || "",
                         miltal: specs.mileage || editingJob.miltal || "", 
                         oljevolym: specs.oil ? String(specs.oil).replace(' l', '') : (editingJob.oljevolym ? String(editingJob.oljevolym).replace(' l', '') : ""),
+                        oljetyp: specs.oil_type || editingJob.oljetyp || "",
                         årsmodell: specs.year || editingJob.årsmodell || "",
                         vin: specs.vin || editingJob.vin || "",
                         isNewData: false
                     });
                 }
             } else {
-                const prefill = window.prefillName || ''; 
-                window.prefillName = null;
-
-                setFormData({
-                    kundnamn: prefill, regnr: '', paket: 'Standard', status: 'BOKAD',
-                    datum: today, tid: '16:30', kundpris: '100', kommentar: ''
-                });
-                setExpenses(emptyExpenses);
-                setPayments(emptyPayments);
-                setOilLiters(4.3);
-                setSuggestions([]);
-                setRegnrSuggestions([]);
-                setFetchedCarInfo(null);
+                const prefill = window.prefillName || ''; window.prefillName = null;
+                setFormData({ kundnamn: prefill, regnr: '', paket: 'Standard', status: 'BOKAD', datum: today, tid: '16:30', kundpris: '100', kommentar: '' });
+                setExpenses(emptyExpenses); setPayments(emptyPayments); setOilLiters(4.3); setSuggestions([]); setRegnrSuggestions([]); setFetchedCarInfo(null);
             }
         };
         loadExistingJob();
@@ -307,134 +257,74 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     const updateOilLogic = React.useCallback((liters) => {
         const l = parseFloat(liters) || 0;
-        const purchasePrice = l * 65;
         const customerPrice = (l * 200) + 200 + 500;
-
         setExpenses(prev => {
-            const newExpenses = [
-                { desc: `Motorolja (${l}l á 65kr)`, amount: purchasePrice.toString() },
-                { desc: 'Oljefilter', amount: '200' },
-                ...prev.slice(2).filter(e => e.desc || e.amount)
-            ];
+            const newExpenses = [{ desc: `Motorolja (${l}l á 65kr)`, amount: (l * 65).toString() }, { desc: 'Oljefilter', amount: '200' }, ...prev.slice(2).filter(e => e.desc || e.amount)];
             while (newExpenses.length < 3) newExpenses.push({ desc: '', amount: '' });
             return newExpenses;
         });
-
         setFormData(p => ({ ...p, kundpris: customerPrice.toString() }));
     }, []);
 
-    const handleOilVolumeChange = (val) => {
-        setOilLiters(val);
-        updateOilLogic(val);
-    };
+    const handleOilVolumeChange = (val) => { setOilLiters(val); updateOilLogic(val); };
 
     const handlePackageChange = (val) => {
-        let price = "100";
-        let newExpenses = [...emptyExpenses];
-
+        let price = "100"; let newExpenses = [...emptyExpenses];
         if (val === "Hjulskifte") price = "200";
         if (val === "Felsökning") price = "500";
         if (val === "Oljebyte") {
-            const l = oilLiters;
-            price = (l * 200 + 700).toString();
-            newExpenses = [
-                { desc: `Motorolja (${l}l á 65kr)`, amount: (l * 65).toString() },
-                { desc: 'Oljefilter', amount: '200' },
-                { desc: '', amount: '' }
-            ];
+            const l = oilLiters; price = (l * 200 + 700).toString();
+            newExpenses = [{ desc: `Motorolja (${l}l á 65kr)`, amount: (l * 65).toString() }, { desc: 'Oljefilter', amount: '200' }, { desc: '', amount: '' }];
         }
         setFormData(p => ({ ...p, paket: val, kundpris: price }));
         setExpenses(newExpenses);
     };
 
     const handleExpenseAmountChange = (index, newAmount) => {
-        const oldAmountNum = parseFloat(expenses[index].amount) || 0;
-        const newAmountNum = parseFloat(newAmount) || 0;
-        const diff = newAmountNum - oldAmountNum;
-
-        const n = [...expenses];
-        n[index].amount = newAmount;
-        setExpenses(n);
-
-        setFormData(p => ({
-            ...p,
-            kundpris: Math.max(0, (parseFloat(p.kundpris) || 0) + diff).toString()
-        }));
+        const diff = (parseFloat(newAmount) || 0) - (parseFloat(expenses[index].amount) || 0);
+        const n = [...expenses]; n[index].amount = newAmount; setExpenses(n);
+        setFormData(p => ({ ...p, kundpris: Math.max(0, (parseFloat(p.kundpris) || 0) + diff).toString() }));
     };
 
     const addExpenseRow = () => setExpenses([...expenses, { desc: '', amount: '' }]);
     
     const removeExpenseRow = (index) => {
         const amountToRemove = parseFloat(expenses[index].amount) || 0;
-        const n = expenses.filter((_, i) => i !== index);
-        while (n.length < 3) n.push({ desc: '', amount: '' });
-        setExpenses(n);
-
-        setFormData(p => ({
-            ...p,
-            kundpris: Math.max(0, (parseFloat(p.kundpris) || 0) - amountToRemove).toString()
-        }));
+        const n = expenses.filter((_, i) => i !== index); while (n.length < 3) n.push({ desc: '', amount: '' }); setExpenses(n);
+        setFormData(p => ({ ...p, kundpris: Math.max(0, (parseFloat(p.kundpris) || 0) - amountToRemove).toString() }));
     };
 
     const handleNameChange = (val) => {
-        const upperVal = val.toUpperCase(); 
-        setFormData(p => ({ ...p, kundnamn: upperVal }));
-        
-        if (val.length > 1) {
-            const matches = allJobs.filter(j => j.kundnamn.toLowerCase().includes(val.toLowerCase())).map(j => j.kundnamn);
-            setSuggestions([...new Set(matches)].slice(0, 5));
-        } else setSuggestions([]);
+        const upperVal = val.toUpperCase(); setFormData(p => ({ ...p, kundnamn: upperVal }));
+        if (val.length > 1) { setSuggestions([...new Set(allJobs.filter(j => j.kundnamn.toLowerCase().includes(val.toLowerCase())).map(j => j.kundnamn))].slice(0, 5)); } else setSuggestions([]);
     };
 
     const relatedVehicles = React.useMemo(() => {
         if (!formData.kundnamn || formData.kundnamn.length < 2) return [];
-        const matches = allJobs
-            .filter(j => j.kundnamn && j.kundnamn.toLowerCase() === formData.kundnamn.trim().toLowerCase())
-            .map(j => j.regnr ? j.regnr.toUpperCase() : null)
-            .filter(r => r);
-        return [...new Set(matches)];
+        return [...new Set(allJobs.filter(j => j.kundnamn && j.kundnamn.toLowerCase() === formData.kundnamn.trim().toLowerCase()).map(j => j.regnr ? j.regnr.toUpperCase() : null).filter(r => r))];
     }, [formData.kundnamn, allJobs]);
 
     const handleRegnrChange = (val) => {
-        const upperVal = val ? String(val).toUpperCase() : '';
-        setFormData(p => ({ ...p, regnr: upperVal }));
-        
-        if (upperVal.length > 0) {
-            const matches = allJobs.filter(j => String(j.regnr || '').toUpperCase().includes(upperVal)).map(j => String(j.regnr || '').toUpperCase());
-            setRegnrSuggestions([...new Set(matches)].slice(0, 5));
-        } else {
-            if (relatedVehicles.length > 0) setRegnrSuggestions(relatedVehicles);
-            else setRegnrSuggestions([]);
-        }
+        const upperVal = val ? String(val).toUpperCase() : ''; setFormData(p => ({ ...p, regnr: upperVal }));
+        if (upperVal.length > 0) { setRegnrSuggestions([...new Set(allJobs.filter(j => String(j.regnr || '').toUpperCase().includes(upperVal)).map(j => String(j.regnr || '').toUpperCase()))].slice(0, 5)); } 
+        else { setRegnrSuggestions(relatedVehicles.length > 0 ? relatedVehicles : []); }
     };
 
-    const handleSpecChange = (key, value) => {
-        setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
-    };
+    const handleSpecChange = (key, value) => setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
 
     const saveSpec = async (key, value) => {
         const finalRegnr = formData.regnr?.toUpperCase().replace(/\s+/g, '');
         if (!finalRegnr || !window.db) return;
-
         const specUpdates = { updatedAt: new Date().toISOString() };
-        if (key === 'årsmodell') specUpdates.year = value;
-        if (key === 'motorkod') specUpdates.engine = value;
-        if (key === 'oljevolym') specUpdates.oil = value;
-        if (key === 'miltal') specUpdates.mileage = value;
-        if (key === 'vin') specUpdates.vin = value;
-
-        try {
-            await window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true });
-        } catch(e) {
-            console.error("Kunde inte spara specifikationen:", e);
-        }
+        if (key === 'årsmodell') specUpdates.year = value; if (key === 'motorkod') specUpdates.engine = value;
+        if (key === 'oljevolym') specUpdates.oil = value; if (key === 'miltal') specUpdates.mileage = value; if (key === 'vin') specUpdates.vin = value;
+        try { await window.db.collection("vehicleSpecs").doc(finalRegnr).set(specUpdates, { merge: true }); } catch(e) {}
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
         try {
             const finalRegnr = formData.regnr.toUpperCase().trim();
-            
             const finalExpenses = expenses.filter(ex => ex.desc && ex.amount).map(ex => ({ namn: ex.desc, kostnad: ex.amount }));
             const finalPayments = payments.filter(p => p.desc || p.amount).map(p => ({ desc: p.desc, amount: p.amount }));
             const totalPaidAmount = finalPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -446,47 +336,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             const resolvedOljevolym = fetchedCarInfo?.oljevolym || fetchedCarInfo?.oil || oilLiters;
 
             const data = { 
-                ...formData,
-                betaltBelopp: totalPaidAmount,
-                delbetalningar: finalPayments,
-                regnr: finalRegnr, 
+                ...formData, betaltBelopp: totalPaidAmount, delbetalningar: finalPayments, regnr: finalRegnr, 
                 datum: formData.datum ? `${formData.datum}T${formData.tid}` : '', 
-                oljevolym: resolvedOljevolym,
-                bilmodell: resolvedBilmodell,
-                motorkod: resolvedMotorkod,
-                miltal: resolvedMiltal,
-                årsmodell: resolvedArsmodell,
-                utgifter: finalExpenses,
-                deleted: false 
+                oljevolym: resolvedOljevolym, bilmodell: resolvedBilmodell, motorkod: resolvedMotorkod, miltal: resolvedMiltal,
+                årsmodell: resolvedArsmodell, utgifter: finalExpenses, deleted: false 
             };
             
-            if (editingJob && editingJob.id) {
-                await window.db.collection("jobs").doc(editingJob.id).set(data, { merge: true });
-            } else {
-                await window.db.collection("jobs").add(data);
-            }
+            if (editingJob && editingJob.id) await window.db.collection("jobs").doc(editingJob.id).set(data, { merge: true });
+            else await window.db.collection("jobs").add(data);
 
             if (finalRegnr && fetchedCarInfo) {
                 const specUpdates = {};
                 if (resolvedMotorkod) specUpdates.engine = resolvedMotorkod;
                 if (resolvedOljevolym) specUpdates.oil = String(resolvedOljevolym).includes('l') ? resolvedOljevolym : `${String(resolvedOljevolym).replace(/[^0-9.,]/g, '')} l`;
-                if (resolvedArsmodell) specUpdates.year = resolvedArsmodell;
-                if (fetchedCarInfo.vin) specUpdates.vin = fetchedCarInfo.vin;
-                if (resolvedBilmodell) specUpdates.model = resolvedBilmodell;
-                if (resolvedMiltal) specUpdates.mileage = resolvedMiltal;
+                if (resolvedArsmodell) specUpdates.year = resolvedArsmodell; if (fetchedCarInfo.vin) specUpdates.vin = fetchedCarInfo.vin;
+                if (resolvedBilmodell) specUpdates.model = resolvedBilmodell; if (resolvedMiltal) specUpdates.mileage = resolvedMiltal;
                 
                 if (Object.keys(specUpdates).length > 0) {
                     specUpdates.updatedAt = new Date().toISOString();
-                    const cleanRegForSpecs = finalRegnr.replace(/\s+/g, '');
-                    await window.db.collection("vehicleSpecs").doc(cleanRegForSpecs).set(specUpdates, { merge: true });
+                    await window.db.collection("vehicleSpecs").doc(finalRegnr.replace(/\s+/g, '')).set(specUpdates, { merge: true });
                 }
             }
-
             setView('DASHBOARD', null);
-        } catch (error) {
-            console.error("Kunde inte spara jobbet:", error);
-            alert("Ett fel uppstod när jobbet skulle sparas.");
-        }
+        } catch (error) { alert("Ett fel uppstod när jobbet skulle sparas."); }
     };
 
     const partsTotal = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -599,42 +471,37 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                                 {[
-                                    { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016', icon: 'calendar', mono: false },
                                     { id: 'motorkod', label: 'Motorkod', val: fetchedCarInfo.motorkod, ph: 'CFGB', icon: 'cpu', mono: true },
                                     { id: 'oljevolym', label: 'Oljevolym', val: fetchedCarInfo.oljevolym, ph: '4.7 l', icon: 'droplet', mono: false },
-                                    { id: 'miltal', label: 'Miltal', val: fetchedCarInfo.miltal, ph: '12 500 mil', icon: 'navigation', mono: false }
+                                    { id: 'oljetyp', label: 'Oljetyp', val: fetchedCarInfo.oljetyp, ph: '5W-30', icon: 'info', mono: true },
+                                    { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016', icon: 'calendar', mono: false }
                                 ].map((f, i) => (
-                                    <div key={i} className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 focus-within:bg-white dark:focus-within:bg-[#1f2940] focus-within:shadow-[0_0_10px_rgba(249,115,22,0.1)] transition-all">
+                                    <div key={i} className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 focus-within:bg-white dark:focus-within:bg-[#1f2940] transition-all">
                                         <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                            <SafeIcon name={f.icon} size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
-                                            {f.label}
+                                            <SafeIcon name={f.icon} size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" /> {f.label}
                                         </div>
-                                        <input 
-                                            type="text" 
-                                            className={`w-full text-[12px] bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate text-zinc-900 dark:text-white ${f.mono ? 'font-mono font-bold tracking-wider' : 'font-medium'}`}
-                                            placeholder={f.ph}
-                                            value={f.val || ''}
-                                            onChange={(e) => handleSpecChange(f.id, e.target.value)}
-                                            onBlur={(e) => saveSpec(f.id, e.target.value)}
-                                        />
+                                        <input type="text" className={`w-full text-[12px] bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate text-zinc-900 dark:text-white ${f.mono ? 'font-mono font-bold tracking-wider' : 'font-medium'}`} placeholder={f.ph} value={f.val || ''} onChange={(e) => handleSpecChange(f.id, e.target.value)} onBlur={(e) => saveSpec(f.id, e.target.value)} />
                                     </div>
                                 ))}
+                            </div>
 
-                                <div className="col-span-2 md:col-span-4 bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center group focus-within:border-orange-500/50 focus-within:bg-white dark:focus-within:bg-[#1f2940] focus-within:shadow-[0_0_10px_rgba(249,115,22,0.1)] transition-all">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-2.5">
+                                <div className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 transition-all">
                                     <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                        <SafeIcon name="hash" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
-                                        Chassinummer (VIN)
+                                        <SafeIcon name="navigation" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" /> Miltal
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        className="w-full text-[13px] font-mono font-bold text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 tracking-[0.2em] uppercase"
-                                        placeholder="WBA00000000000000"
-                                        value={fetchedCarInfo.vin || ''}
-                                        onChange={(e) => handleSpecChange('vin', e.target.value.toUpperCase())}
-                                        onBlur={(e) => saveSpec('vin', e.target.value)}
-                                    />
+                                    <input type="text" className="w-full text-[12px] font-medium bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 text-zinc-900 dark:text-white" placeholder="12 500 mil" value={fetchedCarInfo.miltal || ''} onChange={(e) => handleSpecChange('miltal', e.target.value)} onBlur={(e) => saveSpec('miltal', e.target.value)} />
+                                </div>
+
+                                <div className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 transition-all">
+                                    <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                        <SafeIcon name="hash" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" /> Chassinummer (VIN)
+                                    </div>
+                                    <input type="text" className="w-full text-[13px] font-mono font-bold tracking-[0.2em] uppercase bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 text-zinc-900 dark:text-white" placeholder="WBA00000000000000" value={fetchedCarInfo.vin || ''} onChange={(e) => handleSpecChange('vin', e.target.value.toUpperCase())} onBlur={(e) => saveSpec('vin', e.target.value)} />
                                 </div>
                             </div>
+                            
+                            
                         </div>
                     )}
 
