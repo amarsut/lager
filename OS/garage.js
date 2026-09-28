@@ -160,7 +160,40 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
     const [showAllSpecs, setShowAllSpecs] = React.useState(false); 
+    const [showOemParts, setShowOemParts] = React.useState(false); // NYTT
     const tStart = React.useRef({ x: 0, y: 0 });
+
+    const [isScanningOEM, setIsScanningOEM] = React.useState(false);
+    const [lagerItems, setLagerItems] = React.useState([]);
+
+    React.useEffect(() => {
+        if(window.db) {
+            window.db.collection('lager').get().then(s => setLagerItems(s.docs.map(d=>({id:d.id, ...d.data()}))));
+        }
+    }, []);
+
+    React.useEffect(() => {
+        const handleOem = async (e) => {
+            if(e.data && e.data.action === 'BMG_ETKA_RESULT') {
+                const fetchedParts = e.data.data || [];
+                const cleanReg = v.regnr.toUpperCase().replace(/\s+/g, '');
+                if (cleanReg && fetchedParts.length > 0) {
+                    window.db.collection('vehicleSpecs').doc(cleanReg).set({ oem_parts: fetchedParts }, { merge: true });
+                    setSpecs(prev => ({ ...prev, oem_parts: fetchedParts }));
+                }
+                setIsScanningOEM(false);
+            }
+        };
+        window.addEventListener('message', handleOem);
+        return () => window.removeEventListener('message', handleOem);
+    }, [v.regnr]);
+
+    const scanLager = () => {
+        if(!specs.vin) return alert("Hämta Chassinummer (VIN) först via Smart Sökning!");
+        setIsScanningOEM(true);
+        window.postMessage({ action: 'BMG_FETCH_ETKA', vin: specs.vin }, '*');
+        setTimeout(() => setIsScanningOEM(false), 15000); 
+    };
 
     React.useEffect(() => {
         if (window.lucide) window.lucide.createIcons();
@@ -324,24 +357,58 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                     <div className="p-3 md:p-4 space-y-2 md:space-y-3">
                         {/* Ändrat från md:grid-cols-5 till sm:grid-cols-3 lg:grid-cols-5 för snyggare radbrytning */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-2.5">
+                        {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
+                        {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
+                        {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-2.5">
                             <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
-                            <StatCard icon="droplet" label="Oljevolym" val={specs.oil} />
-                            <StatCard icon="info" label="Oljetyp" val={specs.oil_type} />
+                            <StatCard icon="droplet" label="Olje & Typ" val={specs.oil ? `${specs.oil} ${specs.oil_type ? '('+specs.oil_type+')' : ''}` : specs.oil_type} />
                             <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
                             <StatCard icon="navigation" label="Miltal" val={specs.mileage} />
                             
+                            {/* UTÖKADE SPECIFIKATIONER (Dolda tills man trycker "Visa mer fordonsdata") */}
                             {showAllSpecs && (
                                 <>
                                     <StatCard icon="activity" label="Status" val={specs.ts_status || '-'} highlight={(specs.ts_status||'').toLowerCase().includes('avställd')} />
                                     <StatCard icon="check-circle" label="Besiktigad" val={specs.ts_inspection || '-'} />
                                     <StatCard icon="settings" label="Växellåda" val={specs.ts_gearbox || '-'} />
                                     <StatCard icon="zap" label="Drivmedel" val={specs.ts_fuel || '-'} />
+
+                                    {/* OEM-RESERVDELAR BAKADE IN SNYGGT UNDER "VISA MER" */}
+                                    {specs.oem_parts && specs.oem_parts.length > 0 && (
+                                        <div className="col-span-2 sm:col-span-4 mt-3 pt-3 border-t border-zinc-200 dark:border-white/5 animate-in fade-in duration-300">
+                                            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
+                                                <SafeIcon name="layers" size={12} className="text-orange-500" /> OEM Reservdelar ({specs.oem_parts.length} st)
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {specs.oem_parts.map((p, i) => {
+                                                    const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
+                                                    return (
+                                                        <div key={i} className="flex items-center justify-between bg-zinc-50 dark:bg-slate-900/50 border border-zinc-200 dark:border-white/5 p-2.5 rounded-xl">
+                                                            <div className="flex flex-col min-w-0 pr-2">
+                                                                <span className="text-[9px] font-bold text-zinc-400 uppercase truncate">{p.name}</span>
+                                                                <span className="text-[11px] font-mono font-black text-zinc-900 dark:text-white tracking-wider">{p.oem}</span>
+                                                            </div>
+                                                            {inStockItem ? (
+                                                                <div className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20 shadow-sm flex items-center gap-1">
+                                                                    <SafeIcon name="check" size={10} /> I lager ({inStockItem.quantity})
+                                                                </div>
+                                                            ) : (
+                                                                <button onClick={() => { navigator.clipboard.writeText(p.oem); alert(`Kopierade ${p.name}: ${p.oem}`); }} className="shrink-0 text-[8px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 hover:text-orange-500 bg-white dark:bg-slate-800 hover:bg-zinc-50 px-2.5 py-1 rounded-md border border-zinc-200 dark:border-white/10 transition-all shadow-sm active:scale-95 flex items-center gap-1">
+                                                                    <SafeIcon name="copy" size={10} /> Kopiera
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
 
-                        {/* NY DESIGN: Chassinummer ser ut som en stansad typskylt */}
+                        {/* STANSAD TYPSKYLT FÖR CHASSINUMMER */}
                         <div 
                             onClick={copyVinClick}
                             title="Kopiera Chassinummer"
@@ -360,6 +427,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </div>
                         </div>
 
+                        {/* VISA MER KNAPP */}
                         <button 
                             onClick={() => setShowAllSpecs(!showAllSpecs)}
                             className="mx-auto mt-3 mb-0 px-4 py-1.5 bg-white dark:bg-slate-800/60 hover:bg-zinc-50 dark:hover:bg-slate-700 border border-zinc-200 dark:border-white/5 shadow-sm rounded-full flex justify-center items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 transition-all active:scale-95"
@@ -368,13 +436,36 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
                         </button>
 
-                        <div className="pt-3 border-t border-zinc-200 dark:border-white/5 flex flex-col sm:flex-row items-center gap-2">
-                            <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="w-full sm:w-1/3 h-10 md:h-12 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-xl text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-all group shadow-sm active:scale-95">
-                                <SafeIcon name="layers" size={14} className="opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-transform" /> ETKA
+                        {/* PROFESSIONELL BOTTENRAD (Optimerad för mobil, tablet och dator) */}
+                        <div className="pt-3 border-t border-zinc-200 dark:border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button 
+                                onClick={(e) => {
+                                    if (specs.vin) {
+                                        navigator.clipboard.writeText(specs.vin);
+                                        alert(`Kopierade VIN: ${specs.vin}`);
+                                    } else {
+                                        navigator.clipboard.writeText(v.regnr);
+                                        alert(`Inget VIN fanns, kopierade regnr: ${v.regnr}`);
+                                    }
+                                    handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka');
+                                }} 
+                                title="Kopierar VIN och öppnar ETKA"
+                                className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group shadow-sm active:scale-95"
+                            >
+                                <SafeIcon name="layers" size={14} className="opacity-70 group-hover:scale-110 transition-transform" /> ETKA (Kopiera VIN)
+                            </button>
+
+                            <button 
+                                onClick={scanLager} 
+                                disabled={isScanningOEM} 
+                                className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group shadow-sm active:scale-95 disabled:opacity-50"
+                            >
+                                {isScanningOEM ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="search" size={14} className="opacity-70 group-hover:scale-110" />}
+                                Skanna OEM
                             </button>
                             
                             {window.AutoSearchMenu && (
-                                <div className="w-full sm:w-2/3 *:w-full *:h-10 *:md:h-12">
+                                <div className="w-full *:w-full *:h-11 *:sm:h-12">
                                     <window.AutoSearchMenu regnr={v.regnr} variant="full" />
                                 </div>
                             )}
