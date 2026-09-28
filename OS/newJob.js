@@ -176,30 +176,39 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
 
         // Hjälpfunktion för att sammanställa och rita ut datan
+        // Hjälpfunktion för att sammanställa och rita ut datan
         const updateCarInfo = (specs) => {
             if (!isMounted) return;
             const isHistoryUnknown = lastJob && lastJob.bilmodell && lastJob.bilmodell.toLowerCase().includes('okänd');
-            
-            const finalModel = specs.model || localData.model || (lastJob && !isHistoryUnknown ? lastJob.bilmodell : "");
-            const finalEngine = specs.engine || localData.engine || lastJob?.motorkod || "";
-            const finalMileage = specs.mileage || localData.mileage || lastJob?.miltal || "";
-            const finalYear = specs.year || localData.year || lastJob?.årsmodell || "";
-            const finalVin = specs.vin || specs.chassinummer || localData.vin || localData.chassinummer || "";
-            const finalOil = specs.oil || localData.oil || lastJob?.oljevolym || "";
 
-            setFetchedCarInfo({
-                regnr: rawReg,
-                bilmodell: finalModel,
-                motorkod: finalEngine,
-                miltal: finalMileage,
-                oljevolym: finalOil ? String(finalOil).replace(' l', '') : "",
-                årsmodell: finalYear,
-                vin: finalVin,
-                isNewData: false
+            setFetchedCarInfo(prev => {
+                const updated = prev ? { ...prev } : {
+                    regnr: rawReg, bilmodell: "", motorkod: "", miltal: "", oljevolym: "", årsmodell: "", vin: "", isNewData: false
+                };
+                
+                if (specs.model) updated.bilmodell = specs.model;
+                else if (!updated.bilmodell && lastJob && !isHistoryUnknown) updated.bilmodell = lastJob.bilmodell;
+
+                if (specs.engine) updated.motorkod = specs.engine;
+                else if (!updated.motorkod && lastJob?.motorkod) updated.motorkod = lastJob.motorkod;
+
+                if (specs.mileage) updated.miltal = specs.mileage;
+                else if (!updated.miltal && lastJob?.miltal) updated.miltal = lastJob.miltal;
+
+                if (specs.year) updated.årsmodell = specs.year;
+                else if (!updated.årsmodell && lastJob?.årsmodell) updated.årsmodell = lastJob.årsmodell;
+
+                if (specs.vin || specs.chassinummer) updated.vin = specs.vin || specs.chassinummer;
+                else if (!updated.vin && lastJob?.vin) updated.vin = lastJob.vin;
+
+                if (specs.oil) updated.oljevolym = String(specs.oil).replace(' l', '');
+                else if (!updated.oljevolym && lastJob?.oljevolym) updated.oljevolym = String(lastJob.oljevolym).replace(' l', '');
+
+                return updated;
             });
 
-            if (finalOil) {
-                let oljaNum = parseFloat(String(finalOil).replace(',', '.').replace(/[^0-9.]/g, ''));
+            if (specs.oil) {
+                let oljaNum = parseFloat(String(specs.oil).replace(',', '.').replace(/[^0-9.]/g, ''));
                 if (!isNaN(oljaNum) && oljaNum > 0) setOilLiters(oljaNum);
             }
         };
@@ -215,49 +224,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         }
 
         // 5. Lyssna LIVE på Chrome-tillägget (när man trycker på Blixten)
-        const handleMessage = async (event) => {
-            const fordonData = event.data;
-            if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension'].includes(fordonData.source)) {
-                
-                const msgReg = String(fordonData.regnr || '').toUpperCase().replace(/\s+/g, '');
-                if (!msgReg || msgReg !== cleanReg) return;
-
-                const specUpdates = {};
-                const isValid = (val) => val && String(val).trim() !== '' && String(val).toUpperCase() !== 'SAKNAS' && String(val) !== '-';
-
-                // Översätt från formulär till Firebase-format
-                if (isValid(fordonData.motorkod)) specUpdates.engine = String(fordonData.motorkod);
-                if (isValid(fordonData.oljevolym)) specUpdates.oil = String(fordonData.oljevolym).includes('l') ? String(fordonData.oljevolym) : `${fordonData.oljevolym} l`;
-                if (isValid(fordonData.miltal)) specUpdates.mileage = String(fordonData.miltal);
-                if (isValid(fordonData.årsmodell)) specUpdates.year = String(fordonData.årsmodell);
-                if (isValid(fordonData.vin)) specUpdates.vin = String(fordonData.vin);
-                if (isValid(fordonData.bilmodell)) specUpdates.model = String(fordonData.bilmodell);
-
-                if (Object.keys(specUpdates).length > 0) {
-                    specUpdates.updatedAt = new Date().toISOString();
-                    
-                    try {
-                        const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
-                        cache[cleanReg] = { ...(cache[cleanReg] || {}), ...specUpdates };
-                        localStorage.setItem('os_vehicle_cache', JSON.stringify(cache));
-                    } catch(e) {}
-
-                    if (window.db) {
-                        window.db.collection('vehicleSpecs').doc(cleanReg).set(specUpdates, { merge: true }).catch(()=>{});
-                    }
-                    
-                    // Tvinga uppdatering av formuläret ögonblickligen
-                    updateCarInfo(specUpdates);
-                }
-            }
-        };
-
-        window.addEventListener('message', handleMessage);
 
         return () => {
             isMounted = false;
             unsubscribe();
-            window.removeEventListener('message', handleMessage);
         };
     }, [formData.regnr]);
 
@@ -290,21 +260,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 setOilLiters(editingJob.oljevolym || 4.3);
                 
                 let specs = {};
-                if (window.db && editingJob.regnr) {
-                    // FIX: Tvätta mellanslag även när vi redigerar ett gammalt jobb
-                    const cleanReg = String(editingJob.regnr).toUpperCase().replace(/\s+/g, '');
+                const cleanReg = String(editingJob.regnr || '').toUpperCase().replace(/\s+/g, '');
+                
+                // 1. Läs in från den lokala blixtsnabba cachen (som garage.js nyss sparade i)
+                try {
+                    const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+                    if (cache[cleanReg]) specs = { ...cache[cleanReg] };
+                } catch(e) {}
+
+                // 2. Läs in från Firebase och slå ihop
+                if (window.db && cleanReg) {
                     const doc = await window.db.collection('vehicleSpecs').doc(cleanReg).get();
-                    if (doc.exists) specs = doc.data();
+                    if (doc.exists) specs = { ...specs, ...doc.data() };
                 }
 
                 if (editingJob.bilmodell || editingJob.motorkod || editingJob.miltal || Object.keys(specs).length > 0) {
                     setFetchedCarInfo({
+                        // Färsk fordonsdata (specs) måste ALLTID vinna över det gamla jobbets data!
                         bilmodell: specs.model || editingJob.bilmodell || "",
                         motorkod: specs.engine || editingJob.motorkod || "",
-                        miltal: editingJob.miltal || specs.mileage || "",
-                        oljevolym: editingJob.oljevolym ? String(editingJob.oljevolym).replace(' l', '') : (specs.oil ? String(specs.oil).replace(' l', '') : ""),
+                        miltal: specs.mileage || editingJob.miltal || "", 
+                        oljevolym: specs.oil ? String(specs.oil).replace(' l', '') : (editingJob.oljevolym ? String(editingJob.oljevolym).replace(' l', '') : ""),
                         årsmodell: specs.year || editingJob.årsmodell || "",
-                        vin: specs.vin || "",
+                        vin: specs.vin || editingJob.vin || "",
                         isNewData: false
                     });
                 }
@@ -594,17 +572,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         )}
                                     </div>
                                     
-                                    <button 
-                                        type="button"
-                                        onClick={() => {
-                                            if(!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                            if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'SMART_SEARCH');
-                                        }}
-                                        className="shrink-0 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-500 hover:border-orange-200 dark:hover:border-orange-500/30 text-zinc-500 px-3 rounded-lg flex items-center justify-center transition-all"
-                                        title="Smart Sökning (Hämtar all tillgänglig fordonsdata)"
-                                    >
-                                        <window.Icon name="zap" size={16} /> 
-                                    </button>
+                                    {window.AutoSearchMenu && (
+                                        <window.AutoSearchMenu regnr={formData.regnr} variant="icon" />
+                                    )}
                                 </div>
                             </InputWrapper>
                         </FormRow>
