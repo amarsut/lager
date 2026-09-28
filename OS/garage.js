@@ -106,6 +106,13 @@ const stripHtml = (html) => {
     return text.replace(/<[^>]*>?/gm, '').trim(); 
 };
 
+const formatModelName = (name) => {
+    if(!name) return '';
+    return name.replace(/SCÃ.NIC/ig, 'SCÉNIC')
+               .replace(/Ã©/g, 'é').replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö')
+               .replace(/Ã…/g, 'Å').replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¥/g, 'å');
+};
+
 const SafeIcon = ({ name, size = 16, className = "" }) => {
     const s = size; const c = className;
     if (name === 'db') return <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><path d="M3 5c0-1.1 4.5-2 10-2s10 .9 10 2a2 2 0 0 1 0 .6l-8.3 4.7a3.5 3.5 0 0 1-3.4 0L3 5.6A2 2 0 0 1 3 5zm0 6c0-1.1 4.5-2 10-2s10 .9 10 2a2 2 0 0 1 0 .6l-8.3 4.7a3.5 3.5 0 0 1-3.4 0L3 11.6A2 2 0 0 1 3 11zm0 6c0-1.1 4.5-2 10-2s10 .9 10 2a2 2 0 0 1 0 .6l-8.3 4.7a3.5 3.5 0 0 1-3.4 0L3 17.6A2 2 0 0 1 3 17z"/></svg>;
@@ -206,51 +213,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         }
     }, [v.regnr]);
 
-    // Lyssna på tillägget och spara direkt till lokal cache
-    React.useEffect(() => {
-        const handleMessage = async (event) => {
-            const fordonData = event.data;
-            if (fordonData && ['Car.info_Extension', 'Oljemagasinet_Extension', 'Transportstyrelsen_Extension'].includes(fordonData.source)) {
-                
-                const msgReg = fordonData.regnr?.toUpperCase().replace(/\s+/g, '');
-                const currentReg = v.regnr?.toUpperCase().replace(/\s+/g, '');
-                if (msgReg && msgReg !== currentReg) return;
-
-                const specUpdates = {};
-                if (isValid(fordonData.motorkod)) specUpdates.engine = fordonData.motorkod;
-                if (isValid(fordonData.oljevolym)) specUpdates.oil = fordonData.oljevolym.toString().includes('l') ? fordonData.oljevolym : `${fordonData.oljevolym} l`;
-                if (isValid(fordonData.miltal)) specUpdates.mileage = fordonData.miltal;
-                if (isValid(fordonData.årsmodell)) specUpdates.year = fordonData.årsmodell;
-                if (isValid(fordonData.vin)) specUpdates.vin = fordonData.vin;
-                if (isValid(fordonData.bilmodell)) specUpdates.model = fordonData.bilmodell;
-                if (isValid(fordonData.fordonsstatus)) specUpdates.ts_status = fordonData.fordonsstatus;
-                if (isValid(fordonData.besiktning_senast)) specUpdates.ts_inspection = fordonData.besiktning_senast;
-                if (isValid(fordonData.växellåda)) specUpdates.ts_gearbox = fordonData.växellåda;
-                if (isValid(fordonData.drivmedel)) specUpdates.ts_fuel = fordonData.drivmedel;
-                
-                if (Object.keys(specUpdates).length > 0) {
-                    specUpdates.updatedAt = new Date().toISOString();
-                    // Säkerställ att regnr är rent från mellanslag innan sparning
-                    const cleanReg = v.regnr.toUpperCase().replace(/\s+/g, '');
-                    
-                    // 1. Spara i webbläsaren (för snabb laddning nästa gång)
-                    saveLocalCache(cleanReg, specUpdates);
-
-                    // 2. SKRIV TILL FIREBASE (Detta är nyckeln till att synka överallt)
-                    if (window.db) {
-                        window.db.collection('vehicleSpecs').doc(cleanReg).set(specUpdates, { merge: true })
-                            .catch(err => console.error("Misslyckades spara till Firebase:", err));
-                    }
-
-                    // 3. Uppdatera gränssnittet
-                    setSpecs(prev => mergeValidSpecs(prev, specUpdates));
-                }
-            }
-        };
-        window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
-    }, [v.regnr]);
-
     const changeBrand = (e) => {
         const val = e.target.value;
         setBrand(val);
@@ -331,15 +293,21 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 </h2>
                                 {regCopied && <span className="text-[8px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 px-1.5 py-0.5 rounded font-bold tracking-widest uppercase animate-in fade-in zoom-in">Kopierad</span>}
                             </div>
-                            <span className="text-[10px] md:text-[11px] font-bold text-zinc-500 dark:text-slate-300 uppercase tracking-widest truncate w-full">
-                                {specs.model || v.model || 'Okänd Modell'}
-                            </span>
-                            {v.customer && v.customer !== 'Okänd' && (
-                                <span className="text-[9px] md:text-[10px] font-medium text-zinc-400 dark:text-slate-500 uppercase tracking-wider mt-0.5 truncate w-full flex items-center">
-                                    <SafeIcon name="user" size={10} className="mr-1.5 opacity-70" />
-                                    {v.customer}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                                <span className="text-[10px] md:text-[11px] font-bold text-zinc-500 dark:text-slate-300 uppercase tracking-widest truncate max-w-[200px]" title={formatModelName(specs.model || v.model)}>
+                                    <SafeIcon name="car" size={10} className="inline mr-1.5 opacity-60" />
+                                    {formatModelName(specs.model || v.model || 'Okänd Modell')}
                                 </span>
-                            )}
+                                {v.customer && v.customer !== 'Okänd' && (
+                                    <>
+                                        <span className="hidden sm:inline w-1 h-1 rounded-full bg-zinc-300 dark:bg-slate-600 shrink-0"></span>
+                                        <span className="text-[10px] md:text-[11px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider truncate bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-md border border-orange-200/50 dark:border-orange-500/20 max-w-[200px]" title={v.customer}>
+                                            <SafeIcon name="user" size={10} className="inline mr-1.5 opacity-80" />
+                                            {v.customer}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -355,9 +323,11 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                     <div className="p-3 md:p-4 space-y-2 md:space-y-3">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {/* Ändrat från md:grid-cols-5 till sm:grid-cols-3 lg:grid-cols-5 för snyggare radbrytning */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-2.5">
                             <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
                             <StatCard icon="droplet" label="Oljevolym" val={specs.oil} />
+                            <StatCard icon="info" label="Oljetyp" val={specs.oil_type} />
                             <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
                             <StatCard icon="navigation" label="Miltal" val={specs.mileage} />
                             
@@ -371,51 +341,47 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             )}
                         </div>
 
+                        {/* NY DESIGN: Chassinummer ser ut som en stansad typskylt */}
                         <div 
                             onClick={copyVinClick}
                             title="Kopiera Chassinummer"
-                            className={`cursor-pointer bg-white dark:bg-slate-700/30 backdrop-blur-md rounded-lg p-2.5 md:p-3 flex items-center justify-between transition-all duration-300 border border-zinc-200 dark:border-white/5 shadow-sm group hover:-translate-y-0.5 hover:shadow-md ${vinCopied ? 'border-emerald-500/50 bg-emerald-50 dark:bg-emerald-400/5' : 'hover:border-orange-500/30 hover:bg-orange-50 dark:hover:bg-orange-400/5'}`}
+                            className={`cursor-pointer bg-zinc-50 dark:bg-slate-900/50 rounded-xl p-3 flex items-center justify-between transition-all duration-300 border-2 border-dashed shadow-inner group hover:-translate-y-0.5 mt-1 ${vinCopied ? 'border-emerald-400 dark:border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-500/10' : 'border-zinc-300 dark:border-white/10 hover:border-orange-400/50 dark:hover:border-orange-500/30'}`}
                         >
                             <div className="flex flex-col min-w-0">
-                                <span className={`text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-0.5 ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-slate-400'}`}>
-                                    <SafeIcon name="fingerprint" size={10} className={vinCopied ? 'text-emerald-500' : 'text-orange-500 dark:text-orange-400'} /> CHASSINUMMER (VIN)
+                                <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-1 ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-slate-400'}`}>
+                                    <SafeIcon name="fingerprint" size={12} className={vinCopied ? 'text-emerald-500' : 'text-zinc-400 dark:text-slate-500'} /> CHASSINUMMER (VIN)
                                 </span>
-                                <span className={`font-mono text-[12px] md:text-[13px] font-bold tracking-widest truncate transition-colors ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : specs.vin ? 'text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white' : 'text-zinc-400 dark:text-slate-500'}`}>
+                                <span className={`font-mono text-[14px] md:text-[16px] font-black tracking-[0.2em] truncate transition-colors ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : specs.vin ? 'text-zinc-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400' : 'text-zinc-400 dark:text-slate-600'}`}>
                                     {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
                                 </span>
                             </div>
-                            <div className={`shrink-0 transition-all duration-300 ${vinCopied ? 'text-emerald-500 scale-110' : specs.vin ? 'text-zinc-400 dark:text-slate-500 group-hover:text-orange-500' : 'opacity-0'}`}>
-                                <SafeIcon name={vinCopied ? "check" : "copy"} size={14} />
+                            <div className={`shrink-0 bg-white dark:bg-slate-800 p-2 rounded-lg border border-zinc-200 dark:border-white/5 transition-all duration-300 shadow-sm ${vinCopied ? 'text-emerald-500 border-emerald-200 dark:border-emerald-500/20 scale-110' : specs.vin ? 'text-zinc-400 dark:text-slate-400 group-hover:text-orange-500 group-hover:border-orange-200 dark:group-hover:border-orange-500/20' : 'opacity-0'}`}>
+                                <SafeIcon name={vinCopied ? "check" : "copy"} size={16} />
                             </div>
                         </div>
 
                         <button 
                             onClick={() => setShowAllSpecs(!showAllSpecs)}
-                            className="mx-auto mt-2 mb-0 px-3 py-1 bg-zinc-50 dark:bg-slate-800/60 hover:bg-zinc-100 dark:hover:bg-slate-700 rounded-full flex justify-center items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 transition-colors"
+                            className="mx-auto mt-3 mb-0 px-4 py-1.5 bg-white dark:bg-slate-800/60 hover:bg-zinc-50 dark:hover:bg-slate-700 border border-zinc-200 dark:border-white/5 shadow-sm rounded-full flex justify-center items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 transition-all active:scale-95"
                         >
                             {showAllSpecs ? 'Göm specifikationer' : 'Visa mer fordonsdata'}
-                            <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={10} />
+                            <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
                         </button>
 
-                        <div className="pt-3 border-t border-zinc-200 dark:border-white/5 space-y-2">
-                            <div className="grid grid-cols-4 gap-1.5 md:gap-2">
-                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-purple-50 dark:hover:bg-purple-500/15 text-zinc-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-300 border border-zinc-200 dark:border-white/5 hover:border-purple-300 dark:hover:border-purple-500/30 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
-                                    <SafeIcon name="shield" size={12} className="text-purple-500 dark:text-purple-400 group-hover:rotate-180 transition-transform duration-500" /> TS
-                                </button>
-                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-orange-50 dark:hover:bg-orange-500/15 text-zinc-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-300 border border-zinc-200 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
-                                    <SafeIcon name="droplet" size={12} className="text-orange-500 dark:text-orange-400 group-hover:rotate-180 transition-transform duration-500" /> Olja
-                                </button>
-                                <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-blue-50 dark:hover:bg-blue-500/15 text-zinc-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-300 border border-zinc-200 dark:border-white/5 hover:border-blue-300 dark:hover:border-blue-500/30 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
-                                    <SafeIcon name="external-link" size={12} className="text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" /> <span className="hidden sm:inline">Oljemag.</span><span className="sm:hidden">OM</span>
-                                </button>
-                                <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="h-9 md:h-10 flex items-center justify-center gap-1.5 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-lg text-[8.5px] md:text-[9px] font-bold uppercase tracking-widest transition-all group shadow-sm">
-                                    <img src="https://www.etka.com/etkaportal/static/icons/logo.5feba87b.svg" alt="ETKA" className="h-3 opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all" /> ETKA
-                                </button>
-                            </div>
+                        <div className="pt-3 border-t border-zinc-200 dark:border-white/5 flex flex-col sm:flex-row items-center gap-2">
+                            <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="w-full sm:w-1/3 h-10 md:h-12 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-xl text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-all group shadow-sm active:scale-95">
+                                <SafeIcon name="layers" size={14} className="opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-transform" /> ETKA
+                            </button>
+                            
+                            {window.AutoSearchMenu && (
+                                <div className="w-full sm:w-2/3 *:w-full *:h-10 *:md:h-12">
+                                    <window.AutoSearchMenu regnr={v.regnr} variant="full" />
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="px-3 md:px-4 pb-20">
+                    <div className="px-3 md:px-4 pb-8">
                         <div className="sticky top-0 bg-zinc-50/95 dark:bg-slate-800/95 backdrop-blur-md z-20 py-2 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
                             <div className="text-[9px] md:text-[10px] font-black text-zinc-500 dark:text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5 pl-1 sm:pl-0">
                                 <SafeIcon name="clock" size={10} className="text-orange-500 dark:text-orange-400" /> Historik
@@ -447,24 +413,24 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-12 text-center flex flex-col items-center">
-                                <div className="w-10 h-10 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-3 shadow-sm border border-zinc-200 dark:border-transparent">
-                                    <SafeIcon name="inbox" size={16} className="text-zinc-400 dark:text-slate-600" />
+                            <div className="py-10 text-center flex flex-col items-center">
+                                <div className="w-14 h-14 bg-zinc-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 shadow-inner border border-zinc-200/50 dark:border-white/5">
+                                    <SafeIcon name="inbox" size={24} className="text-zinc-300 dark:text-slate-600" />
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-slate-500">Ingen historik</span>
+                                <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 mb-5">Ingen historik sparad</span>
+                                
+                                <button 
+                                    onClick={() => {
+                                        setView('NEW_JOB', { prefillRegnr: v.regnr });
+                                        if (window.innerWidth < 1024) onClose();
+                                    }}
+                                    className="px-6 py-2.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-500/20 hover:border-orange-300 dark:hover:border-orange-500/40 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-sm"
+                                >
+                                    <SafeIcon name="plus" size={14} /> Skapa första arbetsordern
+                                </button>
                             </div>
                         )}
                     </div>
-                </div>
-                
-                <div className="p-3 md:p-4 pr-16 lg:pr-20 border-t border-zinc-200 dark:border-white/5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl shrink-0 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-                    <button 
-                        onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')}
-                        className="w-full h-10 md:h-12 bg-orange-50 dark:bg-white/5 border border-orange-200 dark:border-orange-500/20 rounded-xl flex items-center justify-center gap-2 hover:border-orange-400 dark:hover:border-orange-500/40 hover:bg-orange-100 dark:hover:bg-orange-500/10 text-orange-600 dark:text-orange-400 transition-all group shadow-sm active:scale-95 min-w-0"
-                    >
-                        <SafeIcon name="zap" size={14} className="text-orange-500 group-hover:scale-110 transition-transform shrink-0" />
-                        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest truncate">Smart Sökning</span>
-                    </button>
                 </div>
             </div>
         </div>
