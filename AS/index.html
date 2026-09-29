@@ -4,45 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amar Sut | Professionell Webbutveckling</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* --- VIKTIGT: Fixar scroll-problem och storlekar --- */
+        /* --- GRUNDINSTÄLLNINGAR --- */
         * {
-            box-sizing: border-box; /* Gör att padding inte läggs utanpå bredden */
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #ffffff;
+            --bg-color: #070707;
+            --surface-color: #121212;
+            --surface-hover: #1a1a1a;
+            --text-main: #f0f0f0;
+            --text-muted: #999999;
             --accent-color: #00b0b4;
-            --input-bg: #1a1a1a;
-            --section-padding: 100px 20px;
-            --nav-height: 70px;
+            --nav-height: 60px;
+            --border-color: rgba(255, 255, 255, 0.08);
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             scroll-behavior: smooth;
-            line-height: 1.6;
-            scroll-padding-top: var(--nav-height); 
-            overflow-x: hidden; /* Förhindrar sidoscroll helt */
+            line-height: 1.5;
+            scroll-padding-top: var(--nav-height);
+            overflow-x: hidden;
             width: 100%;
         }
 
-        h1, h2, h3 { font-weight: 900; letter-spacing: -0.5px; margin: 0 0 20px 0; color: #fff; }
-        h1 { font-size: clamp(2.5rem, 8vw, 5rem); line-height: 1.1; } /* Clamp gör texten responsiv */
-        h2 { font-size: clamp(2rem, 5vw, 3rem); }
-        p { font-size: 1.1rem; opacity: 0.9; max-width: 650px; color: #ccc; }
+        h1, h2, h3 { 
+            font-weight: 800; 
+            letter-spacing: -0.5px; 
+            color: #fff; 
+        }
+        
+        h1 { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; margin-bottom: 15px; }
+        h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); margin-bottom: 15px; }
+        h3 { font-size: 1.2rem; margin-bottom: 5px; }
+        
+        p { 
+            font-size: 1rem; 
+            color: var(--text-muted); 
+            max-width: 600px; 
+            font-weight: 300;
+        }
         
         .container { 
-            max-width: 1200px; 
+            max-width: 1100px; 
             margin: 0 auto; 
-            width: 100%; /* Säkerställer att containern inte blir bredare än skärmen */
+            padding: 0 20px;
+            width: 100%; 
         }
+        
         .accent { color: var(--accent-color); }
 
         /* --- NAVIGATION --- */
@@ -52,36 +68,32 @@
             left: 0;
             width: 100%;
             height: var(--nav-height);
-            background: rgba(10, 10, 10, 0.90);
-            backdrop-filter: blur(10px);
+            background: rgba(7, 7, 7, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            justify-content: center;
         }
 
         .nav-container {
-            width: 100%;
-            max-width: 1200px;
-            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
         }
 
-        /* LOGGAN (Nu "AS") */
         .logo {
-            font-weight: 900;
-            font-size: 1.5rem; /* Lite större för initialer */
+            font-weight: 800;
+            font-size: 1.2rem;
             color: #fff;
             text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #fff; /* En snygg ram runt initialerna */
-            padding: 5px 10px;
+            letter-spacing: 1px;
+            border: 1px solid #fff;
+            padding: 4px 8px;
             border-radius: 4px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         
         .logo:hover {
@@ -91,43 +103,200 @@
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             list-style: none;
-            margin: 0;
-            padding: 0;
         }
 
         .nav-links a {
-            color: #ccc;
+            color: var(--text-muted);
             text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: color 0.3s;
+            font-weight: 400;
+            font-size: 0.9rem;
+            transition: color 0.2s;
         }
 
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--accent-color);
-        }
+        .nav-links a:hover { color: #fff; }
 
-        /* Hamburgare-meny */
         .hamburger {
             display: none;
             cursor: pointer;
             flex-direction: column;
-            gap: 6px; /* Lite mer mellanrum */
-            padding: 10px; /* Gör den lättare att klicka på */
+            gap: 5px;
+            padding: 5px;
         }
         
         .hamburger span {
             display: block;
-            width: 25px;
+            width: 22px;
             height: 2px;
             background-color: #fff;
             transition: 0.3s;
         }
 
-        /* --- MOBIL MENY STYLING --- */
-        @media (max-width: 768px) {
+        /* --- KNAPPAR --- */
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: var(--accent-color);
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 176, 180, 0.3);
+        }
+        
+        .btn-submit { width: 100%; margin-top: 10px; }
+
+        /* --- HERO SEKTION --- */
+        .hero {
+            padding: 120px 20px 60px; /* Mer kompakt topp */
+            background: radial-gradient(circle at top right, rgba(0,176,180,0.08) 0%, transparent 50%);
+            display: flex;
+            align-items: center;
+        }
+        .hero-subtitle {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 0.8rem;
+        }
+
+        /* --- PORTFOLIO SEKTION --- */
+        .portfolio { 
+            padding: 60px 0; 
+            background-color: #0a0a0a; 
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .portfolio-header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+        }
+        .portfolio-header p {
+            margin: 0 auto;
+        }
+        
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+        }
+        
+        .portfolio-item {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.3s ease, border-color 0.3s;
+        }
+        
+        .portfolio-item:hover { 
+            transform: translateY(-4px); 
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .portfolio-image-container {
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #000;
+            aspect-ratio: 16/9; /* Tvingar bilderna till samma proportioner */
+        }
+        
+        .portfolio-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.85);
+            transition: filter 0.3s ease, transform 0.3s ease;
+        }
+        
+        .portfolio-item:hover .portfolio-img { 
+            filter: brightness(1); 
+            transform: scale(1.03);
+        }
+
+        .portfolio-info { padding-top: 15px; }
+        .portfolio-tags { 
+            font-size: 0.75rem; 
+            color: var(--accent-color); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* --- OM MIG & KONTAKT (Sammanslagen layout) --- */
+        .bottom-section {
+            padding: 80px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: flex-start;
+        }
+
+        .about-text p {
+            margin-bottom: 15px;
+        }
+
+        .contact-container {
+            background-color: var(--surface-color);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group { margin-bottom: 15px; }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #0a0a0a;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus { 
+            outline: none; 
+            border-color: var(--accent-color); 
+        }
+        textarea { resize: vertical; min-height: 100px; }
+
+        .copyright {
+            text-align: center;
+            opacity: 0.3; 
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 30px 0;
+        }
+
+        /* --- MOBILANPASSNING --- */
+        @media (max-width: 800px) {
             .hamburger { display: flex; }
             
             .nav-links {
@@ -135,209 +304,41 @@
                 top: var(--nav-height);
                 left: 0;
                 width: 100%;
-                background-color: #0a0a0a; /* Samma som bakgrund */
+                background-color: rgba(7, 7, 7, 0.98);
                 flex-direction: column;
                 align-items: center;
                 gap: 0;
-                border-bottom: 1px solid #222;
+                border-bottom: 1px solid var(--border-color);
                 max-height: 0;
                 overflow: hidden;
-                transition: max-height 0.4s ease-in-out;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+                transition: max-height 0.3s ease-in-out;
             }
 
-            .nav-links.nav-active {
-                max-height: 350px; 
-            }
-
+            .nav-links.nav-active { max-height: 250px; }
             .nav-links li { width: 100%; text-align: center; }
+            .nav-links a { display: block; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.02); }
 
-            .nav-links a {
-                display: block;
-                padding: 20px;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
-            }
-        }
-        
-        /* Knappar */
-        .btn {
-            display: inline-block;
-            padding: 15px 35px;
-            background-color: var(--accent-color);
-            color: #0a0a0a;
-            text-decoration: none;
-            font-weight: 800;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px -10px rgba(0, 176, 180, 0.5);
-            background-color: #fff;
-        }
-        
-        .btn-submit { width: 100%; margin-top: 10px; }
-
-        /* --- HERO SEKTION --- */
-        .hero {
-            min-height: 90vh;
-            display: flex;
-            align-items: center;
-            padding: var(--section-padding);
-            background: radial-gradient(circle at top right, rgba(0,176,180,0.1) 0%, rgba(10,10,10,1) 60%);
-            margin-top: 20px;
-        }
-        .hero-content { max-width: 800px; }
-        .hero-subtitle {
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: block;
-            font-size: 0.9rem;
-        }
-
-        /* --- PORTFOLIO SEKTION --- */
-        .portfolio { padding: var(--section-padding); background-color: #111; }
-        .portfolio-header { text-align: center; margin-bottom: 60px; }
-        
-        .portfolio-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Lite smalare min-bredd för mobil */
-            gap: 40px;
-        }
-        
-        .portfolio-image-container {
-            background-color: #1a1a1a;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .portfolio-item:hover .portfolio-image-container { transform: translateY(-5px); }
-        
-        .portfolio-img {
-            width: 100%;
-            height: auto;
-            display: block;
-            filter: brightness(0.9);
-            transition: filter 0.3s ease;
-        }
-        .portfolio-item:hover .portfolio-img { filter: brightness(1); }
-
-        .portfolio-info { padding: 25px 0 0 0; }
-        .portfolio-tags { 
-            font-size: 0.85rem; 
-            color: var(--accent-color); 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 1.5px;
-            display: block;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-
-        /* --- OM MIG --- */
-        .about { 
-            padding: var(--section-padding); 
-            display: flex; 
-            gap: 60px; 
-            align-items: center; 
-            border-top: 1px solid #1c1c1c;
-            overflow: hidden; /* Döljer text som sticker ut */
-        }
-        .about-text { flex: 1.2; }
-        
-        .about-visual { 
-            flex: 0.8; 
-            /* Clamp gör texten responsiv: Minst 3rem, helst 10vw, max 8rem */
-            font-size: clamp(3rem, 10vw, 8rem); 
-            color: transparent;
-            -webkit-text-stroke: 2px rgba(255,255,255,0.1);
-            text-align: center; 
-            font-weight: 900; 
-            line-height: 1;
-            user-select: none;
-            white-space: nowrap; /* Förhindrar radbrytning */
-        }
-
-        /* --- KONTAKT --- */
-        .contact-section {
-            padding: 100px 20px;
-            background: linear-gradient(to bottom, var(--bg-color), #080808);
-            display: flex;
-            justify-content: center;
-        }
-        
-        .contact-container {
-            width: 100%;
-            max-width: 600px;
-            background-color: #111;
-            padding: 40px;
-            border-radius: 12px;
-            border: 1px solid #222;
-        }
-
-        .form-group { margin-bottom: 20px; }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #aaa;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--input-bg);
-            border: 1px solid #333;
-            border-radius: 4px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, textarea:focus { outline: none; border-color: var(--accent-color); }
-        textarea { resize: vertical; min-height: 150px; }
-
-        .copyright {
-            margin-top: 50px; 
-            text-align: center;
-            opacity: 0.4; 
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Mobilanpassning */
-        @media (max-width: 900px) {
-            .hero { min-height: 70vh; padding-top: 50px;}
-            .about { flex-direction: column-reverse; gap: 30px; }
-            
-            /* Dölj den stora visuella texten på små mobiler om den stör, eller gör den mindre */
-            .about-visual { 
-                display: block; 
-                margin-bottom: 20px;
-            }
+            .hero { padding: 100px 20px 50px; text-align: center; }
+            .hero p { margin: 0 auto; }
             
             .portfolio-grid { grid-template-columns: 1fr; }
-            .contact-container { padding: 25px; }
+            
+            .bottom-section { 
+                grid-template-columns: 1fr; 
+                gap: 40px; 
+                padding: 50px 20px; 
+                text-align: center;
+            }
+            .about-text p { margin: 0 auto 15px auto; }
+            .contact-container { padding: 20px; text-align: left; }
         }
     </style>
 </head>
 <body id="home">
 
+    <!-- Navigation -->
     <nav class="navbar">
-        <div class="nav-container">
+        <div class="container nav-container">
             <a href="#home" class="logo">AS</a>
             
             <ul class="nav-links">
@@ -355,27 +356,28 @@
         </div>
     </nav>
 
+    <!-- Hero -->
     <section class="hero">
         <div class="container hero-content">
             <span class="hero-subtitle accent">Webbutveckling & Design</span>
             <h1>Sidor som <span class="accent">imponerar</span>.<br> Och presterar.</h1>
             <p>Du hittade hit via en av mina kunder. Kul! Jag hjälper företag och eldsjälar att bygga moderna, snabba hemsidor som ser dyrare ut än vad de är.</p>
-            <br><br>
             <a href="#contact" class="btn">Starta ditt projekt</a>
         </div>
     </section>
 
+    <!-- Portfolio -->
     <section class="portfolio" id="work">
         <div class="container">
             <div class="portfolio-header">
                 <h2>Utvalda <span class="accent">Projekt</span></h2>
-                <p style="margin: 0 auto;">Några exempel på vad jag skapat åt mina vänner och kunder.</p>
+                <p>Några exempel på vad jag skapat åt mina vänner och kunder.</p>
             </div>
             
             <div class="portfolio-grid">
                 <div class="portfolio-item">
                     <div class="portfolio-image-container">
-                        <img src="bilmoSida.png" alt="Projekt Bilmo i Eslöv AB" class="portfolio-img">
+                        <img src="bilmoSida.png" alt="Projekt Bilmo i Eslöv AB" class="portfolio-img" loading="lazy">
                     </div>
                     <div class="portfolio-info">
                         <span class="portfolio-tags">Bilverkstad • Hemsida</span>
@@ -385,7 +387,7 @@
 
                 <div class="portfolio-item">
                     <div class="portfolio-image-container">
-                         <img src="fogarolliSida.png" alt="Projekt Coffe Attractions AB" class="portfolio-img">
+                         <img src="fogarolliSida.png" alt="Projekt Coffe Attractions AB" class="portfolio-img" loading="lazy">
                     </div>
                     <div class="portfolio-info">
                         <span class="portfolio-tags">Kaffe & Event • Varumärke</span>
@@ -395,37 +397,44 @@
 
                  <div class="portfolio-item">
                     <div class="portfolio-image-container">
-                         <img src="msfastigheterSida.png" alt="Projekt MS Fastigheter & Teknik AB" class="portfolio-img">
+                         <img src="msfastigheterSida.png" alt="Projekt MS Fastigheter & Teknik AB" class="portfolio-img" loading="lazy">
                     </div>
                     <div class="portfolio-info">
-                        <span class="portfolio-tags">Fastigheter • Företagsprofil</span>
+                        <span class="portfolio-tags">Fastigheter • Profil</span>
                         <h3>MS Fastigheter & Teknik AB</h3>
+                    </div>
+                </div>
+
+                <!-- NYTT PROJEKT -->
+                 <div class="portfolio-item">
+                    <div class="portfolio-image-container">
+                         <img src="bmgSida.png" alt="Projekt BMG" class="portfolio-img" loading="lazy">
+                    </div>
+                    <div class="portfolio-info">
+                        <span class="portfolio-tags">Bygg & Mark • Hemsida</span>
+                        <h3>BMG Group</h3>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="about" id="about">
-        <div class="container" style="display: flex; align-items: center; gap: 80px;">
-            <div class="about-text">
-                <h2>Din dedikerade <span class="accent">webbpartner</span>.</h2>
-                <p>Jag arbetar som frilansande utvecklare med fokus på att hjälpa företag och bekanta att lyfta sin digitala närvaro till en professionell nivå. Hos mig får du direktkontakt med den som bygger sidan, utan mellanhänder eller krångel.</p>
-                <p>Mitt mål är enkelt: Ren design, snabb prestanda och en sida som du enkelt kan hantera själv när den är klar. Jag bygger hemsidor med engagemang och hög standard.</p>
-            </div>
-            <div class="about-visual">
-                AS
-            </div>
+    <!-- Om mig & Kontakt (Sammanslagen för minskad scroll) -->
+    <section class="container bottom-section">
+        
+        <!-- Vänster kolumn: Om mig -->
+        <div class="about-text" id="about">
+            <h2>Din dedikerade <br><span class="accent">webbpartner</span>.</h2>
+            <p>Jag arbetar som frilansande utvecklare med fokus på att hjälpa företag och bekanta att lyfta sin digitala närvaro till en professionell nivå. Hos mig får du direktkontakt med den som bygger sidan, utan mellanhänder eller krångel.</p>
+            <p>Mitt mål är enkelt: Ren design, snabb prestanda och en sida som du enkelt kan hantera själv när den är klar. Jag bygger hemsidor med engagemang och hög standard.</p>
         </div>
-    </section>
 
-    <section class="contact-section" id="contact">
-        <div class="contact-container">
-            <h2 style="text-align: center; margin-bottom: 30px;">Redo för din <span class="accent">nya hemsida</span>?</h2>
-            <p style="text-align: center; margin-bottom: 40px; font-size: 0.95rem;">Fyll i formuläret nedan så återkommer jag inom kort.</p>
+        <!-- Höger kolumn: Kontakt -->
+        <div class="contact-container" id="contact">
+            <h3 style="margin-bottom: 5px;">Starta ett samarbete</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 20px;">Fyll i formuläret så återkommer jag inom kort.</p>
             
             <form action="https://formspree.io/f/mgolobpk" method="POST">
-                
                 <div class="form-group">
                     <label for="name">Namn / Företag</label>
                     <input type="text" id="name" name="name" placeholder="Ditt namn" required>
@@ -443,27 +452,24 @@
 
                 <button type="submit" class="btn btn-submit">Skicka förfrågan</button>
             </form>
-
-            <div class="copyright">
-                © 2024 Amar Sut. Alla rättigheter reserverade.
-            </div>
         </div>
     </section>
 
+    <!-- Footer -->
+    <div class="copyright">
+        © 2024 Amar Sut. Alla rättigheter reserverade.
+    </div>
+
+    <!-- Script för mobilmeny -->
     <script>
         const hamburger = document.querySelector(".hamburger");
         const navLinks = document.querySelector(".nav-links");
         const navItems = document.querySelectorAll(".nav-links a");
 
-        // Öppna/stäng meny vid klick på hamburgare
         hamburger.addEventListener("click", () => {
             navLinks.classList.toggle("nav-active");
-            
-            // Animera hamburgaren (valfritt, gör att den ser ut som ett X)
-            // Här behåller vi den enkel för att inte krångla till det
         });
 
-        // Stäng menyn automatiskt när man klickar på en länk
         navItems.forEach(item => {
             item.addEventListener("click", () => {
                 navLinks.classList.remove("nav-active");
