@@ -10,16 +10,20 @@ const getBrand = (t) => {
 };
 
 // ULTRA-KOMPAKTA STATCARDS
+// ULTRA-KOMPAKTA STATCARDS
 const StatCard = ({ icon, label, val, highlight }) => {
     const displayVal = val || '-';
     let colorClass = 'text-emerald-600 dark:text-emerald-400';
     let borderGlow = 'border-zinc-200 dark:border-white/5 hover:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-400/5';
     let bgClass = 'bg-white dark:bg-slate-700/30';
+    let textClass = 'text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white';
     
+    // Om highlight är aktivt (t.ex. avställd eller utgången besiktning) färgar vi ALLT rött
     if (highlight) {
         colorClass = 'text-red-500 dark:text-red-400';
         borderGlow = 'border-red-200 dark:border-red-400/30 hover:border-red-300 dark:hover:border-red-400/50 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)] dark:shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]';
         bgClass = 'bg-red-50 dark:bg-red-500/5';
+        textClass = 'text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300';
     }
 
     return (
@@ -27,7 +31,7 @@ const StatCard = ({ icon, label, val, highlight }) => {
             <div className={`text-[8px] md:text-[8.5px] font-black uppercase tracking-widest text-zinc-500 dark:text-slate-400 flex items-center gap-1.5`}>
                 <SafeIcon name={icon} size={10} className={colorClass} /> {label}
             </div>
-            <div className={`text-[12px] md:text-[13px] font-bold tracking-wide truncate ${val ? 'text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white transition-colors' : 'text-zinc-400 dark:text-slate-500'}`} title={displayVal}>
+            <div className={`text-[12px] md:text-[13px] font-bold tracking-wide truncate transition-colors ${val ? textClass : 'text-zinc-400 dark:text-slate-500'}`} title={displayVal}>
                 {displayVal}
             </div>
         </div>
@@ -151,7 +155,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     };
 
     const [brand, setBrand] = React.useState(v.brand_manual || getBrand(v.model));
-    // Initiera direkt med lokal cache om den finns, så den aldrig flashar tomt
     const [specs, setSpecs] = React.useState(() => {
         const local = getLocalCache(v.regnr);
         return { ...(v.latestSpecs || {}), ...local };
@@ -159,12 +162,19 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
-    const [showAllSpecs, setShowAllSpecs] = React.useState(false); 
-    const [showOemParts, setShowOemParts] = React.useState(false); // NYTT
-    const tStart = React.useRef({ x: 0, y: 0 });
-
+    
+    // ÄNDRAT: Utfälld som standard om skärmen är bredare än 768px (Tablet/Dator)
+    const [showAllSpecs, setShowAllSpecs] = React.useState(window.innerWidth >= 768); 
+    const [showOemParts, setShowOemParts] = React.useState(false); 
     const [isScanningOEM, setIsScanningOEM] = React.useState(false);
     const [lagerItems, setLagerItems] = React.useState([]);
+    const tStart = React.useRef({ x: 0, y: 0 });
+
+    // NYTT: Kollar automatiskt om besiktningen har utgått jämfört med dagens datum
+    const isInspExpired = React.useMemo(() => {
+        if (!specs.ts_inspection || specs.ts_inspection === '-') return false;
+        return new Date(specs.ts_inspection) < new Date(new Date().setHours(0,0,0,0));
+    }, [specs.ts_inspection]);
 
     React.useEffect(() => {
         if(window.db) {
@@ -356,9 +366,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                     <div className="p-3 md:p-4 space-y-2 md:space-y-3">
-                        {/* Ändrat från md:grid-cols-5 till sm:grid-cols-3 lg:grid-cols-5 för snyggare radbrytning */}
-                        {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
-                        {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
                         {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-2.5">
                             <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
@@ -366,13 +373,15 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
                             <StatCard icon="navigation" label="Miltal" val={specs.mileage} />
                             
-                            {/* UTÖKADE SPECIFIKATIONER (Dolda tills man trycker "Visa mer fordonsdata") */}
+                            {/* UTÖKADE SPECIFIKATIONER */}
                             {showAllSpecs && (
                                 <>
                                     <StatCard icon="activity" label="Status" val={specs.ts_status || '-'} highlight={(specs.ts_status||'').toLowerCase().includes('avställd')} />
-                                    <StatCard icon="check-circle" label="Besiktigad" val={specs.ts_inspection || '-'} />
+                                    <StatCard icon="check-circle" label="Besiktigad" val={specs.ts_inspection || '-'} highlight={isInspExpired} />
+                                    <StatCard icon="calendar" label="1:a Registrerad" val={specs.first_reg || '-'} />
                                     <StatCard icon="settings" label="Växellåda" val={specs.ts_gearbox || '-'} />
                                     <StatCard icon="zap" label="Drivmedel" val={specs.ts_fuel || '-'} />
+                                    <div className="hidden sm:block"></div> {/* Osynlig utfyllnad för att jämna ut grid-layouten */}
 
                                     {/* OEM-RESERVDELAR BAKADE IN SNYGGT UNDER "VISA MER" */}
                                     {specs.oem_parts && specs.oem_parts.length > 0 && (
