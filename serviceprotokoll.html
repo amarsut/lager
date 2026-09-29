@@ -5031,6 +5031,7 @@
 
                     setVal('registrering-nr', payload.regnr);
                     setVal('chassinummer', payload.vin);
+                    setVal('registrering-datum', payload.forsta_reg); /* NY: Autofyller registreringsdatum */
                     let extModel = payload.bilmodell || "";
                     if (extModel) {
                         const stripBrandRegex = new RegExp("^(Volvo|Volkswagen|VW|Audi|Skoda|Škoda|Seat|Cupra|BMW|Mercedes\\-Benz|Mercedes|Benz|Porsche|Kia|Toyota|Ford|Peugeot|Renault|Nissan|Hyundai|Mazda|Honda|Polestar|Tesla|Dacia|Lexus|Mini|Land\\sRover|Range\\sRover|Mitsubishi|Subaru|Suzuki)\\s+", "i");
