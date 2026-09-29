@@ -267,6 +267,7 @@ const App = () => {
                 if (isValid(fordonData.bilmodell) && (!existing.model || isStrongSource)) specUpdates.model = String(fordonData.bilmodell);
                 
                 // Transportstyrelsens tekniska data (Dessa skrivs alltid över då de anses vara "facit")
+                if (isValid(fordonData.forsta_reg)) specUpdates.first_reg = String(fordonData.forsta_reg);
                 if (isValid(fordonData.fordonsstatus)) specUpdates.ts_status = String(fordonData.fordonsstatus);
                 if (isValid(fordonData.besiktning_senast)) specUpdates.ts_inspection = String(fordonData.besiktning_senast);
                 if (isValid(fordonData.växellåda)) specUpdates.ts_gearbox = String(fordonData.växellåda);
