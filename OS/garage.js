@@ -352,23 +352,45 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                     </div>
 
-                    {/* Specifikationer inbyggda i headern */}
-                    <div className="grid grid-cols-4 gap-y-3 gap-x-2 pt-4 border-t border-slate-700/50 mt-2">
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Motorkod</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.engine}>{specs.engine || '-'}</span></div>
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Oljevolym</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.oil}>{specs.oil || '-'}</span></div>
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Årsmodell</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.year || '-'}</span></div>
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Miltal</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.mileage}>{specs.mileage || '-'}</span></div>
-                        
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Status</span><span className={`font-bold text-[12px] sm:text-[13px] truncate block ${(specs.ts_status||'').toLowerCase().includes('avställd') ? 'text-red-400' : 'text-emerald-400'}`}>{specs.ts_status || '-'}</span></div>
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Besiktigad</span><span className={`font-bold text-[12px] sm:text-[13px] truncate block ${isInspExpired ? 'text-red-400' : 'text-white'}`}>{specs.ts_inspection || '-'}</span></div>
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">1:a Reg</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.first_reg || '-'}</span></div>
-                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Växellåda</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.ts_gearbox || '-'}</span></div>
+                    {/* Specifikationer inbyggda i headern (Med smarta Tooltips) */}
+                    <div className="grid grid-cols-4 gap-y-4 gap-x-3 pt-5 mt-2 border-t border-slate-700/50">
+                        {[
+                            { label: 'Motorkod', value: specs.engine, color: 'text-white' },
+                            { label: 'Oljevolym', value: specs.oil, color: 'text-white' },
+                            { label: 'Årsmodell', value: specs.year, color: 'text-white' },
+                            { label: 'Miltal', value: specs.mileage, color: 'text-white' },
+                            { label: 'Status', value: specs.ts_status, color: (specs.ts_status||'').toLowerCase().includes('avställd') ? 'text-red-400' : 'text-emerald-400' },
+                            { label: 'Besiktigad', value: specs.ts_inspection, color: isInspExpired ? 'text-red-400' : 'text-white' },
+                            { label: '1:a Reg', value: specs.first_reg, color: 'text-white' },
+                            { label: 'Växellåda', value: specs.ts_gearbox, color: 'text-white' }
+                        ].map((spec, i) => (
+                            <div key={i} className="relative group cursor-pointer min-w-0 outline-none" tabIndex="0">
+                                <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">{spec.label}</span>
+                                <span className={`font-bold text-[13px] truncate block ${spec.color}`}>{spec.value || '-'}</span>
+                                
+                                {/* Interaktiv Tooltip (Visas vid hover på dator & klick på mobil) */}
+                                {spec.value && String(spec.value).length > 7 && (
+                                    <div className={`absolute z-[100] top-full mt-2 ${i % 4 >= 2 ? 'right-0' : 'left-0'} opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible bg-slate-800 text-white text-[12px] font-bold px-3 py-2 rounded-lg shadow-xl border border-slate-600 whitespace-nowrap transition-all pointer-events-none`}>
+                                        {spec.value}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
 
                     {/* Drivmedel */}
                     {showAllSpecs && (
-                        <div className="grid grid-cols-4 gap-2 pt-3 mt-3 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
-                            <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Drivmedel</span><span className="font-bold text-[11px] text-white truncate block">{specs.ts_fuel || '-'}</span></div>
+                        <div className="grid grid-cols-4 gap-3 pt-4 mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
+                            <div className="relative group cursor-pointer min-w-0 outline-none" tabIndex="0">
+                                <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Drivmedel</span>
+                                <span className="font-bold text-[13px] text-white truncate block">{specs.ts_fuel || '-'}</span>
+                                
+                                {specs.ts_fuel && String(specs.ts_fuel).length > 7 && (
+                                    <div className="absolute z-[100] left-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible bg-slate-800 text-white text-[12px] font-bold px-3 py-2 rounded-lg shadow-xl border border-slate-600 whitespace-nowrap transition-all pointer-events-none">
+                                        {specs.ts_fuel}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -376,51 +398,77 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 {/* 2. CHASSINUMMER, LÄNKAR & OEM-DELAR */}
                 <div className="bg-white dark:bg-slate-900 pb-4 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10 px-6">
                     
-                    {/* Tydlig box för Chassinummer */}
-                    <div className="mt-4 mb-4">
+                    {/* ENHETLIG VIN BOX */}
+                    <div className="mt-4 mb-5">
+                        {/* Rubrik utanför rutan för perfekt enhetlighet */}
+                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5 pl-1">
+                            <SafeIcon name="fingerprint" size={14} className="text-orange-500" /> 
+                            Chassinummer (VIN)
+                        </div>
+                        
+                        {/* Själva datarutan */}
                         <div 
                             onClick={copyVinClick} 
-                            className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl p-3 md:p-4 group cursor-pointer hover:border-orange-300 dark:hover:border-orange-500/50 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all shadow-sm"
+                            className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 px-3 sm:px-4 group cursor-pointer hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-sm transition-all shadow-sm"
                         >
-                            <div>
-                                <span className={`text-[9px] font-bold uppercase flex items-center gap-1.5 mb-1 ${vinCopied ? 'text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
-                                    <SafeIcon name="fingerprint" size={12} className={vinCopied ? 'text-emerald-500' : 'text-orange-500 dark:text-orange-400'} /> 
-                                    Chassinummer (VIN)
-                                </span>
-                                <span className={`font-mono font-bold text-[15px] md:text-[16px] tracking-[0.15em] ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white group-hover:text-orange-600 transition-colors'}`}>
-                                    {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
-                                </span>
-                            </div>
-                            <div className={`p-2 rounded-lg transition-all ${vinCopied ? 'bg-emerald-100 text-emerald-600' : 'bg-white dark:bg-slate-700 text-slate-400 shadow-sm border border-slate-200 dark:border-white/5 group-hover:text-orange-500 group-hover:border-orange-200'}`}>
-                                <SafeIcon name={vinCopied ? "check" : "copy"} size={16} />
+                            <span className={`font-mono font-bold text-[15px] sm:text-[16px] tracking-[0.15em] leading-none ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white group-hover:text-orange-600 transition-colors'}`}>
+                                {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
+                            </span>
+                            <div className={`p-1.5 sm:p-2 rounded-lg transition-all border ${vinCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-white/10 text-slate-400 group-hover:text-orange-500 group-hover:bg-orange-50 group-hover:border-orange-200'}`}>
+                                <SafeIcon name={vinCopied ? "check" : "copy"} size={14} />
                             </div>
                         </div>
                     </div>
 
-                    {/* OEM-RESERVDELAR (Modern Grid-Layout) */}
+                    {/* ENHETLIG OEM RESERVDELAR */}
                     {showAllSpecs && specs.oem_parts && specs.oem_parts.length > 0 && (
-                        <div className="mt-2 animate-in slide-in-from-top-2 fade-in duration-300">
-                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
-                                <SafeIcon name="layers" size={12} className="text-orange-500" /> OEM Reservdelar
+                        <div className="animate-in slide-in-from-top-2 fade-in duration-300 mb-2">
+                            
+                            {/* Rubrik utanför rutan för perfekt enhetlighet */}
+                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5 pl-1">
+                                <SafeIcon name="layers" size={14} className="text-orange-500" /> 
+                                OEM Reservdelar
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                                 {specs.oem_parts.map((p, i) => {
                                     const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
+                                    const qty = inStockItem ? parseInt(inStockItem.quantity || 0) : 0;
+                                    
                                     return (
-                                        <div key={i} className="flex flex-col justify-center p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl hover:border-orange-300 dark:hover:border-orange-500/50 transition-all group relative">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <span className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider truncate pr-2">{p.name}</span>
-                                                {inStockItem ? (
-                                                    <span className="text-[8px] font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                                        I LAGER ({inStockItem.quantity})
-                                                    </span>
-                                                ) : (
-                                                    <button onClick={() => { navigator.clipboard.writeText(p.oem); alert(`Kopierade ${p.name}: ${p.oem}`); }} className="text-slate-300 dark:text-slate-600 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 p-1">
-                                                        <SafeIcon name="copy" size={14} />
-                                                    </button>
-                                                )}
+                                        <div key={i} className="flex justify-between items-center p-2.5 sm:p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl hover:border-orange-300 dark:hover:border-orange-500/50 transition-all group shadow-sm hover:shadow-md cursor-default">
+                                            
+                                            <div className="flex flex-col gap-1.5 min-w-0 pr-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">{p.name}</span>
+                                                    
+                                                    {/* Lager-indikator (Grön om > 0, Röd om 0) */}
+                                                    {qty > 0 ? (
+                                                        <span className="text-[8px] font-bold tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                                            {qty} I LAGER
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[8px] font-bold tracking-wider bg-red-50 text-red-600 border border-red-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                                            0 I LAGER
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="font-mono text-[14px] sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 tracking-widest group-hover:text-orange-600 transition-colors truncate">{p.oem}</span>
                                             </div>
-                                            <span className="font-mono text-[13px] font-bold text-slate-800 dark:text-slate-200 tracking-widest group-hover:text-orange-600 transition-colors">{p.oem}</span>
+                                            
+                                            {/* Kopiera-knapp som alltid syns */}
+                                            <button 
+                                                onClick={(e) => { 
+                                                    e.stopPropagation(); 
+                                                    navigator.clipboard.writeText(p.oem); 
+                                                    alert(`Kopierade ${p.name}: ${p.oem}`); 
+                                                }} 
+                                                className="shrink-0 p-1.5 sm:p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-orange-500 hover:bg-orange-50 hover:border-orange-200 transition-all outline-none active:scale-95"
+                                                title="Kopiera reservdelsnummer"
+                                            >
+                                                <SafeIcon name="copy" size={14} />
+                                            </button>
+                                            
                                         </div>
                                     );
                                 })}
@@ -474,19 +522,19 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                 {/* 4. HISTORIK MED BOX-DESIGN */}
                 <div className="px-4 sm:px-6 pb-24 relative z-10">
-                    <div className="py-2 mb-3 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
-                        <h3 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                    <div className="pb-3 mb-4 flex items-center justify-between border-b border-slate-200 dark:border-white/5">
+                        <h3 className="text-[12px] font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                             <SafeIcon name="clock" size={14} className="text-orange-500" />
                             Historik
                         </h3>
                         <div className="relative group">
-                            <SafeIcon name="search" size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                            <SafeIcon name="search" size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors z-10" />
                             <input 
                                 type="text" 
                                 placeholder="SÖK I HISTORIK..." 
                                 value={histQ}
                                 onChange={(e) => setHistQ(e.target.value)}
-                                className="w-36 sm:w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-md text-[10px] uppercase font-bold py-1.5 pl-7 pr-2 text-slate-900 dark:text-white focus:outline-none focus:border-orange-400 shadow-sm transition-colors"
+                                className="w-40 sm:w-56 bg-slate-100 dark:bg-slate-800/80 border border-transparent rounded-full text-[10px] uppercase font-bold tracking-widest py-2 pl-8 pr-3 text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-orange-300 dark:focus:border-orange-500/50 focus:shadow-sm focus:ring-2 focus:ring-orange-500/10 transition-all placeholder:text-slate-400"
                             />
                         </div>
                     </div>
