@@ -374,28 +374,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                     </div>
 
-                    {/* Snabblänkar som snygga pills/knappar istället för avdelare */}
-                    <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
-                        <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="flex-1 min-w-[70px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-purple-300 uppercase transition-all shadow-sm group">
-                            <span className="w-2.5 h-2.5 rounded-full border-2 border-purple-400 group-hover:border-purple-600"></span> TS
-                        </button>
-                        <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="flex-1 min-w-[70px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-orange-300 uppercase transition-all shadow-sm group">
-                            <span className="text-orange-400 group-hover:scale-110 transition-transform">💧</span> OLJA
-                        </button>
-                        <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="flex-1 min-w-[80px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-300 uppercase transition-all shadow-sm group">
-                            <span className="text-blue-500">↗</span> <span className="hidden sm:inline">OLJEMAG.</span><span className="sm:hidden">OM</span>
-                        </button>
-                        <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="flex-1 min-w-[70px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-green-300 uppercase transition-all shadow-sm group">
-                            <span className="text-green-600 font-serif text-[12px] group-hover:scale-110 transition-transform">e</span> ETKA
-                        </button>
-                    </div>
-
-                    {/* Toggle knapp */}
-                    <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full text-center flex items-center justify-center gap-1 text-[9px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase py-2 transition-colors outline-none">
-                        {showAllSpecs ? 'Göm specifikationer & OEM' : 'Visa mer fordonsdata & OEM'}
-                        <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
-                    </button>
-
                     {/* OEM-RESERVDELAR (Modern Grid-Layout) */}
                     {showAllSpecs && specs.oem_parts && specs.oem_parts.length > 0 && (
                         <div className="mt-2 animate-in slide-in-from-top-2 fade-in duration-300">
@@ -426,6 +404,12 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </div>
                         </div>
                     )}
+
+                    {/* Toggle knapp med snyggt mellanrum ovanför */}
+                    <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full text-center flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase py-2 mt-4 mb-0 transition-colors outline-none tracking-widest">
+                        {showAllSpecs ? 'Göm specifikationer & OEM' : 'Visa specifikationer & OEM'}
+                        <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={14} />
+                    </button>
                 </div>
 
                 {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK */}
@@ -508,13 +492,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </button>
                         </div>
                     )}
-                </div>
-
-                {/* Flytande Chatt-ikon (alltid längst ner till höger i modalen) */}
-                <div className="fixed bottom-6 right-6 lg:right-[calc(50%-320px+24px)] z-[500]">
-                    <button className="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-105 transition-all">
-                        <SafeIcon name="message-square" size={24} />
-                    </button>
                 </div>
             </div>
         </div>
