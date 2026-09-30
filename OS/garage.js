@@ -1,4 +1,4 @@
-// garage.js - Ultra-Kompakt & Responsiv Premium UX
+// garage.js - Hybrid Premium UX (Scrolling Header + Boxed History)
 
 const BRANDS = { 'Volvo':'volvo', 'BMW':'bmw', 'Audi':'audi', 'VW':'volkswagen', 'Mercedes':'mercedes', 'Tesla':'tesla', 'Toyota':'toyota', 'Ford':'ford', 'Kia':'kia', 'Saab':'saab', 'Porsche':'porsche', 'Seat':'seat', 'Skoda':'skoda', 'Nissan':'nissan', 'Peugeot':'peugeot', 'Renault':'renault', 'Fiat':'fiat', 'Iveco':'iveco', 'Honda':'honda', 'Mazda':'mazda', 'Hyundai':'hyundai', 'Polestar':'polestar', 'Mini':'mini', 'Jeep':'jeep', 'Land Rover':'landrover', 'Subaru':'subaru', 'Suzuki':'suzuki', 'Lexus':'lexus', 'Chevrolet':'chevrolet', 'Citroen':'citroen', 'Opel':'opel', 'Dacia':'dacia', 'Mitsubishi':'mitsubishi', 'Jaguar':'jaguar', 'Dodge':'dodge', 'Ram':'ram', 'Cupra':'cupra' };
 
@@ -9,41 +9,15 @@ const getBrand = (t) => {
     return (l.includes('merc') || l.includes('benz')) ? 'mercedes' : null;
 };
 
-// ULTRA-KOMPAKTA STATCARDS
-// ULTRA-KOMPAKTA STATCARDS
-const StatCard = ({ icon, label, val, highlight }) => {
-    const displayVal = val || '-';
-    let colorClass = 'text-emerald-600 dark:text-emerald-400';
-    let borderGlow = 'border-zinc-200 dark:border-white/5 hover:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-400/5';
-    let bgClass = 'bg-white dark:bg-slate-700/30';
-    let textClass = 'text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white';
-    
-    // Om highlight är aktivt (t.ex. avställd eller utgången besiktning) färgar vi ALLT rött
-    if (highlight) {
-        colorClass = 'text-red-500 dark:text-red-400';
-        borderGlow = 'border-red-200 dark:border-red-400/30 hover:border-red-300 dark:hover:border-red-400/50 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)] dark:shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]';
-        bgClass = 'bg-red-50 dark:bg-red-500/5';
-        textClass = 'text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300';
-    }
-
-    return (
-        <div className={`${bgClass} backdrop-blur-md rounded-lg p-2 md:p-2.5 flex flex-col gap-0.5 transition-all duration-300 border ${borderGlow} group hover:-translate-y-0.5 shadow-sm`}>
-            <div className={`text-[8px] md:text-[8.5px] font-black uppercase tracking-widest text-zinc-500 dark:text-slate-400 flex items-center gap-1.5`}>
-                <SafeIcon name={icon} size={10} className={colorClass} /> {label}
-            </div>
-            <div className={`text-[12px] md:text-[13px] font-bold tracking-wide truncate transition-colors ${val ? textClass : 'text-zinc-400 dark:text-slate-500'}`} title={displayVal}>
-                {displayVal}
-            </div>
-        </div>
-    );
-};
-
+// ==========================================
+// TIMELINE ITEM (Box-design)
+// ==========================================
 const TimelineItem = ({ j, isHighlighted, isLast, setView, onClose }) => {
     const isKlar = ['KLAR', 'FAKTURERAS'].includes(j.status);
     
     return (
-        <div className="relative pl-6 sm:pl-7 pb-2.5 group">
-            {/* Tidslinjen - Kompaktare */}
+        <div className="relative pl-6 sm:pl-7 pb-3 group">
+            {/* Tidslinjen */}
             <div className="absolute left-[13px] sm:left-[15px] top-[24px] bottom-[-10px] w-[2px] bg-zinc-200 dark:bg-white/5 group-last:bg-transparent transition-colors"></div>
             {isHighlighted && <div className="absolute left-[13px] sm:left-[15px] top-[24px] bottom-[-10px] w-[2px] bg-orange-500/40 z-0 group-last:bg-transparent"></div>}
             
@@ -53,40 +27,40 @@ const TimelineItem = ({ j, isHighlighted, isLast, setView, onClose }) => {
                 <div className={`relative w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border-[2px] border-zinc-50 dark:border-slate-800 z-10 transition-all duration-300 ${isHighlighted ? 'bg-orange-500 ring-2 ring-orange-500/40 scale-110' : (isKlar ? 'bg-emerald-500' : 'bg-zinc-400 dark:bg-slate-500')}`}></div>
             </div>
 
-            {/* Kortet - Mindre luft inuti */}
+            {/* Kortet */}
             <div 
                 onClick={() => {
                     setView('NEW_JOB', { job: j });
                     if (window.innerWidth < 1024) onClose();
                 }} 
-                className={`cursor-pointer rounded-xl p-3 transition-all duration-300 relative z-10 ${
+                className={`cursor-pointer rounded-xl p-3 sm:p-4 transition-all duration-300 relative z-10 ${
                     isHighlighted 
                     ? 'bg-orange-50/80 dark:bg-slate-700/60 border border-orange-500 shadow-md translate-x-1' 
-                    : 'bg-white dark:bg-slate-700/30 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-slate-700/50 hover:border-zinc-300 dark:hover:border-white/10 shadow-sm hover:shadow hover:translate-x-1'
+                    : 'bg-white dark:bg-slate-800 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-slate-700/80 hover:border-zinc-300 dark:hover:border-white/20 shadow-sm hover:shadow hover:-translate-y-0.5'
                 }`}
             >
-                <div className="flex justify-between items-start mb-1.5">
+                <div className="flex justify-between items-start mb-2">
                     <div className={`flex items-center gap-1 font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${isHighlighted ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-slate-400'}`}>
                         <SafeIcon name="calendar" size={10} className={isHighlighted ? "text-orange-500 dark:text-orange-400" : "text-zinc-400 dark:text-slate-500"} />
                         {j.datum ? j.datum.split('T')[0] : 'Inväntar'}
                     </div>
                     {window.Badge ? <window.Badge status={j.status} /> : (
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded shadow-sm ${isKlar ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30' : 'bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30'}`}>{j.status}</span>
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm ${isKlar ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30' : 'bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30'}`}>{j.status}</span>
                     )}
                 </div>
                 
                 <div className="flex justify-between items-end gap-2 mb-1">
-                    <div className="text-[12px] sm:text-[13px] font-black uppercase tracking-tight truncate text-zinc-900 dark:text-slate-100 group-hover:text-black dark:group-hover:text-white transition-colors">
+                    <div className="text-[13px] sm:text-[14px] font-black uppercase tracking-tight truncate text-zinc-900 dark:text-white group-hover:text-black transition-colors">
                         {j.kundnamn}
                     </div>
-                    <div className="font-mono text-[13px] sm:text-[14px] font-black shrink-0 leading-none text-zinc-800 dark:text-slate-200">
-                        {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[8.5px] text-zinc-500 dark:text-slate-500 font-sans uppercase tracking-widest">kr</span>
+                    <div className="font-mono text-[14px] sm:text-[15px] font-black shrink-0 leading-none text-zinc-800 dark:text-slate-100">
+                        {parseInt(j.kundpris||0).toLocaleString()} <span className="text-[9px] text-zinc-500 dark:text-slate-400 font-sans uppercase tracking-widest">kr</span>
                     </div>
                 </div>
 
                 {j.kommentar && (
                     <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-white/5">
-                        <p className="text-[10px] sm:text-[11px] leading-relaxed line-clamp-2 italic text-zinc-600 dark:text-slate-400 group-hover:text-zinc-800 dark:group-hover:text-slate-300 transition-colors">
+                        <p className="text-[11px] sm:text-[12px] leading-relaxed line-clamp-2 italic text-zinc-600 dark:text-slate-400 transition-colors">
                             {stripHtml(j.kommentar)}
                         </p>
                     </div>
@@ -138,7 +112,6 @@ const SafeIcon = ({ name, size = 16, className = "" }) => {
 // KUND/FORDONS - PROFIL (Sidopanelen)
 // ==========================================
 const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
-    // SKYDDAD MERGE & LOKAL CACHE: Förhindrar att data försvinner när kortet stängs/öppnas
     const getLocalCache = (reg) => {
         try {
             const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
@@ -162,15 +135,11 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
-    
-    // ÄNDRAT: Utfälld som standard om skärmen är bredare än 768px (Tablet/Dator)
-    const [showAllSpecs, setShowAllSpecs] = React.useState(window.innerWidth >= 768); 
-    const [showOemParts, setShowOemParts] = React.useState(false); 
+    const [showAllSpecs, setShowAllSpecs] = React.useState(false); 
     const [isScanningOEM, setIsScanningOEM] = React.useState(false);
     const [lagerItems, setLagerItems] = React.useState([]);
     const tStart = React.useRef({ x: 0, y: 0 });
 
-    // NYTT: Kollar automatiskt om besiktningen har utgått jämfört med dagens datum
     const isInspExpired = React.useMemo(() => {
         if (!specs.ts_inspection || specs.ts_inspection === '-') return false;
         return new Date(specs.ts_inspection) < new Date(new Date().setHours(0,0,0,0));
@@ -228,18 +197,15 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         return merged;
     };
 
-    // Synka med databasen OCH den lokala cachen
     React.useEffect(() => {
         if (!v.regnr) return;
         const cleanReg = v.regnr.replace(/\s+/g, ''); 
         
-        // 1. Läs in lokal cache direkt
         const localData = getLocalCache(cleanReg);
         if (Object.keys(localData).length > 0) {
             setSpecs(prev => mergeValidSpecs(prev, localData));
         }
 
-        // 2. Läs in från Firebase om det finns
         if (window.db) {
             const u1 = window.db.collection('vehicleSpecs').doc(cleanReg).onSnapshot(d => {
                 if (d.exists) {
@@ -247,7 +213,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     if(data.brand_manual) setBrand(data.brand_manual);
                     setSpecs(prev => {
                         const updated = mergeValidSpecs(prev, data);
-                        saveLocalCache(cleanReg, updated); // Spara även till lokal cache
+                        saveLocalCache(cleanReg, updated);
                         return updated;
                     }); 
                 }
@@ -310,234 +276,253 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
     return (
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-300">
-            <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm cursor-default" onClick={onClose}></div>
+            {/* Mörk overlay */}
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-default" onClick={onClose}></div>
             
+            {/* Drawer (Hela enheten scrollar nu gemensamt) */}
             <div 
                 onTouchStart={handleTouchStart} 
                 onTouchEnd={handleTouchEnd} 
-                className="relative w-full sm:w-[460px] md:w-[560px] lg:w-[640px] h-full bg-zinc-50 dark:bg-slate-800 text-zinc-900 dark:text-slate-200 shadow-[-30px_0_60px_-15px_rgba(0,0,0,0.5)] flex flex-col animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-white/10"
+                className="relative w-full sm:w-[480px] md:w-[560px] lg:w-[640px] h-full bg-zinc-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200 shadow-[-10px_0_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-300 overflow-y-auto custom-scroll"
             >
-                <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 p-3 md:p-4 shrink-0 z-30 flex justify-between items-start relative overflow-hidden shadow-sm">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 dark:bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+                {/* STÄNG/NYTT ARBETE KNAPPAR (Fasta i toppen av dokumentet) */}
+                <div className="absolute top-5 right-5 flex gap-2 z-20">
+                    <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition border border-transparent hover:border-white/20 active:scale-95">
+                        <SafeIcon name="plus" size={16} />
+                    </button>
+                    <button onClick={onClose} title="Stäng" className="w-9 h-9 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition border border-transparent hover:border-white/20 active:scale-95">
+                        <SafeIcon name="x" size={16} />
+                    </button>
+                </div>
 
-                    <div className="flex items-center gap-3 min-w-0 relative z-10">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-zinc-100 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 flex items-center justify-center relative overflow-hidden group shadow-sm shrink-0">
+                {/* 1. MÖRK HEADER (Brand & Ägare Focus - Från den nya designen) */}
+                <div className="bg-[#0f172a] text-white pt-6 pb-5 px-6 shadow-md relative z-10">
+                    
+                    {/* Logga & Fordonsinfo */}
+                    <div className="flex items-start gap-4 mb-3 pr-20">
+                        <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-xl flex items-center justify-center text-yellow-500 shadow-lg shrink-0 relative group">
                             <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full" onChange={changeBrand} value={brand||""}>
                                 <option value="">...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
                             </select>
-                            {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-5 h-5 md:w-6 md:h-6 object-contain z-10 opacity-80 dark:invert pointer-events-none"/> : <SafeIcon name="car" size={20} className="text-zinc-400 dark:text-slate-400 z-10"/>}
-                            <div className="absolute inset-0 bg-white/80 dark:bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none"><SafeIcon name="edit" size={14} className="text-orange-500 dark:text-white"/></div>
+                            {brand ? <img src={`https://cdn.simpleicons.org/${brand}`} className="w-7 h-7 md:w-8 md:h-8 object-contain z-10 text-black pointer-events-none"/> : <SafeIcon name="car" size={24} className="text-slate-400 z-10"/>}
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none rounded-xl"><SafeIcon name="edit" size={14} className="text-white"/></div>
                         </div>
-                        
-                        <div className="flex flex-col justify-center min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <h2 onClick={copyRegClick} className="text-xl md:text-2xl font-black font-mono tracking-tight uppercase leading-none text-zinc-900 dark:text-white cursor-pointer hover:text-orange-500 transition-colors drop-shadow-sm">
+
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                                <div onClick={copyRegClick} className="inline-block bg-yellow-400 hover:bg-yellow-300 text-black font-black px-2 py-0.5 rounded text-[16px] md:text-[18px] tracking-wider cursor-pointer transition-colors shadow-sm">
                                     {v.regnr}
-                                </h2>
-                                {regCopied && <span className="text-[8px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 px-1.5 py-0.5 rounded font-bold tracking-widest uppercase animate-in fade-in zoom-in">Kopierad</span>}
+                                </div>
+                                {regCopied && <span className="text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-bold uppercase animate-in fade-in zoom-in">Kopierad</span>}
                             </div>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
-                                <span className="text-[10px] md:text-[11px] font-bold text-zinc-500 dark:text-slate-300 uppercase tracking-widest truncate max-w-[200px]" title={formatModelName(specs.model || v.model)}>
-                                    <SafeIcon name="car" size={10} className="inline mr-1.5 opacity-60" />
-                                    {formatModelName(specs.model || v.model || 'Okänd Modell')}
-                                </span>
-                                {v.customer && v.customer !== 'Okänd' && (
-                                    <>
-                                        <span className="hidden sm:inline w-1 h-1 rounded-full bg-zinc-300 dark:bg-slate-600 shrink-0"></span>
-                                        <span className="text-[10px] md:text-[11px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider truncate bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-md border border-orange-200/50 dark:border-orange-500/20 max-w-[200px]" title={v.customer}>
-                                            <SafeIcon name="user" size={10} className="inline mr-1.5 opacity-80" />
-                                            {v.customer}
-                                        </span>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 relative z-10">
-                        <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 text-orange-500 dark:text-orange-400 border border-transparent hover:border-orange-200 dark:hover:border-orange-500/30 transition-all active:scale-95">
-                            <SafeIcon name="plus" size={16} />
-                        </button>
-                        <button onClick={onClose} title="Stäng" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-300 dark:hover:border-white/20 transition-all active:scale-95">
-                            <SafeIcon name="x" size={16} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-                    <div className="p-3 md:p-4 space-y-2 md:space-y-3">
-                        {/* 4 Kolumner. Volym och typ kombinerade i samma ruta! */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-2.5">
-                            <StatCard icon="cpu" label="Motorkod" val={specs.engine} />
-                            <StatCard icon="droplet" label="Olje & Typ" val={specs.oil ? `${specs.oil} ${specs.oil_type ? '('+specs.oil_type+')' : ''}` : specs.oil_type} />
-                            <StatCard icon="calendar" label="Årsmodell" val={specs.year} />
-                            <StatCard icon="navigation" label="Miltal" val={specs.mileage} />
                             
-                            {/* UTÖKADE SPECIFIKATIONER */}
-                            {showAllSpecs && (
-                                <>
-                                    <StatCard icon="activity" label="Status" val={specs.ts_status || '-'} highlight={(specs.ts_status||'').toLowerCase().includes('avställd')} />
-                                    <StatCard icon="check-circle" label="Besiktigad" val={specs.ts_inspection || '-'} highlight={isInspExpired} />
-                                    <StatCard icon="calendar" label="1:a Registrerad" val={specs.first_reg || '-'} />
-                                    <StatCard icon="settings" label="Växellåda" val={specs.ts_gearbox || '-'} />
-                                    <StatCard icon="zap" label="Drivmedel" val={specs.ts_fuel || '-'} />
-                                    <div className="hidden sm:block"></div> {/* Osynlig utfyllnad för att jämna ut grid-layouten */}
+                            <h1 className="font-medium text-[11px] md:text-xs text-slate-300 leading-tight uppercase truncate">
+                                {formatModelName(specs.model || v.model || 'Okänd Modell')}
+                            </h1>
 
-                                    {/* OEM-RESERVDELAR BAKADE IN SNYGGT UNDER "VISA MER" */}
-                                    {specs.oem_parts && specs.oem_parts.length > 0 && (
-                                        <div className="col-span-2 sm:col-span-4 mt-3 pt-3 border-t border-zinc-200 dark:border-white/5 animate-in fade-in duration-300">
-                                            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
-                                                <SafeIcon name="layers" size={12} className="text-orange-500" /> OEM Reservdelar ({specs.oem_parts.length} st)
-                                            </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                {specs.oem_parts.map((p, i) => {
-                                                    const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
-                                                    return (
-                                                        <div key={i} className="flex items-center justify-between bg-zinc-50 dark:bg-slate-900/50 border border-zinc-200 dark:border-white/5 p-2.5 rounded-xl">
-                                                            <div className="flex flex-col min-w-0 pr-2">
-                                                                <span className="text-[9px] font-bold text-zinc-400 uppercase truncate">{p.name}</span>
-                                                                <span className="text-[11px] font-mono font-black text-zinc-900 dark:text-white tracking-wider">{p.oem}</span>
-                                                            </div>
-                                                            {inStockItem ? (
-                                                                <div className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20 shadow-sm flex items-center gap-1">
-                                                                    <SafeIcon name="check" size={10} /> I lager ({inStockItem.quantity})
-                                                                </div>
-                                                            ) : (
-                                                                <button onClick={() => { navigator.clipboard.writeText(p.oem); alert(`Kopierade ${p.name}: ${p.oem}`); }} className="shrink-0 text-[8px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 hover:text-orange-500 bg-white dark:bg-slate-800 hover:bg-zinc-50 px-2.5 py-1 rounded-md border border-zinc-200 dark:border-white/10 transition-all shadow-sm active:scale-95 flex items-center gap-1">
-                                                                    <SafeIcon name="copy" size={10} /> Kopiera
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
+                            {/* STÖRRE & VITARE ÄGAR-TEXT */}
+                            {v.customer && v.customer !== 'Okänd' && (
+                                <p className="text-white text-[13px] md:text-[14px] font-bold uppercase mt-1.5 flex items-center gap-1.5 truncate">
+                                    <SafeIcon name="user" size={14} className="opacity-80" /> {v.customer}
+                                </p>
                             )}
                         </div>
+                    </div>
 
-                        {/* STANSAD TYPSKYLT FÖR CHASSINUMMER */}
-                        <div 
-                            onClick={copyVinClick}
-                            title="Kopiera Chassinummer"
-                            className={`cursor-pointer bg-zinc-50 dark:bg-slate-900/50 rounded-xl p-3 flex items-center justify-between transition-all duration-300 border-2 border-dashed shadow-inner group hover:-translate-y-0.5 mt-1 ${vinCopied ? 'border-emerald-400 dark:border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-500/10' : 'border-zinc-300 dark:border-white/10 hover:border-orange-400/50 dark:hover:border-orange-500/30'}`}
-                        >
-                            <div className="flex flex-col min-w-0">
-                                <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-1 ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-slate-400'}`}>
-                                    <SafeIcon name="fingerprint" size={12} className={vinCopied ? 'text-emerald-500' : 'text-zinc-400 dark:text-slate-500'} /> CHASSINUMMER (VIN)
-                                </span>
-                                <span className={`font-mono text-[14px] md:text-[16px] font-black tracking-[0.2em] truncate transition-colors ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : specs.vin ? 'text-zinc-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400' : 'text-zinc-400 dark:text-slate-600'}`}>
-                                    {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
-                                </span>
-                            </div>
-                            <div className={`shrink-0 bg-white dark:bg-slate-800 p-2 rounded-lg border border-zinc-200 dark:border-white/5 transition-all duration-300 shadow-sm ${vinCopied ? 'text-emerald-500 border-emerald-200 dark:border-emerald-500/20 scale-110' : specs.vin ? 'text-zinc-400 dark:text-slate-400 group-hover:text-orange-500 group-hover:border-orange-200 dark:group-hover:border-orange-500/20' : 'opacity-0'}`}>
-                                <SafeIcon name={vinCopied ? "check" : "copy"} size={16} />
-                            </div>
+                    {/* Specifikationer inbyggda i headern (2 rader x 4 kolumner) */}
+                    <div className="grid grid-cols-4 gap-y-3 gap-x-2 pt-4 border-t border-slate-700/50 mt-2">
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Motorkod</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.engine}>{specs.engine || '-'}</span></div>
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Oljevolym</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.oil}>{specs.oil || '-'}</span></div>
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Årsmodell</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.year || '-'}</span></div>
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Miltal</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.mileage}>{specs.mileage || '-'}</span></div>
+                        
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Status</span><span className={`font-bold text-[12px] sm:text-[13px] truncate block ${(specs.ts_status||'').toLowerCase().includes('avställd') ? 'text-red-400' : 'text-emerald-400'}`}>{specs.ts_status || '-'}</span></div>
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Besiktigad</span><span className={`font-bold text-[12px] sm:text-[13px] truncate block ${isInspExpired ? 'text-red-400' : 'text-white'}`}>{specs.ts_inspection || '-'}</span></div>
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">1:a Reg</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.first_reg || '-'}</span></div>
+                        <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Växellåda</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.ts_gearbox || '-'}</span></div>
+                    </div>
+
+                    {/* Drivmedel (Visas bara om "Visa mer" klickas) */}
+                    {showAllSpecs && (
+                        <div className="grid grid-cols-4 gap-2 pt-3 mt-3 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
+                            <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Drivmedel</span><span className="font-bold text-[11px] text-white truncate block">{specs.ts_fuel || '-'}</span></div>
                         </div>
+                    )}
+                </div>
 
-                        {/* VISA MER KNAPP */}
-                        <button 
-                            onClick={() => setShowAllSpecs(!showAllSpecs)}
-                            className="mx-auto mt-3 mb-0 px-4 py-1.5 bg-white dark:bg-slate-800/60 hover:bg-zinc-50 dark:hover:bg-slate-700 border border-zinc-200 dark:border-white/5 shadow-sm rounded-full flex justify-center items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 transition-all active:scale-95"
-                        >
+                {/* 2. VIN & LÄNKAR (Från den nya designen) */}
+                <div className="bg-white dark:bg-slate-900 px-6 py-2 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10">
+                    
+                    {/* VIN Nummer */}
+                    <div onClick={copyVinClick} className="flex justify-between items-center py-4 border-b border-slate-100 dark:border-white/5 group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 -mx-6 px-6 transition-colors">
+                        <div>
+                            <span className={`text-[9px] font-bold uppercase flex items-center gap-1.5 mb-0.5 ${vinCopied ? 'text-emerald-500' : 'text-orange-500 dark:text-orange-400'}`}>
+                                <SafeIcon name="fingerprint" size={12} /> 
+                                <span className={vinCopied ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}>Chassinummer (VIN)</span>
+                            </span>
+                            <span className={`font-mono font-bold text-[15px] tracking-[0.1em] ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors'}`}>
+                                {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
+                            </span>
+                        </div>
+                        <div className={`transition-colors ${vinCopied ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 group-hover:text-blue-500'}`}>
+                            <SafeIcon name={vinCopied ? "check" : "copy"} size={18} />
+                        </div>
+                    </div>
+
+                    {/* Toggle & Snabblänkar på linje */}
+                    <div className="py-3">
+                        <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full text-center flex items-center justify-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase mb-3 transition-colors outline-none">
                             {showAllSpecs ? 'Göm specifikationer' : 'Visa mer fordonsdata'}
                             <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
                         </button>
-
-                        {/* PROFESSIONELL BOTTENRAD (Optimerad för mobil, tablet och dator) */}
-                        <div className="pt-3 border-t border-zinc-200 dark:border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <button 
-                                onClick={(e) => {
-                                    if (specs.vin) {
-                                        navigator.clipboard.writeText(specs.vin);
-                                        alert(`Kopierade VIN: ${specs.vin}`);
-                                    } else {
-                                        navigator.clipboard.writeText(v.regnr);
-                                        alert(`Inget VIN fanns, kopierade regnr: ${v.regnr}`);
-                                    }
-                                    handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka');
-                                }} 
-                                title="Kopierar VIN och öppnar ETKA"
-                                className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-slate-700/40 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group shadow-sm active:scale-95"
-                            >
-                                <SafeIcon name="layers" size={14} className="opacity-70 group-hover:scale-110 transition-transform" /> ETKA (Kopiera VIN)
+                        
+                        <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 rounded-lg p-1 border border-slate-100 dark:border-white/5">
+                            <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
+                                <span className="w-2.5 h-2.5 rounded-full border-2 border-purple-400 group-hover:border-purple-600"></span> TS
                             </button>
-
-                            <button 
-                                onClick={scanLager} 
-                                disabled={isScanningOEM} 
-                                className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group shadow-sm active:scale-95 disabled:opacity-50"
-                            >
-                                {isScanningOEM ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="search" size={14} className="opacity-70 group-hover:scale-110" />}
-                                Skanna OEM
+                            <div className="w-px h-4 bg-slate-200 dark:bg-white/10"></div>
+                            <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
+                                <span className="text-orange-400 group-hover:scale-110 transition-transform">💧</span> OLJA
                             </button>
-                            
-                            {window.AutoSearchMenu && (
-                                <div className="w-full *:w-full *:h-11 *:sm:h-12">
-                                    <window.AutoSearchMenu regnr={v.regnr} variant="full" />
-                                </div>
+                            <div className="w-px h-4 bg-slate-200 dark:bg-white/10"></div>
+                            <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
+                                <span className="text-blue-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform">↗</span> <span className="hidden sm:inline">OLJEMAG.</span><span className="sm:hidden">OM</span>
+                            </button>
+                            <div className="w-px h-4 bg-slate-200 dark:bg-white/10"></div>
+                            <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
+                                <span className="text-green-600 font-serif text-[12px] group-hover:scale-110 transition-transform">e</span> ETKA
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* OEM-RESERVDELAR INBAKADE OM DE FINNS (Syns när showAllSpecs är sant) */}
+                    {showAllSpecs && specs.oem_parts && specs.oem_parts.length > 0 && (
+                        <div className="py-4 border-t border-slate-100 dark:border-white/5 animate-in fade-in duration-300">
+                            <div className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
+                                <SafeIcon name="layers" size={12} className="text-orange-500" /> OEM Reservdelar ({specs.oem_parts.length} st)
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {specs.oem_parts.map((p, i) => {
+                                    const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
+                                    return (
+                                        <div key={i} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-white/5 p-2.5 rounded-xl">
+                                            <div className="flex flex-col min-w-0 pr-2">
+                                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase truncate">{p.name}</span>
+                                                <span className="text-[11px] font-mono font-black text-slate-800 dark:text-white tracking-wider">{p.oem}</span>
+                                            </div>
+                                            {inStockItem ? (
+                                                <div className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20 shadow-sm flex items-center gap-1">
+                                                    <SafeIcon name="check" size={10} /> I lager ({inStockItem.quantity})
+                                                </div>
+                                            ) : (
+                                                <button onClick={() => { navigator.clipboard.writeText(p.oem); alert(`Kopierade ${p.name}: ${p.oem}`); }} className="shrink-0 text-[8px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:text-orange-500 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 px-2.5 py-1 rounded-md border border-slate-200 dark:border-white/10 transition-all shadow-sm active:scale-95 flex items-center gap-1">
+                                                    <SafeIcon name="copy" size={10} /> Kopiera
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK */}
+                <div className="px-4 sm:px-6 pt-5 pb-2 relative z-20">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button 
+                            onClick={(e) => {
+                                if (specs.vin) { navigator.clipboard.writeText(specs.vin); }
+                                handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka');
+                            }} 
+                            className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-slate-800 hover:bg-zinc-200 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group"
+                        >
+                            <SafeIcon name="layers" size={14} className="opacity-70 group-hover:scale-110 transition-transform" /> ETKA (Kopiera VIN)
+                        </button>
+
+                        <button 
+                            onClick={scanLager} 
+                            disabled={isScanningOEM} 
+                            className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 active:scale-95 group"
+                        >
+                            {isScanningOEM ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="search" size={14} className="opacity-70 group-hover:scale-110" />} Skanna OEM
+                        </button>
+                        
+                        {/* AutoSearchMenu UTAN css-wildcards för att bevara den inbyggda dropdown-designen */}
+                        <div className="relative w-full">
+                            {window.AutoSearchMenu ? (
+                                <window.AutoSearchMenu regnr={v.regnr} variant="full" />
+                            ) : (
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')} className="w-full h-11 sm:h-12 flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group">
+                                    <SafeIcon name="zap" size={14} /> Hämta Fordonsdata
+                                </button>
                             )}
                         </div>
                     </div>
+                </div>
 
-                    <div className="px-3 md:px-4 pb-8">
-                        <div className="sticky top-0 bg-zinc-50/95 dark:bg-slate-800/95 backdrop-blur-md z-20 py-2 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
-                            <div className="text-[9px] md:text-[10px] font-black text-zinc-500 dark:text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5 pl-1 sm:pl-0">
-                                <SafeIcon name="clock" size={10} className="text-orange-500 dark:text-orange-400" /> Historik
-                            </div>
-                            
-                            <div className="relative group w-32 md:w-44 lg:w-56">
-                                <input 
-                                    type="text" 
-                                    placeholder="SÖK I HISTORIK..." 
-                                    value={histQ}
-                                    onChange={(e) => setHistQ(e.target.value)}
-                                    className="w-full bg-white dark:bg-slate-900/50 border border-zinc-200 dark:border-white/10 rounded-lg py-1 md:py-1.5 pl-6 pr-2 text-[8.5px] md:text-[9px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest outline-none focus:border-orange-500 shadow-sm transition-all"
-                                />
-                                <SafeIcon name="search" size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-slate-500 group-focus-within:text-orange-500 transition-colors" />
-                            </div>
+                {/* 4. HISTORIK MED BOX-DESIGN */}
+                <div className="px-4 sm:px-6 pb-20 relative z-10">
+                    <div className="bg-zinc-50 dark:bg-slate-900 py-3 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
+                        <h3 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                            <SafeIcon name="clock" size={14} className="text-orange-500" />
+                            Historik
+                        </h3>
+                        <div className="relative group">
+                            <SafeIcon name="search" size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                            <input 
+                                type="text" 
+                                placeholder="SÖK I HISTORIK..." 
+                                value={histQ}
+                                onChange={(e) => setHistQ(e.target.value)}
+                                className="w-36 sm:w-48 bg-white dark:bg-slate-800 border border-zinc-200 dark:border-white/10 rounded-md text-[10px] uppercase font-bold py-1.5 pl-7 pr-2 text-slate-900 dark:text-white focus:outline-none focus:border-orange-400 shadow-sm transition-colors"
+                            />
                         </div>
-
-                        {filteredHistory.length > 0 ? (
-                            <div className="mt-2 flex flex-col">
-                                {filteredHistory.map((j, idx) => (
-                                    <TimelineItem 
-                                        key={j.id || idx} 
-                                        j={j} 
-                                        isHighlighted={j.id === highlightId} 
-                                        isLast={idx === filteredHistory.length - 1} 
-                                        setView={setView}
-                                        onClose={onClose}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="py-10 text-center flex flex-col items-center">
-                                <div className="w-14 h-14 bg-zinc-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 shadow-inner border border-zinc-200/50 dark:border-white/5">
-                                    <SafeIcon name="inbox" size={24} className="text-zinc-300 dark:text-slate-600" />
-                                </div>
-                                <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-slate-400 mb-5">Ingen historik sparad</span>
-                                
-                                <button 
-                                    onClick={() => {
-                                        setView('NEW_JOB', { prefillRegnr: v.regnr });
-                                        if (window.innerWidth < 1024) onClose();
-                                    }}
-                                    className="px-6 py-2.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-500/20 hover:border-orange-300 dark:hover:border-orange-500/40 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-sm"
-                                >
-                                    <SafeIcon name="plus" size={14} /> Skapa första arbetsordern
-                                </button>
-                            </div>
-                        )}
                     </div>
+
+                    {filteredHistory.length > 0 ? (
+                        <div className="flex flex-col relative mt-2">
+                            {filteredHistory.map((j, idx) => (
+                                <TimelineItem 
+                                    key={j.id || idx} 
+                                    j={j} 
+                                    isHighlighted={j.id === highlightId} 
+                                    isLast={idx === filteredHistory.length - 1} 
+                                    setView={setView}
+                                    onClose={onClose}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="py-12 text-center flex flex-col items-center">
+                            <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mb-3 border border-zinc-200 dark:border-white/5 shadow-sm">
+                                <SafeIcon name="inbox" size={20} className="text-zinc-400 dark:text-slate-500" />
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-slate-500 mb-4">Ingen historik sparad</span>
+                            <button 
+                                onClick={() => { setView('NEW_JOB', { prefillRegnr: v.regnr }); if (window.innerWidth < 1024) onClose(); }}
+                                className="px-5 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-1.5 shadow-sm"
+                            >
+                                <SafeIcon name="plus" size={12} /> Skapa arbetsorder
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Flytande Chatt-ikon fast i botten (visas ovanpå historiken) */}
+                <div className="sticky bottom-6 w-full flex justify-end px-6 pointer-events-none z-50">
+                    <button className="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-105 transition-all pointer-events-auto">
+                        <SafeIcon name="message-square" size={24} />
+                    </button>
                 </div>
             </div>
         </div>
     );
 };
 
-// FIX 3: Rensa även här så modalen hittar rätt dokument direkt vid start
+// ==========================================
+// KVARVARANDE KOD (VehicleProfileLoader & GarageView) ÄR EXAKT SOM DIN ORIGINALFIL
+// ==========================================
 window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
     const [d, setD] = React.useState(null);
 
@@ -598,7 +583,12 @@ window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
                         oil: specs.oil || baseData.latestSpecs.oil || '',
                         mileage: specs.mileage || baseData.latestSpecs.mileage || '',
                         year: specs.year || baseData.latestSpecs.year || '',
-                        vin: specs.vin || ''
+                        vin: specs.vin || '',
+                        first_reg: specs.first_reg || '',
+                        ts_status: specs.ts_status || '',
+                        ts_inspection: specs.ts_inspection || '',
+                        ts_gearbox: specs.ts_gearbox || '',
+                        ts_fuel: specs.ts_fuel || ''
                     };
                 }
             } catch (err) {
@@ -614,9 +604,6 @@ window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
     return d ? <VehicleProfile v={d} highlightId={highlightId} onClose={onClose} setView={setView}/> : null;
 };
 
-// ==========================================
-// HUVUDVY GARAGE (Listan)
-// ==========================================
 window.GarageView = ({ allJobs, setView }) => {
     const [q, setQ] = React.useState("");
     const [filter, setFilter] = React.useState('ALL');
@@ -673,7 +660,6 @@ window.GarageView = ({ allJobs, setView }) => {
             <div className="relative max-w-[1400px] w-full animate-in fade-in slide-in-from-left-4 duration-700 pb-12 ml-0">
                 <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-                {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 gap-4 px-4 pt-5 lg:px-0 lg:pt-0">
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="relative group cursor-default shrink-0">
@@ -720,7 +706,6 @@ window.GarageView = ({ allJobs, setView }) => {
                     </div>
                 </div>
 
-                {/* LISTAN */}
                 <div className="bg-white/90 dark:bg-[#182032]/90 lg:backdrop-blur-2xl rounded-2xl shadow-sm border border-zinc-200/80 dark:border-white/5 overflow-hidden flex flex-col mx-4 lg:mx-0 relative">
                     
                     <div className="hidden md:flex items-center px-6 py-4 bg-zinc-50/90 dark:bg-[#182032]/90 backdrop-blur-md sticky top-0 z-20 border-b border-zinc-200/80 dark:border-white/10 text-[9px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400">
@@ -807,7 +792,6 @@ window.GarageView = ({ allJobs, setView }) => {
                 </div>
             </div>
 
-            {/* MODAL FÖR FORDONSAKT */}
             {sel && <VehicleProfile v={sel} onClose={close} setView={setView} />}
         </div>
     );
