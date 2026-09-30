@@ -1,4 +1,4 @@
-// garage.js - Hybrid Premium UX (Scrolling Header + Boxed History)
+// garage.js - Premium UX (Dark Header + Widget Layout + Boxed History)
 
 const BRANDS = { 'Volvo':'volvo', 'BMW':'bmw', 'Audi':'audi', 'VW':'volkswagen', 'Mercedes':'mercedes', 'Tesla':'tesla', 'Toyota':'toyota', 'Ford':'ford', 'Kia':'kia', 'Saab':'saab', 'Porsche':'porsche', 'Seat':'seat', 'Skoda':'skoda', 'Nissan':'nissan', 'Peugeot':'peugeot', 'Renault':'renault', 'Fiat':'fiat', 'Iveco':'iveco', 'Honda':'honda', 'Mazda':'mazda', 'Hyundai':'hyundai', 'Polestar':'polestar', 'Mini':'mini', 'Jeep':'jeep', 'Land Rover':'landrover', 'Subaru':'subaru', 'Suzuki':'suzuki', 'Lexus':'lexus', 'Chevrolet':'chevrolet', 'Citroen':'citroen', 'Opel':'opel', 'Dacia':'dacia', 'Mitsubishi':'mitsubishi', 'Jaguar':'jaguar', 'Dodge':'dodge', 'Ram':'ram', 'Cupra':'cupra' };
 
@@ -10,7 +10,7 @@ const getBrand = (t) => {
 };
 
 // ==========================================
-// TIMELINE ITEM (Box-design)
+// TIMELINE ITEM (Kompakt Box-design)
 // ==========================================
 const TimelineItem = ({ j, isHighlighted, isLast, setView, onClose }) => {
     const isKlar = ['KLAR', 'FAKTURERAS'].includes(j.status);
@@ -135,7 +135,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
-    const [showAllSpecs, setShowAllSpecs] = React.useState(false); 
+    const [showAllSpecs, setShowAllSpecs] = React.useState(window.innerWidth >= 768); 
     const [isScanningOEM, setIsScanningOEM] = React.useState(false);
     const [lagerItems, setLagerItems] = React.useState([]);
     const tStart = React.useRef({ x: 0, y: 0 });
@@ -279,13 +279,13 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
             {/* Mörk overlay */}
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-default" onClick={onClose}></div>
             
-            {/* Drawer (Hela enheten scrollar nu gemensamt) */}
+            {/* DRAWER (Hela rullar som ett dokument) */}
             <div 
                 onTouchStart={handleTouchStart} 
                 onTouchEnd={handleTouchEnd} 
                 className="relative w-full sm:w-[480px] md:w-[560px] lg:w-[640px] h-full bg-zinc-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200 shadow-[-10px_0_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-300 overflow-y-auto custom-scroll"
             >
-                {/* STÄNG/NYTT ARBETE KNAPPAR (Fasta i toppen av dokumentet) */}
+                {/* STÄNG/NYTT ARBETE KNAPPAR */}
                 <div className="absolute top-5 right-5 flex gap-2 z-20">
                     <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition border border-transparent hover:border-white/20 active:scale-95">
                         <SafeIcon name="plus" size={16} />
@@ -295,7 +295,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </button>
                 </div>
 
-                {/* 1. MÖRK HEADER (Brand & Ägare Focus - Från den nya designen) */}
+                {/* 1. MÖRK HEADER (Rullar med innehållet) */}
                 <div className="bg-[#0f172a] text-white pt-6 pb-5 px-6 shadow-md relative z-10">
                     
                     {/* Logga & Fordonsinfo */}
@@ -320,7 +320,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 {formatModelName(specs.model || v.model || 'Okänd Modell')}
                             </h1>
 
-                            {/* STÖRRE & VITARE ÄGAR-TEXT */}
+                            {/* ÄGARE */}
                             {v.customer && v.customer !== 'Okänd' && (
                                 <p className="text-white text-[13px] md:text-[14px] font-bold uppercase mt-1.5 flex items-center gap-1.5 truncate">
                                     <SafeIcon name="user" size={14} className="opacity-80" /> {v.customer}
@@ -329,7 +329,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                     </div>
 
-                    {/* Specifikationer inbyggda i headern (2 rader x 4 kolumner) */}
+                    {/* Specifikationer inbyggda i headern */}
                     <div className="grid grid-cols-4 gap-y-3 gap-x-2 pt-4 border-t border-slate-700/50 mt-2">
                         <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Motorkod</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.engine}>{specs.engine || '-'}</span></div>
                         <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Oljevolym</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block" title={specs.oil}>{specs.oil || '-'}</span></div>
@@ -342,7 +342,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Växellåda</span><span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.ts_gearbox || '-'}</span></div>
                     </div>
 
-                    {/* Drivmedel (Visas bara om "Visa mer" klickas) */}
+                    {/* Drivmedel */}
                     {showAllSpecs && (
                         <div className="grid grid-cols-4 gap-2 pt-3 mt-3 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
                             <div><span className="block text-[9px] text-slate-400 font-bold uppercase mb-0.5">Drivmedel</span><span className="font-bold text-[11px] text-white truncate block">{specs.ts_fuel || '-'}</span></div>
@@ -350,75 +350,76 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     )}
                 </div>
 
-                {/* 2. VIN & LÄNKAR (Från den nya designen) */}
-                <div className="bg-white dark:bg-slate-900 px-6 py-2 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10">
+                {/* 2. CHASSINUMMER, LÄNKAR & OEM-DELAR */}
+                <div className="bg-white dark:bg-slate-900 pb-4 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10 px-6">
                     
-                    {/* VIN Nummer */}
-                    <div onClick={copyVinClick} className="flex justify-between items-center py-4 border-b border-slate-100 dark:border-white/5 group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 -mx-6 px-6 transition-colors">
-                        <div>
-                            <span className={`text-[9px] font-bold uppercase flex items-center gap-1.5 mb-0.5 ${vinCopied ? 'text-emerald-500' : 'text-orange-500 dark:text-orange-400'}`}>
-                                <SafeIcon name="fingerprint" size={12} /> 
-                                <span className={vinCopied ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}>Chassinummer (VIN)</span>
-                            </span>
-                            <span className={`font-mono font-bold text-[15px] tracking-[0.1em] ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors'}`}>
-                                {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
-                            </span>
-                        </div>
-                        <div className={`transition-colors ${vinCopied ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 group-hover:text-blue-500'}`}>
-                            <SafeIcon name={vinCopied ? "check" : "copy"} size={18} />
+                    {/* Tydlig box för Chassinummer */}
+                    <div className="mt-4 mb-4">
+                        <div 
+                            onClick={copyVinClick} 
+                            className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl p-3 md:p-4 group cursor-pointer hover:border-orange-300 dark:hover:border-orange-500/50 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all shadow-sm"
+                        >
+                            <div>
+                                <span className={`text-[9px] font-bold uppercase flex items-center gap-1.5 mb-1 ${vinCopied ? 'text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <SafeIcon name="fingerprint" size={12} className={vinCopied ? 'text-emerald-500' : 'text-orange-500 dark:text-orange-400'} /> 
+                                    Chassinummer (VIN)
+                                </span>
+                                <span className={`font-mono font-bold text-[15px] md:text-[16px] tracking-[0.15em] ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white group-hover:text-orange-600 transition-colors'}`}>
+                                    {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
+                                </span>
+                            </div>
+                            <div className={`p-2 rounded-lg transition-all ${vinCopied ? 'bg-emerald-100 text-emerald-600' : 'bg-white dark:bg-slate-700 text-slate-400 shadow-sm border border-slate-200 dark:border-white/5 group-hover:text-orange-500 group-hover:border-orange-200'}`}>
+                                <SafeIcon name={vinCopied ? "check" : "copy"} size={16} />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Toggle & Snabblänkar på linje */}
-                    <div className="py-3">
-                        <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full text-center flex items-center justify-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase mb-3 transition-colors outline-none">
-                            {showAllSpecs ? 'Göm specifikationer' : 'Visa mer fordonsdata'}
-                            <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
+                    {/* Snabblänkar som snygga pills/knappar istället för avdelare */}
+                    <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
+                        <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="flex-1 min-w-[70px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-purple-300 uppercase transition-all shadow-sm group">
+                            <span className="w-2.5 h-2.5 rounded-full border-2 border-purple-400 group-hover:border-purple-600"></span> TS
                         </button>
-                        
-                        <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 rounded-lg p-1 border border-slate-100 dark:border-white/5">
-                            <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_TS_RADAR', true)} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
-                                <span className="w-2.5 h-2.5 rounded-full border-2 border-purple-400 group-hover:border-purple-600"></span> TS
-                            </button>
-                            <div className="w-px h-4 bg-slate-200 dark:bg-white/10"></div>
-                            <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
-                                <span className="text-orange-400 group-hover:scale-110 transition-transform">💧</span> OLJA
-                            </button>
-                            <div className="w-px h-4 bg-slate-200 dark:bg-white/10"></div>
-                            <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
-                                <span className="text-blue-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform">↗</span> <span className="hidden sm:inline">OLJEMAG.</span><span className="sm:hidden">OM</span>
-                            </button>
-                            <div className="w-px h-4 bg-slate-200 dark:bg-white/10"></div>
-                            <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="flex-1 py-1.5 flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 rounded uppercase transition-colors group">
-                                <span className="text-green-600 font-serif text-[12px] group-hover:scale-110 transition-transform">e</span> ETKA
-                            </button>
-                        </div>
+                        <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr, 'START_OS_RADAR', true)} className="flex-1 min-w-[70px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-orange-300 uppercase transition-all shadow-sm group">
+                            <span className="text-orange-400 group-hover:scale-110 transition-transform">💧</span> OLJA
+                        </button>
+                        <button onClick={(e) => handleQuickLink(e, v.regnr, 'https://www.oljemagasinet.se/')} className="flex-1 min-w-[80px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-300 uppercase transition-all shadow-sm group">
+                            <span className="text-blue-500">↗</span> <span className="hidden sm:inline">OLJEMAG.</span><span className="sm:hidden">OM</span>
+                        </button>
+                        <button onClick={(e) => handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka')} className="flex-1 min-w-[70px] py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg flex justify-center items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-green-300 uppercase transition-all shadow-sm group">
+                            <span className="text-green-600 font-serif text-[12px] group-hover:scale-110 transition-transform">e</span> ETKA
+                        </button>
                     </div>
 
-                    {/* OEM-RESERVDELAR INBAKADE OM DE FINNS (Syns när showAllSpecs är sant) */}
+                    {/* Toggle knapp */}
+                    <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full text-center flex items-center justify-center gap-1 text-[9px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase py-2 transition-colors outline-none">
+                        {showAllSpecs ? 'Göm specifikationer & OEM' : 'Visa mer fordonsdata & OEM'}
+                        <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
+                    </button>
+
+                    {/* OEM-RESERVDELAR (Modern Grid-Layout) */}
                     {showAllSpecs && specs.oem_parts && specs.oem_parts.length > 0 && (
-                        <div className="py-4 border-t border-slate-100 dark:border-white/5 animate-in fade-in duration-300">
-                            <div className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
-                                <SafeIcon name="layers" size={12} className="text-orange-500" /> OEM Reservdelar ({specs.oem_parts.length} st)
+                        <div className="mt-2 animate-in slide-in-from-top-2 fade-in duration-300">
+                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+                                <SafeIcon name="layers" size={12} className="text-orange-500" /> OEM Reservdelar
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {specs.oem_parts.map((p, i) => {
                                     const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
                                     return (
-                                        <div key={i} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-white/5 p-2.5 rounded-xl">
-                                            <div className="flex flex-col min-w-0 pr-2">
-                                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase truncate">{p.name}</span>
-                                                <span className="text-[11px] font-mono font-black text-slate-800 dark:text-white tracking-wider">{p.oem}</span>
+                                        <div key={i} className="flex flex-col justify-center p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl hover:border-orange-300 dark:hover:border-orange-500/50 transition-all group relative">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider truncate pr-2">{p.name}</span>
+                                                {inStockItem ? (
+                                                    <span className="text-[8px] font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                                        I LAGER ({inStockItem.quantity})
+                                                    </span>
+                                                ) : (
+                                                    <button onClick={() => { navigator.clipboard.writeText(p.oem); alert(`Kopierade ${p.name}: ${p.oem}`); }} className="text-slate-300 dark:text-slate-600 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 p-1">
+                                                        <SafeIcon name="copy" size={14} />
+                                                    </button>
+                                                )}
                                             </div>
-                                            {inStockItem ? (
-                                                <div className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20 shadow-sm flex items-center gap-1">
-                                                    <SafeIcon name="check" size={10} /> I lager ({inStockItem.quantity})
-                                                </div>
-                                            ) : (
-                                                <button onClick={() => { navigator.clipboard.writeText(p.oem); alert(`Kopierade ${p.name}: ${p.oem}`); }} className="shrink-0 text-[8px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:text-orange-500 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 px-2.5 py-1 rounded-md border border-slate-200 dark:border-white/10 transition-all shadow-sm active:scale-95 flex items-center gap-1">
-                                                    <SafeIcon name="copy" size={10} /> Kopiera
-                                                </button>
-                                            )}
+                                            <span className="font-mono text-[13px] font-bold text-slate-800 dark:text-slate-200 tracking-widest group-hover:text-orange-600 transition-colors">{p.oem}</span>
                                         </div>
                                     );
                                 })}
@@ -428,33 +429,33 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
 
                 {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK */}
-                <div className="px-4 sm:px-6 pt-5 pb-2 relative z-20">
+                <div className="px-4 sm:px-6 pt-5 pb-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button 
                             onClick={(e) => {
                                 if (specs.vin) { navigator.clipboard.writeText(specs.vin); }
                                 handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka');
                             }} 
-                            className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-slate-800 hover:bg-zinc-200 dark:hover:bg-slate-700 text-zinc-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group"
+                            className="h-10 sm:h-11 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group"
                         >
-                            <SafeIcon name="layers" size={14} className="opacity-70 group-hover:scale-110 transition-transform" /> ETKA (Kopiera VIN)
+                            <SafeIcon name="layers" size={14} className="opacity-70 group-hover:scale-110 transition-transform" /> ETKA (VIN)
                         </button>
 
                         <button 
                             onClick={scanLager} 
                             disabled={isScanningOEM} 
-                            className="h-11 sm:h-12 flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 active:scale-95 group"
+                            className="h-10 sm:h-11 flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 active:scale-95 group"
                         >
-                            {isScanningOEM ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="search" size={14} className="opacity-70 group-hover:scale-110" />} Skanna OEM
+                            {isScanningOEM ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="search" size={14} className="opacity-70 group-hover:scale-110" />} SKANNA OEM
                         </button>
                         
-                        {/* AutoSearchMenu UTAN css-wildcards för att bevara den inbyggda dropdown-designen */}
+                        {/* AutoSearchMenu (Original dropdown) */}
                         <div className="relative w-full">
                             {window.AutoSearchMenu ? (
                                 <window.AutoSearchMenu regnr={v.regnr} variant="full" />
                             ) : (
-                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')} className="w-full h-11 sm:h-12 flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group">
-                                    <SafeIcon name="zap" size={14} /> Hämta Fordonsdata
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')} className="w-full h-10 sm:h-11 flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group">
+                                    <SafeIcon name="zap" size={14} /> FORDONSDATA
                                 </button>
                             )}
                         </div>
@@ -462,8 +463,8 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
 
                 {/* 4. HISTORIK MED BOX-DESIGN */}
-                <div className="px-4 sm:px-6 pb-20 relative z-10">
-                    <div className="bg-zinc-50 dark:bg-slate-900 py-3 mb-2 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
+                <div className="px-4 sm:px-6 pb-24 relative z-10">
+                    <div className="py-2 mb-3 flex items-center justify-between border-b border-zinc-200 dark:border-white/5">
                         <h3 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                             <SafeIcon name="clock" size={14} className="text-orange-500" />
                             Historik
@@ -475,7 +476,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 placeholder="SÖK I HISTORIK..." 
                                 value={histQ}
                                 onChange={(e) => setHistQ(e.target.value)}
-                                className="w-36 sm:w-48 bg-white dark:bg-slate-800 border border-zinc-200 dark:border-white/10 rounded-md text-[10px] uppercase font-bold py-1.5 pl-7 pr-2 text-slate-900 dark:text-white focus:outline-none focus:border-orange-400 shadow-sm transition-colors"
+                                className="w-36 sm:w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-md text-[10px] uppercase font-bold py-1.5 pl-7 pr-2 text-slate-900 dark:text-white focus:outline-none focus:border-orange-400 shadow-sm transition-colors"
                             />
                         </div>
                     </div>
@@ -495,10 +496,10 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         </div>
                     ) : (
                         <div className="py-12 text-center flex flex-col items-center">
-                            <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mb-3 border border-zinc-200 dark:border-white/5 shadow-sm">
-                                <SafeIcon name="inbox" size={20} className="text-zinc-400 dark:text-slate-500" />
+                            <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mb-3 border border-slate-200 dark:border-white/5 shadow-sm">
+                                <SafeIcon name="inbox" size={20} className="text-slate-400 dark:text-slate-500" />
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-slate-500 mb-4">Ingen historik sparad</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">Ingen historik sparad</span>
                             <button 
                                 onClick={() => { setView('NEW_JOB', { prefillRegnr: v.regnr }); if (window.innerWidth < 1024) onClose(); }}
                                 className="px-5 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-1.5 shadow-sm"
@@ -509,9 +510,9 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     )}
                 </div>
 
-                {/* Flytande Chatt-ikon fast i botten (visas ovanpå historiken) */}
-                <div className="sticky bottom-6 w-full flex justify-end px-6 pointer-events-none z-50">
-                    <button className="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-105 transition-all pointer-events-auto">
+                {/* Flytande Chatt-ikon (alltid längst ner till höger i modalen) */}
+                <div className="fixed bottom-6 right-6 lg:right-[calc(50%-320px+24px)] z-[500]">
+                    <button className="w-14 h-14 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-105 transition-all">
                         <SafeIcon name="message-square" size={24} />
                     </button>
                 </div>
@@ -588,7 +589,8 @@ window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
                         ts_status: specs.ts_status || '',
                         ts_inspection: specs.ts_inspection || '',
                         ts_gearbox: specs.ts_gearbox || '',
-                        ts_fuel: specs.ts_fuel || ''
+                        ts_fuel: specs.ts_fuel || '',
+                        oem_parts: specs.oem_parts || []
                     };
                 }
             } catch (err) {
