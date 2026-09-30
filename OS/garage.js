@@ -135,7 +135,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
-    const [showAllSpecs, setShowAllSpecs] = React.useState(window.innerWidth >= 768); 
+    const [showAllSpecs, setShowAllSpecs] = React.useState(false);
     const [isScanningOEM, setIsScanningOEM] = React.useState(false);
     const [lagerItems, setLagerItems] = React.useState([]);
     const tStart = React.useRef({ x: 0, y: 0 });
