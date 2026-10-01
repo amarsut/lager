@@ -329,9 +329,17 @@ window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
     const [activeArea, setActiveArea] = React.useState("Alla");
+    const [showTable, setShowTable] = React.useState(false); // Styr om högerspalten (tabellen) visas
+
+    // Hjälpfunktion när man klickar på en kategori eller bil-del
+    const handleSelectArea = (area) => {
+        setActiveArea(area);
+        setSearch('');
+        setShowTable(true); // Fäll ut tabellen till höger
+    };
     
     // UI States
-    const [editingItem, setEditingItem] = React.useState(null); 
+    const [editingItem, setEditingItem] = React.useState(null);
     const [linkingItem, setLinkingItem] = React.useState(null);
     const [isScannerOpen, setIsScannerOpen] = React.useState(false);
     const [copiedId, setCopiedId] = React.useState(null);
@@ -398,13 +406,13 @@ window.LagerView = ({ allJobs = [] }) => {
             
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            {/* 1. ORIGINAL AUTOGRID HEADER (Exakt återställd layout & marginaler) */}
+            {/* 1. ORIGINAL AUTOGRID HEADER (Matchar Dashboard-storleken) */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4 pt-4 lg:pt-0 shrink-0">
                 <div className="flex items-center gap-3 md:gap-4">
                     <div className="relative group cursor-default shrink-0">
                         <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
                         <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                            <SafeIcon name="search" size={20} className="md:w-6 md:h-6" />
+                            <SafeIcon name="search" size={20} />
                         </div>
                     </div>
                     <div className="flex flex-col">
@@ -455,7 +463,7 @@ window.LagerView = ({ allJobs = [] }) => {
                             {mainCategories.map(area => (
                                 <button 
                                     key={area} 
-                                    onClick={() => { setActiveArea(area); setSearch(''); }}
+                                    onClick={() => handleSelectArea(area)}
                                     className={`text-left px-6 py-3.5 text-[11px] font-bold tracking-widest uppercase transition-all border-l-4 flex items-center justify-between group ${activeArea === area ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500' : 'border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-white/5'}`}
                                 >
                                     {area}
@@ -475,7 +483,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                 {quickLinks.map(link => (
                                     <button 
                                         key={link} 
-                                        onClick={() => { setActiveArea(link); setSearch(''); }}
+                                        onClick={() => handleSelectArea(link)}
                                         className={`text-left px-6 py-2.5 text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center justify-between border-l-4 ${activeArea === link ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500' : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-white/5'}`}
                                     >
                                         <div className="flex items-center gap-2">
@@ -492,7 +500,7 @@ window.LagerView = ({ allJobs = [] }) => {
                 </div>
 
                 {/* MITTEN: THE BLUEPRINT (ETKA Sprängskiss med CAD-känsla) */}
-                <div className="hidden xl:flex flex-1 flex-col border-r border-zinc-200/80 dark:border-white/5 relative bg-zinc-50/30 dark:bg-[#0b0f19] overflow-hidden group/diagram">
+                <div className="hidden lg:flex flex-1 flex-col border-r border-zinc-200/80 dark:border-white/5 relative bg-zinc-50/30 dark:bg-[#0b0f19] overflow-hidden group/diagram">
                     
                     {/* CAD Grid Background */}
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgwem0yMCAyMGgyMHYyMEgyMHptLTIwIDBoMjB2MjBIMHoiIGZpbGw9IiM4MDgwODAiIGZpbGwtb3BhY2l0eT0iMC4wNSIgZmlsbC1ydWxlPSJldmVub2RkIi8+PC9zdmc+')] pointer-events-none opacity-50 dark:opacity-30"></div>
@@ -510,22 +518,32 @@ window.LagerView = ({ allJobs = [] }) => {
                     </div>
 
                     {/* Interaktiva Hotspots */}
-                    <DiagramHotspot top="30%" left="38%" label="Motor/Chassi" area="Motor/Chassi" iconType="motor" activeArea={activeArea} onClick={setActiveArea} />
-                    <DiagramHotspot top="72%" left="78%" label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={setActiveArea} />
-                    <DiagramHotspot top="60%" left="50%" label="Service" area="Service" iconType="service" activeArea={activeArea} onClick={setActiveArea} />
-                    <DiagramHotspot top="75%" left="35%" label="Elsystem" area="Elsystem" iconType="elsystem" activeArea={activeArea} onClick={setActiveArea} />
-                    <DiagramHotspot top="25%" left="60%" label="Kaross" area="Kaross" iconType="kaross" activeArea={activeArea} onClick={setActiveArea} />
+                    <DiagramHotspot top="30%" left="38%" label="Motor/Chassi" area="Motor/Chassi" iconType="motor" activeArea={activeArea} onClick={handleSelectArea} />
+                    <DiagramHotspot top="72%" left="78%" label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={handleSelectArea} />
+                    <DiagramHotspot top="60%" left="50%" label="Service" area="Service" iconType="service" activeArea={activeArea} onClick={handleSelectArea} />
+                    <DiagramHotspot top="75%" left="35%" label="Elsystem" area="Elsystem" iconType="elsystem" activeArea={activeArea} onClick={handleSelectArea} />
+                    <DiagramHotspot top="25%" left="60%" label="Kaross" area="Kaross" iconType="kaross" activeArea={activeArea} onClick={handleSelectArea} />
 
                     <div className="absolute bottom-5 left-5 text-[9px] font-black uppercase tracking-widest text-zinc-500 bg-white/80 dark:bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-white/10 shadow-sm flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span> Interactive EPC View
                     </div>
                 </div>
 
-                {/* HÖGER: DATATABELL (Zebra-striping & hover-effekter) */}
-                <div className="flex-1 xl:w-[45%] flex flex-col bg-white dark:bg-[#121214] shrink-0 z-10">
+                {/* HÖGER: DATATABELL (Visas enbart när en kategori har valts) */}
+                <div className={`${showTable ? 'flex' : 'hidden'} flex-1 xl:w-[45%] flex-col bg-white dark:bg-[#121214] shrink-0 z-10 animate-in fade-in duration-300`}>
                     
                     {/* Table Header (Sticky) */}
                     <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/80 dark:bg-[#1a2235]/80 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center shadow-sm sticky top-0 z-20">
+                        
+                        {/* Tillbaka-knapp för att fälla ihop tabellen och komma tillbaka till skissen */}
+                        <button 
+                            onClick={() => setShowTable(false)}
+                            className="px-3.5 py-3.5 border-r border-zinc-200/80 dark:border-white/5 flex items-center gap-1.5 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors cursor-pointer font-bold text-[10px] uppercase tracking-widest shrink-0"
+                            title="Tillbaka till skissen"
+                        >
+                            <SafeIcon name="arrow-left" size={14} /> Tillbaka
+                        </button>
+
                         <div className="w-12 border-r border-zinc-200/80 dark:border-white/5 px-2 py-3.5 text-center">#</div>
                         <div className="w-32 sm:w-40 border-r border-zinc-200/80 dark:border-white/5 px-4 py-3.5">PART NUMBER</div>
                         <div className="flex-1 border-r border-zinc-200/80 dark:border-white/5 px-4 py-3.5">DESCRIPTION</div>
