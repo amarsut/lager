@@ -460,13 +460,13 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
                 </div>
 
-                {/* 2. CHASSINUMMER, LÄNKAR & OEM-DELAR */}
-                <div className="bg-white dark:bg-slate-900 pb-4 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10 px-3 sm:px-6">
+                {/* 2. CHASSINUMMER */}
+                <div className="bg-white dark:bg-slate-900 py-3 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10 px-3 sm:px-6">
                     
                     {/* ENHETLIG VIN BOX */}
-                    <div className="mt-4 mb-5">
+                    <div className="mt-0.5 mb-1">
                         {/* Rubrik utanför rutan för perfekt enhetlighet */}
-                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5 pl-1">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5 flex items-center gap-1.5 pl-1">
                             <SafeIcon name="fingerprint" size={14} className="text-orange-500" /> 
                             Chassinummer (VIN)
                         </div>
@@ -474,12 +474,12 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         {/* Själva datarutan */}
                         <div 
                             onClick={copyVinClick} 
-                            className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 px-3 sm:px-4 group cursor-pointer hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-sm transition-all shadow-sm"
+                            className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl py-2 px-3 sm:px-4 group cursor-pointer hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-sm transition-all shadow-sm"
                         >
                             <span className={`font-mono font-bold text-[15px] sm:text-[16px] tracking-[0.15em] leading-none ${vinCopied ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white group-hover:text-orange-600 transition-colors'}`}>
                                 {vinCopied ? 'KOPIERAD!' : (specs.vin || 'SAKNAS')}
                             </span>
-                            <div className={`p-1.5 sm:p-2 rounded-lg transition-all border ${vinCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-white/10 text-slate-400 group-hover:text-orange-500 group-hover:bg-orange-50 group-hover:border-orange-200'}`}>
+                            <div className={`p-1.5 rounded-lg transition-all border ${vinCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-white/10 text-slate-400 group-hover:text-orange-500 group-hover:bg-orange-50 group-hover:border-orange-200'}`}>
                                 <SafeIcon name={vinCopied ? "check" : "copy"} size={14} />
                             </div>
                         </div>
@@ -487,7 +487,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
 
                 {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK */}
-                <div className="px-3 sm:px-6 py-4 relative z-20">
+                <div className="px-3 sm:px-6 pt-3 pb-4 relative z-20">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             
                             <button 
