@@ -310,7 +310,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 className="relative w-full sm:w-[480px] md:w-[560px] lg:w-[640px] h-full bg-zinc-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200 shadow-[-10px_0_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-300 overflow-y-auto custom-scroll"
             >
                 {/* STÄNG/NYTT ARBETE KNAPPAR */}
-                <div className="absolute top-5 right-5 flex gap-2 z-20">
+                <div className="absolute top-4 sm:top-5 right-3 sm:right-5 flex gap-2 z-20">
                     <button onClick={()=>setView('NEW_JOB',{prefillRegnr:v.regnr})} title="Nytt arbete" className="w-9 h-9 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transition border border-transparent hover:border-white/20 active:scale-95">
                         <SafeIcon name="plus" size={16} />
                     </button>
@@ -320,10 +320,10 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
 
                 {/* 1. MÖRK HEADER (Rullar med innehållet) */}
-                <div className="bg-[#0f172a] text-white pt-6 pb-5 px-6 shadow-md relative z-10">
+                <div className="bg-[#0f172a] text-white pt-5 sm:pt-6 pb-5 px-3 sm:px-6 shadow-md relative z-10">
                     
                     {/* Logga & Fordonsinfo */}
-                    <div className="flex items-start gap-4 mb-3 pr-20">
+                    <div className="flex items-start gap-3 sm:gap-4 mb-3 pr-16 sm:pr-20">
                         <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-xl flex items-center justify-center text-yellow-500 shadow-lg shrink-0 relative group">
                             <select className="absolute inset-0 opacity-0 cursor-pointer z-30 w-full h-full" onChange={changeBrand} value={brand||""}>
                                 <option value="">...</option>{Object.entries(BRANDS).map(([n,s])=><option key={s} value={s}>{n}</option>)}
@@ -354,7 +354,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
 
                     {/* Specifikationer inbyggda i headern (Med smarta Tooltips) */}
-                    <div className="grid grid-cols-4 gap-y-4 gap-x-3 pt-5 mt-2 border-t border-slate-700/50">
+                    <div className="grid grid-cols-4 gap-y-4 gap-x-1.5 sm:gap-x-3 pt-4 sm:pt-5 mt-2 border-t border-slate-700/50">
                         {[
                             { label: 'Motorkod', value: specs.engine, color: 'text-white' },
                             { label: 'Oljevolym', value: specs.oil, color: 'text-white' },
@@ -366,8 +366,8 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             { label: 'Växellåda', value: specs.ts_gearbox, color: 'text-white' }
                         ].map((spec, i) => (
                             <div key={i} className="relative group cursor-pointer min-w-0 outline-none" tabIndex="0">
-                                <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">{spec.label}</span>
-                                <span className={`font-bold text-[13px] truncate block ${spec.color}`}>{spec.value || '-'}</span>
+                                <span className="block text-[8.5px] sm:text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 truncate">{spec.label}</span>
+                                <span className={`font-bold text-[12px] sm:text-[13px] truncate block ${spec.color}`}>{spec.value || '-'}</span>
                                 
                                 {/* Interaktiv Tooltip (Visas vid hover på dator & klick på mobil) */}
                                 {spec.value && String(spec.value).length > 7 && (
@@ -397,7 +397,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
 
                     {/* Sammanslagen Grid: Drivmedel + OEM Reservdelar i klartext */}
                     {showAllSpecs && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-5 gap-x-3 pt-5 mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-5 gap-x-2 sm:gap-x-3 pt-4 sm:pt-5 mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
 
                             {/* OEM Reservdelar (Helt integrerade utan boxar) */}
                             {specs.oem_parts && specs.oem_parts.map((p, i) => {
@@ -461,7 +461,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                 </div>
 
                 {/* 2. CHASSINUMMER, LÄNKAR & OEM-DELAR */}
-                <div className="bg-white dark:bg-slate-900 pb-4 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10 px-6">
+                <div className="bg-white dark:bg-slate-900 pb-4 shadow-sm border-b border-zinc-200 dark:border-white/5 relative z-10 px-3 sm:px-6">
                     
                     {/* ENHETLIG VIN BOX */}
                     <div className="mt-4 mb-5">
@@ -486,9 +486,8 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
                 </div>
 
-                {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK (Optimerad responsivitet) */}
                 {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK */}
-                    <div className="px-4 sm:px-6 py-4 relative z-20">
+                <div className="px-3 sm:px-6 py-4 relative z-20">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             
                             <button 
@@ -524,7 +523,7 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                     </div>
 
                 {/* 4. HISTORIK MED BOX-DESIGN */}
-                <div className="px-4 sm:px-6 pb-24 relative z-10">
+                <div className="px-3 sm:px-6 pb-24 relative z-10">
                     <div className="pb-3 mb-4 flex items-center justify-between border-b border-slate-200 dark:border-white/5">
                         <h3 className="text-[12px] font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                             <SafeIcon name="clock" size={14} className="text-orange-500" />
