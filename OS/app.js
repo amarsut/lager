@@ -256,6 +256,7 @@ const App = () => {
 
                 // 3. SMART UPPDATERING: Skriv bara över om källan är stark, eller om fältet tidigare var tomt!
                 if (isValid(fordonData.motorkod) && (!existing.engine || isStrongSource)) specUpdates.engine = String(fordonData.motorkod);
+                if (isValid(fordonData.effekt)) specUpdates.effekt = String(fordonData.effekt);
                 if (isValid(fordonData.oljevolym) && (!existing.oil || isStrongSource)) specUpdates.oil = String(fordonData.oljevolym).includes('l') ? String(fordonData.oljevolym) : `${fordonData.oljevolym} l`;
                 
                 // NYTT: Fångar upp Oljetyp!
