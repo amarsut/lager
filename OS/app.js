@@ -692,7 +692,7 @@ const App = () => {
                     {!isChatOpen && (
                         <button 
                             onClick={() => setIsChatOpen(!isChatOpen)} 
-                            className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full items-center justify-center transition-all duration-300 z-[600] animate-in zoom-in-50 duration-500 ${hasUnread ? 'bg-orange-500 text-white hover:scale-110 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-[pulse_2s_infinite]' : 'bg-orange-500 text-black hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.4)]'}`}
+                            className={`hidden lg:flex fixed bottom-8 right-8 w-16 h-16 rounded-full items-center justify-center transition-all duration-300 z-[300] animate-in zoom-in-50 duration-500 ${hasUnread ? 'bg-orange-500 text-white hover:scale-110 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-[pulse_2s_infinite]' : 'bg-orange-500 text-black hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.4)]'}`}
                         >
                             <window.Icon name="message-square" size={24} />
                             {hasUnread && (
