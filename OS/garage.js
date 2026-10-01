@@ -298,6 +298,15 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
         return (b.datum || '').localeCompare(a.datum || '');
     });
 
+    // Klonar AutoSearch-logiken för att bygga ihop Motor & Effekt snyggt
+    const powerLine = React.useMemo(() => {
+        let engineSpec = specs.model ? (specs.model.match(/\b(\d\.\d\s*[a-zA-Z\-]+)\b/i) || [])[1] : "";
+        engineSpec = engineSpec ? engineSpec.toUpperCase() : "";
+        let effektStr = specs.effekt || "";
+        if (effektStr && /^\d+([.,]\d+)?$/.test(effektStr.replace(/\s+/g, ''))) effektStr += ' kW';
+        return [engineSpec, effektStr].filter(Boolean).join(" | ") || '-';
+    }, [specs.model, specs.effekt]);
+
     return (
         <div className="fixed inset-0 z-[400] flex justify-end animate-in fade-in duration-300">
             {/* Mörk overlay */}
@@ -379,12 +388,14 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                         ))}
                     </div>
 
-                    {/* Drivmedel */}
+                    {/* Drivmedel & Motor/Effekt (Separat Rad) */}
                     {showAllSpecs && (
-                        <div className="grid grid-cols-4 gap-3 pt-4 mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
-                            <div className="relative group cursor-pointer min-w-0 outline-none" tabIndex="0">
-                                <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Drivmedel</span>
-                                <span className="font-bold text-[13px] text-white truncate block">{specs.ts_fuel || '-'}</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 sm:pt-5 mt-3 sm:mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
+                            
+                            {/* Drivmedel */}
+                            <div className="relative group cursor-pointer min-w-0 outline-none flex flex-col justify-start" tabIndex="0">
+                                <span className="block text-[8.5px] sm:text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5 sm:mb-1">Drivmedel</span>
+                                <span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{specs.ts_fuel || '-'}</span>
                                 
                                 {specs.ts_fuel && String(specs.ts_fuel).length > 7 && (
                                     <div className="absolute z-[100] left-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible bg-slate-800 text-white text-[12px] font-bold px-3 py-2 rounded-lg shadow-xl border border-slate-600 whitespace-nowrap transition-all pointer-events-none">
@@ -392,6 +403,19 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Motor & Effekt (Tar 2 kolumner på dator för att rymma hela texten) */}
+                            <div className="col-span-1 sm:col-span-2 relative group cursor-pointer min-w-0 outline-none flex flex-col justify-start" tabIndex="0">
+                                <span className="block text-[8.5px] sm:text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5 sm:mb-1">Motor & Effekt</span>
+                                <span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{powerLine}</span>
+                                
+                                {powerLine !== '-' && powerLine.length > 15 && (
+                                    <div className="absolute z-[100] left-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible bg-slate-800 text-white text-[12px] font-bold px-3 py-2 rounded-lg shadow-xl border border-slate-600 whitespace-nowrap transition-all pointer-events-none">
+                                        {powerLine}
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                     )}
 
@@ -643,6 +667,7 @@ window.VehicleProfileLoader = ({ regnr, highlightId, onClose, setView }) => {
                         ts_inspection: specs.ts_inspection || '',
                         ts_gearbox: specs.ts_gearbox || '',
                         ts_fuel: specs.ts_fuel || '',
+                        effekt: specs.effekt || '',
                         oem_parts: specs.oem_parts || []
                     };
                 }
