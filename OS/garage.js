@@ -158,9 +158,10 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
     const [histQ, setHistQ] = React.useState("");
     const [regCopied, setRegCopied] = React.useState(false);
     const [vinCopied, setVinCopied] = React.useState(false);
-    const [showAllSpecs, setShowAllSpecs] = React.useState(false);
+    const [showAllSpecs, setShowAllSpecs] = React.useState(false); 
     const [isScanningOEM, setIsScanningOEM] = React.useState(false);
     const [lagerItems, setLagerItems] = React.useState([]);
+    const [copiedOem, setCopiedOem] = React.useState(null); // <-- LÄGG TILL DENNA RAD
     const tStart = React.useRef({ x: 0, y: 0 });
 
     const isInspExpired = React.useMemo(() => {
@@ -393,6 +394,70 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </div>
                         </div>
                     )}
+
+                    {/* Sammanslagen Grid: Drivmedel + OEM Reservdelar i klartext */}
+                    {showAllSpecs && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-5 gap-x-3 pt-5 mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
+
+                            {/* OEM Reservdelar (Helt integrerade utan boxar) */}
+                            {specs.oem_parts && specs.oem_parts.map((p, i) => {
+                                const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
+                                const qty = inStockItem ? parseInt(inStockItem.quantity || 0) : 0;
+                                
+                                return (
+                                    <div key={`oem-${i}`} className="relative group flex flex-col justify-start min-w-0 outline-none" tabIndex="0">
+                                        
+                                        {/* Rad 1: Rubrik & Minimal Lagerstatus */}
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider truncate">
+                                                {p.name}
+                                            </span>
+                                            {qty > 0 ? (
+                                                <span className="text-[7.5px] font-bold tracking-widest bg-emerald-500/10 text-emerald-400 px-1.5 py-[1.5px] rounded whitespace-nowrap">
+                                                    {qty} LAGER
+                                                </span>
+                                            ) : (
+                                                <span className="text-[7.5px] font-bold tracking-widest bg-red-500/10 text-red-400 px-1.5 py-[1.5px] rounded whitespace-nowrap">
+                                                    0 LAGER
+                                                </span>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Rad 2: Artikelnummer & Subtil Kopiera-knapp */}
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="font-bold text-[13px] text-white truncate block">
+                                                {p.oem}
+                                            </span>
+                                            <button 
+                                                onClick={(e) => { 
+                                                    e.stopPropagation(); 
+                                                    navigator.clipboard.writeText(p.oem); 
+                                                    setCopiedOem(p.oem);
+                                                    setTimeout(() => setCopiedOem(null), 2000);
+                                                }} 
+                                                className={`p-1 -ml-1 rounded transition-all outline-none ${
+                                                    copiedOem === p.oem
+                                                    ? 'text-emerald-400 opacity-100'
+                                                    : 'text-slate-500 hover:text-white opacity-40 sm:opacity-0 group-hover:opacity-100 focus:opacity-100'
+                                                }`}
+                                                title="Kopiera reservdelsnummer"
+                                            >
+                                                <SafeIcon name={copiedOem === p.oem ? "check" : "copy"} size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Toggle knapp (Inuti den mörka headern) */}
+                    <div className="flex justify-center mt-6 mb-1">
+                        <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="flex items-center gap-2 text-[10px] font-bold text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-1.5 rounded-full uppercase transition-all outline-none tracking-widest">
+                            {showAllSpecs ? 'Göm specifikationer & OEM' : 'Visa specifikationer & OEM'}
+                            <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={12} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* 2. CHASSINUMMER, LÄNKAR & OEM-DELAR */}
@@ -419,68 +484,6 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             </div>
                         </div>
                     </div>
-
-                    {/* ENHETLIG OEM RESERVDELAR */}
-                    {showAllSpecs && specs.oem_parts && specs.oem_parts.length > 0 && (
-                        <div className="animate-in slide-in-from-top-2 fade-in duration-300 mb-2">
-                            
-                            {/* Rubrik utanför rutan för perfekt enhetlighet */}
-                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5 pl-1">
-                                <SafeIcon name="layers" size={14} className="text-orange-500" /> 
-                                OEM Reservdelar
-                            </div>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                                {specs.oem_parts.map((p, i) => {
-                                    const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === p.oem);
-                                    const qty = inStockItem ? parseInt(inStockItem.quantity || 0) : 0;
-                                    
-                                    return (
-                                        <div key={i} className="flex justify-between items-center p-2.5 sm:p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl hover:border-orange-300 dark:hover:border-orange-500/50 transition-all group shadow-sm hover:shadow-md cursor-default">
-                                            
-                                            <div className="flex flex-col gap-1.5 min-w-0 pr-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">{p.name}</span>
-                                                    
-                                                    {/* Lager-indikator (Grön om > 0, Röd om 0) */}
-                                                    {qty > 0 ? (
-                                                        <span className="text-[8px] font-bold tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                                            {qty} I LAGER
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-[8px] font-bold tracking-wider bg-red-50 text-red-600 border border-red-100 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                                            0 I LAGER
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <span className="font-mono text-[14px] sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 tracking-widest group-hover:text-orange-600 transition-colors truncate">{p.oem}</span>
-                                            </div>
-                                            
-                                            {/* Kopiera-knapp som alltid syns */}
-                                            <button 
-                                                onClick={(e) => { 
-                                                    e.stopPropagation(); 
-                                                    navigator.clipboard.writeText(p.oem); 
-                                                    alert(`Kopierade ${p.name}: ${p.oem}`); 
-                                                }} 
-                                                className="shrink-0 p-1.5 sm:p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-orange-500 hover:bg-orange-50 hover:border-orange-200 transition-all outline-none active:scale-95"
-                                                title="Kopiera reservdelsnummer"
-                                            >
-                                                <SafeIcon name="copy" size={14} />
-                                            </button>
-                                            
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Toggle knapp med snyggt mellanrum ovanför */}
-                    <button onClick={() => setShowAllSpecs(!showAllSpecs)} className="w-full text-center flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase py-2 mt-4 mb-0 transition-colors outline-none tracking-widest">
-                        {showAllSpecs ? 'Göm specifikationer & OEM' : 'Visa specifikationer & OEM'}
-                        <SafeIcon name={showAllSpecs ? "chevron-up" : "chevron-down"} size={14} />
-                    </button>
                 </div>
 
                 {/* 3. ÅTGÄRDSKNAPPAR OVANFÖR HISTORIK (Optimerad responsivitet) */}
