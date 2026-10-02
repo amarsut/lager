@@ -524,7 +524,7 @@ window.LagerView = ({ allJobs = [] }) => {
                 </div>
 
                 {/* HÖGER: DATATABELL (Fyller hela den lediga ytan till höger när den är aktiv) */}
-                <div className={`${showTable ? 'flex' : 'hidden'} flex-1 xl:w-[45%] flex-col bg-white dark:bg-[#121214] shrink-0 z-10 animate-in fade-in duration-300`}>
+                <div className={`${showTable ? 'flex' : 'hidden'} flex-1 xl:w-[55%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
                     
                     {/* Table Header (Sticky) */}
                     <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/80 dark:bg-[#1a2235]/80 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center shadow-sm sticky top-0 z-20">
