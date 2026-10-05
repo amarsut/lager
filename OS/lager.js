@@ -426,7 +426,7 @@ window.LagerView = ({ allJobs = [] }) => {
     };
 
     return (
-        <div className="relative w-full h-[calc(100vh-6rem)] md:h-[calc(100vh-4rem)] animate-in fade-in duration-700 flex flex-col select-none ml-0">
+        <div className="relative w-full max-w-full overflow-hidden h-full flex-1 min-h-0 animate-in fade-in duration-700 flex flex-col select-none ml-0">
             
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
@@ -450,7 +450,7 @@ window.LagerView = ({ allJobs = [] }) => {
 
                 <div className="flex flex-row items-center gap-2 md:gap-4 z-10 flex-1 justify-end">
                     {/* Sökfältet tar upp all yta som blir över (flex-1) */}
-                    <div className="relative group flex-1 md:max-w-none">
+                    <div className="relative group flex-1 min-w-0 md:max-w-none">
                         <input
                             ref={searchInputRef}
                             type="text" value={search} onChange={e => { setSearch(e.target.value); if(e.target.value) setShowTable(true); }}
@@ -471,8 +471,8 @@ window.LagerView = ({ allJobs = [] }) => {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col overflow-hidden bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-3xl shadow-sm mb-4 lg:mb-0">
-                <div className="flex-1 flex overflow-hidden relative">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-3xl shadow-sm mb-0">
+                <div className="flex-1 min-h-0 flex overflow-hidden relative">
                     
                     {/* MITTEN: THE BLUEPRINT */}
                     <div className={`${showTable ? 'hidden xl:flex xl:w-[48%] shrink-0' : 'flex'} flex-1 flex-col border-r border-zinc-200/80 dark:border-white/5 relative bg-zinc-50/30 dark:bg-[#0b0f19] overflow-hidden group/diagram items-center justify-center p-1 md:p-6`}>
@@ -484,7 +484,7 @@ window.LagerView = ({ allJobs = [] }) => {
                             alt="Sprängskiss EPC" 
                         />
                             <DiagramHotspot top="45%" left="42%" dx={-75} dy={-40} label="Motor/Chassi" area="Motor/Chassi" iconType="motor" activeArea={activeArea} onClick={handleSelectArea} />
-                            <DiagramHotspot top="62%" left="75%" dx={50} dy={30} label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={handleSelectArea} />
+                            <DiagramHotspot top="62%" left="74%" dx={-10} dy={60} label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={handleSelectArea} />
                             <DiagramHotspot top="55%" left="50%" dx={0} dy={65} label="Service" area="Service" iconType="service" activeArea={activeArea} onClick={handleSelectArea} />
                             <DiagramHotspot top="70%" left="35%" dx={-45} dy={45} label="Elsystem" area="Elsystem" iconType="elsystem" activeArea={activeArea} onClick={handleSelectArea} />
                             <DiagramHotspot top="30%" left="62%" dx={40} dy={-65} label="Kaross" area="Kaross" iconType="kaross" activeArea={activeArea} onClick={handleSelectArea} />
@@ -496,7 +496,7 @@ window.LagerView = ({ allJobs = [] }) => {
                     </div>
 
                     {/* HÖGER: DATATABELL */}
-                    <div className={`${showTable ? 'flex' : 'hidden'} flex-1 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
+                    <div className={`${showTable ? 'flex' : 'hidden'} flex-1 min-h-0 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
                         
                         <div className="p-4 bg-white dark:bg-[#182032] border-b border-zinc-100 dark:border-white/5 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
                             <button 
@@ -518,7 +518,7 @@ window.LagerView = ({ allJobs = [] }) => {
                             <div className="w-10 md:w-32 px-1 py-3 text-center hidden sm:block">ACTION</div>
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pb-20">
+                        <div className="flex-1 h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-20 min-h-0">
                             {filteredItems.length === 0 ? (
                                 <div className="p-16 text-center flex flex-col items-center justify-center h-full">
                                     <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-4 border border-zinc-200 dark:border-white/5 shadow-inner">
