@@ -426,13 +426,12 @@ window.LagerView = ({ allJobs = [] }) => {
     };
 
     return (
-        <div className="relative w-full max-w-full overflow-hidden h-full flex-1 min-h-0 animate-in fade-in duration-700 flex flex-col select-none ml-0">
-            
+        <div className="absolute inset-0 w-full h-full overflow-hidden animate-in fade-in duration-700 flex flex-col select-none p-3 md:p-4 pb-20 md:pb-4">
+
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
             {/* HEADER */}
-            {/* HEADER */}
-            <div className="flex flex-row items-center justify-between pb-2 md:pb-4 border-b border-zinc-200 dark:border-white/10 gap-2 md:gap-4 shrink-0 m-0 p-0 md:p-0 sticky top-0 z-50 bg-white/90 dark:bg-[#182032]/90 backdrop-blur-md md:backdrop-blur-none md:relative md:bg-transparent">
+            <div className="flex flex-row items-center justify-between pb-2 md:pb-0 border-b border-zinc-200 dark:border-white/10 gap-2 md:gap-4 shrink-0 m-0 p-0 md:p-0 sticky top-0 z-50 bg-white/90 dark:bg-[#182032]/90 backdrop-blur-md md:backdrop-blur-none md:relative md:bg-transparent">
                 
                 <div className="flex items-center shrink-0 gap-3">
                     {/* Loggan (Ikonen) - Syns på både mobil och dator */}
@@ -471,7 +470,7 @@ window.LagerView = ({ allJobs = [] }) => {
                 </div>
             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-3xl shadow-sm mb-0">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white/90 dark:bg-[#182032]/90 border border-zinc-200/80 dark:border-white/5 rounded-t-3xl md:rounded-3xl shadow-sm mb-0">
                 <div className="flex-1 min-h-0 flex overflow-hidden relative">
                     
                     {/* MITTEN: THE BLUEPRINT */}
@@ -498,7 +497,7 @@ window.LagerView = ({ allJobs = [] }) => {
                     {/* HÖGER: DATATABELL */}
                     <div className={`${showTable ? 'flex' : 'hidden'} flex-1 min-h-0 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
                         
-                        <div className="p-4 bg-white dark:bg-[#182032] border-b border-zinc-100 dark:border-white/5 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
+                        <div className="p-4 bg-white dark:bg-[#182032] border-b border-zinc-100 dark:border-white/5 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-sm shrink-0">
                             <button 
                                 onClick={() => setShowTable(false)}
                                 className="py-2.5 px-4 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 hover:border-orange-300 text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
@@ -510,7 +509,7 @@ window.LagerView = ({ allJobs = [] }) => {
                             </div>
                         </div>
 
-                        <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/80 dark:bg-[#1a2235]/80 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center shadow-sm sticky top-[68px] md:top-[74px] z-20">
+                        <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/80 dark:bg-[#1a2235]/80 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center shadow-sm sticky top-[68px] md:top-[74px] z-20 shrink-0">
                             <div className="w-8 md:w-12 border-r border-zinc-200/80 dark:border-white/5 px-1 md:px-2 py-3 text-center">#</div>
                             <div className="w-24 md:w-40 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3">PART NUMBER</div>
                             <div className="flex-1 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3">DESCRIPTION</div>
@@ -518,10 +517,11 @@ window.LagerView = ({ allJobs = [] }) => {
                             <div className="w-10 md:w-32 px-1 py-3 text-center hidden sm:block">ACTION</div>
                         </div>
                         
-                        <div className="flex-1 h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pb-20 min-h-0">
+                        {/* ANPASSAD SCROLLCONTAINER: Fyller ut höjden och tar bort fasta marginaler */}
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
                             {filteredItems.length === 0 ? (
                                 <div className="p-16 text-center flex flex-col items-center justify-center h-full">
-                                    <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-4 border border-zinc-200 dark:border-white/5 shadow-inner">
+                                    <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-0 border border-zinc-200 dark:border-white/5 shadow-inner">
                                         <SafeIcon name="inbox" size={24} className="text-zinc-400" />
                                     </div>
                                     <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Inga artiklar hittades</span>
@@ -573,7 +573,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 </span>
                                             </div>
                                             
-                                            {/* Action Desktop */}
                                             <div className="w-32 px-3 py-3 justify-end gap-2 hidden sm:flex shrink-0">
                                                 <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={14}/></button>
@@ -582,7 +581,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 </div>
                                             </div>
 
-                                            {/* Action Mobil (Tre prickar) */}
                                             <div className="w-10 px-1 py-3 flex sm:hidden justify-center items-center shrink-0 relative">
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }} 
