@@ -55,53 +55,56 @@ const LagerScannerModal = ({ items, onOpenItem, onAddNewWithCode, onClose }) => 
     return (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-            <div className="relative w-full max-w-md bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 p-6 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 border border-orange-200 dark:border-orange-500/20 flex items-center justify-center shadow-sm"><SafeIcon name="scan" size={20} /></div>
-                        <div>
-                            <h2 className="text-sm font-black uppercase tracking-widest">Skanna Artikel</h2>
-                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Kamera eller Manuell inmatning</p>
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-[#121826] rounded-lg border border-zinc-200 dark:border-white/10"><SafeIcon name="x" size={14} /></button>
-                </div>
-                <form onSubmit={handleCodeSubmit} className="space-y-5">
-                    <div className="grid grid-cols-2 gap-3">
-                        <label className="relative h-28 bg-zinc-100 dark:bg-[#0f1522] rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 overflow-hidden flex flex-col items-center justify-center text-center p-3 group cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-                            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageUpload} />
-                            <SafeIcon name="camera" size={28} className="text-zinc-400 group-hover:text-orange-500 transition-colors mb-2" />
-                            <span className="text-[11px] font-bold uppercase tracking-widest">Kamera</span>
-                            <span className="text-[8px] text-zinc-500 mt-1 max-w-[90%] leading-relaxed">Öppna direkt</span>
-                        </label>
-                        <label className="relative h-28 bg-zinc-100 dark:bg-[#0f1522] rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 overflow-hidden flex flex-col items-center justify-center text-center p-3 group cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                            <SafeIcon name="image" size={28} className="text-zinc-400 group-hover:text-orange-500 transition-colors mb-2" />
-                            <span className="text-[11px] font-bold uppercase tracking-widest">Välj fil</span>
-                            <span className="text-[8px] text-zinc-500 mt-1 max-w-[90%] leading-relaxed">Från bibliotek</span>
-                        </label>
-                    </div>
-                    <div className="relative">
-                        <input
-                            ref={inputRef} type="text" value={scannedCode} onChange={e => { setScannedCode(e.target.value); setScanError(''); }}
-                            className="w-full bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-center text-sm font-mono font-bold tracking-widest outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-inner text-zinc-900 dark:text-white"
-                            placeholder="Art. nummer eller streckkod"
-                        />
-                    </div>
-                    {scanError && (
-                        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-center animate-in fade-in zoom-in-95 duration-200 flex flex-col gap-3">
-                            <p className="text-xs font-bold text-red-600 dark:text-red-400">{scanError}</p>
-                            <div className="flex gap-2">
-                                <a href={generateTrodoLink(scannedCode)} target="_blank" rel="noopener noreferrer" className="flex-1 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-50 border border-zinc-200 dark:border-white/10 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-sm transition-all"><SafeIcon name="external-link" size={12} /> Trodo</a>
-                                <a href={generateThansenLink(scannedCode)} target="_blank" rel="noopener noreferrer" className="flex-1 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-50 border border-zinc-200 dark:border-white/10 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-sm transition-all"><SafeIcon name="external-link" size={12} /> thansen</a>
+            {/* Lagt till h-[calc(100vh-5rem)] och mb-20 sm:mb-0 här */}
+            <div className="relative w-full h-[calc(100vh-5rem)] sm:h-auto max-w-md bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 p-6 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 flex flex-col justify-between mb-20 sm:mb-0 overflow-y-auto custom-scrollbar">
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 border border-orange-200 dark:border-orange-500/20 flex items-center justify-center shadow-sm"><SafeIcon name="scan" size={20} /></div>
+                            <div>
+                                <h2 className="text-sm font-black uppercase tracking-widest">Skanna Artikel</h2>
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Kamera eller Manuell inmatning</p>
                             </div>
-                            <button type="button" onClick={() => { onAddNewWithCode(scannedCode.toUpperCase()); onClose(); }} className="w-full h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-md transition-all"><SafeIcon name="plus" size={12} /> Lägg till i databasen</button>
                         </div>
-                    )}
-                    {!scanError && (
-                        <button type="submit" className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] transition-all flex items-center justify-center gap-2"><SafeIcon name="search" size={14} /> Sök i databas</button>
-                    )}
-                </form>
+                        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-[#121826] rounded-lg border border-zinc-200 dark:border-white/10"><SafeIcon name="x" size={14} /></button>
+                    </div>
+                    <form onSubmit={handleCodeSubmit} className="space-y-5">
+                        <div className="grid grid-cols-2 gap-3">
+                            <label className="relative h-28 bg-zinc-100 dark:bg-[#0f1522] rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 overflow-hidden flex flex-col items-center justify-center text-center p-3 group cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageUpload} />
+                                <SafeIcon name="camera" size={28} className="text-zinc-400 group-hover:text-orange-500 transition-colors mb-2" />
+                                <span className="text-[11px] font-bold uppercase tracking-widest">Kamera</span>
+                                <span className="text-[8px] text-zinc-500 mt-1 max-w-[90%] leading-relaxed">Öppna direkt</span>
+                            </label>
+                            <label className="relative h-28 bg-zinc-100 dark:bg-[#0f1522] rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 overflow-hidden flex flex-col items-center justify-center text-center p-3 group cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                <SafeIcon name="image" size={28} className="text-zinc-400 group-hover:text-orange-500 transition-colors mb-2" />
+                                <span className="text-[11px] font-bold uppercase tracking-widest">Välj fil</span>
+                                <span className="text-[8px] text-zinc-500 mt-1 max-w-[90%] leading-relaxed">Från bibliotek</span>
+                            </label>
+                        </div>
+                        <div className="relative">
+                            <input
+                                ref={inputRef} type="text" value={scannedCode} onChange={e => { setScannedCode(e.target.value); setScanError(''); }}
+                                className="w-full bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-center text-sm font-mono font-bold tracking-widest outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-inner text-zinc-900 dark:text-white"
+                                placeholder="Art. nummer eller streckkod"
+                            />
+                        </div>
+                        {scanError && (
+                            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-center animate-in fade-in zoom-in-95 duration-200 flex flex-col gap-3">
+                                <p className="text-xs font-bold text-red-600 dark:text-red-400">{scanError}</p>
+                                <div className="flex gap-2">
+                                    <a href={generateTrodoLink(scannedCode)} target="_blank" rel="noopener noreferrer" className="flex-1 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-50 border border-zinc-200 dark:border-white/10 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-sm transition-all"><SafeIcon name="external-link" size={12} /> Trodo</a>
+                                    <a href={generateThansenLink(scannedCode)} target="_blank" rel="noopener noreferrer" className="flex-1 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-50 border border-zinc-200 dark:border-white/10 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-sm transition-all"><SafeIcon name="external-link" size={12} /> thansen</a>
+                                </div>
+                                <button type="button" onClick={() => { onAddNewWithCode(scannedCode.toUpperCase()); onClose(); }} className="w-full h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-md transition-all"><SafeIcon name="plus" size={12} /> Lägg till i databasen</button>
+                            </div>
+                        )}
+                        {!scanError && (
+                            <button type="submit" className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] transition-all flex items-center justify-center gap-2"><SafeIcon name="search" size={14} /> Sök i databas</button>
+                        )}
+                    </form>
+                </div>
             </div>
         </div>
     );
@@ -139,18 +142,22 @@ const LagerItemModal = ({ item, defaultCode = '', onClose }) => {
     return (
         <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center p-0 sm:p-4">
             <div className="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" onClick={onClose}></div>
-            <div className="relative w-full h-full sm:h-auto sm:max-h-[90vh] max-w-2xl bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-none sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col">
+            <div className="relative w-full h-[calc(100vh-5rem)] sm:h-auto sm:max-h-[90vh] max-w-2xl bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-none sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col mb-20 sm:mb-0">
                 
-                <div className="w-full flex justify-center pt-3 pb-2 sm:hidden bg-zinc-50 dark:bg-[#1a2235] rounded-t-3xl"><div className="w-12 h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full"></div></div>
-                <div className="px-6 py-5 flex justify-between items-center bg-zinc-50/80 dark:bg-[#1a2235]/50 border-b border-zinc-200/80 dark:border-white/5 relative overflow-hidden sm:rounded-t-3xl">
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center shadow-md"><SafeIcon name={isNew ? "plus" : "edit-2"} size={20} /></div>
+                {/* Uppdaterad header som matchar länka-modalen */}
+                <div className="px-5 py-4 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50/50 dark:bg-[#1a2235]/50 rounded-t-3xl sm:rounded-t-3xl">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-200/50 dark:border-orange-500/20">
+                            <SafeIcon name={isNew ? "plus" : "edit-2"} size={18} />
+                        </div>
                         <div>
-                            <h2 className="text-xl font-black uppercase tracking-tight leading-none">{isNew ? 'LÄGG TILL ARTIKEL' : 'UPPDATERA ARTIKEL'}</h2>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold tracking-widest uppercase mt-1">Lagerhantering // Databas</p>
+                            <h2 className="text-[14px] font-black uppercase tracking-widest">{isNew ? 'LÄGG TILL ARTIKEL' : 'UPPDATERA ARTIKEL'}</h2>
+                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest">Lagerhantering // Databas</p>
                         </div>
                     </div>
-                    <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 rounded-xl transition-all shadow-sm relative z-10"><SafeIcon name="x" size={16} /></button>
+                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 bg-white dark:bg-[#121826] rounded-lg shadow-sm border border-zinc-200 dark:border-white/10">
+                        <SafeIcon name="x" size={14} />
+                    </button>
                 </div>
                 
                 <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
@@ -243,7 +250,7 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-20 sm:pb-4">
             <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" onClick={onClose}></div>
             <div className="relative w-full h-full sm:h-auto sm:max-h-[90vh] max-w-lg bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-none sm:rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-white/10 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col">
                 
