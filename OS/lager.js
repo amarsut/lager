@@ -482,12 +482,12 @@ window.LagerView = ({ allJobs = [] }) => {
     };
 
     return (
-        <div className="absolute inset-0 w-full h-full overflow-hidden animate-in fade-in duration-700 flex flex-col select-none p-3 md:p-4 pb-20 md:pb-4">
+        <div className="absolute inset-0 w-full h-full overflow-hidden animate-in fade-in duration-700 flex flex-col select-none pb-20 md:pb-0 bg-transparent">
 
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
             {/* HEADER */}
-            <div className="flex flex-row items-center justify-between pb-2 md:pb-0 border-b border-zinc-200 dark:border-white/10 gap-2 md:gap-4 shrink-0 m-0 p-0 md:p-0 sticky top-0 z-50 bg-white/90 dark:bg-[#182032]/90 backdrop-blur-md md:backdrop-blur-none md:relative md:bg-transparent">
+            <div className="flex flex-row items-center justify-between pb-2 md:pb-4 gap-2 md:gap-4 shrink-0 m-0 p-3 md:p-4 z-50 bg-transparent">
                 
                 <div className="flex items-center shrink-0 gap-3">
                     {/* Loggan (Ikonen) - Syns på både mobil och dator */}
@@ -547,7 +547,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
 
                         {/* KNAPPARNA */}
                         <div className="absolute bottom-0 left-0 right-0 w-full md:hidden z-20">
-                            <div className="flex w-full gap-2 px-4 overflow-x-auto custom-scrollbar snap-x snap-mandatory">
+                            <div className="flex w-full gap-2 px-4 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                 {/* ÄNDRAT HÄR: Lade till 'Alla' först i listan */}
                                 {etkaCategories.filter(c => ['Alla', 'Kupéfilter', 'Luftfilter', 'Oljefilter', 'Bränslefilter', 'Tändstift'].includes(c.id)).map(cat => {
                                     const isSelected = activeArea === cat.id;
@@ -576,8 +576,8 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                         </div>
                     </div>
 
-                    {/* HÖGER: DATATABELL */}
-                    <div className={`${showTable ? 'flex' : 'hidden'} flex-1 min-h-0 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
+                        {/* HÖGER: DATATABELL */}
+                        <div className={`${showTable ? 'flex' : 'hidden'} flex-1 min-h-0 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
                         
                         {/* SAMLAD STICKY HEADER (TILLBAKA + FILTER + SORTERINGSRUBRIKER) */}
                         <div className="sticky top-0 z-30 flex flex-col shrink-0 w-full shadow-sm">
