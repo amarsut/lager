@@ -499,7 +499,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                         {/* KNAPPARNA: Satt till bottom-0 och tog bort pb-2 för att få bort all padding under */}
                         <div className="absolute bottom-0 left-0 right-0 w-full md:hidden z-20">
                             <div className="flex w-full gap-2 px-4 overflow-x-auto custom-scrollbar snap-x snap-mandatory">
-                                {etkaCategories.filter(c => ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Tändstift', 'Bromsar'].includes(c.id)).map(cat => {
+                                {etkaCategories.filter(c => ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Tändstift'].includes(c.id)).map(cat => {
                                     const isSelected = activeArea === cat.id;
                                     const iconHTML = customIcons[cat.icon];
                                     return (
