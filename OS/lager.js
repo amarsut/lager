@@ -399,12 +399,14 @@ window.LagerView = ({ allJobs = [] }) => {
         { id: 'Kupéfilter', name: 'Kupéfilter', icon: 'filter' },
         { id: 'Luftfilter', name: 'Luftfilter', icon: 'wind' },
         { id: 'Oljefilter', name: 'Oljefilter', icon: 'droplet' },
-        { id: 'Tändstift', name: 'Tändstift', icon: 'sparkplug' } 
+        { id: 'Tändstift', name: 'Tändstift', icon: 'sparkplug' },
+        { id: 'Bränslefilter', name: 'Bränslefilter', icon: 'droplet' } // Lade till Bränslefilter här!
     ];
 
     const filteredItems = React.useMemo(() => {
         let res = [...items];
-        const quick = ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Tändstift'];
+        // Lade till Bränslefilter i quick-arrayen
+        const quick = ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Bränslefilter', 'Tändstift'];
         if (activeArea !== 'Alla') {
             if (quick.includes(activeArea)) {
                 res = res.filter(i => normalizeStr(i.name).includes(normalizeStr(activeArea)));
@@ -496,10 +498,11 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                             <DiagramHotspot top="30%" left="62%" dx={40} dy={-65} label="Kaross" area="Kaross" iconType="kaross" activeArea={activeArea} onClick={handleSelectArea} />
                         </div>
 
-                        {/* KNAPPARNA: Satt till bottom-0 och tog bort pb-2 för att få bort all padding under */}
+                        {/* KNAPPARNA */}
                         <div className="absolute bottom-0 left-0 right-0 w-full md:hidden z-20">
                             <div className="flex w-full gap-2 px-4 overflow-x-auto custom-scrollbar snap-x snap-mandatory">
-                                {etkaCategories.filter(c => ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Tändstift'].includes(c.id)).map(cat => {
+                                {/* ÄNDRAT HÄR: Bytte ut 'Bromsar' mot 'Bränslefilter' */}
+                                {etkaCategories.filter(c => ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Bränslefilter', 'Tändstift'].includes(c.id)).map(cat => {
                                     const isSelected = activeArea === cat.id;
                                     const iconHTML = customIcons[cat.icon];
                                     return (
