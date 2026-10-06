@@ -26,6 +26,15 @@ const generateTrodoLink = (f) => f ? `https://www.trodo.se/catalogsearch/result/
 const generateThansenLink = (f) => f ? `https://www.thansen.se/search?query=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
 const normalizeStr = (str) => (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
 
+// Automatisk VAG-formatering (03l115562 -> 03L 115 562)
+const formatPartNumber = (str) => {
+    if (!str) return 'SAKNAS';
+    let clean = str.replace(/[\s-]/g, '').toUpperCase();
+    const match = clean.match(/^([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{3})(.*)$/);
+    if (match) return `${match[1]} ${match[2]} ${match[3]} ${match[4]}`.trim();
+    return clean;
+};
+
 // ==========================================
 // MODALER
 // ==========================================
@@ -358,12 +367,17 @@ window.LagerView = ({ allJobs = [] }) => {
     const [activeArea, setActiveArea] = React.useState("Alla");
     const [showTable, setShowTable] = React.useState(false); 
     
+    // NYA STATES FÖR FILTER OCH SORTERING
+    // NYA STATES FÖR FILTER OCH SORTERING
+    const [stockFilter, setStockFilter] = React.useState('ALL'); // ALL, IN_STOCK, OUT_OF_STOCK
+    const [sortConfig, setSortConfig] = React.useState({ key: 'partnumber', direction: 'asc' });
+    const [showFilterMenu, setShowFilterMenu] = React.useState(false); // LÄGG TILL DENNA RAD!
+    
     const [editingItem, setEditingItem] = React.useState(null);
     const [linkingItem, setLinkingItem] = React.useState(null);
     const [isScannerOpen, setIsScannerOpen] = React.useState(false);
     const [copiedId, setCopiedId] = React.useState(null);
     const searchInputRef = React.useRef(null);
-
     const [activeMenuId, setActiveMenuId] = React.useState(null);
 
     React.useEffect(() => {
@@ -403,9 +417,16 @@ window.LagerView = ({ allJobs = [] }) => {
         { id: 'Bränslefilter', name: 'Bränslefilter', icon: 'droplet' } // Lade till Bränslefilter här!
     ];
 
+    const handleSort = (key) => {
+        setSortConfig(prev => ({
+            key,
+            direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
+    // UPPDATERAD FILTRERING & SORTERING
     const filteredItems = React.useMemo(() => {
         let res = [...items];
-        // Lade till Bränslefilter i quick-arrayen
         const quick = ['Kupéfilter', 'Luftfilter', 'Oljefilter', 'Bränslefilter', 'Tändstift'];
         if (activeArea !== 'Alla') {
             if (quick.includes(activeArea)) {
@@ -423,8 +444,34 @@ window.LagerView = ({ allJobs = [] }) => {
                 (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(term)
             );
         }
-        return res.sort((a,b) => (a.service_filter||"").localeCompare(b.service_filter||""));
-    }, [items, search, activeArea]);
+
+        // Lagerstatus-filter
+        if (stockFilter === 'IN_STOCK') {
+            res = res.filter(i => (parseInt(i.quantity) || 0) > 0);
+        } else if (stockFilter === 'OUT_OF_STOCK') {
+            res = res.filter(i => (parseInt(i.quantity) || 0) <= 0);
+        }
+
+        // Sortering
+        res.sort((a, b) => {
+            let aVal, bVal;
+            if (sortConfig.key === 'partnumber') {
+                aVal = a.service_filter || '';
+                bVal = b.service_filter || '';
+            } else if (sortConfig.key === 'name') {
+                aVal = a.name || '';
+                bVal = b.name || '';
+            } else if (sortConfig.key === 'stock') {
+                aVal = parseInt(a.quantity) || 0;
+                bVal = parseInt(b.quantity) || 0;
+            }
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return res;
+    }, [items, search, activeArea, stockFilter, sortConfig]);
 
     const copyToClipboard = (e, text, id) => {
         e.stopPropagation();
@@ -532,34 +579,90 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                     {/* HÖGER: DATATABELL */}
                     <div className={`${showTable ? 'flex' : 'hidden'} flex-1 min-h-0 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
                         
-                        <div className="p-4 bg-white dark:bg-[#182032] border-b border-zinc-100 dark:border-white/5 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-sm shrink-0">
-                            <button 
-                                onClick={() => setShowTable(false)}
-                                className="py-2.5 px-4 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 hover:border-orange-300 text-zinc-700 dark:text-zinc-300 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
-                            >
-                                <SafeIcon name="arrow-left" size={14} className="text-orange-500 shrink-0" /> TILLBAKA
-                            </button>
-                            <div className="text-[10px] font-black uppercase tracking-widest bg-orange-50 dark:bg-orange-500/10 px-4 py-2 rounded-xl text-orange-500 shadow-sm border border-orange-100 dark:border-orange-500/20">
-                                {activeArea}
+                        {/* SAMLAD STICKY HEADER (TILLBAKA + FILTER + SORTERINGSRUBRIKER) */}
+                        <div className="sticky top-0 z-30 flex flex-col shrink-0 w-full shadow-sm">
+                            
+                            {/* Övre Kontrollraden - Nu på en enda rad med Dropdown */}
+                            <div className="p-3 sm:p-4 bg-white dark:bg-[#182032] border-b border-zinc-100 dark:border-white/5 flex flex-row items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                                    <button 
+                                        onClick={() => setShowTable(false)}
+                                        /* ÄNDRAT HÄR: w-10 px-0 på mobil gör den till en perfekt fyrkant när texten döljs */
+                                        className="h-10 w-10 xs:w-auto px-0 xs:px-3 sm:px-4 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 hover:border-orange-300 text-zinc-700 dark:text-zinc-300 rounded-xl sm:rounded-2xl font-bold text-[9px] sm:text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm transition-all active:scale-95 shrink-0"
+                                    >
+                                        <SafeIcon name="arrow-left" size={14} className="text-orange-500 shrink-0" /> 
+                                        <span className="hidden xs:inline">TILLBAKA</span>
+                                    </button>
+                                    <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-orange-50 dark:bg-orange-500/10 px-3 sm:px-4 h-10 flex items-center justify-center rounded-xl text-orange-500 shadow-sm border border-orange-100 dark:border-orange-500/20 truncate">
+                                        {activeArea}
+                                    </div>
+                                </div>
+                                
+                                {/* Snygg Filter Dropdown */}
+                                <div className="relative shrink-0">
+                                    <button 
+                                        onClick={() => setShowFilterMenu(!showFilterMenu)}
+                                        /* ÄNDRAT HÄR: w-10 px-0 på mobil skapar en perfekt centrerad filter-knapp */
+                                        className={`h-10 w-10 sm:w-auto px-0 sm:px-4 border rounded-xl font-bold text-[9px] sm:text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 ${stockFilter !== 'ALL' ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-white dark:bg-[#121826] border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-orange-300'}`}
+                                    >
+                                        <SafeIcon name="filter" size={14} className={stockFilter !== 'ALL' ? 'text-orange-500' : 'text-zinc-400'} />
+                                        <span className="hidden sm:inline">
+                                            {stockFilter === 'ALL' ? 'FILTER' : stockFilter === 'IN_STOCK' ? 'I LAGER' : 'SLUT'}
+                                        </span>
+                                        <SafeIcon name="chevron-down" size={12} className="opacity-50 hidden sm:block" />
+                                    </button>
+
+                                    {/* Dropdown-menyn */}
+                                    {showFilterMenu && (
+                                        <>
+                                            <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)}></div>
+                                            <div className="absolute right-0 top-full mt-2 z-50 w-36 sm:w-40 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-1.5 flex flex-col gap-1 animate-in fade-in zoom-in-95">
+                                                <button onClick={() => { setStockFilter('ALL'); setShowFilterMenu(false); }} className={`px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'ALL' ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                    Visa Alla {stockFilter === 'ALL' && <SafeIcon name="check" size={12} />}
+                                                </button>
+                                                <button onClick={() => { setStockFilter('IN_STOCK'); setShowFilterMenu(false); }} className={`px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'IN_STOCK' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                    Endast i lager {stockFilter === 'IN_STOCK' && <SafeIcon name="check" size={12} />}
+                                                </button>
+                                                <button onClick={() => { setStockFilter('OUT_OF_STOCK'); setShowFilterMenu(false); }} className={`px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'OUT_OF_STOCK' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                    Slut i lager {stockFilter === 'OUT_OF_STOCK' && <SafeIcon name="check" size={12} />}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Klickbara Sorteringsrubriker */}
+                            <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/90 dark:bg-[#1a2235]/90 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center">
+                                <div className="w-8 md:w-12 border-r border-zinc-200/80 dark:border-white/5 px-1 md:px-2 py-3 text-center shrink-0">#</div>
+                                
+                                <div className="w-24 md:w-40 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between shrink-0" onClick={()=>handleSort('partnumber')}>
+                                    <span>ART.NR</span>
+                                    {sortConfig.key === 'partnumber' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+                                </div>
+                                
+                                <div className="flex-1 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between min-w-0" onClick={()=>handleSort('name')}>
+                                    <span>BESKRIVNING</span>
+                                    {sortConfig.key === 'name' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+                                </div>
+                                
+                                <div className="w-14 md:w-20 border-r border-zinc-200/80 dark:border-white/5 px-1 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-center gap-1 shrink-0" onClick={()=>handleSort('stock')}>
+                                    <span>SALDO</span>
+                                    {sortConfig.key === 'stock' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+                                </div>
+                                
+                                <div className="w-10 md:w-[150px] px-1 py-3 text-center shrink-0 hidden sm:block">ACTION</div>
                             </div>
                         </div>
-
-                        <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/80 dark:bg-[#1a2235]/80 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center shadow-sm sticky top-[68px] md:top-[74px] z-20 shrink-0">
-                            <div className="w-8 md:w-12 border-r border-zinc-200/80 dark:border-white/5 px-1 md:px-2 py-3 text-center">#</div>
-                            <div className="w-24 md:w-40 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3">PART NUMBER</div>
-                            <div className="flex-1 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3">DESCRIPTION</div>
-                            <div className="w-14 md:w-20 border-r border-zinc-200/80 dark:border-white/5 px-1 py-3 text-center">STOCK</div>
-                            <div className="w-10 md:w-32 px-1 py-3 text-center hidden sm:block">ACTION</div>
-                        </div>
                         
-                        {/* ANPASSAD SCROLLCONTAINER: Fyller ut höjden och tar bort fasta marginaler */}
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+                        {/* LISTAN */}
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0">
                             {filteredItems.length === 0 ? (
                                 <div className="p-16 text-center flex flex-col items-center justify-center h-full">
                                     <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-0 border border-zinc-200 dark:border-white/5 shadow-inner">
                                         <SafeIcon name="inbox" size={24} className="text-zinc-400" />
                                     </div>
-                                    <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">Inga artiklar hittades</span>
+                                    <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mt-3">Inga artiklar hittades</span>
                                 </div>
                             ) : (
                                 filteredItems.map((item, idx) => {
@@ -589,12 +692,13 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                                                 <span className="text-[8px] md:text-[9px] font-mono font-bold text-zinc-400">{(idx+1).toString().padStart(3,'0')}</span>
                                             </div>
                                             
+                                            {/* Automatisk VAG-formatering används här */}
                                             <div 
                                                 className="w-24 md:w-40 border-r border-zinc-100 dark:border-white/5 px-2 md:px-4 py-3 font-mono font-bold tracking-wider text-[10px] md:text-[12px] text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors truncate" 
                                                 onClick={(e) => copyToClipboard(e, item.service_filter, item.id)}
-                                                title="Klicka för att kopiera"
+                                                title={`Kopiera: ${item.service_filter}`}
                                             >
-                                                {item.service_filter || 'N/A'}
+                                                {formatPartNumber(item.service_filter)}
                                             </div>
                                             
                                             <div className="flex-1 border-r border-zinc-100 dark:border-white/5 px-2 md:px-4 py-3 min-w-0 flex flex-col justify-center">
@@ -608,14 +712,24 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                                                 </span>
                                             </div>
                                             
-                                            <div className="w-32 px-3 py-3 justify-end gap-2 hidden sm:flex shrink-0">
+                                            {/* Action Desktop - Nya färgkodade knappar */}
+                                            <div className="w-[150px] px-3 py-3 justify-end gap-1.5 hidden sm:flex shrink-0">
                                                 <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={14}/></button>
-                                                    <button onClick={(e)=>{e.stopPropagation(); setEditingItem(item);}} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="edit" size={14}/></button>
-                                                    <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Sök externt"><SafeIcon name="external-link" size={14}/></a>
+                                                    <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={13}/></button>
+                                                    <button onClick={(e)=>{e.stopPropagation(); setEditingItem(item);}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="edit" size={13}/></button>
+                                                    
+                                                    {/* Trodo (Blå ikon) */}
+                                                    <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
+                                                        <SafeIcon name="external-link" size={13} className="text-blue-500 dark:text-blue-400 group-hover/btn:scale-110 transition-transform"/>
+                                                    </a>
+                                                    {/* thansen (Orange ikon) */}
+                                                    <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-sm transition-all group/btn" title="Sök hos thansen">
+                                                        <SafeIcon name="external-link" size={13} className="text-orange-500 dark:text-orange-400 group-hover/btn:scale-110 transition-transform"/>
+                                                    </a>
                                                 </div>
                                             </div>
 
+                                            {/* Action Mobil (Tre prickar) */}
                                             <div className="w-10 px-1 py-3 flex sm:hidden justify-center items-center shrink-0 relative">
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }} 
@@ -630,7 +744,11 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                                                         <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#182032] border border-zinc-200 shadow-xl rounded-xl p-1.5 flex gap-1 animate-in fade-in zoom-in-95">
                                                             <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-600 hover:bg-orange-50 hover:text-orange-500"><SafeIcon name="link" size={16}/></button>
                                                             <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setEditingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-600 hover:bg-blue-50 hover:text-blue-500"><SafeIcon name="edit" size={16}/></button>
-                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-600 hover:bg-blue-50 hover:text-blue-500"><SafeIcon name="external-link" size={16}/></a>
+                                                            
+                                                            {/* Trodo Mobil (Blå ikon) */}
+                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100"><SafeIcon name="external-link" size={16}/></a>
+                                                            {/* thansen Mobil (Orange ikon) */}
+                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 text-orange-500 hover:bg-orange-100"><SafeIcon name="external-link" size={16}/></a>
                                                         </div>
                                                     </>
                                                 )}
@@ -639,6 +757,7 @@ src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABXgAAAPgBAMAAAB6wAkQAAAABGdBT
                                     )
                                 })
                             )}
+                            {filteredItems.length > 0 && <div className="h-4 w-full shrink-0"></div>}
                         </div>
                     </div>
                 </div>
