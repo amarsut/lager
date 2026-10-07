@@ -675,8 +675,8 @@ window.LagerView = ({ allJobs = [] }) => {
                         {/* SAMLAD STICKY HEADER (Denna klibbar fast i toppen när bilden scrollas bort) */}
                         <div className="sticky top-0 z-30 flex flex-col shrink-0 w-full shadow-sm bg-white dark:bg-[#121214]">
 
-                            {/* Övre Kontrollrad (Kompakt och minimalistisk) */}
-                            <div className="px-3 py-2 border-b border-zinc-200/80 dark:border-white/10 flex flex-row items-center justify-between bg-white dark:bg-[#121214]">
+                            {/* Övre Kontrollrad (Balanserad storlek) */}
+                            <div className="px-3 py-2.5 border-b border-zinc-200/80 dark:border-white/10 flex flex-row items-center justify-between bg-white dark:bg-[#121214]">
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <button
                                         onClick={() => {
@@ -684,10 +684,10 @@ window.LagerView = ({ allJobs = [] }) => {
                                             setActiveArea('Alla');
                                             setSearch('');
                                         }}
-                                        className="w-7 h-7 flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-orange-500 rounded-lg transition-colors"
+                                        className="p-1.5 -ml-1 flex items-center justify-center text-zinc-900 dark:text-white hover:text-orange-500 rounded-lg transition-colors cursor-pointer"
                                         title="Tillbaka"
                                     >
-                                        <SafeIcon name="arrow-left" size={16} />
+                                        <SafeIcon name="arrow-left" size={19} />
                                     </button>
 
                                     <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate">
@@ -698,10 +698,10 @@ window.LagerView = ({ allJobs = [] }) => {
                                 <div className="relative shrink-0">
                                     <button
                                         onClick={() => setShowFilterMenu(!showFilterMenu)}
-                                        className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors relative ${stockFilter !== 'ALL' ? 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'text-zinc-700 dark:text-zinc-200 hover:text-orange-500'}`}
+                                        className={`p-1.5 -mr-1 flex items-center justify-center rounded-lg transition-colors relative cursor-pointer ${stockFilter !== 'ALL' ? 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'text-zinc-900 dark:text-white hover:text-orange-500'}`}
                                         title="Filtrera"
                                     >
-                                        <SafeIcon name="filter" size={15} />
+                                        <SafeIcon name="filter" size={18} />
                                         {stockFilter !== 'ALL' && (
                                             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                                         )}
