@@ -754,7 +754,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                     {sortConfig.key === 'stock' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
 
-                                <div className="w-10 md:w-[150px] px-1 md:px-3 py-3 text-right shrink-0 hidden sm:block">ACTION</div>
+                                <div className="w-10 md:w-[180px] px-1 md:px-3 py-3 text-center shrink-0 hidden sm:block">ACTION</div>
                             </div>
                         </div>
 
@@ -812,38 +812,39 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 </span>
                                             </div>
 
-                                            <div className="w-[150px] px-3 py-3 justify-end gap-1.5 hidden sm:flex shrink-0 items-center">
-                                                <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e) => { e.stopPropagation(); setLinkingItem(item); }} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={13} /></button>
-                                                    <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="edit" size={13} /></button>
-                                                    <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
-                                                        <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-3.5 h-3.5 object-contain group-hover/btn:scale-110 transition-transform" />
-                                                    </a>
-                                                    <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-sm transition-all group/btn" title="Sök hos thansen">
-                                                        <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" alt="thansen" className="w-3.5 h-3.5 object-contain group-hover/btn:scale-110 transition-transform" />
-                                                    </a>
+                                            {/* Minskad px-3 till pr-2 för att putta dem till höger, gap minskat från 2 till 1.5, storlek w-8 h-8 */}
+                                                <div className="w-[180px] px-2 py-3 justify-center gap-1.5 hidden sm:flex shrink-0 items-center">
+                                                    <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={16}/></button>
+                                                        <button onClick={(e)=>{e.stopPropagation(); setEditingItem(item);}} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="pen" size={16}/></button>
+                                                        <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
+                                                            <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-4 h-4 object-contain group-hover/btn:scale-110 transition-transform" />
+                                                        </a>
+                                                        <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-sm transition-all group/btn" title="Sök hos thansen">
+                                                            <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" alt="thansen" className="w-4 h-4 object-contain group-hover/btn:scale-110 transition-transform" />
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="w-10 px-1 py-3 flex sm:hidden justify-center items-center shrink-0 relative">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }}
-                                                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${activeMenuId === item.id ? 'bg-orange-100 text-orange-500' : 'text-zinc-400 bg-transparent'}`}
+                                            <div className="w-12 px-1 py-3 flex sm:hidden justify-center items-center shrink-0 relative">
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }} 
+                                                    className={`w-10 h-10 flex items-center justify-center rounded-lg transition-all ${activeMenuId === item.id ? 'bg-orange-100 text-orange-500' : 'text-zinc-400 bg-transparent'}`}
                                                 >
-                                                    <SafeIcon name="more-vertical" size={16} />
+                                                    <SafeIcon name="more-vertical" size={20} />
                                                 </button>
-
+                                                
                                                 {activeMenuId === item.id && (
                                                     <>
                                                         <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }}></div>
-                                                        <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-1.5 flex gap-1 animate-in fade-in zoom-in-95">
-                                                            <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-500"><SafeIcon name="link" size={16} /></button>
-                                                            <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); setEditingItem(item); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-500"><SafeIcon name="edit" size={16} /></button>
-                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/30 transition-colors">
-                                                                <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-4 h-4 object-contain" />
+                                                        <div className="absolute right-12 top-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#182032] border-2 border-zinc-200 dark:border-zinc-700 shadow-2xl rounded-2xl p-1.5 flex gap-1.5 animate-in fade-in zoom-in-95">
+                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item);}} className="w-12 h-12 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-500"><SafeIcon name="link" size={20}/></button>
+                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setEditingItem(item);}} className="w-12 h-12 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-500"><SafeIcon name="pen" size={20}/></button>
+                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-12 h-12 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/30 transition-colors">
+                                                                <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-5 h-5 object-contain" />
                                                             </a>
-                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/30 transition-colors">
-                                                                <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" alt="thansen" className="w-4 h-4 object-contain" />
+                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-12 h-12 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/30 transition-colors">
+                                                                <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" alt="thansen" className="w-5 h-5 object-contain" />
                                                             </a>
                                                         </div>
                                                     </>
