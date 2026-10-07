@@ -597,6 +597,7 @@ window.LagerView = ({ allJobs = [] }) => {
                         </div>
 
                         {/* MINIATYRBILD TILLBAKA (Endast Dator) */}
+                        {/* MINIATYRBILD TILLBAKA (Klassisk EPC-katalogstil) */}
                         {!isMainDiagram && (
                             <button
                                 onClick={(e) => {
@@ -605,23 +606,25 @@ window.LagerView = ({ allJobs = [] }) => {
                                     setActiveArea('Alla');
                                     setSearch('');
                                 }}
-                                className="absolute top-4 right-4 z-40 w-24 md:w-36 aspect-[16/9] bg-white/90 dark:bg-[#182032]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 rounded-xl shadow-lg overflow-hidden cursor-pointer group/mini transition-all hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.2)] hidden xl:block active:scale-95"
+                                className="absolute top-4 right-4 z-40 w-24 md:w-36 aspect-[16/9] bg-white dark:bg-[#182032] border border-zinc-300 dark:border-white/20 rounded-none shadow-sm overflow-hidden cursor-pointer group/mini transition-all hover:border-zinc-800 dark:hover:border-white hover:shadow-md hidden xl:block active:scale-95"
                                 title="Visa översikt"
                             >
-                                <img src={diagramConfig['Alla'].src} className="w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-50 group-hover/mini:opacity-100 transition-all pointer-events-none" alt="Huvudvy Miniatyr" />
-                                <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover/mini:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                                    <div className="bg-orange-500 text-white rounded-full p-1.5 shadow-md transform -translate-x-2 group-hover/mini:translate-x-0 transition-transform"><SafeIcon name="arrow-left" size={14} /></div>
+                                <img src={diagramConfig['Alla'].src} className="w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-75 group-hover/mini:opacity-100 transition-opacity pointer-events-none" alt="Huvudvy Miniatyr" />
+                                
+                                {/* Klassisk EPC-etikett i nedre högra hörnet */}
+                                <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-white/90 dark:bg-black/80 border border-zinc-300 dark:border-zinc-700 text-[9px] font-mono font-black uppercase text-zinc-800 dark:text-zinc-200 pointer-events-none shadow-xs">
+                                    ÖVERSIKT
                                 </div>
-                                <div className="absolute top-1.5 left-2 px-1 py-0.5 text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover/mini:text-orange-500 transition-colors pointer-events-none">Översikt</div>
                             </button>
                         )}
 
                         {/* KNAPPARNA (Mobilen) */}
-                        <div className="absolute bottom-0 left-0 right-0 w-full md:hidden z-20">
-                            <div className="flex w-full gap-2 px-4 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <div className="absolute -bottom-[1px] left-0 right-0 w-full md:hidden z-20">
+                            {/* Ändrat till gap-1 för tajtare mellanrum */}
+                            <div className="flex w-full gap-1 px-4 pb-0 mb-0 items-end overflow-x-auto snap-x snap-mandatory custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                 {etkaCategories.filter(c => ['Alla', 'Kupéfilter', 'Luftfilter', 'Oljefilter', 'Bränslefilter', 'Tändstift'].includes(c.id)).map(cat => {
                                     const isSelected = activeArea === cat.id;
-                                    const iconHTML = customIcons[cat.icon];
+                                    const config = diagramConfig[cat.id] || diagramConfig['Alla'];
 
                                     const handleCategoryClick = () => {
                                         if (cat.id === 'Alla') {
@@ -637,23 +640,26 @@ window.LagerView = ({ allJobs = [] }) => {
                                         <button
                                             key={cat.id}
                                             onClick={handleCategoryClick}
-                                            className={`shrink-0 w-[72px] flex flex-col items-center bg-white dark:bg-[#182032] border transition-all cursor-pointer shadow-[0_-2px_10px_rgba(0,0,0,0.05)] overflow-hidden snap-start ${isSelected ? 'border-orange-500 ring-1 ring-orange-500/50 z-10' : 'border-zinc-200 dark:border-white/10'}`}
+                                            // Ändrat från rounded-t-xl till rounded-t-sm för fyrkantigt utseende
+                                            className={`shrink-0 relative w-[76px] h-[90px] bg-white dark:bg-[#182032] border border-b-0 rounded-t-sm transition-all cursor-pointer shadow-[0_-2px_10px_rgba(0,0,0,0.05)] overflow-hidden snap-start ${isSelected ? 'border-orange-500 ring-1 ring-orange-500/50 z-10' : 'border-zinc-200 dark:border-white/10'}`}
                                         >
-                                            <div className="w-full h-14 bg-[#f0f4f8] dark:bg-[#121826] flex items-center justify-center relative">
-                                                {isSelected && <div className="absolute inset-0 bg-orange-500/10 dark:bg-orange-500/20"></div>}
-                                                {iconHTML ? (
-                                                    <span className={`w-6 h-6 transition-colors relative z-10 ${isSelected ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-500'}`} dangerouslySetInnerHTML={{ __html: iconHTML }} />
-                                                ) : (
-                                                    <SafeIcon name={cat.icon} size={20} className={`transition-colors relative z-10 ${isSelected ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-500'}`} />
-                                                )}
-                                            </div>
-                                            <div className="w-full bg-white dark:bg-[#0b0f19] border-t border-zinc-100 dark:border-white/5 py-2 px-1 text-center">
-                                                <span className={`text-[7px] font-black uppercase tracking-wider truncate block w-full ${isSelected ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-600 dark:text-zinc-400'}`}>{cat.name}</span>
+                                            {/* Sänkt skalningen från 1.2 till 0.85 för att zooma ut bilden */}
+                                            <img 
+                                                src={config.src} 
+                                                style={{ transform: `scale(${config.scale * 0.85})` }}
+                                                className="absolute inset-0 w-full h-full object-contain p-1.5 pb-6 dark:invert grayscale dark:contrast-125 opacity-85 pointer-events-none" 
+                                                alt={cat.name} 
+                                            />
+                                            
+                                            <div className="absolute bottom-0 inset-x-0 bg-white/95 dark:bg-[#0b0f19]/95 border-t border-zinc-100 dark:border-white/5 py-1.5 px-1 text-center">
+                                                <span className={`text-[8px] font-black uppercase tracking-wider truncate block w-full ${isSelected ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-600 dark:text-zinc-400'}`}>
+                                                    {cat.name}
+                                                </span>
                                             </div>
                                         </button>
                                     );
                                 })}
-                                <div className="shrink-0 w-2 h-1"></div>
+                                <div className="shrink-0 w-16 h-1 pointer-events-none"></div>
                             </div>
                         </div>
                     </div>
@@ -852,30 +858,44 @@ window.LagerView = ({ allJobs = [] }) => {
                     </div>
                 </div>
 
-                <div className="hidden md:flex w-full bg-[#e9edf2] dark:bg-[#0f1522] border-t border-zinc-300 dark:border-white/10 p-2.5 overflow-x-auto custom-scrollbar shrink-0 items-center gap-2">
+                <div className="hidden md:flex w-full bg-[#e9edf2] dark:bg-[#0f1522] border-t border-zinc-300 dark:border-white/10 p-2 overflow-x-auto custom-scrollbar shrink-0 items-center gap-2">
                     {etkaCategories.map(cat => {
                         const isSelected = activeArea === cat.id;
-                        const iconHTML = customIcons[cat.icon];
+                        const config = diagramConfig[cat.id] || diagramConfig['Alla'];
                         return (
                             <button
                                 key={cat.id}
                                 onClick={() => handleSelectArea(cat.id)}
-                                className={`shrink-0 flex flex-col items-center bg-white dark:bg-[#182032] border transition-all cursor-pointer group p-1.5 rounded shadow-sm ${isSelected ? 'border-zinc-900 dark:border-orange-500 ring-2 ring-orange-500/50 scale-105 z-10' : 'border-zinc-300 dark:border-white/10 hover:border-zinc-400'}`}
+                                className={`shrink-0 relative w-28 h-36 bg-white dark:bg-[#182032] border transition-all cursor-pointer group overflow-hidden hover:border-zinc-800 dark:hover:border-white ${isSelected ? 'border-zinc-900 dark:border-orange-500 ring-2 ring-orange-500/40 z-10' : 'border-zinc-300 dark:border-white/20'}`}
                                 title={cat.name}
                             >
-                                <div className="w-24 h-16 bg-[#f0f4f8] dark:bg-[#121826] border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-[#e4ebf2]">
-                                    {iconHTML ? (
-                                        <span className="w-6 h-6 text-zinc-600 dark:text-zinc-400 group-hover:text-orange-500 transition-colors" dangerouslySetInnerHTML={{ __html: iconHTML }} />
-                                    ) : (
-                                        <SafeIcon name={cat.icon} size={22} className="text-zinc-600 dark:text-zinc-400 group-hover:text-orange-500 transition-colors" />
-                                    )}
-                                </div>
-                                <div className="w-full bg-white dark:bg-[#0b0f19] border-t border-zinc-200 dark:border-white/5 py-1 px-1 text-center mt-1">
-                                    <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 truncate block max-w-[96px]">{cat.name}</span>
+                                <img 
+                                    src={config.src} 
+                                    style={{ transform: `scale(${config.scale * 0.8})` }}
+                                    className="absolute inset-0 w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-85 group-hover:opacity-100 transition-opacity pointer-events-none" 
+                                    alt={cat.name} 
+                                />
+                                
+                                {/* 
+                                  Här skapar vi ETKA-krispigheten:
+                                  1. style={{ fontFamily: 'Arial...' }} stänger av den moderna webbfonten
+                                  2. text-black ger ren #000 svart färg
+                                  3. pl-1.5 pt-0.5 maskerar skissen bakom utan att se ut som en "knapp"
+                                */}
+                                <div 
+                                    className="absolute bottom-1 right-1 bg-white dark:bg-[#182032] pl-1.5 pt-0.5 text-[11px] font-bold text-black dark:text-white uppercase pointer-events-none z-20"
+                                    style={{ 
+                                        fontFamily: 'Arial, Helvetica, sans-serif', 
+                                        letterSpacing: '0px',
+                                        WebkitFontSmoothing: 'none' // Tar bort luddig utjämning i vissa webbläsare
+                                    }}
+                                >
+                                    {cat.name}
                                 </div>
                             </button>
                         );
                     })}
+                    <div className="shrink-0 w-24 h-10 pointer-events-none"></div>
                 </div>
             </div>
 
