@@ -445,11 +445,11 @@ window.LagerView = ({ allJobs = [] }) => {
         'Kaross': { src: getDiagramImageLink('Kaross'), scale: 1.2 },
         'Service': { src: getDiagramImageLink('Service'), scale: 1.2 },
 
-        'Kupéfilter': { src: getDiagramImageLink('Kupéfilter'), scale: 1.4 },
-        'Luftfilter': { src: getDiagramImageLink('Luftfilter'), scale: 1.4 },
-        'Oljefilter': { src: getDiagramImageLink('Oljefilter'), scale: 1.4 },
-        'Tändstift': { src: getDiagramImageLink('Tändstift'), scale: 1.4 },
-        'Bränslefilter': { src: getDiagramImageLink('Bränslefilter'), scale: 1.4 },
+        'Kupéfilter': { src: getDiagramImageLink('Kupéfilter'), scale: 1.2 },
+        'Luftfilter': { src: getDiagramImageLink('Luftfilter'), scale: 1.2 },
+        'Oljefilter': { src: getDiagramImageLink('Oljefilter'), scale: 1.2 },
+        'Tändstift': { src: getDiagramImageLink('Tändstift'), scale: 1.2 },
+        'Bränslefilter': { src: getDiagramImageLink('Bränslefilter'), scale: 1.2 },
     };
     const activeConfig = diagramConfig[activeArea] || diagramConfig['Alla'];
     const isMainDiagram = activeArea === 'Alla';
@@ -675,49 +675,49 @@ window.LagerView = ({ allJobs = [] }) => {
                         {/* SAMLAD STICKY HEADER (Denna klibbar fast i toppen när bilden scrollas bort) */}
                         <div className="sticky top-0 z-30 flex flex-col shrink-0 w-full shadow-sm bg-white dark:bg-[#121214]">
 
-                            {/* Övre Kontrollraden */}
-                            <div className="p-3 sm:p-4 border-b border-zinc-100 dark:border-white/5 flex flex-row items-center justify-between gap-2 bg-white dark:bg-[#182032]">
-                                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                            {/* Övre Kontrollrad (Kompakt och minimalistisk) */}
+                            <div className="px-3 py-2 border-b border-zinc-200/80 dark:border-white/10 flex flex-row items-center justify-between bg-white dark:bg-[#121214]">
+                                <div className="flex items-center gap-2.5 min-w-0">
                                     <button
                                         onClick={() => {
                                             setShowTable(false);
                                             setActiveArea('Alla');
                                             setSearch('');
                                         }}
-                                        className="h-10 w-10 xs:w-auto px-0 xs:px-3 sm:px-4 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 hover:border-orange-300 text-zinc-700 dark:text-zinc-300 rounded-xl sm:rounded-2xl font-bold text-[9px] sm:text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm transition-all active:scale-95 shrink-0"
+                                        className="w-7 h-7 flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-orange-500 rounded-lg transition-colors"
+                                        title="Tillbaka"
                                     >
-                                        <SafeIcon name="arrow-left" size={14} className="text-orange-500 shrink-0" />
-                                        <span className="hidden xs:inline">TILLBAKA</span>
+                                        <SafeIcon name="arrow-left" size={16} />
                                     </button>
 
-                                    <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-orange-50 dark:bg-orange-500/10 px-3 sm:px-4 h-10 flex items-center justify-center rounded-xl text-orange-500 shadow-sm border border-orange-100 dark:border-orange-500/20 truncate">
+                                    <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate">
                                         {activeArea}
-                                    </div>
+                                    </h2>
                                 </div>
 
                                 <div className="relative shrink-0">
                                     <button
                                         onClick={() => setShowFilterMenu(!showFilterMenu)}
-                                        className={`h-10 w-10 sm:w-auto px-0 sm:px-4 border rounded-xl font-bold text-[9px] sm:text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 ${stockFilter !== 'ALL' ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-white dark:bg-[#121826] border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-orange-300'}`}
+                                        className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors relative ${stockFilter !== 'ALL' ? 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'text-zinc-700 dark:text-zinc-200 hover:text-orange-500'}`}
+                                        title="Filtrera"
                                     >
-                                        <SafeIcon name="filter" size={14} className={stockFilter !== 'ALL' ? 'text-orange-500' : 'text-zinc-400'} />
-                                        <span className="hidden sm:inline">
-                                            {stockFilter === 'ALL' ? 'FILTER' : stockFilter === 'IN_STOCK' ? 'I LAGER' : 'SLUT'}
-                                        </span>
-                                        <SafeIcon name="chevron-down" size={12} className="opacity-50 hidden sm:block" />
+                                        <SafeIcon name="filter" size={15} />
+                                        {stockFilter !== 'ALL' && (
+                                            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                                        )}
                                     </button>
 
                                     {showFilterMenu && (
                                         <>
                                             <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)}></div>
-                                            <div className="absolute right-0 top-full mt-2 z-50 w-36 sm:w-40 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-1.5 flex flex-col gap-1 animate-in fade-in zoom-in-95">
-                                                <button onClick={() => { setStockFilter('ALL'); setShowFilterMenu(false); }} className={`px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'ALL' ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                            <div className="absolute right-0 top-full mt-1.5 z-50 w-36 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-1 flex flex-col gap-0.5 animate-in fade-in zoom-in-95">
+                                                <button onClick={() => { setStockFilter('ALL'); setShowFilterMenu(false); }} className={`px-2.5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'ALL' ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
                                                     Visa Alla {stockFilter === 'ALL' && <SafeIcon name="check" size={12} />}
                                                 </button>
-                                                <button onClick={() => { setStockFilter('IN_STOCK'); setShowFilterMenu(false); }} className={`px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'IN_STOCK' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                <button onClick={() => { setStockFilter('IN_STOCK'); setShowFilterMenu(false); }} className={`px-2.5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'IN_STOCK' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
                                                     Endast i lager {stockFilter === 'IN_STOCK' && <SafeIcon name="check" size={12} />}
                                                 </button>
-                                                <button onClick={() => { setStockFilter('OUT_OF_STOCK'); setShowFilterMenu(false); }} className={`px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'OUT_OF_STOCK' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                <button onClick={() => { setStockFilter('OUT_OF_STOCK'); setShowFilterMenu(false); }} className={`px-2.5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between ${stockFilter === 'OUT_OF_STOCK' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
                                                     Slut i lager {stockFilter === 'OUT_OF_STOCK' && <SafeIcon name="check" size={12} />}
                                                 </button>
                                             </div>
