@@ -150,7 +150,7 @@ const LagerItemModal = ({ item, defaultCode = '', onClose }) => {
 
     const handleSave = async (e) => {
         e.preventDefault();
-        const dataToSave = { ...formData, price: parseInt(formData.price)||0, quantity: parseInt(formData.quantity)||0 };
+        const dataToSave = { ...formData, price: parseInt(formData.price) || 0, quantity: parseInt(formData.quantity) || 0 };
         try {
             if (isNew) await window.db.collection("lager").add(dataToSave);
             else await window.db.collection("lager").doc(String(item.id)).update(dataToSave);
@@ -171,7 +171,7 @@ const LagerItemModal = ({ item, defaultCode = '', onClose }) => {
         <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center p-0 sm:p-4">
             <div className="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" onClick={onClose}></div>
             <div className="relative w-full h-[calc(100vh-5rem)] sm:h-auto sm:max-h-[90vh] max-w-2xl bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-none sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col mb-20 sm:mb-0">
-                
+
                 {/* Uppdaterad header som matchar länka-modalen */}
                 <div className="px-5 py-4 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50/50 dark:bg-[#1a2235]/50 rounded-t-3xl sm:rounded-t-3xl">
                     <div className="flex items-center gap-3">
@@ -187,23 +187,23 @@ const LagerItemModal = ({ item, defaultCode = '', onClose }) => {
                         <SafeIcon name="x" size={14} />
                     </button>
                 </div>
-                
+
                 <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
                     <div className="p-6 flex-1">
                         <div className="grid grid-cols-2 gap-5">
-                            <div className="col-span-2 group"><label className={LabelClass}>Artikelnamn / Beskrivning</label><input autoFocus required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={InputClass} placeholder="T.ex. Bromsbeläggssats Bak..." /></div>
-                            <div className="col-span-2 sm:col-span-1 group"><label className={LabelClass}>Art.Nummer / ID</label><input type="text" value={formData.service_filter} onChange={e => setFormData({...formData, service_filter: e.target.value.toUpperCase()})} className={`${InputClass} font-mono tracking-wider`} placeholder="BOS-1234" /></div>
-                            <div className="col-span-2 sm:col-span-1 group"><label className={LabelClass}>Kategori</label><select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className={InputClass}><option value="Service">Service</option><option value="Motor/Chassi">Motor/Chassi</option><option value="Bromsar">Bromsar</option><option value="Elsystem">Elsystem</option><option value="Kaross">Kaross</option><option value="Andra Märken">Andra Märken</option></select></div>
-                            <div className="group"><label className={LabelClass}>Inköpspris / Värde</label><div className="relative"><input type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className={`${InputClass} pr-12 font-mono font-bold text-lg`} placeholder="0" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 text-[10px] font-bold uppercase tracking-widest">SEK</span></div></div>
-                            <div className="group"><label className={LabelClass}>Lagersaldo (st)</label><input type="number" required value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} className={`${InputClass} font-mono font-bold text-lg`} placeholder="0" /></div>
-                            <div className="col-span-2 group"><label className={LabelClass}>Egenskaper / Specifikation</label><textarea rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className={`${InputClass} resize-none`} placeholder="Placering: Bakaxel. Passar VAG plattform..." /></div>
-                            
+                            <div className="col-span-2 group"><label className={LabelClass}>Artikelnamn / Beskrivning</label><input autoFocus required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={InputClass} placeholder="T.ex. Bromsbeläggssats Bak..." /></div>
+                            <div className="col-span-2 sm:col-span-1 group"><label className={LabelClass}>Art.Nummer / ID</label><input type="text" value={formData.service_filter} onChange={e => setFormData({ ...formData, service_filter: e.target.value.toUpperCase() })} className={`${InputClass} font-mono tracking-wider`} placeholder="BOS-1234" /></div>
+                            <div className="col-span-2 sm:col-span-1 group"><label className={LabelClass}>Kategori</label><select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={InputClass}><option value="Service">Service</option><option value="Motor/Chassi">Motor/Chassi</option><option value="Bromsar">Bromsar</option><option value="Elsystem">Elsystem</option><option value="Kaross">Kaross</option><option value="Andra Märken">Andra Märken</option></select></div>
+                            <div className="group"><label className={LabelClass}>Inköpspris / Värde</label><div className="relative"><input type="number" required value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className={`${InputClass} pr-12 font-mono font-bold text-lg`} placeholder="0" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 text-[10px] font-bold uppercase tracking-widest">SEK</span></div></div>
+                            <div className="group"><label className={LabelClass}>Lagersaldo (st)</label><input type="number" required value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} className={`${InputClass} font-mono font-bold text-lg`} placeholder="0" /></div>
+                            <div className="col-span-2 group"><label className={LabelClass}>Egenskaper / Specifikation</label><textarea rows="2" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className={`${InputClass} resize-none`} placeholder="Placering: Bakaxel. Passar VAG plattform..." /></div>
+
                             {!isNew && (
                                 <div className="col-span-2 mt-4 pt-5 border-t border-zinc-200/80 dark:border-white/5">
                                     <label className={`${LabelClass} flex items-center gap-2 mb-3`}><SafeIcon name="history" size={12} className="text-orange-500" /> Transaktionshistorik</label>
                                     {item?.history && item.history.length > 0 ? (
                                         <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                                            {[...item.history].sort((a,b) => new Date(b.date) - new Date(a.date)).map((log, idx) => (
+                                            {[...item.history].sort((a, b) => new Date(b.date) - new Date(a.date)).map((log, idx) => (
                                                 <div key={idx} className="flex justify-between items-center bg-white dark:bg-[#121826] p-3 rounded-xl border border-zinc-200/80 dark:border-white/5 shadow-sm hover:border-orange-500/30 transition-colors">
                                                     <div className="flex items-center gap-3.5">
                                                         <div className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-200/50 dark:border-orange-500/20 shadow-sm"><SafeIcon name="arrow-up-right" size={14} /></div>
@@ -223,7 +223,7 @@ const LagerItemModal = ({ item, defaultCode = '', onClose }) => {
                             )}
                         </div>
                     </div>
-                    
+
                     <div className="px-6 py-5 mt-auto border-t border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-[#1a2235]/50 flex flex-col gap-3 sm:rounded-b-3xl">
                         <div className="flex gap-3">
                             <button type="button" onClick={onClose} className="flex-1 h-12 text-[11px] font-bold text-zinc-600 dark:text-zinc-300 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all uppercase tracking-widest shadow-sm">Avbryt</button>
@@ -249,8 +249,8 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
 
     const activeJobs = React.useMemo(() => {
         let jobs = allJobs.filter(j => j.status !== 'FAKTURERAS' && !j.deleted);
-        if (search) { const s = search.toLowerCase(); jobs = jobs.filter(j => (j.regnr||'').toLowerCase().includes(s) || (j.kundnamn||'').toLowerCase().includes(s)); }
-        return jobs.sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
+        if (search) { const s = search.toLowerCase(); jobs = jobs.filter(j => (j.regnr || '').toLowerCase().includes(s) || (j.kundnamn || '').toLowerCase().includes(s)); }
+        return jobs.sort((a, b) => (b.datum || '').localeCompare(a.datum || ''));
     }, [allJobs, search]);
 
     const handleLink = async (e) => {
@@ -265,13 +265,13 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                 const jobDoc = await t.get(jobRef);
                 const partDoc = await t.get(partRef);
                 const pData = partDoc.data(), jData = jobDoc.data();
-                
-                t.update(partRef, { quantity: Math.max(0, (parseInt(pData.quantity)||0) - qty), history: [...(pData.history||[]), { date: new Date().toISOString(), action: 'KOPPLAD', qty: qty, regnr: jData.regnr || 'SAKNAS', jobId: String(selectedJob.id), kundnamn: jData.kundnamn || 'Okänd' }] });
+
+                t.update(partRef, { quantity: Math.max(0, (parseInt(pData.quantity) || 0) - qty), history: [...(pData.history || []), { date: new Date().toISOString(), action: 'KOPPLAD', qty: qty, regnr: jData.regnr || 'SAKNAS', jobId: String(selectedJob.id), kundnamn: jData.kundnamn || 'Okänd' }] });
 
                 let utgifter = jData.utgifter || [];
-                const cost = (parseFloat(pData.price)||0) * qty;
+                const cost = (parseFloat(pData.price) || 0) * qty;
                 utgifter.push({ namn: qty > 1 ? `${qty}x ${pData.name}` : pData.name, kostnad: String(cost), qty: 1, partId: String(item.id), deducted: true });
-                t.update(jobRef, { utgifter, kundpris: String((parseFloat(jData.kundpris)||0) + cost) });
+                t.update(jobRef, { utgifter, kundpris: String((parseFloat(jData.kundpris) || 0) + cost) });
             });
             onClose();
         } catch (err) { setIsSaving(false); alert("Något gick fel vid kopplingen."); }
@@ -281,7 +281,7 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-20 sm:pb-4">
             <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" onClick={onClose}></div>
             <div className="relative w-full h-full sm:h-auto sm:max-h-[90vh] max-w-lg bg-white dark:bg-[#182032] text-zinc-900 dark:text-white rounded-none sm:rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-white/10 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col">
-                
+
                 <div className="px-5 py-4 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50/50 dark:bg-[#1a2235]/50 rounded-t-3xl sm:rounded-t-3xl">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-200/50 dark:border-orange-500/20"><SafeIcon name="link" size={18} /></div>
@@ -292,7 +292,7 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                     </div>
                     <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 bg-white dark:bg-[#121826] rounded-lg shadow-sm border border-zinc-200 dark:border-white/10"><SafeIcon name="x" size={14} /></button>
                 </div>
-                
+
                 <div className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
                     <div className="p-5 flex-1">
                         <div className="bg-zinc-50 dark:bg-[#0f1522] border border-zinc-200 dark:border-white/5 rounded-xl p-4 mb-5 flex gap-4 items-center shadow-inner">
@@ -324,7 +324,7 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
                             ))}
                         </div>
                     </div>
-                    
+
                     <div className="px-5 py-4 mt-auto border-t border-zinc-100 dark:border-white/5 bg-zinc-50/80 dark:bg-[#1a2235]/50 flex gap-3 z-10 sm:rounded-b-3xl">
                         <button onClick={onClose} className="flex-1 h-12 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 rounded-xl text-[11px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 transition-all shadow-sm uppercase tracking-widest">Avbryt</button>
                         <button onClick={handleLink} disabled={!selectedJob || isSaving} className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2">
@@ -342,24 +342,24 @@ const LagerLinkJobModal = ({ item, allJobs, onClose }) => {
 // ==========================================
 const DiagramHotspot = ({ top, left, label, area, iconType, activeArea, onClick, dx = 0, dy = 0 }) => {
     const isStrictlyActive = activeArea === area;
-    
+
     const getSvgIcon = () => {
-        if (iconType === 'motor') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" fill="none" stroke="currentColor"/>;
-        if (iconType === 'bromsar') return <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></g>;
-        if (iconType === 'service') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" fill="none" stroke="currentColor"/>;
-        if (iconType === 'kaross') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h3M20 12h2M6 9h4M10 9l3-2v10l-3-2M13 8h7M7 5c2-3 8-3 11 1M16 6.5l2.5.5L18 4.5M18 19c-2 3-8 3-11-1M9 18.5l-2.5-.5L7 20.5" fill="none" stroke="currentColor"/>;
-        if (iconType === 'elsystem') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="none" stroke="currentColor"/>;
+        if (iconType === 'motor') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" fill="none" stroke="currentColor" />;
+        if (iconType === 'bromsar') return <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></g>;
+        if (iconType === 'service') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" fill="none" stroke="currentColor" />;
+        if (iconType === 'kaross') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h3M20 12h2M6 9h4M10 9l3-2v10l-3-2M13 8h7M7 5c2-3 8-3 11 1M16 6.5l2.5.5L18 4.5M18 19c-2 3-8 3-11-1M9 18.5l-2.5-.5L7 20.5" fill="none" stroke="currentColor" />;
+        if (iconType === 'elsystem') return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="none" stroke="currentColor" />;
         return <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2" />;
     };
-    
+
     return (
         <div className="absolute z-20" style={{ top, left }}>
             <svg className="absolute overflow-visible pointer-events-none" style={{ left: 0, top: 0 }}>
                 <line x1="0" y1="0" x2={dx} y2={dy} stroke="currentColor" strokeWidth="2" className="text-zinc-400 dark:text-zinc-600 opacity-60" />
                 <circle cx="0" cy="0" r="3" fill="currentColor" className="text-orange-500" />
             </svg>
-            
-            <div 
+
+            <div
                 onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClick(area); }}
                 className="absolute flex flex-col items-center gap-1.5 group transition-all duration-300 cursor-pointer outline-none hover:z-30"
                 style={{ transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }}
@@ -384,14 +384,14 @@ window.LagerView = ({ allJobs = [] }) => {
     const [items, setItems] = React.useState([]);
     const [search, setSearch] = React.useState("");
     const [activeArea, setActiveArea] = React.useState("Alla");
-    const [showTable, setShowTable] = React.useState(false); 
-    
+    const [showTable, setShowTable] = React.useState(false);
+
     // NYA STATES FÖR FILTER OCH SORTERING
     // NYA STATES FÖR FILTER OCH SORTERING
     const [stockFilter, setStockFilter] = React.useState('ALL'); // ALL, IN_STOCK, OUT_OF_STOCK
     const [sortConfig, setSortConfig] = React.useState({ key: 'partnumber', direction: 'asc' });
     const [showFilterMenu, setShowFilterMenu] = React.useState(false); // LÄGG TILL DENNA RAD!
-    
+
     const [editingItem, setEditingItem] = React.useState(null);
     const [linkingItem, setLinkingItem] = React.useState(null);
     const [isScannerOpen, setIsScannerOpen] = React.useState(false);
@@ -433,8 +433,26 @@ window.LagerView = ({ allJobs = [] }) => {
         { id: 'Luftfilter', name: 'Luftfilter', icon: 'wind' },
         { id: 'Oljefilter', name: 'Oljefilter', icon: 'droplet' },
         { id: 'Tändstift', name: 'Tändstift', icon: 'sparkplug' },
-        { id: 'Bränslefilter', name: 'Bränslefilter', icon: 'droplet' } // Lade till Bränslefilter här!
+        { id: 'Bränslefilter', name: 'Bränslefilter', icon: 'droplet' }
     ];
+
+    // --- NYTT: Håller koll på bild och inzoomning för både mobil och dator ---
+    const diagramConfig = {
+        'Alla': { src: getDiagramImageLink('Alla'), scale: 1.0 },
+        'Bromsar': { src: getDiagramImageLink('Bromsar'), scale: 1.2 },
+        'Motor/Chassi': { src: getDiagramImageLink('Motor/Chassi'), scale: 1.2 },
+        'Elsystem': { src: getDiagramImageLink('Elsystem'), scale: 1.2 },
+        'Kaross': { src: getDiagramImageLink('Kaross'), scale: 1.2 },
+        'Service': { src: getDiagramImageLink('Service'), scale: 1.2 },
+
+        'Kupéfilter': { src: getDiagramImageLink('Kupéfilter'), scale: 1.4 },
+        'Luftfilter': { src: getDiagramImageLink('Luftfilter'), scale: 1.4 },
+        'Oljefilter': { src: getDiagramImageLink('Oljefilter'), scale: 1.4 },
+        'Tändstift': { src: getDiagramImageLink('Tändstift'), scale: 1.4 },
+        'Bränslefilter': { src: getDiagramImageLink('Bränslefilter'), scale: 1.4 },
+    };
+    const activeConfig = diagramConfig[activeArea] || diagramConfig['Alla'];
+    const isMainDiagram = activeArea === 'Alla';
 
     const handleSort = (key) => {
         setSortConfig(prev => ({
@@ -454,10 +472,10 @@ window.LagerView = ({ allJobs = [] }) => {
                 res = res.filter(i => normalizeStr(i.category) === normalizeStr(activeArea));
             }
         }
-        
+
         if (search) {
             const term = search.toLowerCase().replace(/\s+/g, '');
-            res = res.filter(i => 
+            res = res.filter(i =>
                 (i.name || "").toLowerCase().replace(/\s+/g, '').includes(term) ||
                 (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(term) ||
                 (i.notes || "").toLowerCase().replace(/\s+/g, '').includes(term)
@@ -501,13 +519,13 @@ window.LagerView = ({ allJobs = [] }) => {
     };
 
     return (
-        <div className="absolute inset-0 w-full h-full overflow-hidden animate-in fade-in duration-700 flex flex-col select-none pb-20 md:pb-0 bg-transparent">
+        <div className="absolute inset-0 w-full h-full overflow-hidden animate-in fade-in duration-700 flex flex-col select-none pb-[64px] md:pb-0 bg-transparent">
 
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
             {/* HEADER */}
             <div className="flex flex-row items-center justify-between pb-2 md:pb-4 gap-2 md:gap-4 shrink-0 m-0 p-3 md:p-4 z-50 bg-transparent">
-                
+
                 <div className="flex items-center shrink-0 gap-3">
                     {/* Loggan (Ikonen) - Syns på både mobil och dator */}
                     <div className="relative group cursor-default shrink-0">
@@ -527,18 +545,18 @@ window.LagerView = ({ allJobs = [] }) => {
                     <div className="relative group flex-1 min-w-0 md:max-w-none">
                         <input
                             ref={searchInputRef}
-                            type="text" value={search} onChange={e => { setSearch(e.target.value); if(e.target.value) setShowTable(true); }}
+                            type="text" value={search} onChange={e => { setSearch(e.target.value); if (e.target.value) setShowTable(true); }}
                             placeholder="Sök..."
                             className="h-10 md:h-12 bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 text-[12px] font-bold px-3 pl-8 md:pl-11 rounded-xl outline-none focus:border-orange-500 w-full text-zinc-900 dark:text-white transition-all shadow-sm placeholder:text-zinc-400"
                         />
                         <SafeIcon name="search" size={14} className="absolute left-2.5 md:left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500" />
-                        {search && <button onClick={() => { setSearch(''); }} className="absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 p-1 rounded-md active:scale-95 transition-all"><SafeIcon name="x" size={12}/></button>}
+                        {search && <button onClick={() => { setSearch(''); }} className="absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 p-1 rounded-md active:scale-95 transition-all"><SafeIcon name="x" size={12} /></button>}
                     </div>
-                    
+
                     <button onClick={() => setIsScannerOpen(true)} className="w-10 h-10 md:h-12 md:w-auto md:px-5 bg-white dark:bg-[#182032] border border-zinc-200/80 dark:border-white/5 hover:border-orange-300 rounded-xl flex items-center justify-center text-zinc-700 dark:text-zinc-300 shadow-sm transition-all active:scale-95 shrink-0" title="Skanna">
                         <SafeIcon name="scan" size={16} /> <span className="hidden md:block ml-2 font-bold uppercase text-[10px] tracking-widest">SKANNA</span>
                     </button>
-                    
+
                     <button onClick={() => setEditingItem({})} className="w-10 h-10 md:h-12 md:w-auto md:px-6 bg-orange-500 hover:bg-orange-600 border border-orange-400/50 text-white rounded-xl flex items-center justify-center shadow-sm transition-all active:scale-95 shrink-0" title="Ny Artikel">
                         <SafeIcon name="plus" size={16} /> <span className="hidden md:block ml-2 font-bold uppercase text-[11px] tracking-widest">NY ARTIKEL</span>
                     </button>
@@ -550,84 +568,53 @@ window.LagerView = ({ allJobs = [] }) => {
 
                     {/* MITTEN: THE BLUEPRINT */}
                     <div className={`${showTable ? 'hidden xl:flex xl:w-[48%] shrink-0' : 'flex'} flex-1 flex-col border-r border-zinc-200/80 dark:border-white/5 relative bg-zinc-50/30 dark:bg-[#0b0f19] overflow-hidden group/diagram items-center justify-center p-1 md:p-6`}>
-                        
-                        {/* 1. BILD-REGISTER OCH SEPARERAD LOGIK (MOBIL VS DATOR) */}
-                        {(() => {
-                            const diagramConfig = {
-                                'Alla': { src: getDiagramImageLink('Alla'), scale: 1.0 },
-                                'Bromsar': { src: getDiagramImageLink('Bromsar'), scale: 1.4 }, 
-                                'Motor/Chassi': { src: getDiagramImageLink('Motor/Chassi'), scale: 1.4 },
-                                'Elsystem': { src: getDiagramImageLink('Elsystem'), scale: 1.4 },
-                                'Kaross': { src: getDiagramImageLink('Kaross'), scale: 1.4 },
-                                'Service': { src: getDiagramImageLink('Service'), scale: 1.4 },
 
-                                'Kupéfilter': { src: getDiagramImageLink('Kupéfilter'), scale: 1.4 },
-                                'Luftfilter': { src: getDiagramImageLink('Luftfilter'), scale: 1.4 },
-                                'Oljefilter': { src: getDiagramImageLink('Oljefilter'), scale: 1.4 },
-                                'Tändstift': { src: getDiagramImageLink('Tändstift'), scale: 1.4 },
-                                'Bränslefilter': { src: getDiagramImageLink('Bränslefilter'), scale: 1.4 },
-                            };
-                            
-                            const activeConfig = diagramConfig[activeArea] || diagramConfig['Alla'];
-                            const isMainDiagram = activeArea === 'Alla';
+                        <div className="relative w-[130%] md:w-full max-w-4xl aspect-[16/9] z-10 flex items-center justify-center mb-20 md:mb-0">
 
-                            return (
-                                <>
-                                    <div className="relative w-[130%] md:w-full max-w-4xl aspect-[16/9] z-10 flex items-center justify-center mb-20 md:mb-0">
-                                        
-                                        {/* BILD FÖR MOBIL (Syns upp till md-brytpunkten) -> Visar ALLTID huvudskissen, ingen zoom */}
-                                        <img 
-                                            src={diagramConfig['Alla'].src} 
-                                            className="md:hidden absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 transition-transform duration-700 pointer-events-none" 
-                                            alt="Sprängskiss Huvudvy" 
-                                        />
+                            {/* BILD FÖR MOBIL (Syns upp till xl-brytpunkten) -> Visar ALLTID huvudskissen */}
+                            <img
+                                src={diagramConfig['Alla'].src}
+                                className="xl:hidden absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 transition-transform duration-700 pointer-events-none"
+                                alt="Sprängskiss Huvudvy"
+                            />
 
-                                        {/* BILD FÖR DATOR (Syns från md och uppåt) -> Visar dynamisk bild och zoom */}
-                                        <img 
-                                            src={activeConfig.src} 
-                                            style={{ transform: `scale(${activeConfig.scale})` }}
-                                            className="hidden md:block absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 transition-transform duration-700 pointer-events-none" 
-                                            alt={`Sprängskiss ${activeArea}`} 
-                                        />
-                                        
-                                        {/* 2. HOTSPOTS */}
-                                        <div className={isMainDiagram ? 'block' : 'md:hidden'}>
-                                            <DiagramHotspot top="45%" left="42%" dx={-75} dy={-40} label="Motor/Chassi" area="Motor/Chassi" iconType="motor" activeArea={activeArea} onClick={handleSelectArea} />
-                                            <DiagramHotspot top="62%" left="74%" dx={-10} dy={60} label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={handleSelectArea} />
-                                            <DiagramHotspot top="55%" left="50%" dx={0} dy={65} label="Service" area="Service" iconType="service" activeArea={activeArea} onClick={handleSelectArea} />
-                                            <DiagramHotspot top="70%" left="35%" dx={-45} dy={45} label="Elsystem" area="Elsystem" iconType="elsystem" activeArea={activeArea} onClick={handleSelectArea} />
-                                            <DiagramHotspot top="30%" left="62%" dx={40} dy={-65} label="Kaross" area="Kaross" iconType="kaross" activeArea={activeArea} onClick={handleSelectArea} />
-                                        </div>
-                                    </div>
+                            {/* BILD FÖR DATOR (Syns från xl och uppåt) -> Visar dynamisk bild och zoom */}
+                            <img
+                                src={activeConfig.src}
+                                style={{ transform: `scale(${activeConfig.scale})` }}
+                                className="hidden xl:block absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 transition-transform duration-700 pointer-events-none"
+                                alt={`Sprängskiss ${activeArea}`}
+                            />
 
-                                    {/* 3. MINIATYRBILD TILLBAKA (Endast Dator) - Nu flyttad utanför bil-containern! */}
-                                    {!isMainDiagram && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setShowTable(false);
-                                                setActiveArea('Alla');
-                                                setSearch('');
-                                            }}
-                                            className="absolute top-4 right-4 z-40 w-24 md:w-36 aspect-[16/9] bg-white/90 dark:bg-[#182032]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 rounded-xl shadow-lg overflow-hidden cursor-pointer group/mini transition-all hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.2)] hidden md:block active:scale-95"
-                                            title="Visa översikt"
-                                        >
-                                            {/* Miniatyrbilden */}
-                                            <img 
-                                                src={diagramConfig['Alla'].src} 
-                                                className="w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-50 group-hover/mini:opacity-100 transition-all pointer-events-none"
-                                                alt="Huvudvy Miniatyr"
-                                            />
-                                            
-                                            {/* Liten "Översikt"-text */}
-                                            <div className="absolute top-1.5 left-2 px-1 py-0.5 text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover/mini:text-orange-500 transition-colors pointer-events-none">
-                                                Översikt
-                                            </div>
-                                        </button>
-                                    )}
-                                </>
-                            );
-                        })()}
+                            {/* HOTSPOTS (Döljs snyggt på datorn när man går in i en kategori) */}
+                            <div className={isMainDiagram ? 'block' : 'xl:hidden'}>
+                                <DiagramHotspot top="45%" left="42%" dx={-75} dy={-40} label="Motor/Chassi" area="Motor/Chassi" iconType="motor" activeArea={activeArea} onClick={handleSelectArea} />
+                                <DiagramHotspot top="62%" left="74%" dx={-10} dy={60} label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={handleSelectArea} />
+                                <DiagramHotspot top="55%" left="50%" dx={0} dy={65} label="Service" area="Service" iconType="service" activeArea={activeArea} onClick={handleSelectArea} />
+                                <DiagramHotspot top="70%" left="35%" dx={-45} dy={45} label="Elsystem" area="Elsystem" iconType="elsystem" activeArea={activeArea} onClick={handleSelectArea} />
+                                <DiagramHotspot top="30%" left="62%" dx={40} dy={-65} label="Kaross" area="Kaross" iconType="kaross" activeArea={activeArea} onClick={handleSelectArea} />
+                            </div>
+                        </div>
+
+                        {/* MINIATYRBILD TILLBAKA (Endast Dator) */}
+                        {!isMainDiagram && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowTable(false);
+                                    setActiveArea('Alla');
+                                    setSearch('');
+                                }}
+                                className="absolute top-4 right-4 z-40 w-24 md:w-36 aspect-[16/9] bg-white/90 dark:bg-[#182032]/90 backdrop-blur-md border border-zinc-200 dark:border-white/10 rounded-xl shadow-lg overflow-hidden cursor-pointer group/mini transition-all hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.2)] hidden xl:block active:scale-95"
+                                title="Visa översikt"
+                            >
+                                <img src={diagramConfig['Alla'].src} className="w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-50 group-hover/mini:opacity-100 transition-all pointer-events-none" alt="Huvudvy Miniatyr" />
+                                <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover/mini:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                    <div className="bg-orange-500 text-white rounded-full p-1.5 shadow-md transform -translate-x-2 group-hover/mini:translate-x-0 transition-transform"><SafeIcon name="arrow-left" size={14} /></div>
+                                </div>
+                                <div className="absolute top-1.5 left-2 px-1 py-0.5 text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover/mini:text-orange-500 transition-colors pointer-events-none">Översikt</div>
+                            </button>
+                        )}
 
                         {/* KNAPPARNA (Mobilen) */}
                         <div className="absolute bottom-0 left-0 right-0 w-full md:hidden z-20">
@@ -635,7 +622,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                 {etkaCategories.filter(c => ['Alla', 'Kupéfilter', 'Luftfilter', 'Oljefilter', 'Bränslefilter', 'Tändstift'].includes(c.id)).map(cat => {
                                     const isSelected = activeArea === cat.id;
                                     const iconHTML = customIcons[cat.icon];
-                                    
+
                                     const handleCategoryClick = () => {
                                         if (cat.id === 'Alla') {
                                             setActiveArea('Alla');
@@ -650,7 +637,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                         <button
                                             key={cat.id}
                                             onClick={handleCategoryClick}
-                                            className={`shrink-0 w-[72px] flex flex-col items-center bg-white dark:bg-[#182032] border transition-all cursor-pointer rounded-t-xl shadow-[0_-2px_10px_rgba(0,0,0,0.05)] overflow-hidden snap-start ${isSelected ? 'border-orange-500 ring-1 ring-orange-500/50 z-10' : 'border-zinc-200 dark:border-white/10'}`}
+                                            className={`shrink-0 w-[72px] flex flex-col items-center bg-white dark:bg-[#182032] border transition-all cursor-pointer shadow-[0_-2px_10px_rgba(0,0,0,0.05)] overflow-hidden snap-start ${isSelected ? 'border-orange-500 ring-1 ring-orange-500/50 z-10' : 'border-zinc-200 dark:border-white/10'}`}
                                         >
                                             <div className="w-full h-14 bg-[#f0f4f8] dark:bg-[#121826] flex items-center justify-center relative">
                                                 {isSelected && <div className="absolute inset-0 bg-orange-500/10 dark:bg-orange-500/20"></div>}
@@ -671,17 +658,27 @@ window.LagerView = ({ allJobs = [] }) => {
                         </div>
                     </div>
 
-                        {/* HÖGER: DATATABELL */}
-                        <div className={`${showTable ? 'flex' : 'hidden'} flex-1 min-h-0 xl:w-[52%] xl:shrink-0 flex-col bg-white dark:bg-[#121214] z-10 animate-in fade-in duration-300 overflow-hidden`}>
-                        
-                        {/* SAMLAD STICKY HEADER (TILLBAKA + FILTER + SORTERINGSRUBRIKER) */}
-                        <div className="sticky top-0 z-30 flex flex-col shrink-0 w-full shadow-sm">
-                            
-                            {/* Övre Kontrollraden - Nu på en enda rad med Dropdown */}
-                            <div className="p-3 sm:p-4 bg-white dark:bg-[#182032] border-b border-zinc-100 dark:border-white/5 flex flex-row items-center justify-between gap-2">
+                    {/* HÖGER: DATATABELL (Hela högra panelen blir scrollbar på mobilen!) */}
+                    <div className={`${showTable ? 'flex xl:flex xl:w-[52%] xl:shrink-0' : 'hidden'} flex-1 min-h-0 flex-col bg-white dark:bg-[#121214] z-30 xl:z-10 animate-in fade-in duration-300 overflow-y-auto custom-scrollbar xl:overflow-hidden relative`}>
+
+                        {/* MOBIL BILD-VY (Flyttad hit: Ligger nu ovanför kontrollraden) */}
+                        <div className="xl:hidden w-full h-[35vh] sm:h-[45vh] shrink-0 relative bg-zinc-50/50 dark:bg-[#0b0f19] flex items-center justify-center border-b border-zinc-200/80 dark:border-white/5 overflow-hidden">
+                            <img 
+                                src={activeConfig.src} 
+                                style={{ transform: `scale(${activeConfig.scale})` }}
+                                className="absolute inset-0 w-full h-full object-contain p-4 dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 pointer-events-none" 
+                                alt={`Sprängskiss ${activeArea}`} 
+                            />
+                            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white dark:from-[#121214] to-transparent pointer-events-none"></div>
+                        </div>
+
+                        {/* SAMLAD STICKY HEADER (Denna klibbar fast i toppen när bilden scrollas bort) */}
+                        <div className="sticky top-0 z-30 flex flex-col shrink-0 w-full shadow-sm bg-white dark:bg-[#121214]">
+
+                            {/* Övre Kontrollraden */}
+                            <div className="p-3 sm:p-4 border-b border-zinc-100 dark:border-white/5 flex flex-row items-center justify-between gap-2 bg-white dark:bg-[#182032]">
                                 <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                                    <button 
-                                        /* ÄNDRAT HÄR: Nu återställs allt när du klickar tillbaka */
+                                    <button
                                         onClick={() => {
                                             setShowTable(false);
                                             setActiveArea('Alla');
@@ -689,21 +686,18 @@ window.LagerView = ({ allJobs = [] }) => {
                                         }}
                                         className="h-10 w-10 xs:w-auto px-0 xs:px-3 sm:px-4 bg-white dark:bg-[#121826] border border-zinc-200 dark:border-white/10 hover:border-orange-300 text-zinc-700 dark:text-zinc-300 rounded-xl sm:rounded-2xl font-bold text-[9px] sm:text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm transition-all active:scale-95 shrink-0"
                                     >
-                                        <SafeIcon name="arrow-left" size={14} className="text-orange-500 shrink-0" /> 
+                                        <SafeIcon name="arrow-left" size={14} className="text-orange-500 shrink-0" />
                                         <span className="hidden xs:inline">TILLBAKA</span>
                                     </button>
-                                    
-                                    {/* Kategorinamnet bredvid knappen */}
+
                                     <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-orange-50 dark:bg-orange-500/10 px-3 sm:px-4 h-10 flex items-center justify-center rounded-xl text-orange-500 shadow-sm border border-orange-100 dark:border-orange-500/20 truncate">
                                         {activeArea}
                                     </div>
                                 </div>
-                                
-                                {/* Snygg Filter Dropdown */}
+
                                 <div className="relative shrink-0">
-                                    <button 
+                                    <button
                                         onClick={() => setShowFilterMenu(!showFilterMenu)}
-                                        /* ÄNDRAT HÄR: w-10 px-0 på mobil skapar en perfekt centrerad filter-knapp */
                                         className={`h-10 w-10 sm:w-auto px-0 sm:px-4 border rounded-xl font-bold text-[9px] sm:text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 ${stockFilter !== 'ALL' ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-white dark:bg-[#121826] border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-orange-300'}`}
                                     >
                                         <SafeIcon name="filter" size={14} className={stockFilter !== 'ALL' ? 'text-orange-500' : 'text-zinc-400'} />
@@ -713,7 +707,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                         <SafeIcon name="chevron-down" size={12} className="opacity-50 hidden sm:block" />
                                     </button>
 
-                                    {/* Dropdown-menyn */}
                                     {showFilterMenu && (
                                         <>
                                             <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)}></div>
@@ -736,28 +729,29 @@ window.LagerView = ({ allJobs = [] }) => {
                             {/* Klickbara Sorteringsrubriker */}
                             <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/90 dark:bg-[#1a2235]/90 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center">
                                 <div className="w-8 md:w-12 border-r border-zinc-200/80 dark:border-white/5 px-1 md:px-2 py-3 text-center shrink-0">#</div>
-                                
-                                <div className="w-24 md:w-40 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between shrink-0" onClick={()=>handleSort('partnumber')}>
+
+                                <div className="w-24 md:w-40 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between shrink-0" onClick={() => handleSort('partnumber')}>
                                     <span>ART.NR</span>
                                     {sortConfig.key === 'partnumber' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
-                                
-                                <div className="flex-1 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between min-w-0" onClick={()=>handleSort('name')}>
+
+                                <div className="flex-1 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between min-w-0" onClick={() => handleSort('name')}>
                                     <span>BESKRIVNING</span>
                                     {sortConfig.key === 'name' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
-                                
-                                <div className="w-14 md:w-20 border-r border-zinc-200/80 dark:border-white/5 px-1 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-center gap-1 shrink-0" onClick={()=>handleSort('stock')}>
+
+                                <div className="w-14 md:w-20 border-r border-zinc-200/80 dark:border-white/5 px-1 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-center gap-1 shrink-0" onClick={() => handleSort('stock')}>
                                     <span>SALDO</span>
                                     {sortConfig.key === 'stock' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
-                                
+
                                 <div className="w-10 md:w-[150px] px-1 py-3 text-center shrink-0 hidden sm:block">ACTION</div>
                             </div>
                         </div>
-                        
-                        {/* LISTAN */}
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0">
+
+                        {/* LISTAN (Scroll-behållaren) Ändrad till xl:overflow-y-auto */}
+                        <div className="flex-none h-auto overflow-visible xl:flex-1 xl:overflow-y-auto overflow-x-hidden custom-scrollbar xl:min-h-0 pb-10">
+                            
                             {filteredItems.length === 0 ? (
                                 <div className="p-16 text-center flex flex-col items-center justify-center h-full">
                                     <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-0 border border-zinc-200 dark:border-white/5 shadow-inner">
@@ -793,7 +787,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 <span className="text-[8px] md:text-[9px] font-mono font-bold text-zinc-400">{(idx+1).toString().padStart(3,'0')}</span>
                                             </div>
                                             
-                                            {/* Automatisk VAG-formatering används här */}
                                             <div 
                                                 className="w-24 md:w-40 border-r border-zinc-100 dark:border-white/5 px-2 md:px-4 py-3 font-mono font-bold tracking-wider text-[10px] md:text-[12px] text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors truncate" 
                                                 onClick={(e) => copyToClipboard(e, item.service_filter, item.id)}
@@ -813,24 +806,19 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 </span>
                                             </div>
                                             
-                                            {/* Action Desktop - Nya färgkodade knappar */}
                                             <div className="w-[150px] px-3 py-3 justify-end gap-1.5 hidden sm:flex shrink-0">
                                                 <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={13}/></button>
                                                     <button onClick={(e)=>{e.stopPropagation(); setEditingItem(item);}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="edit" size={13}/></button>
-                                                    
-                                                    {/* Trodo (Blå ikon) */}
                                                     <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
                                                         <SafeIcon name="external-link" size={13} className="text-blue-500 dark:text-blue-400 group-hover/btn:scale-110 transition-transform"/>
                                                     </a>
-                                                    {/* thansen (Orange ikon) */}
                                                     <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-sm transition-all group/btn" title="Sök hos thansen">
                                                         <SafeIcon name="external-link" size={13} className="text-orange-500 dark:text-orange-400 group-hover/btn:scale-110 transition-transform"/>
                                                     </a>
                                                 </div>
                                             </div>
 
-                                            {/* Action Mobil (Tre prickar) */}
                                             <div className="w-10 px-1 py-3 flex sm:hidden justify-center items-center shrink-0 relative">
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }} 
@@ -842,14 +830,11 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 {activeMenuId === item.id && (
                                                     <>
                                                         <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }}></div>
-                                                        <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#182032] border border-zinc-200 shadow-xl rounded-xl p-1.5 flex gap-1 animate-in fade-in zoom-in-95">
-                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-600 hover:bg-orange-50 hover:text-orange-500"><SafeIcon name="link" size={16}/></button>
-                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setEditingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-600 hover:bg-blue-50 hover:text-blue-500"><SafeIcon name="edit" size={16}/></button>
-                                                            
-                                                            {/* Trodo Mobil (Blå ikon) */}
-                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100"><SafeIcon name="external-link" size={16}/></a>
-                                                            {/* thansen Mobil (Orange ikon) */}
-                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 text-orange-500 hover:bg-orange-100"><SafeIcon name="external-link" size={16}/></a>
+                                                        <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-1.5 flex gap-1 animate-in fade-in zoom-in-95">
+                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-500"><SafeIcon name="link" size={16}/></button>
+                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setEditingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-500"><SafeIcon name="edit" size={16}/></button>
+                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/30"><SafeIcon name="external-link" size={16}/></a>
+                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/30"><SafeIcon name="external-link" size={16}/></a>
                                                         </div>
                                                     </>
                                                 )}
@@ -863,31 +848,31 @@ window.LagerView = ({ allJobs = [] }) => {
                     </div>
                 </div>
 
-            <div className="hidden md:flex w-full bg-[#e9edf2] dark:bg-[#0f1522] border-t border-zinc-300 dark:border-white/10 p-2.5 overflow-x-auto custom-scrollbar shrink-0 items-center gap-2">
-                {etkaCategories.map(cat => {
-                    const isSelected = activeArea === cat.id;
-                    const iconHTML = customIcons[cat.icon];
-                    return (
-                        <button
-                            key={cat.id}
-                            onClick={() => handleSelectArea(cat.id)}
-                            className={`shrink-0 flex flex-col items-center bg-white dark:bg-[#182032] border transition-all cursor-pointer group p-1.5 rounded shadow-sm ${isSelected ? 'border-zinc-900 dark:border-orange-500 ring-2 ring-orange-500/50 scale-105 z-10' : 'border-zinc-300 dark:border-white/10 hover:border-zinc-400'}`}
-                            title={cat.name}
-                        >
-                            <div className="w-24 h-16 bg-[#f0f4f8] dark:bg-[#121826] border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-[#e4ebf2]">
-                                {iconHTML ? (
-                                    <span className="w-6 h-6 text-zinc-600 dark:text-zinc-400 group-hover:text-orange-500 transition-colors" dangerouslySetInnerHTML={{ __html: iconHTML }} />
-                                ) : (
-                                    <SafeIcon name={cat.icon} size={22} className="text-zinc-600 dark:text-zinc-400 group-hover:text-orange-500 transition-colors" />
-                                )}
-                            </div>
-                            <div className="w-full bg-white dark:bg-[#0b0f19] border-t border-zinc-200 dark:border-white/5 py-1 px-1 text-center mt-1">
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 truncate block max-w-[96px]">{cat.name}</span>
-                            </div>
-                        </button>
-                    );
-                })}
-            </div>
+                <div className="hidden md:flex w-full bg-[#e9edf2] dark:bg-[#0f1522] border-t border-zinc-300 dark:border-white/10 p-2.5 overflow-x-auto custom-scrollbar shrink-0 items-center gap-2">
+                    {etkaCategories.map(cat => {
+                        const isSelected = activeArea === cat.id;
+                        const iconHTML = customIcons[cat.icon];
+                        return (
+                            <button
+                                key={cat.id}
+                                onClick={() => handleSelectArea(cat.id)}
+                                className={`shrink-0 flex flex-col items-center bg-white dark:bg-[#182032] border transition-all cursor-pointer group p-1.5 rounded shadow-sm ${isSelected ? 'border-zinc-900 dark:border-orange-500 ring-2 ring-orange-500/50 scale-105 z-10' : 'border-zinc-300 dark:border-white/10 hover:border-zinc-400'}`}
+                                title={cat.name}
+                            >
+                                <div className="w-24 h-16 bg-[#f0f4f8] dark:bg-[#121826] border border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-[#e4ebf2]">
+                                    {iconHTML ? (
+                                        <span className="w-6 h-6 text-zinc-600 dark:text-zinc-400 group-hover:text-orange-500 transition-colors" dangerouslySetInnerHTML={{ __html: iconHTML }} />
+                                    ) : (
+                                        <SafeIcon name={cat.icon} size={22} className="text-zinc-600 dark:text-zinc-400 group-hover:text-orange-500 transition-colors" />
+                                    )}
+                                </div>
+                                <div className="w-full bg-white dark:bg-[#0b0f19] border-t border-zinc-200 dark:border-white/5 py-1 px-1 text-center mt-1">
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 truncate block max-w-[96px]">{cat.name}</span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {isScannerOpen && <LagerScannerModal items={items} onOpenItem={(item) => { setEditingItem(item); }} onAddNewWithCode={(code) => { setEditingItem({ service_filter: code }); }} onClose={() => setIsScannerOpen(false)} />}
