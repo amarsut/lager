@@ -775,7 +775,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                     // Exakta färgkoder (Hex) matchade mot din bild
                                     const statusColor = qty === 0
                                         ? 'bg-[#dc2626]' // Röd om slut
-                                        : (qty < 3 ? 'bg-[#d89c00]' : 'bg-[#7a9d34]'); // Senapsgul & Olivgrön
+                                        : (qty < 2 ? 'bg-[#d89c00]' : 'bg-[#7a9d34]'); // Senapsgul & Olivgrön
 
                                     return (
                                         <div
