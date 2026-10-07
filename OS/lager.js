@@ -593,7 +593,7 @@ window.LagerView = ({ allJobs = [] }) => {
                             {/* HOTSPOTS (Döljs snyggt på datorn när man går in i en kategori) */}
                             <div className={isMainDiagram ? 'block' : 'xl:hidden'}>
                                 <DiagramHotspot top="45%" left="42%" dx={-75} dy={-40} label="Motor" area="Motor" iconType="motor" activeArea={activeArea} onClick={handleSelectArea} />
-                                <DiagramHotspot top="58%" left="32%" dx={-50} dy={30} label="Chassi" area="Chassi" iconType="settings" activeArea={activeArea} onClick={handleSelectArea} />
+                                <DiagramHotspot top="54%" left="38%" dx={-40} dy={0} label="Chassi" area="Chassi" iconType="settings" activeArea={activeArea} onClick={handleSelectArea} />
                                 <DiagramHotspot top="62%" left="74%" dx={-10} dy={60} label="Bromsar" area="Bromsar" iconType="bromsar" activeArea={activeArea} onClick={handleSelectArea} />
                                 <DiagramHotspot top="55%" left="50%" dx={0} dy={65} label="Service" area="Service" iconType="service" activeArea={activeArea} onClick={handleSelectArea} />
                                 <DiagramHotspot top="70%" left="35%" dx={-45} dy={45} label="Elsystem" area="Elsystem" iconType="elsystem" activeArea={activeArea} onClick={handleSelectArea} />
