@@ -38,18 +38,18 @@ const formatPartNumber = (str) => {
 // --- BILD-REGISTER (Ändra dina länkar här!) ---
 const getDiagramImageLink = (category) => {
     const links = {
-        'Alla': '/icons/alla.png',
-        'Bromsar': '/icons/bromsar.png',
-        'Motor': '/icons/motor.png',
-        'Chassi': '/icons/chassi.png',
-        'Elsystem': '/icons/elsystem.png',
-        'Service': '/icons/service.png',
-        'Kupéfilter': '/icons/kupefilter.png',
-        'Luftfilter': '/icons/luftfilter.png',
-        'Oljefilter': '/icons/oljefilter.png',
-        'Tändstift': '/icons/tändstift.png',
-        'Bränslefilter': '/icons/bränslefilter.png',
-        'Kaross': '/icons/kaross.png',
+        'Alla': './icons/alla.png',
+        'Bromsar': './icons/bromsar.png',
+        'Motor': './icons/motor.png',
+        'Chassi': './icons/chassi.png',
+        'Elsystem': './icons/elsystem.png',
+        'Service': './icons/service.png',
+        'Kupéfilter': './icons/kupefilter.png',
+        'Luftfilter': './icons/luftfilter.png',
+        'Oljefilter': './icons/oljefilter.png',
+        'Tändstift': './icons/tändstift.png',
+        'Bränslefilter': './icons/bränslefilter.png',
+        'Kaross': './icons/kaross.png',
         // 'Service': '/* LÄNK TILL SERVICE-BILD */'
     };
     return links[category] || links['Alla'];
