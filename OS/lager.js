@@ -567,7 +567,7 @@ window.LagerView = ({ allJobs = [] }) => {
                 <div className="flex-1 min-h-0 flex overflow-hidden relative">
 
                     {/* MITTEN: THE BLUEPRINT */}
-                    <div className={`${showTable ? 'hidden xl:flex xl:w-[48%] shrink-0' : 'flex'} flex-1 flex-col border-r border-zinc-200/80 dark:border-white/5 relative bg-zinc-50/30 dark:bg-[#0b0f19] overflow-hidden group/diagram items-center justify-center p-1 md:p-6`}>
+                    <div className={`${showTable ? 'hidden xl:flex xl:w-[35%] shrink-0' : 'flex'} flex-1 flex-col border-r border-zinc-200/80 dark:border-white/5 relative bg-zinc-50/30 dark:bg-[#0b0f19] overflow-hidden group/diagram items-center justify-center p-1 md:p-6`}>
 
                         <div className="relative w-[130%] md:w-full max-w-4xl aspect-[16/9] z-10 flex items-center justify-center mb-20 md:mb-0">
 
@@ -610,7 +610,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                 title="Visa översikt"
                             >
                                 <img src={diagramConfig['Alla'].src} className="w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-75 group-hover/mini:opacity-100 transition-opacity pointer-events-none" alt="Huvudvy Miniatyr" />
-                                
+
                                 {/* Klassisk EPC-etikett i nedre högra hörnet */}
                                 <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-white/90 dark:bg-black/80 border border-zinc-300 dark:border-zinc-700 text-[9px] font-mono font-black uppercase text-zinc-800 dark:text-zinc-200 pointer-events-none shadow-xs">
                                     ÖVERSIKT
@@ -644,13 +644,13 @@ window.LagerView = ({ allJobs = [] }) => {
                                             className={`shrink-0 relative w-[76px] h-[90px] bg-white dark:bg-[#182032] border border-b-0 rounded-t-sm transition-all cursor-pointer shadow-[0_-2px_10px_rgba(0,0,0,0.05)] overflow-hidden snap-start ${isSelected ? 'border-orange-500 ring-1 ring-orange-500/50 z-10' : 'border-zinc-200 dark:border-white/10'}`}
                                         >
                                             {/* Sänkt skalningen från 1.2 till 0.85 för att zooma ut bilden */}
-                                            <img 
-                                                src={config.src} 
+                                            <img
+                                                src={config.src}
                                                 style={{ transform: `scale(${config.scale * 0.85})` }}
-                                                className="absolute inset-0 w-full h-full object-contain p-1.5 pb-6 dark:invert grayscale dark:contrast-125 opacity-85 pointer-events-none" 
-                                                alt={cat.name} 
+                                                className="absolute inset-0 w-full h-full object-contain p-1.5 pb-6 dark:invert grayscale dark:contrast-125 opacity-85 pointer-events-none"
+                                                alt={cat.name}
                                             />
-                                            
+
                                             <div className="absolute bottom-0 inset-x-0 bg-white/95 dark:bg-[#0b0f19]/95 border-t border-zinc-100 dark:border-white/5 py-1.5 px-1 text-center">
                                                 <span className={`text-[8px] font-black uppercase tracking-wider truncate block w-full ${isSelected ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-600 dark:text-zinc-400'}`}>
                                                     {cat.name}
@@ -665,15 +665,15 @@ window.LagerView = ({ allJobs = [] }) => {
                     </div>
 
                     {/* HÖGER: DATATABELL (Hela högra panelen blir scrollbar på mobilen!) */}
-                    <div className={`${showTable ? 'flex xl:flex xl:w-[52%] xl:shrink-0' : 'hidden'} flex-1 min-h-0 flex-col bg-white dark:bg-[#121214] z-30 xl:z-10 animate-in fade-in duration-300 overflow-y-auto custom-scrollbar xl:overflow-hidden relative`}>
+                    <div className={`${showTable ? 'flex xl:flex xl:w-[65%] xl:shrink-0' : 'hidden'} flex-1 min-h-0 flex-col bg-white dark:bg-[#121214] z-30 xl:z-10 animate-in fade-in duration-300 overflow-y-auto custom-scrollbar xl:overflow-hidden relative`}>
 
                         {/* MOBIL BILD-VY (Flyttad hit: Ligger nu ovanför kontrollraden) */}
                         <div className="xl:hidden w-full h-[35vh] sm:h-[45vh] shrink-0 relative bg-zinc-50/50 dark:bg-[#0b0f19] flex items-center justify-center border-b border-zinc-200/80 dark:border-white/5 overflow-hidden">
-                            <img 
-                                src={activeConfig.src} 
+                            <img
+                                src={activeConfig.src}
                                 style={{ transform: `scale(${activeConfig.scale})` }}
-                                className="absolute inset-0 w-full h-full object-contain p-4 dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 pointer-events-none" 
-                                alt={`Sprängskiss ${activeArea}`} 
+                                className="absolute inset-0 w-full h-full object-contain p-4 dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 pointer-events-none"
+                                alt={`Sprängskiss ${activeArea}`}
                             />
                             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white dark:from-[#121214] to-transparent pointer-events-none"></div>
                         </div>
@@ -734,9 +734,12 @@ window.LagerView = ({ allJobs = [] }) => {
 
                             {/* Klickbara Sorteringsrubriker */}
                             <div className="flex border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/90 dark:bg-[#1a2235]/90 backdrop-blur-md text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest items-center">
+                                {/* Spacer för färgkanten så att headern linjerar med raderna */}
+                                <div className="w-1 shrink-0"></div>
+
                                 <div className="w-8 md:w-12 border-r border-zinc-200/80 dark:border-white/5 px-1 md:px-2 py-3 text-center shrink-0">#</div>
 
-                                <div className="w-24 md:w-40 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between shrink-0" onClick={() => handleSort('partnumber')}>
+                                <div className="w-24 md:w-44 border-r border-zinc-200/80 dark:border-white/5 px-2 md:px-4 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-between shrink-0" onClick={() => handleSort('partnumber')}>
                                     <span>ART.NR</span>
                                     {sortConfig.key === 'partnumber' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
@@ -751,13 +754,13 @@ window.LagerView = ({ allJobs = [] }) => {
                                     {sortConfig.key === 'stock' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
 
-                                <div className="w-10 md:w-[150px] px-1 py-3 text-center shrink-0 hidden sm:block">ACTION</div>
+                                <div className="w-10 md:w-[150px] px-1 md:px-3 py-3 text-right shrink-0 hidden sm:block">ACTION</div>
                             </div>
                         </div>
 
-                        {/* LISTAN (Scroll-behållaren) Ändrad till xl:overflow-y-auto */}
+                        {/* LISTAN (Scroll-behållaren) */}
                         <div className="flex-none h-auto overflow-visible xl:flex-1 xl:overflow-y-auto overflow-x-hidden custom-scrollbar xl:min-h-0 pb-10">
-                            
+
                             {filteredItems.length === 0 ? (
                                 <div className="p-16 text-center flex flex-col items-center justify-center h-full">
                                     <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-0 border border-zinc-200 dark:border-white/5 shadow-inner">
@@ -768,81 +771,78 @@ window.LagerView = ({ allJobs = [] }) => {
                             ) : (
                                 filteredItems.map((item, idx) => {
                                     const qty = parseInt(item.quantity) || 0;
-                                    const inStock = qty > 0;
-                                    const lowStock = qty > 0 && qty <= 2;
-                                    
-                                    let statusColor = "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]";
-                                    let bgBadge = "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20";
-                                    
-                                    if (!inStock) {
-                                        statusColor = "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]";
-                                        bgBadge = "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-500/20";
-                                    } else if (lowStock) {
-                                        statusColor = "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]";
-                                        bgBadge = "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/20";
-                                    }
-                                    
+
+                                    // Exakta färgkoder (Hex) matchade mot din bild
+                                    const statusColor = qty === 0
+                                        ? 'bg-[#dc2626]' // Röd om slut
+                                        : (qty < 3 ? 'bg-[#d89c00]' : 'bg-[#7a9d34]'); // Senapsgul & Olivgrön
+
                                     return (
-                                        <div 
-                                            key={item.id} 
+                                        <div
+                                            key={item.id}
                                             onDoubleClick={() => setEditingItem(item)}
-                                            className="flex border-b border-zinc-100 dark:border-white/5 text-[12px] items-center even:bg-zinc-50/50 even:dark:bg-white/[0.01] hover:bg-orange-50/50 dark:hover:bg-orange-500/5 transition-colors group cursor-pointer relative"
+                                            /* Färgen är borttagen från radens klasser här */
+                                            className="flex border-b border-zinc-200 dark:border-white/10 text-[12px] items-stretch bg-white dark:bg-[#121214] hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                                         >
-                                            <div className="w-8 md:w-12 border-r border-zinc-100 dark:border-white/5 py-3 px-1 flex flex-col items-center justify-center shrink-0">
-                                                <div className={`w-1.5 h-1.5 rounded-full mb-1.5 ${statusColor}`}></div>
-                                                <span className="text-[8px] md:text-[9px] font-mono font-bold text-zinc-400">{(idx+1).toString().padStart(3,'0')}</span>
+                                            {/* Här är den nya tjockare färgindikatorn. Radens border-b kommer skära av denna i botten och bilda avdelaren! */}
+                                            <div className={`w-[6px] md:w-[8px] shrink-0 ${statusColor}`}></div>
+
+                                            <div className="w-8 md:w-12 border-r border-zinc-200 dark:border-white/10 py-3 px-1 flex items-center justify-center shrink-0">
+                                                <span className="text-[10px] md:text-[11px] font-bold text-zinc-500">{idx + 1}</span>
                                             </div>
-                                            
-                                            <div 
-                                                className="w-24 md:w-40 border-r border-zinc-100 dark:border-white/5 px-2 md:px-4 py-3 font-mono font-bold tracking-wider text-[10px] md:text-[12px] text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors truncate" 
+
+                                            <div
+                                                className="w-24 md:w-40 border-r border-zinc-200 dark:border-white/10 px-2 md:px-4 py-3 font-mono font-bold tracking-wider text-[10px] md:text-[12px] text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors flex items-center truncate"
                                                 onClick={(e) => copyToClipboard(e, item.service_filter, item.id)}
                                                 title={`Kopiera: ${item.service_filter}`}
                                             >
                                                 {formatPartNumber(item.service_filter)}
                                             </div>
-                                            
-                                            <div className="flex-1 border-r border-zinc-100 dark:border-white/5 px-2 md:px-4 py-3 min-w-0 flex flex-col justify-center">
-                                                <div className="text-[10px] md:text-[12px] font-black text-zinc-800 dark:text-zinc-200 truncate uppercase">{item.name}</div>
-                                                <div className="text-[9px] md:text-[10px] text-zinc-500 truncate mt-0.5" title={item.notes}>{item.notes || '-'}</div>
+
+                                            <div className="flex-1 border-r border-zinc-200 dark:border-white/10 px-2 md:px-4 py-3 min-w-0 flex flex-col justify-center">
+                                                {/* 3. whitespace-normal och line-clamp-2 låter texten brytas till max 2 rader */}
+                                                <div className="text-[10px] md:text-[12px] font-bold text-zinc-800 dark:text-zinc-200 uppercase whitespace-normal line-clamp-2 leading-tight">{item.name}</div>
+                                                <div className="text-[9px] md:text-[10px] text-zinc-500 whitespace-normal line-clamp-2 mt-0.5" title={item.notes}>{item.notes || '-'}</div>
                                             </div>
-                                            
-                                            <div className="w-14 md:w-20 border-r border-zinc-100 dark:border-white/5 px-1 py-3 text-center shrink-0 flex items-center justify-center">
-                                                <span className={`font-mono font-black text-[9px] md:text-[11px] px-1.5 md:px-2 py-0.5 rounded border ${bgBadge}`}>
-                                                    {qty} ST
+
+                                            <div className="w-14 md:w-20 border-r border-zinc-200 dark:border-white/10 px-1 py-3 text-center shrink-0 flex items-center justify-center">
+                                                {/* 1. Neutral färg på saldot (text-zinc-900) istället för färgade siffror */}
+                                                <span className="font-bold text-[11px] md:text-[13px] text-zinc-900 dark:text-white">
+                                                    {qty}
                                                 </span>
                                             </div>
-                                            
-                                            <div className="w-[150px] px-3 py-3 justify-end gap-1.5 hidden sm:flex shrink-0">
+
+                                            <div className="w-[150px] px-3 py-3 justify-end gap-1.5 hidden sm:flex shrink-0 items-center">
                                                 <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={13}/></button>
-                                                    <button onClick={(e)=>{e.stopPropagation(); setEditingItem(item);}} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="edit" size={13}/></button>
-                                                    <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
+                                                    <button onClick={(e) => { e.stopPropagation(); setLinkingItem(item); }} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={13} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="edit" size={13} /></button>
+                                                    <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
                                                         <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-3.5 h-3.5 object-contain group-hover/btn:scale-110 transition-transform" />
                                                     </a>
-                                                    <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-sm transition-all group/btn" title="Sök hos thansen">
+                                                    <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-sm transition-all group/btn" title="Sök hos thansen">
                                                         <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" alt="thansen" className="w-3.5 h-3.5 object-contain group-hover/btn:scale-110 transition-transform" />
                                                     </a>
                                                 </div>
                                             </div>
 
                                             <div className="w-10 px-1 py-3 flex sm:hidden justify-center items-center shrink-0 relative">
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }} 
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === item.id ? null : item.id); }}
                                                     className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${activeMenuId === item.id ? 'bg-orange-100 text-orange-500' : 'text-zinc-400 bg-transparent'}`}
                                                 >
                                                     <SafeIcon name="more-vertical" size={16} />
                                                 </button>
-                                                
+
                                                 {activeMenuId === item.id && (
                                                     <>
                                                         <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }}></div>
                                                         <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-1.5 flex gap-1 animate-in fade-in zoom-in-95">
-                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-500"><SafeIcon name="link" size={16}/></button>
-                                                            <button onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null); setEditingItem(item);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-500"><SafeIcon name="edit" size={16}/></button>
-                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/30 transition-colors">
+                                                            <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); setLinkingItem(item); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-500"><SafeIcon name="link" size={16} /></button>
+                                                            <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); setEditingItem(item); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-500"><SafeIcon name="edit" size={16} /></button>
+                                                            <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/30 transition-colors">
                                                                 <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-4 h-4 object-contain" />
                                                             </a>
-                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>{e.stopPropagation(); setActiveMenuId(null);}} className="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/30 transition-colors">
+                                                            <a href={generateThansenLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }} className="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/30 transition-colors">
                                                                 <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" alt="thansen" className="w-4 h-4 object-contain" />
                                                             </a>
                                                         </div>
@@ -869,23 +869,23 @@ window.LagerView = ({ allJobs = [] }) => {
                                 className={`shrink-0 relative w-28 h-36 bg-white dark:bg-[#182032] border transition-all cursor-pointer group overflow-hidden hover:border-zinc-800 dark:hover:border-white ${isSelected ? 'border-zinc-900 dark:border-orange-500 ring-2 ring-orange-500/40 z-10' : 'border-zinc-300 dark:border-white/20'}`}
                                 title={cat.name}
                             >
-                                <img 
-                                    src={config.src} 
+                                <img
+                                    src={config.src}
                                     style={{ transform: `scale(${config.scale * 0.8})` }}
-                                    className="absolute inset-0 w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-85 group-hover:opacity-100 transition-opacity pointer-events-none" 
-                                    alt={cat.name} 
+                                    className="absolute inset-0 w-full h-full object-contain p-2 dark:invert grayscale dark:contrast-125 opacity-85 group-hover:opacity-100 transition-opacity pointer-events-none"
+                                    alt={cat.name}
                                 />
-                                
+
                                 {/* 
                                   Här skapar vi ETKA-krispigheten:
                                   1. style={{ fontFamily: 'Arial...' }} stänger av den moderna webbfonten
                                   2. text-black ger ren #000 svart färg
                                   3. pl-1.5 pt-0.5 maskerar skissen bakom utan att se ut som en "knapp"
                                 */}
-                                <div 
+                                <div
                                     className="absolute bottom-1 right-1 bg-white dark:bg-[#182032] pl-1.5 pt-0.5 text-[11px] font-bold text-black dark:text-white uppercase pointer-events-none z-20"
-                                    style={{ 
-                                        fontFamily: 'Arial, Helvetica, sans-serif', 
+                                    style={{
+                                        fontFamily: 'Arial, Helvetica, sans-serif',
                                         letterSpacing: '0px',
                                         WebkitFontSmoothing: 'none' // Tar bort luddig utjämning i vissa webbläsare
                                     }}
