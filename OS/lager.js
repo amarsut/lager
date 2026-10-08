@@ -386,8 +386,8 @@ window.LagerView = ({ allJobs = [] }) => {
     const [search, setSearch] = React.useState("");
     const [activeArea, setActiveArea] = React.useState("Alla");
     const [showTable, setShowTable] = React.useState(false);
+    const [zoomMultiplier, setZoomMultiplier] = React.useState(1); // NYTT STATE FÖR ZOOM
 
-    // NYA STATES FÖR FILTER OCH SORTERING
     // NYA STATES FÖR FILTER OCH SORTERING
     const [stockFilter, setStockFilter] = React.useState('ALL'); // ALL, IN_STOCK, OUT_OF_STOCK
     const [sortConfig, setSortConfig] = React.useState({ key: 'partnumber', direction: 'asc' });
@@ -421,6 +421,7 @@ window.LagerView = ({ allJobs = [] }) => {
         setActiveArea(area);
         setSearch('');
         setShowTable(true);
+        setZoomMultiplier(1); // Nollställ zoom
     };
 
     const etkaCategories = [
@@ -577,20 +578,19 @@ window.LagerView = ({ allJobs = [] }) => {
                             {/* BILD FÖR MOBIL (Syns upp till xl-brytpunkten) -> Visar ALLTID huvudskissen */}
                             <img
                                 src={diagramConfig['Alla'].src}
-                                className="xl:hidden absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 transition-transform duration-700 pointer-events-none"
+                                style={{ transform: `scale(${diagramConfig['Alla'].scale * zoomMultiplier})` }}
+                                className="xl:hidden absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:opacity-90 opacity-80 transition-transform duration-300 pointer-events-none"
                                 alt="Sprängskiss Huvudvy"
                             />
 
                             {/* BILD FÖR DATOR (Syns från xl och uppåt) -> Visar dynamisk bild och zoom */}
                             <img
                                 src={activeConfig.src}
-                                style={{ transform: `scale(${activeConfig.scale})` }}
-                                className="hidden xl:block absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 transition-transform duration-700 pointer-events-none"
+                                style={{ transform: `scale(${activeConfig.scale * zoomMultiplier})` }}
+                                className="hidden xl:block absolute inset-0 w-full h-full object-contain dark:invert grayscale dark:opacity-90 opacity-80 transition-transform duration-300 pointer-events-none"
                                 alt={`Sprängskiss ${activeArea}`}
                             />
 
-                            {/* HOTSPOTS (Döljs snyggt på datorn när man går in i en kategori) */}
-                            {/* HOTSPOTS (Döljs snyggt på datorn när man går in i en kategori) */}
                             <div className={isMainDiagram ? 'block' : 'xl:hidden'}>
                                 <DiagramHotspot top="45%" left="42%" dx={-75} dy={-40} label="Motor" area="Motor" iconType="motor" activeArea={activeArea} onClick={handleSelectArea} />
                                 <DiagramHotspot top="54%" left="38%" dx={-40} dy={0} label="Chassi" area="Chassi" iconType="settings" activeArea={activeArea} onClick={handleSelectArea} />
@@ -601,7 +601,17 @@ window.LagerView = ({ allJobs = [] }) => {
                             </div>
                         </div>
 
-                        {/* MINIATYRBILD TILLBAKA (Endast Dator) */}
+                        {/* ZOOM-KNAPPAR FÖR HUVUDVY (Dator + Mobil) */}
+                        {/* Flyttade till top-4 (för mobil) och xl:top-[110px] (för dator, hamnar precis under miniatyren). Fyrkantiga (rounded-md) och mindre (w-8 h-8). */}
+                        <div className="absolute right-4 top-4 xl:top-[110px] z-40 flex flex-col gap-1.5">
+                            <button onClick={(e) => { e.stopPropagation(); setZoomMultiplier(z => Math.min(z + 0.3, 4)); }} className="w-8 h-8 bg-white/90 dark:bg-[#182032]/90 border border-zinc-300 dark:border-zinc-600 shadow-sm rounded-md flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-orange-500 transition-all backdrop-blur-md active:scale-95" title="Zooma in">
+                                <SafeIcon name="zoom-in" size={16} />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setZoomMultiplier(z => Math.max(z - 0.3, 0.5)); }} className="w-8 h-8 bg-white/90 dark:bg-[#182032]/90 border border-zinc-300 dark:border-zinc-600 shadow-sm rounded-md flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-orange-500 transition-all backdrop-blur-md active:scale-95" title="Zooma ut">
+                                <SafeIcon name="zoom-out" size={16} />
+                            </button>
+                        </div>
+
                         {/* MINIATYRBILD TILLBAKA (Klassisk EPC-katalogstil) */}
                         {!isMainDiagram && (
                             <button
@@ -674,12 +684,23 @@ window.LagerView = ({ allJobs = [] }) => {
 
                         {/* MOBIL BILD-VY (Flyttad hit: Ligger nu ovanför kontrollraden) */}
                         <div className="xl:hidden w-full h-[35vh] sm:h-[45vh] shrink-0 relative bg-zinc-50/50 dark:bg-[#0b0f19] flex items-center justify-center border-b border-zinc-200/80 dark:border-white/5 overflow-hidden">
-                            <img
-                                src={activeConfig.src}
-                                style={{ transform: `scale(${activeConfig.scale})` }}
-                                className="absolute inset-0 w-full h-full object-contain p-4 dark:invert grayscale dark:contrast-125 dark:opacity-90 opacity-80 pointer-events-none"
-                                alt={`Sprängskiss ${activeArea}`}
+                            <img 
+                                src={activeConfig.src} 
+                                style={{ transform: `scale(${activeConfig.scale * zoomMultiplier})` }}
+                                className="absolute inset-0 w-full h-full object-contain p-4 dark:invert grayscale dark:opacity-90 opacity-80 pointer-events-none transition-transform duration-300" 
+                                alt={`Sprängskiss ${activeArea}`} 
                             />
+                            
+                            {/* ZOOM-KNAPPAR (Mobil Tabellvy) - Nu fyrkantiga och mindre */}
+                            <div className="absolute right-3 bottom-3 z-40 flex flex-col gap-1.5">
+                                <button onClick={(e) => { e.stopPropagation(); setZoomMultiplier(z => Math.min(z + 0.3, 4)); }} className="w-8 h-8 bg-white/90 dark:bg-[#182032]/90 border border-zinc-300 dark:border-zinc-700 shadow-sm rounded-md flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-orange-500 transition-all backdrop-blur-md active:scale-95" title="Zooma in">
+                                    <SafeIcon name="zoom-in" size={16} />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); setZoomMultiplier(z => Math.max(z - 0.3, 0.5)); }} className="w-8 h-8 bg-white/90 dark:bg-[#182032]/90 border border-zinc-300 dark:border-zinc-700 shadow-sm rounded-md flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-orange-500 transition-all backdrop-blur-md active:scale-95" title="Zooma ut">
+                                    <SafeIcon name="zoom-out" size={16} />
+                                </button>
+                            </div>
+
                             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white dark:from-[#121214] to-transparent pointer-events-none"></div>
                         </div>
 
@@ -694,6 +715,7 @@ window.LagerView = ({ allJobs = [] }) => {
                                             setShowTable(false);
                                             setActiveArea('Alla');
                                             setSearch('');
+                                            setZoomMultiplier(1); // Nollställ zoom
                                         }}
                                         className="p-1.5 -ml-1 flex items-center justify-center text-zinc-900 dark:text-white hover:text-orange-500 rounded-lg transition-colors cursor-pointer"
                                         title="Tillbaka"
@@ -765,9 +787,32 @@ window.LagerView = ({ allJobs = [] }) => {
 
                         {/* LISTAN (Scroll-behållaren) */}
                         <div className="flex-none h-auto overflow-visible xl:flex-1 xl:overflow-y-auto overflow-x-hidden custom-scrollbar xl:min-h-0 pb-10">
+                            
+                            {/* Visa bannern i toppen ENDAST om inga artiklar hittades */}
+                            {filteredItems.length === 0 && search && (
+                                <div className="p-4 md:p-6 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-[#1a2235]/30 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
+                                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/20">
+                                            <SafeIcon name="globe" size={18} className="text-blue-500" />
+                                        </div>
+                                        <div className="min-w-0 text-left">
+                                            <div className="text-[11px] md:text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate">Hittar du inte rätt del?</div>
+                                            <div className="text-[9px] md:text-[10px] text-zinc-500 truncate">Sök efter "{search}" hos leverantörer</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 w-full sm:w-auto shrink-0">
+                                        <a href={generateTrodoLink(search)} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none sm:w-28 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all hover:border-blue-300">
+                                            <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" className="w-3.5 h-3.5 object-contain" alt="Trodo" /> Trodo
+                                        </a>
+                                        <a href={generateThansenLink(search)} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none sm:w-28 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all hover:border-orange-300">
+                                            <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" className="w-3.5 h-3.5 object-contain" alt="thansen" /> thansen
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
 
                             {filteredItems.length === 0 ? (
-                                <div className="p-16 text-center flex flex-col items-center justify-center h-full">
+                                <div className="py-20 text-center flex flex-col items-center justify-center">
                                     <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-0 border border-zinc-200 dark:border-white/5 shadow-inner">
                                         <SafeIcon name="inbox" size={24} className="text-zinc-400" />
                                     </div>
@@ -786,7 +831,6 @@ window.LagerView = ({ allJobs = [] }) => {
                                         <div
                                             key={item.id}
                                             onDoubleClick={() => setEditingItem(item)}
-                                            /* Färgen är borttagen från radens klasser här */
                                             className="flex border-b border-zinc-200 dark:border-white/10 text-[12px] items-stretch bg-white dark:bg-[#121214] hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                                         >
                                             {/* Här är den nya tjockare färgindikatorn. Radens border-b kommer skära av denna i botten och bilda avdelaren! */}
@@ -859,7 +903,31 @@ window.LagerView = ({ allJobs = [] }) => {
                                     )
                                 })
                             )}
-                            {filteredItems.length > 0 && <div className="h-4 w-full shrink-0"></div>}
+
+                            {/* Visa bannern i BOTTEN av listan ENDAST om det finns träffar i lagret */}
+                            {filteredItems.length > 0 && search && (
+                                <div className="p-4 md:p-6 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-[#1a2235]/30 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
+                                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/20">
+                                            <SafeIcon name="globe" size={18} className="text-blue-500" />
+                                        </div>
+                                        <div className="min-w-0 text-left">
+                                            <div className="text-[11px] md:text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate">Hittar du inte rätt del?</div>
+                                            <div className="text-[9px] md:text-[10px] text-zinc-500 truncate">Sök efter "{search}" hos leverantörer</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 w-full sm:w-auto shrink-0">
+                                        <a href={generateTrodoLink(search)} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none sm:w-28 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all hover:border-blue-300">
+                                            <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" className="w-3.5 h-3.5 object-contain" alt="Trodo" /> Trodo
+                                        </a>
+                                        <a href={generateThansenLink(search)} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none sm:w-28 h-10 bg-white dark:bg-[#121826] hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all hover:border-orange-300">
+                                            <img src="https://www.google.com/s2/favicons?domain=thansen.se&sz=32" className="w-3.5 h-3.5 object-contain" alt="thansen" /> thansen
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+
+                            {filteredItems.length > 0 && !search && <div className="h-4 w-full shrink-0"></div>}
                         </div>
                     </div>
                 </div>
