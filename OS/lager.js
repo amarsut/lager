@@ -522,6 +522,22 @@ window.LagerView = ({ allJobs = [] }) => {
         setTimeout(() => setCopiedId(null), 2000);
     };
 
+    // NYTT: Funktion för att snabbt justera lagersaldo
+    const handleQuickAdjust = async (item, change) => {
+        const currentQty = parseInt(item.quantity) || 0;
+        const newQty = Math.max(0, currentQty + change); // Hindrar saldot från att bli minus
+        if (newQty === currentQty) return; 
+
+        try {
+            // Uppdaterar databasen direkt i bakgrunden utan att öppna modal
+            await window.db.collection("lager").doc(String(item.id)).update({
+                quantity: newQty
+            });
+        } catch (err) {
+            console.error("Kunde inte uppdatera saldo:", err);
+        }
+    };
+
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden animate-in fade-in duration-700 flex flex-col select-none pb-[64px] md:pb-0 bg-transparent">
 
@@ -776,7 +792,8 @@ window.LagerView = ({ allJobs = [] }) => {
                                     {sortConfig.key === 'name' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
 
-                                <div className="w-14 md:w-20 border-r border-zinc-200/80 dark:border-white/5 px-1 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-center gap-1 shrink-0" onClick={() => handleSort('stock')}>
+                                {/* Breddat till w-20 md:w-24 */}
+                                <div className="w-20 md:w-24 border-r border-zinc-200/80 dark:border-white/5 px-1 py-3 cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors select-none flex items-center justify-center gap-1 shrink-0" onClick={() => handleSort('stock')}>
                                     <span>SALDO</span>
                                     {sortConfig.key === 'stock' && <span className="text-orange-500">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
                                 </div>
@@ -854,11 +871,27 @@ window.LagerView = ({ allJobs = [] }) => {
                                                 <div className="text-[9px] md:text-[10px] text-zinc-500 whitespace-normal line-clamp-2 mt-0.5" title={item.notes}>{item.notes || '-'}</div>
                                             </div>
 
-                                            <div className="w-14 md:w-20 border-r border-zinc-200 dark:border-white/10 px-1 py-3 text-center shrink-0 flex items-center justify-center">
-                                                {/* 1. Neutral färg på saldot (text-zinc-900) istället för färgade siffror */}
-                                                <span className="font-bold text-[11px] md:text-[13px] text-zinc-900 dark:text-white">
+                                            {/* Minimalistisk Quick-Adjust */}
+                                            <div className="w-20 md:w-24 border-r border-zinc-200 dark:border-white/10 px-1 py-3 text-center shrink-0 flex items-center justify-center gap-1 md:gap-2">
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); handleQuickAdjust(item, -1); }} 
+                                                    className="w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded transition-all active:scale-95" 
+                                                    title="Minska saldo"
+                                                >
+                                                    <SafeIcon name="minus" size={13} />
+                                                </button>
+                                                
+                                                <span className="font-bold text-[11px] md:text-[13px] text-zinc-900 dark:text-white w-4 text-center">
                                                     {qty}
                                                 </span>
+                                                
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); handleQuickAdjust(item, 1); }} 
+                                                    className="w-5 h-5 flex items-center justify-center text-zinc-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded transition-all active:scale-95" 
+                                                    title="Öka saldo"
+                                                >
+                                                    <SafeIcon name="plus" size={13} />
+                                                </button>
                                             </div>
 
                                             {/* Minskad px-3 till pr-2 för att putta dem till höger, gap minskat från 2 till 1.5, storlek w-8 h-8 */}
