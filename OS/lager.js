@@ -24,6 +24,7 @@ const customIcons = {
 // --- Hjälpfunktioner ---
 const generateTrodoLink = (f) => f ? `https://www.trodo.se/catalogsearch/result/premium?filter[quality_group]=2&product_list_dir=asc&product_list_order=price&q=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
 const generateThansenLink = (f) => f ? `https://www.thansen.se/search?query=${encodeURIComponent(f.replace(/[\s-]/g, ''))}` : '#';
+const generateAeromotorsLink = (f) => f ? `https://aeromotors.se/sok?s=${f.replace(/[\s-]/g, '+')}` : '#';
 const normalizeStr = (str) => (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
 
 // Automatisk VAG-formatering (03l115562 -> 03L 115 562)
@@ -917,8 +918,10 @@ window.LagerView = ({ allJobs = [] }) => {
                                             {/* Minskad px-3 till pr-2 för att putta dem till höger, gap minskat från 2 till 1.5, storlek w-8 h-8 */}
                                                 <div className="w-[180px] px-2 py-3 justify-center gap-1.5 hidden sm:flex shrink-0 items-center">
                                                     <div className="flex items-center gap-1.5 opacity-75 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={(e)=>{e.stopPropagation(); setLinkingItem(item);}} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-orange-500 hover:border-orange-200 shadow-sm transition-all" title="Koppla till arbetsorder"><SafeIcon name="link" size={16}/></button>
                                                         <button onClick={(e)=>{e.stopPropagation(); setEditingItem(item);}} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all" title="Redigera artikel"><SafeIcon name="pen" size={16}/></button>
+                                                        <a href={generateAeromotorsLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-red-300 dark:hover:border-red-500/50 shadow-sm transition-all group/btn" title="Sök hos AeroMotors">
+                                                            <img src="https://www.google.com/s2/favicons?domain=aeromotors.se&sz=32" alt="AeroMotors" className="w-4 h-4 object-contain group-hover/btn:scale-110 transition-transform" />
+                                                        </a>
                                                         <a href={generateTrodoLink(item.service_filter)} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-black/25 border border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 shadow-sm transition-all group/btn" title="Sök hos Trodo">
                                                             <img src="https://www.google.com/s2/favicons?domain=trodo.se&sz=32" alt="Trodo" className="w-4 h-4 object-contain group-hover/btn:scale-110 transition-transform" />
                                                         </a>
