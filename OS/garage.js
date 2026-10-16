@@ -284,9 +284,9 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
             case 'trodo':
                 return `https://www.trodo.se/catalogsearch/result/?q=${cleanQ}&searchby=number`;
             case 'aero':
-                return `https://aeromotors.se/handla-efter/search?search_query=${cleanQ}`;
+                return `https://aeromotors.se/sok?s=${cleanQ}`;
             case 'thansen':
-                return `https://www.thansen.se/bil/search/?q=${cleanQ}`;
+                return `https://www.thansen.se/search?query=${cleanQ}`;
             default:
                 return '#';
         }
@@ -469,51 +469,32 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 )}
                             </div>
 
-                            {/* Motor & Effekt (Tar 3 kolumner på mobil, 2 på dator för att rymma all text) */}
-                            <div className="col-span-3 sm:col-span-2 relative group cursor-pointer min-w-0 outline-none flex flex-col justify-start" tabIndex="0">
+                            {/* Motor & Effekt (Tar 3 kolumner så hela texten alltid syns utan störande tooltip) */}
+                            <div className="col-span-3 relative min-w-0 flex flex-col justify-start">
                                 <span className="block text-[8.5px] sm:text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Motor & Effekt</span>
                                 <span className="font-bold text-[12px] sm:text-[13px] text-white truncate block">{powerLine}</span>
-                                
-                                {powerLine !== '-' && powerLine.length > 15 && (
-                                    <div className="absolute z-[100] left-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus:opacity-100 group-focus:visible bg-slate-800 text-white text-[12px] font-bold px-3 py-2 rounded-lg shadow-xl border border-slate-600 whitespace-nowrap transition-all pointer-events-none">
-                                        {powerLine}
-                                    </div>
-                                )}
                             </div>
 
                         </div>
                     )}
 
-                    {/* OEM Reservdelar - Ren 4-kolumnsgrid + Direkt Snabbval */}
-                    {showAllSpecs && specs.oem_parts && specs.oem_parts.length > 0 && (
+                    {/* OEM Reservdelar (100% Ramlös & Enhetlig med Specifikationerna ovan) + Integrerad Sökbar */}
+                    {showAllSpecs && (
                         <div className="pt-4 sm:pt-5 mt-4 border-t border-slate-700/50 animate-in slide-in-from-top-2 fade-in">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-4 gap-x-2 sm:gap-x-3">
-                                {specs.oem_parts.map((p, i) => {
-                                    const cleanOem = String(p.oem || '').replace(/[^A-Z0-9]/ig, '');
-                                    const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === cleanOem);
-                                    const qty = inStockItem ? parseInt(inStockItem.quantity || 0) : 0;
-                                    const isCopied = copiedOem === p.oem;
-                                    const isSelected = selectedOem && selectedOem.oem === p.oem;
-                                    
-                                    return (
-                                        <div key={`oem-${i}`} className="flex flex-col justify-start min-w-0">
-                                            {/* Rad 1: Filtertyp & Lagerstatus */}
-                                            <div className="flex items-center justify-between gap-1 mb-1.5">
-                                                <span className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold uppercase tracking-wider truncate">
-                                                    {p.name}
-                                                </span>
-                                                <span className={`text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded whitespace-nowrap shrink-0 ${
-                                                    qty > 0 
-                                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                                                    : 'bg-red-500/15 text-red-400 border border-red-500/20'
-                                                }`}>
-                                                    {qty} ST
-                                                </span>
-                                            </div>
-                                            
-                                            {/* Rad 2: Klickbart OEM-nummer */}
-                                            <button
-                                                type="button"
+                            
+                            {/* OEM-rad: Exakt samma grid, avstånd och ramlösa stil som Motorkod/Drivmedel */}
+                            {specs.oem_parts && specs.oem_parts.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-4 gap-x-1.5 sm:gap-x-3 mb-4">
+                                    {specs.oem_parts.map((p, i) => {
+                                        const cleanOem = String(p.oem || '').replace(/[^A-Z0-9]/ig, '');
+                                        const inStockItem = lagerItems.find(l => l.service_filter && l.service_filter.replace(/[^A-Z0-9]/ig, '') === cleanOem);
+                                        const qty = inStockItem ? parseInt(inStockItem.quantity || 0) : 0;
+                                        const isCopied = copiedOem === p.oem;
+                                        const isSelected = selectedOem && selectedOem.oem === p.oem;
+                                        
+                                        return (
+                                            <div 
+                                                key={`oem-${i}`} 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (navigator.clipboard) navigator.clipboard.writeText(p.oem);
@@ -525,69 +506,125 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                                         setSelectedOem({ name: p.name, oem: p.oem });
                                                         setCustomPartQuery(p.oem);
                                                     }
-                                                    setTimeout(() => setCopiedOem(null), 1500);
+                                                    setTimeout(() => setCopiedOem(null), 1200);
                                                 }}
-                                                title="Klicka för att kopiera & direktsöka"
-                                                className={`w-full h-9 flex items-center justify-between gap-1.5 px-2.5 rounded-lg font-mono text-[12px] sm:text-[12.5px] font-bold tracking-wide transition-all active:scale-95 border text-left ${
-                                                    isCopied 
-                                                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm' 
-                                                    : isSelected
-                                                    ? 'bg-orange-500/15 text-orange-300 border-orange-500/70 shadow-sm'
-                                                    : 'bg-slate-800/60 hover:bg-slate-800 text-white border-slate-700/80 hover:border-slate-600'
-                                                }`}
+                                                title="Klicka för att kopiera & välja i söken"
+                                                className="group cursor-pointer min-w-0 flex flex-col justify-start select-none active:opacity-75 transition-opacity"
                                             >
-                                                <span className="truncate">{isCopied ? 'KOPIERAD!' : p.oem}</span>
-                                                <SafeIcon 
-                                                    name={isCopied ? "check" : "copy"} 
-                                                    size={12} 
-                                                    className={isCopied ? "text-slate-950 shrink-0" : isSelected ? "text-orange-400 shrink-0" : "text-slate-500 shrink-0"} 
-                                                />
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* DIREKT SNABBSÖK-BAR (Glider fram direkt under OEM-numret när man klickar på ett) */}
-                            {selectedOem && (
-                                <div className="mt-3 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-900/70 p-2 rounded-xl border border-slate-700/60 animate-in fade-in slide-in-from-top-1 duration-200">
-                                    <div className="flex items-center justify-between sm:justify-start gap-2 px-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse shrink-0"></span>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
-                                            Sök <span className="text-orange-400 font-mono">{selectedOem.oem}</span> ({selectedOem.name}):
-                                        </span>
-                                        <button 
-                                            onClick={() => { setSelectedOem(null); setCustomPartQuery(""); }}
-                                            className="sm:hidden text-slate-400 hover:text-white p-0.5"
-                                        >
-                                            <SafeIcon name="x" size={12} />
-                                        </button>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-1.5 shrink-0">
-                                        <button
-                                            type="button"
-                                            onClick={(e) => openPartStore(e, 'trodo', selectedOem.oem)}
-                                            className="h-7 px-3 rounded-lg bg-slate-800 hover:bg-sky-500 text-slate-200 hover:text-white border border-slate-700 hover:border-sky-400 text-[9.5px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                                        >
-                                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Trodo
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => openPartStore(e, 'aero', selectedOem.oem)}
-                                            className="h-7 px-3 rounded-lg bg-slate-800 hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-slate-700 hover:border-amber-400 text-[9.5px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                                        >
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Aeromotors
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => openPartStore(e, 'thansen', selectedOem.oem)}
-                                            className="h-7 px-3 rounded-lg bg-slate-800 hover:bg-rose-500 text-slate-200 hover:text-white border border-slate-700 hover:border-rose-400 text-[9.5px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                                        >
-                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Thansen
-                                        </button>
-                                    </div>
+                                                {/* Rad 1: Rubrik + Kompakt Lager-indikator direkt intill */}
+                                                <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
+                                                    <span className="text-[8.5px] sm:text-[10px] text-slate-400 group-hover:text-slate-300 font-semibold uppercase tracking-wider truncate transition-colors">
+                                                        {p.name}
+                                                    </span>
+                                                    <span className={`inline-flex items-center gap-1 text-[8px] font-black uppercase px-1.5 py-[1px] rounded shrink-0 ${
+                                                        qty > 0 
+                                                        ? 'bg-emerald-500/15 text-emerald-400' 
+                                                        : 'bg-red-500/15 text-red-400/90'
+                                                    }`}>
+                                                        <span className={`w-1 h-1 rounded-full ${qty > 0 ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+                                                        {qty}
+                                                    </span>
+                                                </div>
+                                                
+                                                {/* Rad 2: Ramlöst Artikelnummer + Subtil Kopiera-ikon */}
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <span className={`font-bold text-[12px] sm:text-[13px] truncate transition-colors ${
+                                                        isCopied 
+                                                        ? 'text-emerald-400' 
+                                                        : isSelected 
+                                                        ? 'text-orange-400' 
+                                                        : 'text-white group-hover:text-orange-300'
+                                                    }`}>
+                                                        {isCopied ? 'KOPIERAD!' : p.oem}
+                                                    </span>
+                                                    <SafeIcon 
+                                                        name={isCopied ? "check" : "copy"} 
+                                                        size={11} 
+                                                        className={`shrink-0 transition-all ${
+                                                            isCopied 
+                                                            ? 'text-emerald-400 scale-110' 
+                                                            : isSelected 
+                                                            ? 'text-orange-400 opacity-100' 
+                                                            : 'text-slate-500 opacity-60 group-hover:opacity-100 group-hover:text-orange-300'
+                                                        }`} 
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
+
+                            {/* SÖK- & JÄMFÖRELSEBAR (Uppgraderad storlek för perfekt känsla på mobil, tablet & dator) */}
+                            <div className="pt-3.5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                
+                                {/* Vänster: Större och tydligare sökfält (h-10 på mobil, h-9 på dator) */}
+                                <div className="flex items-center gap-2.5 flex-1 min-w-0 bg-white/[0.05] hover:bg-white/[0.07] focus-within:bg-white/[0.09] border border-white/[0.1] focus-within:border-orange-500/60 rounded-xl px-3.5 h-10 sm:h-9 transition-all shadow-inner">
+                                    <SafeIcon 
+                                        name="search" 
+                                        size={14} 
+                                        className={customPartQuery.trim() ? "text-orange-400 shrink-0" : "text-slate-400 shrink-0"} 
+                                    />
+                                    <input
+                                        type="text"
+                                        value={customPartQuery}
+                                        onChange={(e) => {
+                                            setCustomPartQuery(e.target.value.toUpperCase());
+                                            setSelectedOem(null);
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                openPartStore(e, 'trodo', customPartQuery.trim() || null);
+                                            }
+                                        }}
+                                        placeholder={`Sök OEM-nr...`}
+                                        className="w-full bg-transparent font-mono text-[12px] sm:text-[12px] font-bold text-orange-400 placeholder:font-sans placeholder:font-medium placeholder:text-slate-400/80 focus:outline-none uppercase tracking-wider truncate"
+                                    />
+                                    {selectedOem && (
+                                        <span className="sm:hidden text-[9px] font-bold text-slate-300 uppercase tracking-wider shrink-0 bg-white/[0.08] border border-white/[0.06] px-2 py-0.5 rounded-md">
+                                            {selectedOem.name}
+                                        </span>
+                                    )}
+                                    {customPartQuery.trim() && (
+                                        <button 
+                                            type="button"
+                                            onClick={() => { setSelectedOem(null); setCustomPartQuery(""); }}
+                                            title="Återställ"
+                                            className="text-slate-400 hover:text-white p-1 -mr-1 shrink-0 transition-colors"
+                                        >
+                                            <SafeIcon name="x" size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Höger: Matchande butiksknappar (h-10 på mobil, h-9 på dator) */}
+                                <div className="grid grid-cols-3 gap-2 shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => openPartStore(e, 'trodo', customPartQuery.trim() || null)}
+                                        className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-sky-500 text-slate-200 hover:text-white border border-white/[0.08] hover:border-sky-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>
+                                        <span>Trodo</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => openPartStore(e, 'aero', customPartQuery.trim() || null)}
+                                        className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-white/[0.08] hover:border-amber-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
+                                        <span>Aeromotors</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => openPartStore(e, 'thansen', customPartQuery.trim() || null)}
+                                        className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-rose-500 text-slate-200 hover:text-white border border-white/[0.08] hover:border-rose-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
+                                        <span>Thansen</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -622,6 +659,46 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                             <div className={`p-1.5 rounded-lg transition-all border ${vinCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-white/10 text-slate-400 group-hover:text-orange-500 group-hover:bg-orange-50 group-hover:border-orange-200'}`}>
                                 <SafeIcon name={vinCopied ? "check" : "copy"} size={14} />
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. ÅTGÄRDSKNAPPAR & RESERVDELS-HUBB OVANFÖR HISTORIK */}
+                <div className="px-3 sm:px-6 pt-3 pb-5 relative z-20 space-y-2.5">
+                    
+                    {/* RAD 1: Systemverktyg (4 kolumner, h-11) */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <button 
+                            onClick={(e) => {
+                                if (specs.vin) { navigator.clipboard.writeText(specs.vin); }
+                                handleQuickLink(e, specs.vin || v.regnr, 'https://superetka.com/etka');
+                            }} 
+                            className="col-span-1 h-11 flex items-center justify-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95 group"
+                        >
+                            <SafeIcon name="layers" size={14} className="text-slate-400 group-hover:text-orange-500 transition-colors" /> 
+                            <span className="hidden sm:inline">ETKA (VIN)</span><span className="sm:hidden">ETKA</span>
+                        </button>
+
+                        <button 
+                            onClick={(e) => {
+                                setShowAllSpecs(true);
+                                scanLager(e);
+                            }} 
+                            disabled={isScanningOEM} 
+                            className="col-span-1 h-11 flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 active:scale-95 group"
+                        >
+                            {isScanningOEM ? <SafeIcon name="loader-2" size={14} className="animate-spin" /> : <SafeIcon name="search" size={14} className="opacity-80 group-hover:scale-110 transition-transform" />} 
+                            <span className="hidden sm:inline">SKANNA OEM</span><span className="sm:hidden">SKANNA</span>
+                        </button>
+                        
+                        <div className="col-span-2 relative w-full">
+                            {window.AutoSearchMenu ? (
+                                <window.AutoSearchMenu regnr={v.regnr} variant="full" />
+                            ) : (
+                                <button onClick={() => window.osSearchVehicle && window.osSearchVehicle(v.regnr.trim(), 'SMART_SEARCH')} className="w-full h-11 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 group">
+                                    <SafeIcon name="zap" size={15} className="group-hover:scale-110 transition-transform" /> HÄMTA FORDONSDATA
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
