@@ -555,76 +555,76 @@ const VehicleProfile = ({ v, highlightId, onClose, setView }) => {
                                 </div>
                             )}
 
-                            {/* SÖK- & JÄMFÖRELSEBAR (Uppgraderad storlek för perfekt känsla på mobil, tablet & dator) */}
-                            <div className="pt-3.5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                                
-                                {/* Vänster: Större och tydligare sökfält (h-10 på mobil, h-9 på dator) */}
-                                <div className="flex items-center gap-2.5 flex-1 min-w-0 bg-white/[0.05] hover:bg-white/[0.07] focus-within:bg-white/[0.09] border border-white/[0.1] focus-within:border-orange-500/60 rounded-xl px-3.5 h-10 sm:h-9 transition-all shadow-inner">
-                                    <SafeIcon 
-                                        name="search" 
-                                        size={14} 
-                                        className={customPartQuery.trim() ? "text-orange-400 shrink-0" : "text-slate-400 shrink-0"} 
-                                    />
-                                    <input
-                                        type="text"
-                                        value={customPartQuery}
-                                        onChange={(e) => {
-                                            setCustomPartQuery(e.target.value.toUpperCase());
-                                            setSelectedOem(null);
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                openPartStore(e, 'trodo', customPartQuery.trim() || null);
-                                            }
-                                        }}
-                                        placeholder={`Sök OEM-nr...`}
-                                        className="w-full bg-transparent font-mono text-[12px] sm:text-[12px] font-bold text-orange-400 placeholder:font-sans placeholder:font-medium placeholder:text-slate-400/80 focus:outline-none uppercase tracking-wider truncate"
-                                    />
-                                    {selectedOem && (
-                                        <span className="sm:hidden text-[9px] font-bold text-slate-300 uppercase tracking-wider shrink-0 bg-white/[0.08] border border-white/[0.06] px-2 py-0.5 rounded-md">
-                                            {selectedOem.name}
-                                        </span>
-                                    )}
-                                    {customPartQuery.trim() && (
+                            {/* SÖK- & JÄMFÖRELSEBAR (Visas ENDAST när ett OEM-nummer är valt eller skrivet) */}
+                            {customPartQuery.trim() && (
+                                <div className="pt-3.5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    
+                                    {/* Vänster: Sökfält */}
+                                    <div className="w-full sm:w-auto sm:flex-1 shrink-0 flex items-center gap-2.5 min-w-0 bg-white/[0.05] hover:bg-white/[0.07] focus-within:bg-white/[0.09] border border-white/[0.1] focus-within:border-orange-500/60 rounded-xl px-3.5 h-11 sm:h-9 transition-all shadow-inner">
+                                        <SafeIcon 
+                                            name="search" 
+                                            size={15} 
+                                            className="text-orange-400 shrink-0" 
+                                        />
+                                        <input
+                                            type="text"
+                                            value={customPartQuery}
+                                            onChange={(e) => {
+                                                setCustomPartQuery(e.target.value.toUpperCase());
+                                                setSelectedOem(null);
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    openPartStore(e, 'trodo', customPartQuery.trim() || null);
+                                                }
+                                            }}
+                                            placeholder={`Sök OEM-nr...`}
+                                            className="w-full h-full bg-transparent font-mono text-[13px] sm:text-[12px] font-bold text-orange-400 placeholder:font-sans placeholder:font-medium placeholder:text-slate-400/80 focus:outline-none uppercase tracking-wider truncate"
+                                        />
+                                        {selectedOem && (
+                                            <span className="sm:hidden text-[9.5px] font-bold text-slate-300 uppercase tracking-wider shrink-0 bg-white/[0.08] border border-white/[0.06] px-2.5 py-1 rounded-md">
+                                                {selectedOem.name}
+                                            </span>
+                                        )}
                                         <button 
                                             type="button"
                                             onClick={() => { setSelectedOem(null); setCustomPartQuery(""); }}
-                                            title="Återställ"
+                                            title="Stäng sökpanel"
                                             className="text-slate-400 hover:text-white p-1 -mr-1 shrink-0 transition-colors"
                                         >
-                                            <SafeIcon name="x" size={14} />
+                                            <SafeIcon name="x" size={15} />
                                         </button>
-                                    )}
-                                </div>
+                                    </div>
 
-                                {/* Höger: Matchande butiksknappar (h-10 på mobil, h-9 på dator) */}
-                                <div className="grid grid-cols-3 gap-2 shrink-0">
-                                    <button
-                                        type="button"
-                                        onClick={(e) => openPartStore(e, 'trodo', customPartQuery.trim() || null)}
-                                        className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-sky-500 text-slate-200 hover:text-white border border-white/[0.08] hover:border-sky-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                                    >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>
-                                        <span>Trodo</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => openPartStore(e, 'aero', customPartQuery.trim() || null)}
-                                        className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-white/[0.08] hover:border-amber-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                                    >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
-                                        <span>Aeromotors</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => openPartStore(e, 'thansen', customPartQuery.trim() || null)}
-                                        className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-rose-500 text-slate-200 hover:text-white border border-white/[0.08] hover:border-rose-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                                    >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
-                                        <span>Thansen</span>
-                                    </button>
+                                    {/* Höger: Butiksknappar */}
+                                    <div className="w-full sm:w-auto grid grid-cols-3 gap-2 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => openPartStore(e, 'trodo', customPartQuery.trim() || null)}
+                                            className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-sky-500 text-slate-200 hover:text-white border border-white/[0.08] hover:border-sky-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>
+                                            <span>Trodo</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => openPartStore(e, 'aero', customPartQuery.trim() || null)}
+                                            className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-white/[0.08] hover:border-amber-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
+                                            <span>Aeromotors</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => openPartStore(e, 'thansen', customPartQuery.trim() || null)}
+                                            className="h-10 sm:h-9 px-3.5 rounded-xl bg-white/[0.05] hover:bg-rose-500 text-slate-200 hover:text-white border border-white/[0.08] hover:border-rose-400 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
+                                            <span>Thansen</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     )}
 
