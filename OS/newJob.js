@@ -10,8 +10,8 @@ const FormRow = ({ children }) => <div className="grid grid-cols-1 md:grid-cols-
 
 const InputWrapper = ({ label, icon, children }) => (
     <div className="space-y-1.5 group">
-        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1 group-focus-within:text-orange-500 transition-colors">
-            <SafeIcon name={icon} size={12} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
+        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1 group-focus-within:text-orange-500 dark:group-focus-within:text-orange-400 transition-colors">
+            <SafeIcon name={icon} size={12} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 dark:group-focus-within:text-orange-400 transition-colors" />
             {label}
         </label>
         {children}
@@ -19,11 +19,11 @@ const InputWrapper = ({ label, icon, children }) => (
 );
 
 const SectionHeader = ({ title, sub, icon }) => (
-    <div className="flex items-start gap-2.5 mb-4 lg:mb-5 pb-2.5 lg:pb-3 border-b border-zinc-200/50 dark:border-white/5">
-        <div className="mt-1 h-4 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
+    <div className="flex items-start gap-2.5 mb-4 lg:mb-5 pb-2.5 lg:pb-3 border-b border-zinc-200 dark:border-white/10">
+        <div className="mt-1 h-4 w-1 bg-orange-500 rounded-full" />
         <div>
             <div className="flex items-center gap-1.5">
-                <SafeIcon name={icon} size={14} className="text-zinc-400 dark:text-zinc-500" />
+                <SafeIcon name={icon} size={14} className="text-zinc-500 dark:text-zinc-400" />
                 <h3 className="text-[12px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
             </div>
             {sub && <p className="text-[9px] font-medium uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 mt-0.5">{sub}</p>}
@@ -63,7 +63,7 @@ const RichNoteEditor = ({ value, onChange }) => {
         if (!url) return;
         
         const text = selectedText || prompt('Vad ska länken heta?', url) || url;
-        const linkHTML = `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold; cursor: pointer;">${text}</a>`;
+        const linkHTML = `<a href="${url}" target="_blank" style="color: #f97316; text-decoration: underline; font-weight: bold; cursor: pointer;">${text}</a>`;
         format('insertHTML', linkHTML);
     };
 
@@ -85,25 +85,25 @@ const RichNoteEditor = ({ value, onChange }) => {
     const keepFocus = (e) => e.preventDefault(); 
 
     return (
-        <div className="w-full bg-zinc-50 dark:bg-[#1a2235] focus-within:bg-white dark:focus-within:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 rounded-xl shadow-sm transition-all overflow-hidden flex flex-col focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10">
+        <div className="w-full bg-zinc-50 dark:bg-[#141c2b] focus-within:bg-white dark:focus-within:bg-[#182234] border border-zinc-300 dark:border-white/15 rounded-lg shadow-xs transition-all overflow-hidden flex flex-col focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500/20">
             
-            <div className="flex flex-wrap items-center gap-1.5 p-2 border-b border-zinc-200/80 dark:border-white/10 bg-zinc-100/50 dark:bg-[#182032]/50">
+            <div className="flex flex-wrap items-center gap-1.5 p-2 border-b border-zinc-200 dark:border-white/10 bg-[#f4f5f7] dark:bg-[#182234]">
                 <button type="button" onMouseDown={keepFocus} onClick={() => format('bold')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Fetstil"><SafeIcon name="bold" size={14} /></button>
                 <button type="button" onMouseDown={keepFocus} onClick={() => format('italic')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Kursiv"><SafeIcon name="italic" size={14} /></button>
                 <button type="button" onMouseDown={keepFocus} onClick={() => format('insertUnorderedList')} className="p-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors" title="Punktlista"><SafeIcon name="list" size={14} /></button>
                 
                 <div className="w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
                 
-                <button type="button" onMouseDown={keepFocus} onClick={insertLink} className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" title="Markera text och klicka för att infoga länk">
+                <button type="button" onMouseDown={keepFocus} onClick={insertLink} className="p-1.5 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" title="Markera text och klicka för att infoga länk">
                     <SafeIcon name="link" size={12} /> Länk
                 </button>
                 
                 <div className="hidden sm:block w-px h-4 bg-zinc-300 dark:bg-white/10 mx-1"></div>
                 
-                <button type="button" onMouseDown={keepFocus} onClick={insertTimestamp} className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
+                <button type="button" onMouseDown={keepFocus} onClick={insertTimestamp} className="p-1.5 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
                     <SafeIcon name="clock" size={12} /> Logg
                 </button>
-                <button type="button" onMouseDown={keepFocus} onClick={insertTemplate} className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
+                <button type="button" onMouseDown={keepFocus} onClick={insertTemplate} className="p-1.5 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider">
                     <SafeIcon name="file-text" size={12} /> <span className="hidden sm:inline">Felsöknings</span>Mall
                 </button>
             </div>
@@ -130,7 +130,6 @@ const RichNoteEditor = ({ value, onChange }) => {
 };
 
 window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
-    // 1. Deklarera State ALLRA FÖRST för att slippa krascher!
     const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = React.useState({
         kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
@@ -148,7 +147,67 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [oilLiters, setOilLiters] = React.useState(4.3);
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
 
-    // Ladda in existerande jobb eller caching
+    const [activeJob, setActiveJob] = React.useState(editingJob || null);
+    const [expandedMatchIds, setExpandedMatchIds] = React.useState([]);
+    const [dismissedMatches, setDismissedMatches] = React.useState(false);
+
+    React.useEffect(() => {
+        setActiveJob(editingJob || null);
+    }, [editingJob]);
+
+    const matchingOrders = React.useMemo(() => {
+        if (activeJob || dismissedMatches) return [];
+        const cleanReg = String(formData.regnr || '').toUpperCase().replace(/\s+/g, '');
+        const cleanName = String(formData.kundnamn || '').trim().toLowerCase();
+
+        if (cleanReg.length < 2 && cleanName.length < 2) return [];
+
+        return allJobs.filter(j => {
+            if (j.deleted) return false;
+            const jReg = String(j.regnr || '').toUpperCase().replace(/\s+/g, '');
+            const jName = String(j.kundnamn || '').trim().toLowerCase();
+            const regMatch = cleanReg.length >= 2 && jReg.includes(cleanReg);
+            const nameMatch = cleanName.length >= 2 && jName.includes(cleanName);
+            return regMatch || nameMatch;
+        }).sort((a, b) => {
+            const aActive = a.status !== 'KLAR' ? 1 : 0;
+            const bActive = b.status !== 'KLAR' ? 1 : 0;
+            if (aActive !== bActive) return bActive - aActive;
+            return (b.datum || '').localeCompare(a.datum || '');
+        }).slice(0, 6);
+    }, [formData.regnr, formData.kundnamn, allJobs, activeJob, dismissedMatches]);
+
+    React.useEffect(() => {
+        if (matchingOrders.length > 0) {
+            setExpandedMatchIds([matchingOrders[0].id]);
+        } else {
+            setExpandedMatchIds([]);
+        }
+        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
+    }, [matchingOrders.length, matchingOrders[0]?.id]);
+
+    const toggleExpandMatch = (id) => {
+        setExpandedMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
+    };
+
+    const handleOpenExistingOrder = (job) => {
+        setSuggestions([]);
+        setRegnrSuggestions([]);
+        setActiveJob(job);
+    };
+
+    const handleCreateLinkedOrder = (job) => {
+        setFormData(p => ({
+            ...p,
+            kundnamn: job.kundnamn || p.kundnamn,
+            regnr: job.regnr || p.regnr
+        }));
+        setSuggestions([]);
+        setRegnrSuggestions([]);
+        setDismissedMatches(true);
+    };
+
     React.useEffect(() => {
         const rawReg = formData.regnr || '';
         const cleanReg = String(rawReg).toUpperCase().replace(/\s+/g, '');
@@ -206,27 +265,27 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     React.useEffect(() => {
         const loadExistingJob = async () => {
-            if (editingJob) {
+            if (activeJob) {
                 setFormData(prev => ({ 
-                    ...prev, ...editingJob, 
-                    datum: editingJob.datum ? editingJob.datum.split('T')[0] : '',
-                    tid: editingJob.datum && editingJob.datum.includes('T') ? editingJob.datum.split('T')[1] : '16:30' 
+                    ...prev, ...activeJob, 
+                    datum: activeJob.datum ? activeJob.datum.split('T')[0] : '',
+                    tid: activeJob.datum && activeJob.datum.includes('T') ? activeJob.datum.split('T')[1] : '16:30' 
                 }));
                 
-                if (editingJob.utgifter && editingJob.utgifter.length > 0) {
-                    let loadedExpenses = editingJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad }));
+                if (activeJob.utgifter && activeJob.utgifter.length > 0) {
+                    let loadedExpenses = activeJob.utgifter.map(ex => ({ desc: ex.namn, amount: ex.kostnad }));
                     while (loadedExpenses.length < 3) loadedExpenses.push({ desc: '', amount: '' });
                     setExpenses(loadedExpenses);
                 } else setExpenses(emptyExpenses);
 
-                if (editingJob.delbetalningar && editingJob.delbetalningar.length > 0) setPayments(editingJob.delbetalningar);
-                else if (editingJob.betaltBelopp > 0) setPayments([{ desc: 'Tidigare inbetalning', amount: editingJob.betaltBelopp }]);
+                if (activeJob.delbetalningar && activeJob.delbetalningar.length > 0) setPayments(activeJob.delbetalningar);
+                else if (activeJob.betaltBelopp > 0) setPayments([{ desc: 'Tidigare inbetalning', amount: activeJob.betaltBelopp }]);
                 else setPayments(emptyPayments);
                 
-                setOilLiters(editingJob.oljevolym || 4.3);
+                setOilLiters(activeJob.oljevolym || 4.3);
                 
                 let specs = {};
-                const cleanReg = String(editingJob.regnr || '').toUpperCase().replace(/\s+/g, '');
+                const cleanReg = String(activeJob.regnr || '').toUpperCase().replace(/\s+/g, '');
                 try { const cache = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}'); if (cache[cleanReg]) specs = { ...cache[cleanReg] }; } catch(e) {}
 
                 if (window.db && cleanReg) {
@@ -234,15 +293,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     if (doc.exists) specs = { ...specs, ...doc.data() };
                 }
 
-                if (editingJob.bilmodell || editingJob.motorkod || editingJob.miltal || Object.keys(specs).length > 0) {
+                if (activeJob.bilmodell || activeJob.motorkod || activeJob.miltal || Object.keys(specs).length > 0) {
                     setFetchedCarInfo({
-                        bilmodell: specs.model || editingJob.bilmodell || "",
-                        motorkod: specs.engine || editingJob.motorkod || "",
-                        miltal: specs.mileage || editingJob.miltal || "", 
-                        oljevolym: specs.oil ? String(specs.oil).replace(' l', '') : (editingJob.oljevolym ? String(editingJob.oljevolym).replace(' l', '') : ""),
-                        oljetyp: specs.oil_type || editingJob.oljetyp || "",
-                        årsmodell: specs.year || editingJob.årsmodell || "",
-                        vin: specs.vin || editingJob.vin || "",
+                        bilmodell: specs.model || activeJob.bilmodell || "",
+                        motorkod: specs.engine || activeJob.motorkod || "",
+                        miltal: specs.mileage || activeJob.miltal || "", 
+                        oljevolym: specs.oil ? String(specs.oil).replace(' l', '') : (activeJob.oljevolym ? String(activeJob.oljevolym).replace(' l', '') : ""),
+                        oljetyp: specs.oil_type || activeJob.oljetyp || "",
+                        årsmodell: specs.year || activeJob.årsmodell || "",
+                        vin: specs.vin || activeJob.vin || "",
                         isNewData: false
                     });
                 }
@@ -253,7 +312,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             }
         };
         loadExistingJob();
-    }, [editingJob, today]);
+    }, [activeJob, today]);
 
     const updateOilLogic = React.useCallback((liters) => {
         const l = parseFloat(liters) || 0;
@@ -295,8 +354,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     };
 
     const handleNameChange = (val) => {
-        const upperVal = val.toUpperCase(); setFormData(p => ({ ...p, kundnamn: upperVal }));
-        if (val.length > 1) { setSuggestions([...new Set(allJobs.filter(j => j.kundnamn.toLowerCase().includes(val.toLowerCase())).map(j => j.kundnamn))].slice(0, 5)); } else setSuggestions([]);
+        const upperVal = val.toUpperCase();
+        setDismissedMatches(false);
+        setFormData(p => ({ ...p, kundnamn: upperVal }));
+        setSuggestions([]);
     };
 
     const relatedVehicles = React.useMemo(() => {
@@ -305,9 +366,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     }, [formData.kundnamn, allJobs]);
 
     const handleRegnrChange = (val) => {
-        const upperVal = val ? String(val).toUpperCase() : ''; setFormData(p => ({ ...p, regnr: upperVal }));
-        if (upperVal.length > 0) { setRegnrSuggestions([...new Set(allJobs.filter(j => String(j.regnr || '').toUpperCase().includes(upperVal)).map(j => String(j.regnr || '').toUpperCase()))].slice(0, 5)); } 
-        else { setRegnrSuggestions(relatedVehicles.length > 0 ? relatedVehicles : []); }
+        const upperVal = val ? String(val).toUpperCase() : '';
+        setDismissedMatches(false);
+        setFormData(p => ({ ...p, regnr: upperVal }));
+        if (!upperVal && relatedVehicles.length > 0) {
+            setRegnrSuggestions(relatedVehicles);
+        } else {
+            setRegnrSuggestions([]);
+        }
     };
 
     const handleSpecChange = (key, value) => setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
@@ -342,7 +408,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 årsmodell: resolvedArsmodell, utgifter: finalExpenses, deleted: false 
             };
             
-            if (editingJob && editingJob.id) await window.db.collection("jobs").doc(editingJob.id).set(data, { merge: true });
+            if (activeJob && activeJob.id) await window.db.collection("jobs").doc(activeJob.id).set(data, { merge: true });
             else await window.db.collection("jobs").add(data);
 
             if (finalRegnr && fetchedCarInfo) {
@@ -366,34 +432,50 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const laborTotal = Math.max(0, finalPriceNum - partsTotal);
     const totalPaid = payments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
-    const inputClasses = "w-full bg-zinc-50/50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all rounded-lg lg:rounded-xl shadow-sm";
-    const sectionCardClasses = "bg-white/80 dark:bg-[#182032]/80 backdrop-blur-xl border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow";
+    const inputClasses = "w-full bg-zinc-50 dark:bg-[#141c2b] focus:bg-white dark:focus:bg-[#182234] border border-zinc-300 dark:border-white/15 p-2.5 text-[13px] font-medium text-zinc-900 dark:text-white outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all rounded-lg shadow-xs";
+    const sectionCardClasses = "bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl p-4 lg:p-5 shadow-sm";
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-[1000px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
             
-            <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
-
             {/* HEADER */}
             <div className="px-4 pt-4 lg:px-0 lg:pt-0 flex flex-col h-full">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-200/50 dark:border-white/5 gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/10 gap-4">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <SafeIcon name={editingJob ? "edit-3" : "plus"} size={20} className="md:w-6 md:h-6" />
+                            <div className="absolute inset-0 bg-orange-500/30 blur-lg rounded-full transition-all duration-700" />
+                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-orange-500">
+                                <SafeIcon name={activeJob ? "edit-3" : "plus"} size={20} className="md:w-6 md:h-6" />
                             </div>
                         </div>
                         <div className="flex flex-col">
                             <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                {editingJob ? 'UPPDATERA' : 'NYTT'} <span className="text-zinc-400 dark:text-zinc-500 font-light">UPPDRAG</span>
+                                {activeJob ? 'UPPDATERA' : 'NYTT'} <span className="text-zinc-400 dark:text-zinc-500 font-light">UPPDRAG</span>
                             </h1>
                             <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                {editingJob ? 'Redigera arbetsorder' : 'Skapa arbetsorder'}
+                                {activeJob ? `Redigerar order #${activeJob.id.substring(0, 6).toUpperCase()}` : 'Sök befintlig eller skapa ny arbetsorder'}
                             </p>
                         </div>
                     </div>
+
+                    {activeJob && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const currentCustomer = formData.kundnamn;
+                                const currentReg = formData.regnr;
+                                setActiveJob(null);
+                                setDismissedMatches(true);
+                                setTimeout(() => {
+                                    setFormData(p => ({ ...p, kundnamn: currentCustomer, regnr: currentReg }));
+                                }, 50);
+                            }}
+                            className="self-start sm:self-auto px-3.5 py-2 rounded-lg border border-orange-500/30 bg-orange-50/80 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                        >
+                            <SafeIcon name="plus" size={13} /> Skapa ny länkad order istället
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -401,9 +483,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             <div className="px-4 lg:px-0">
                 <form onSubmit={handleSave} className="space-y-4 flex flex-col">
                     
-                    {/* SEKTION 1: IDENTIFIERING */}
+                    {/* SEKTION 1: IDENTIFIERING & SÖKNING */}
                     <div className={`relative z-40 ${sectionCardClasses}`}>
-                        <SectionHeader title="Kund & Fordon" sub="Information om kund och fordon" icon="fingerprint" />
+                        <SectionHeader title="Kund & Fordon" sub="Sök befintlig order eller ange uppgifter för nytt uppdrag" icon="fingerprint" />
                         
                         <FormRow>
                             <InputWrapper label="Kundnamn" icon="user">
@@ -411,17 +493,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     <input 
                                         type="text" value={formData.kundnamn} onChange={e => handleNameChange(e.target.value)} 
                                         className={inputClasses} 
-                                        placeholder="Sök eller skriv namn..." 
+                                        placeholder="Sök kund eller skriv nytt namn..." 
                                     />
-                                    {suggestions.length > 0 && (
-                                        <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
-                                            {suggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setFormData(p => ({ ...p, kundnamn: s })); setSuggestions([]); }} className="p-3 text-[12px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold uppercase border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
-                                                    {s}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             </InputWrapper>
                             
@@ -434,9 +507,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             placeholder="ABC 123" autoComplete="off" 
                                         />
                                         {regnrSuggestions.length > 0 && (
-                                            <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-xl overflow-hidden animate-in fade-in zoom-in-95">
+                                            <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-lg overflow-hidden animate-in fade-in zoom-in-95">
+                                                <div className="px-3 py-1.5 bg-zinc-50 dark:bg-white/5 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                                                    Kundens registrerade fordon
+                                                </div>
                                                 {regnrSuggestions.map((s, i) => (
-                                                    <div key={i} onClick={() => { handleRegnrChange(s); setRegnrSuggestions([]); }} className="p-3 text-[12px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-[#25324d] hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold font-mono tracking-widest border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
+                                                    <div key={i} onClick={() => { handleRegnrChange(s); setRegnrSuggestions([]); }} className="p-2.5 px-3 text-[12px] text-zinc-900 dark:text-white hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 cursor-pointer font-bold font-mono tracking-widest border-b border-zinc-100 dark:border-white/5 last:border-0 transition-colors">
                                                         {s}
                                                     </div>
                                                 ))}
@@ -450,12 +526,157 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
                             </InputWrapper>
                         </FormRow>
+
+                        {/* KOMPAKT VY FÖR BEFINTLIGA ORDRAR */}
+                        {matchingOrders.length > 0 && (
+                            <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-white/10 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="flex items-center justify-between px-3.5 py-2.5 mb-3 rounded-lg bg-[#fff7ed] dark:bg-orange-500/10 border border-[#fed7aa] dark:border-orange-500/30 text-[#9a3412] dark:text-orange-200 text-[12px]">
+                                    <div className="flex items-center gap-2.5">
+                                        <SafeIcon name="info" size={15} className="text-orange-500 shrink-0" />
+                                        <span className="font-medium">
+                                            Arbetsordrar finns tillgängliga för detta fordon / kund ({matchingOrders.length} st)
+                                        </span>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setDismissedMatches(true)}
+                                        className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 hover:underline px-2 py-0.5"
+                                    >
+                                        Dölj förslag
+                                    </button>
+                                </div>
+
+                                <div className="border border-zinc-300 dark:border-white/15 rounded-lg overflow-hidden bg-white dark:bg-[#141c2b] shadow-xs">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead className="bg-[#f4f5f7] dark:bg-[#182234] text-zinc-700 dark:text-zinc-300 text-[11px] font-bold border-b border-zinc-300 dark:border-white/15 select-none">
+                                                <tr className="divide-x divide-zinc-300 dark:divide-white/15">
+                                                    <th className="w-9 py-2.5 text-center"></th>
+                                                    <th className="px-3 py-2.5 w-[130px]">Nr.</th>
+                                                    <th className="px-3 py-2.5 w-[110px]">Reg.nr</th>
+                                                    <th className="px-3 py-2.5">Kund</th>
+                                                    <th className="px-3 py-2.5 w-[160px]">Mottagandedatum</th>
+                                                    <th className="px-3 py-2.5 w-[120px]">Orderstatus</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-zinc-200/80 dark:divide-white/10 text-[13px]">
+                                                {matchingOrders.map((job) => {
+                                                    const isExpanded = expandedMatchIds.includes(job.id);
+                                                    const formattedDate = job.datum ? job.datum.replace('T', ' ').substring(0, 16) : 'Ej inbokad';
+                                                    const serviceTitle = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
+                                                    const cleanNote = job.kommentar ? String(job.kommentar).replace(/<[^>]*>?/gm, '').replace(/&amp;/g, '&').trim() : '';
+
+                                                    return (
+                                                        <React.Fragment key={job.id}>
+                                                            <tr 
+                                                                onClick={() => toggleExpandMatch(job.id)}
+                                                                className="hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors"
+                                                            >
+                                                                <td className="py-2.5 text-center text-zinc-500">
+                                                                    <SafeIcon name={isExpanded ? "chevron-down" : "chevron-right"} size={15} />
+                                                                </td>
+                                                                <td className="px-3 py-2.5 font-medium text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <SafeIcon name="wrench" size={13} className="text-orange-500" />
+                                                                        <span>#{job.id.substring(0, 8).toUpperCase()}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-3 py-2.5 font-mono text-[12px] font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                                                    {job.regnr || '-'}
+                                                                </td>
+                                                                <td className="px-3 py-2.5 text-zinc-800 dark:text-zinc-200 uppercase truncate max-w-[200px]">
+                                                                    {job.kundnamn || '-'}
+                                                                </td>
+                                                                <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400 text-[12px] whitespace-nowrap">
+                                                                    {formattedDate}
+                                                                </td>
+                                                                <td className="px-3 py-2.5 whitespace-nowrap">
+                                                                    <span className={`text-[12px] font-medium ${
+                                                                        job.status === 'KLAR' ? 'text-emerald-600 dark:text-emerald-400' :
+                                                                        job.status === 'BOKAD' ? 'text-orange-600 dark:text-orange-400' :
+                                                                        'text-zinc-700 dark:text-zinc-300'
+                                                                    }`}>
+                                                                        {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1).toLowerCase() : 'Bokad'}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+
+                                                            {isExpanded && (
+                                                                <tr className="bg-zinc-50/40 dark:bg-black/20">
+                                                                    <td></td>
+                                                                    <td colSpan="5" className="px-3 pb-3.5 pt-1">
+                                                                        <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={(e) => { e.stopPropagation(); handleOpenExistingOrder(job); }}
+                                                                                className="px-3 py-1 rounded border border-orange-500/50 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                            >
+                                                                                Öppna order
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={(e) => { e.stopPropagation(); handleCreateLinkedOrder(job); }}
+                                                                                className="px-3 py-1 rounded border border-orange-500/50 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                            >
+                                                                                Ny länkad order
+                                                                            </button>
+                                                                            {job.kundpris && (
+                                                                                <span className="ml-auto text-[12px] text-zinc-500 dark:text-zinc-400 pr-2">
+                                                                                    Pris: <strong className="text-zinc-800 dark:text-zinc-200">{parseInt(job.kundpris).toLocaleString('sv-SE')} kr</strong>
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="pl-1 space-y-1 text-[12px] text-zinc-700 dark:text-zinc-300">
+                                                                            <div className="flex items-center gap-1.5 font-medium">
+                                                                                <SafeIcon name="chevron-down" size={13} className="text-zinc-400" />
+                                                                                <SafeIcon name="box" size={13} className="text-orange-500" />
+                                                                                <span>{serviceTitle}</span>
+                                                                            </div>
+                                                                            {cleanNote && (
+                                                                                <div className="pl-6 flex items-start gap-1.5 text-zinc-500 dark:text-zinc-400">
+                                                                                    <SafeIcon name="wrench" size={12} className="text-orange-500 mt-0.5 shrink-0" />
+                                                                                    <span className="line-clamp-2">{cleanNote}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => (
+                                                                                <div key={idx} className="pl-6 flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                                                                                    <SafeIcon name="tag" size={11} className="text-orange-500 shrink-0" />
+                                                                                    <span>{u.namn} ({u.kostnad} kr)</span>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="bg-[#f4f5f7] dark:bg-[#182234] px-3.5 py-2 border-t border-zinc-300 dark:border-white/15 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDismissedMatches(true)}
+                                            className="px-3.5 py-1.5 rounded bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-xs transition-colors"
+                                        >
+                                            Fortsätt med ny order
+                                        </button>
+                                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                            {matchingOrders.length} {matchingOrders.length === 1 ? 'post' : 'poster'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
+                    {/* FORDONDATA-KORT */}
                     {fetchedCarInfo && (
-                        <div className="bg-zinc-50/80 dark:bg-[#1a2235]/40 border border-zinc-200/80 dark:border-white/5 rounded-2xl lg:rounded-3xl p-4 lg:p-5 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300 relative z-30">
-                            <div className="mb-4 pb-3 border-b border-zinc-200/80 dark:border-white/5">
-                                <div className="text-[9px] font-black text-orange-500 dark:text-orange-400 uppercase tracking-[0.15em] flex items-center gap-1.5 mb-1">
+                        <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl p-4 lg:p-5 shadow-sm relative z-30 animate-in slide-in-from-top-2 fade-in duration-300">
+                            <div className="mb-4 pb-3 border-b border-zinc-200 dark:border-white/10">
+                                <div className="text-[9px] font-black text-orange-500 uppercase tracking-[0.15em] flex items-center gap-1.5 mb-1">
                                     <SafeIcon name="database" size={10} /> Teknisk Fordonsdata
                                 </div>
                                 {fetchedCarInfo.bilmodell ? (
@@ -476,32 +697,30 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     { id: 'oljetyp', label: 'Oljetyp', val: fetchedCarInfo.oljetyp, ph: '5W-30', icon: 'info', mono: true },
                                     { id: 'årsmodell', label: 'Årsmodell', val: fetchedCarInfo.årsmodell, ph: '2016', icon: 'calendar', mono: false }
                                 ].map((f, i) => (
-                                    <div key={i} className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 focus-within:bg-white dark:focus-within:bg-[#1f2940] transition-all">
+                                    <div key={i} className="bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded-lg p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500 transition-all">
                                         <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                            <SafeIcon name={f.icon} size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" /> {f.label}
+                                            <SafeIcon name={f.icon} size={10} className="text-zinc-400 group-focus-within:text-orange-500" /> {f.label}
                                         </div>
-                                        <input type="text" className={`w-full text-[12px] bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 truncate text-zinc-900 dark:text-white ${f.mono ? 'font-mono font-bold tracking-wider' : 'font-medium'}`} placeholder={f.ph} value={f.val || ''} onChange={(e) => handleSpecChange(f.id, e.target.value)} onBlur={(e) => saveSpec(f.id, e.target.value)} />
+                                        <input type="text" className={`w-full text-[12px] bg-transparent outline-none placeholder:text-zinc-400 truncate text-zinc-900 dark:text-white ${f.mono ? 'font-mono font-bold tracking-wider' : 'font-medium'}`} placeholder={f.ph} value={f.val || ''} onChange={(e) => handleSpecChange(f.id, e.target.value)} onBlur={(e) => saveSpec(f.id, e.target.value)} />
                                     </div>
                                 ))}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-2.5">
-                                <div className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 transition-all">
+                                <div className="bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded-lg p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500 transition-all">
                                     <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                        <SafeIcon name="navigation" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" /> Miltal
+                                        <SafeIcon name="navigation" size={10} className="text-zinc-400 group-focus-within:text-orange-500" /> Miltal
                                     </div>
-                                    <input type="text" className="w-full text-[12px] font-medium bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 text-zinc-900 dark:text-white" placeholder="12 500 mil" value={fetchedCarInfo.miltal || ''} onChange={(e) => handleSpecChange('miltal', e.target.value)} onBlur={(e) => saveSpec('miltal', e.target.value)} />
+                                    <input type="text" className="w-full text-[12px] font-medium bg-transparent outline-none placeholder:text-zinc-400 text-zinc-900 dark:text-white" placeholder="12 500 mil" value={fetchedCarInfo.miltal || ''} onChange={(e) => handleSpecChange('miltal', e.target.value)} onBlur={(e) => saveSpec('miltal', e.target.value)} />
                                 </div>
 
-                                <div className="bg-white/60 dark:bg-[#182032]/60 border border-zinc-200/50 dark:border-white/5 rounded-xl p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500/50 transition-all">
+                                <div className="bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded-lg p-2.5 flex flex-col justify-center relative group focus-within:border-orange-500 transition-all">
                                     <div className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                        <SafeIcon name="hash" size={10} className="text-zinc-400 dark:text-zinc-500 group-focus-within:text-orange-500 transition-colors" /> Chassinummer (VIN)
+                                        <SafeIcon name="hash" size={10} className="text-zinc-400 group-focus-within:text-orange-500" /> Chassinummer (VIN)
                                     </div>
-                                    <input type="text" className="w-full text-[13px] font-mono font-bold tracking-[0.2em] uppercase bg-transparent outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600 text-zinc-900 dark:text-white" placeholder="WBA00000000000000" value={fetchedCarInfo.vin || ''} onChange={(e) => handleSpecChange('vin', e.target.value.toUpperCase())} onBlur={(e) => saveSpec('vin', e.target.value)} />
+                                    <input type="text" className="w-full text-[13px] font-mono font-bold tracking-[0.2em] uppercase bg-transparent outline-none placeholder:text-zinc-400 text-zinc-900 dark:text-white" placeholder="WBA00000000000000" value={fetchedCarInfo.vin || ''} onChange={(e) => handleSpecChange('vin', e.target.value.toUpperCase())} onBlur={(e) => saveSpec('vin', e.target.value)} />
                                 </div>
                             </div>
-                            
-                            
                         </div>
                     )}
 
@@ -511,11 +730,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                         <div className="mb-4">
                             <InputWrapper label="Uppdragsstatus" icon="activity">
-                                <div className="flex bg-zinc-100 dark:bg-[#1a2235] p-1 rounded-xl border border-zinc-200/80 dark:border-white/5 w-full overflow-x-auto custom-scrollbar">
+                                <div className="flex bg-zinc-100 dark:bg-[#141c2b] p-1 rounded-lg border border-zinc-300 dark:border-white/15 w-full overflow-x-auto custom-scrollbar">
                                     {['BOKAD', 'OFFERERAD', 'KLAR', 'FAKTURERAS'].map(s => (
                                         <button
                                             key={s} type="button" onClick={() => setFormData(p => ({ ...p, status: s }))}
-                                            className={`flex-1 min-w-[80px] py-2 px-1 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${formData.status === s ? 'bg-white dark:bg-[#25324d] shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                                            className={`flex-1 min-w-[80px] py-2 px-1 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest rounded-md transition-all duration-200 ${formData.status === s ? 'bg-white dark:bg-[#1f2940] shadow-xs text-zinc-900 dark:text-white font-black' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                                         >
                                             {s}
                                         </button>
@@ -527,13 +746,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         <FormRow>
                             <div className="space-y-3">
                                 <InputWrapper label="Servicepaket" icon="layers">
-                                    <div className="flex bg-zinc-100 dark:bg-[#1a2235] p-1 rounded-xl border border-zinc-200/80 dark:border-white/5 w-full overflow-x-auto custom-scrollbar">
+                                    <div className="flex bg-zinc-100 dark:bg-[#141c2b] p-1 rounded-lg border border-zinc-300 dark:border-white/15 w-full overflow-x-auto custom-scrollbar">
                                         {['Standard', 'Oljebyte', 'Hjulskifte', 'Felsökning'].map(pkg => (
                                             <button
                                                 key={pkg} 
                                                 type="button" 
                                                 onClick={() => handlePackageChange(pkg)}
-                                                className={`flex-1 min-w-[70px] py-2 px-1 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${formData.paket === pkg ? 'bg-white dark:bg-[#25324d] shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-white/5'}`}
+                                                className={`flex-1 min-w-[70px] py-2 px-1 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest rounded-md transition-all duration-200 ${formData.paket === pkg ? 'bg-white dark:bg-[#1f2940] shadow-xs text-zinc-900 dark:text-white font-black' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                                             >
                                                 {pkg}
                                             </button>
@@ -542,14 +761,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </InputWrapper>
                                 
                                 {formData.paket === "Oljebyte" && (
-                                    <div className="p-3 bg-orange-50/50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-xl animate-in slide-in-from-top-2 fade-in duration-300">
-                                        <label className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                                    <div className="p-3 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-500/30 rounded-lg animate-in slide-in-from-top-2 fade-in duration-300">
+                                        <label className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1.5 flex items-center justify-between">
                                             <span className="flex items-center gap-1.5"><SafeIcon name="droplet" size={12} /> Nödvändig Oljevolym (Liter)</span>
                                         </label>
                                         <div className="flex gap-2">
                                             <input 
                                                 type="number" step="0.1" value={oilLiters} onChange={e => handleOilVolumeChange(e.target.value)} 
-                                                className="w-full bg-white dark:bg-[#0f1522] text-zinc-900 dark:text-white border border-orange-200 dark:border-orange-500/30 p-2.5 text-[14px] font-black font-mono outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg shadow-sm transition-all" 
+                                                className="w-full bg-white dark:bg-[#141c2b] text-zinc-900 dark:text-white border border-orange-500/30 p-2.5 text-[14px] font-black font-mono outline-none focus:border-orange-500 rounded-lg shadow-xs" 
                                             />
                                             <button 
                                                 type="button" 
@@ -557,10 +776,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
                                                     if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
                                                 }}
-                                                className="shrink-0 px-5 bg-orange-500 text-white rounded-lg flex items-center justify-center transition-all active:scale-95 shadow-sm group border border-transparent"
+                                                className="shrink-0 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                                 title="Hämta Oljevolym"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                                                 </svg>
                                             </button>
@@ -571,15 +790,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             
                             <div className="grid grid-cols-2 gap-3">
                                 <InputWrapper label="Bokat Datum" icon="calendar">
-                                    <div className="flex gap-2">
-                                        <input 
-                                            type="date" 
-                                            value={formData.datum} 
-                                            onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
-                                            onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                                            className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] [&::-webkit-calendar-picker-indicator]:hidden flex-1`} 
-                                        />
-                                    </div>
+                                    <input 
+                                        type="date" 
+                                        value={formData.datum} 
+                                        onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
+                                        onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                                        className={`${inputClasses} cursor-pointer uppercase tracking-wider text-[12px] [&::-webkit-calendar-picker-indicator]:hidden`} 
+                                    />
                                 </InputWrapper>
                                 <InputWrapper label="Bokad Tid" icon="clock">
                                     <input 
@@ -596,56 +813,43 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </FormRow>
                     </div>
 
-                    {/* SEKTION 3: EKONOMI (Helt uppdaterad) */}
+                    {/* SEKTION 3: EKONOMI */}
                     <div className={`relative z-30 ${sectionCardClasses}`}>
                         <SectionHeader title="Ekonomi & Pris" sub="Prissättning, reservdelar och delbetalningar" icon="credit-card" />
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
                             
-                            {/* VÄNSTER KOLUMN: PRIS & SAMMANFATTNING */}
-                            <div className="bg-zinc-50 dark:bg-[#1a2235]/50 rounded-2xl border border-zinc-200/80 dark:border-white/5 flex flex-col relative overflow-hidden group h-full shadow-sm hover:shadow-md transition-shadow">
-                                <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all group-focus-within:bg-orange-500/10"></div>
-                                
-                                <div className="p-4 lg:p-5 flex-1 flex flex-col justify-center relative z-10">
+                            {/* VÄNSTER: PRIS & SAMMANFATTNING */}
+                            <div className="bg-zinc-50 dark:bg-[#141c2b] rounded-xl border border-zinc-300 dark:border-white/15 flex flex-col relative overflow-hidden shadow-xs">
+                                <div className="p-4 lg:p-5 flex-1 flex flex-col justify-center">
                                     <InputWrapper label="Totalpris (inkl. moms)" icon="dollar-sign">
-                                        <div className="mt-1 flex items-baseline relative z-10">
+                                        <div className="mt-1 flex items-baseline">
                                             <input 
                                                 type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} 
                                                 className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl md:text-5xl font-light tracking-tighter outline-none focus:text-orange-500 transition-colors" 
                                                 placeholder="0" 
                                             />
-                                            <span className="text-lg font-bold text-zinc-400 dark:text-zinc-500 ml-2">SEK</span>
+                                            <span className="text-lg font-bold text-zinc-400 ml-2">SEK</span>
                                         </div>
                                     </InputWrapper>
 
-                                    <div className="mt-5 pt-4 border-t border-zinc-200/80 dark:border-white/10 flex flex-col gap-2">
+                                    <div className="mt-5 pt-4 border-t border-zinc-200 dark:border-white/10 flex flex-col gap-2.5">
                                         
-                                        {/* 1. RESERVDELAR */}
-                                        <div className="flex justify-between items-center group/row">
-                                            <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                                                <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-[#1f2940] flex items-center justify-center shrink-0">
-                                                    <SafeIcon name="box" size={12} className="text-zinc-400 dark:text-zinc-500" />
-                                                </div>
-                                                Reservdelar
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                                <SafeIcon name="box" size={12} /> Reservdelar
                                             </div>
-                                            <div className="flex items-center justify-end gap-1.5 px-2 py-1.5 w-[100px]">
-                                                <span className="text-[13px] font-mono font-bold text-zinc-700 dark:text-zinc-300">{partsTotal.toLocaleString()}</span>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-[13px] font-mono font-bold text-zinc-800 dark:text-zinc-200">{partsTotal.toLocaleString()}</span>
                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">kr</span>
                                             </div>
                                         </div>
                                         
-                                        {/* 2. ARBETSKOSTNAD */}
-                                        <div className="flex justify-between items-center group/row">
-                                            <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                                                <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-[#1f2940] flex items-center justify-center shrink-0">
-                                                    <SafeIcon name="arrow-up" size={12} className="text-zinc-400 dark:text-zinc-500 group-focus-within/row:text-orange-500 transition-colors" />
-                                                </div>
-                                                Arbetskostnad
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                                <SafeIcon name="arrow-up" size={12} /> Arbetskostnad
                                             </div>
-                                            <div 
-                                                className="flex items-center gap-1.5 bg-white dark:bg-[#1f2940] px-2 py-1.5 w-[100px] rounded-md border border-zinc-200 dark:border-white/10 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/10 transition-all cursor-text shadow-sm" 
-                                                onClick={(e) => e.currentTarget.querySelector('input').focus()}
-                                            >
+                                            <div className="flex items-center gap-1 bg-white dark:bg-[#182234] px-2 py-1 w-[100px] rounded border border-zinc-300 dark:border-white/15 shadow-xs">
                                                 <input 
                                                     type="number" 
                                                     value={laborTotal === 0 && finalPriceNum === 0 ? '' : laborTotal} 
@@ -653,97 +857,76 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         const newLabor = parseFloat(e.target.value) || 0;
                                                         setFormData(p => ({ ...p, kundpris: (newLabor + partsTotal).toString() }));
                                                     }}
-                                                    className={`w-full bg-transparent outline-none text-right font-mono text-[13px] ${laborTotal > 0 ? 'text-zinc-900 dark:text-white font-black' : 'text-zinc-500 dark:text-zinc-400 font-bold'}`}
+                                                    className="w-full bg-transparent outline-none text-right font-mono text-[13px] font-bold text-zinc-900 dark:text-white"
                                                     placeholder="0"
                                                 />
                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">kr</span>
                                             </div>
                                         </div>
 
-                                        <div className="w-full border-t border-dashed border-zinc-200/80 dark:border-white/10 my-1"></div>
+                                        <div className="w-full border-t border-dashed border-zinc-200 dark:border-white/10 my-1"></div>
 
-                                        {/* 3. FÖRSKOTT / DELBETALT (Låst summering från listan) */}
-                                        <div className="flex justify-between items-center group/row">
-                                            <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">
-                                                <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                                    <SafeIcon name="arrow-down" size={12} className="text-emerald-500 dark:text-emerald-400" />
-                                                </div>
-                                                Inbetalt
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-orange-500">
+                                                <SafeIcon name="arrow-down" size={12} /> Inbetalt
                                             </div>
-                                            <div className="flex items-center justify-end gap-1.5 px-2 py-1.5 w-[100px]">
-                                                <span className="text-[13px] font-mono font-black text-emerald-600 dark:text-emerald-400">{totalPaid.toLocaleString()}</span>
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/70">kr</span>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-[13px] font-mono font-bold text-orange-500">{totalPaid.toLocaleString()}</span>
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-orange-400">kr</span>
                                             </div>
                                         </div>
 
                                     </div>
                                 </div>
 
-                                {/* NEDRE DELEN: KVAR ATT BETALA */}
                                 {totalPaid > 0 && (
-                                    <div className="bg-orange-50/80 dark:bg-orange-500/10 border-t border-orange-200/60 dark:border-orange-500/20 p-4 lg:px-5 flex justify-between items-center animate-in slide-in-from-bottom-4 fade-in duration-300">
-                                        <span className="text-[11px] text-orange-800 dark:text-orange-300 uppercase tracking-widest font-black flex items-center gap-1.5">
-                                            <SafeIcon name="pie-chart" size={12} className="text-orange-500" /> Kvar att fakturera
+                                    <div className="bg-orange-50 dark:bg-orange-500/10 border-t border-orange-500/30 p-3.5 flex justify-between items-center">
+                                        <span className="text-[11px] text-orange-700 dark:text-orange-300 uppercase tracking-widest font-bold">
+                                            Kvar att fakturera
                                         </span>
                                         <div className="flex items-baseline gap-1 text-orange-600 dark:text-orange-400">
-                                            <span className="text-[22px] font-black tracking-tight leading-none">
+                                            <span className="text-[20px] font-black tracking-tight leading-none">
                                                 {Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString('sv-SE')}
                                             </span>
-                                            <span className="text-[10px] font-bold uppercase tracking-widest ml-0.5">kr</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest">kr</span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            {/* HÖGER KOLUMN: LISTOR */}
-                            <div className="flex flex-col gap-6 h-full">
+                            {/* HÖGER: LISTOR (RESERVDELAR & DELBETALNINGAR) */}
+                            <div className="flex flex-col gap-5">
                                 
-                                {/* LISTA 1: RESERVDELAR */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between pb-1.5 border-b border-zinc-100 dark:border-white/5">
-                                        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <div className="space-y-2.5">
+                                    <div className="flex items-center justify-between pb-1 border-b border-zinc-200 dark:border-white/10">
+                                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
                                             <SafeIcon name="shopping-cart" size={10} />Reservdelar & Material
                                         </label>
-                                        <div className="flex gap-2">
-                                            <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 uppercase px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 shadow-sm">
-                                                <SafeIcon name="plus" size={10} /> Lägg till
-                                            </button>
-                                        </div>
+                                        <button type="button" onClick={addExpenseRow} className="text-[9px] font-bold text-orange-500 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 uppercase px-2 py-1 rounded transition-colors flex items-center gap-1">
+                                            <SafeIcon name="plus" size={10} /> Lägg till
+                                        </button>
                                     </div>
                                     
-                                    <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+                                    <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                                         {expenses.map((ex, i) => (
-                                            <div key={i} className="flex gap-2 items-center group/row">
-                                                <div className="flex-1 relative flex items-center">
-                                                    <div className="absolute left-3 text-zinc-400 dark:text-zinc-500 pointer-events-none group-focus-within/row:text-orange-500 transition-colors">
-                                                        <SafeIcon name="tag" size={12} />
-                                                    </div>
-                                                    <input 
-                                                        placeholder="Artikel / Tjänst" 
-                                                        value={ex.desc} 
-                                                        onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
-                                                        className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 py-2.5 pl-8 pr-3 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
-                                                    />
-                                                </div>
-
-                                                <div className="relative w-28 shrink-0 flex items-center">
+                                            <div key={i} className="flex gap-2 items-center">
+                                                <input 
+                                                    placeholder="Artikel / Tjänst" 
+                                                    value={ex.desc} 
+                                                    onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
+                                                    className="flex-1 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-300 dark:border-white/15 py-2 px-3 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-lg shadow-xs" 
+                                                />
+                                                <div className="relative w-24 shrink-0 flex items-center">
                                                     <input 
                                                         placeholder="0" 
                                                         type="number" 
-                                                        onFocus={(e) => e.target.select()}
                                                         value={ex.amount} 
                                                         onChange={e => handleExpenseAmountChange(i, e.target.value)} 
-                                                        className="w-full bg-zinc-50 dark:bg-[#1a2235] focus:bg-white dark:focus:bg-[#1f2940] border border-zinc-200/80 dark:border-white/10 py-2.5 pl-3 pr-7 text-[12px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm" 
+                                                        className="w-full bg-zinc-50 dark:bg-[#141c2b] border border-zinc-300 dark:border-white/15 py-2 pl-2 pr-6 text-[12px] font-mono font-bold text-zinc-900 dark:text-white outline-none text-right rounded-lg shadow-xs" 
                                                     />
-                                                    <span className="absolute right-3 text-[9px] text-zinc-400 font-bold uppercase tracking-widest pointer-events-none">kr</span>
+                                                    <span className="absolute right-2 text-[9px] text-zinc-400 font-bold uppercase pointer-events-none">kr</span>
                                                 </div>
-
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => removeExpenseRow(i)} 
-                                                    className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-all p-2.5 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-xl shrink-0 active:scale-95"
-                                                    title="Ta bort rad"
-                                                >
+                                                <button type="button" onClick={() => removeExpenseRow(i)} className="text-zinc-400 hover:text-red-500 p-2 transition-all" title="Ta bort">
                                                     <SafeIcon name="trash-2" size={14} />
                                                 </button>
                                             </div>
@@ -751,60 +934,36 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     </div>
                                 </div>
 
-                                {/* LISTA 2: DELBETALNINGAR (NY!) */}
-                                <div className="space-y-3 pt-4 border-t border-zinc-200/80 dark:border-white/10">
-                                    <div className="flex items-center justify-between pb-1.5 border-b border-zinc-100 dark:border-white/5">
-                                        <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <div className="space-y-2.5 pt-3 border-t border-zinc-200 dark:border-white/10">
+                                    <div className="flex items-center justify-between pb-1 border-b border-zinc-200 dark:border-white/10">
+                                        <label className="text-[10px] font-bold text-orange-500 uppercase tracking-widest flex items-center gap-1.5">
                                             <SafeIcon name="credit-card" size={10} />Delbetalningar & Förskott
                                         </label>
-                                        <div className="flex gap-2">
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setPayments([...payments, { desc: '', amount: '' }])} 
-                                                className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 uppercase px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 shadow-sm"
-                                            >
-                                                <SafeIcon name="plus" size={10} /> Lägg till
-                                            </button>
-                                        </div>
+                                        <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[9px] font-bold text-orange-500 bg-orange-50 dark:bg-orange-500/10 uppercase px-2 py-1 rounded transition-colors flex items-center gap-1">
+                                            <SafeIcon name="plus" size={10} /> Lägg till
+                                        </button>
                                     </div>
                                     
-                                    <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+                                    <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                                         {payments.map((p, i) => (
-                                            <div key={i} className="flex gap-2 items-center group/row">
-                                                <div className="flex-1 relative flex items-center">
-                                                    <div className="absolute left-3 text-emerald-400/80 dark:text-emerald-600 pointer-events-none group-focus-within/row:text-emerald-500 transition-colors">
-                                                        <SafeIcon name="edit-2" size={12} />
-                                                    </div>
-                                                    <input 
-                                                        placeholder="Datum / Beskrivning (t.ex. Swish 21/5)" 
-                                                        value={p.desc} 
-                                                        onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} 
-                                                        className="w-full bg-emerald-50/40 dark:bg-[#1a2235] focus:bg-emerald-50 dark:focus:bg-[#1f2940] border border-emerald-200/50 dark:border-white/10 py-2.5 pl-8 pr-3 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-sm" 
-                                                    />
-                                                </div>
-
-                                                <div className="relative w-28 shrink-0 flex items-center">
+                                            <div key={i} className="flex gap-2 items-center">
+                                                <input 
+                                                    placeholder="Swish / Faktura (t.ex. 21/5)" 
+                                                    value={p.desc} 
+                                                    onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} 
+                                                    className="flex-1 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-300 dark:border-white/15 py-2 px-3 text-[12px] font-medium text-zinc-900 dark:text-white outline-none rounded-lg shadow-xs" 
+                                                />
+                                                <div className="relative w-24 shrink-0 flex items-center">
                                                     <input 
                                                         placeholder="0" 
                                                         type="number" 
-                                                        onFocus={(e) => e.target.select()}
                                                         value={p.amount} 
                                                         onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} 
-                                                        className="w-full bg-emerald-50/40 dark:bg-[#1a2235] focus:bg-emerald-50 dark:focus:bg-[#1f2940] border border-emerald-200/50 dark:border-white/10 py-2.5 pl-3 pr-7 text-[12px] font-mono font-bold text-emerald-600 dark:text-emerald-400 outline-none text-right rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-sm" 
+                                                        className="w-full bg-zinc-50 dark:bg-[#141c2b] border border-zinc-300 dark:border-white/15 py-2 pl-2 pr-6 text-[12px] font-mono font-bold text-orange-500 outline-none text-right rounded-lg shadow-xs" 
                                                     />
-                                                    <span className="absolute right-3 text-[9px] text-emerald-500/70 font-bold uppercase tracking-widest pointer-events-none">kr</span>
+                                                    <span className="absolute right-2 text-[9px] text-orange-400 font-bold uppercase pointer-events-none">kr</span>
                                                 </div>
-
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => {
-                                                        const n = payments.filter((_, idx) => idx !== i);
-                                                        if (n.length === 0) n.push({ desc: '', amount: '' });
-                                                        setPayments(n);
-                                                    }} 
-                                                    className="text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-all p-2.5 bg-zinc-50 hover:bg-red-50 dark:bg-[#1a2235] dark:hover:bg-red-500/10 rounded-xl shrink-0 active:scale-95"
-                                                    title="Ta bort rad"
-                                                >
+                                                <button type="button" onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} className="text-zinc-400 hover:text-red-500 p-2 transition-all" title="Ta bort">
                                                     <SafeIcon name="trash-2" size={14} />
                                                 </button>
                                             </div>
@@ -816,7 +975,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </div>
                     </div>
 
-                    {/* SEKTION 4: LOGGAR */}
+                    {/* SEKTION 4: LOGGAR / ANTECKNINGAR */}
                     <div className={`relative z-10 ${sectionCardClasses}`}>
                         <SectionHeader title="Arbetsanteckningar" sub="Mekanikerns anteckningar och felkoder" icon="terminal" />
                         <InputWrapper label="Egna Noteringar" icon="file-text">
@@ -832,19 +991,19 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         <button 
                             type="button" 
                             onClick={() => window.history.back()} 
-                            className="w-full sm:w-auto order-3 sm:order-1 px-6 py-2.5 bg-zinc-100 dark:bg-[#1a2235] border border-transparent text-zinc-600 dark:text-zinc-300 font-bold text-[11px] lg:text-[12px] uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-[#25324d] transition-all active:scale-95 text-center rounded-lg"
+                            className="w-full sm:w-auto order-3 sm:order-1 px-6 py-2 bg-zinc-100 dark:bg-[#141c2b] border border-zinc-300 dark:border-white/15 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] uppercase tracking-wider rounded-lg transition-all"
                         >
                             Avbryt
                         </button>
 
-                        {editingJob && editingJob.status !== 'KLAR' && (
+                        {activeJob && activeJob.status !== 'KLAR' && (
                             <button 
                                 type="button" 
                                 onClick={async () => {
-                                    await window.db.collection("jobs").doc(editingJob.id).update({ status: 'KLAR' });
+                                    await window.db.collection("jobs").doc(activeJob.id).update({ status: 'KLAR' });
                                     setView('DASHBOARD');
                                 }} 
-                                className="w-full sm:order-2 sm:w-auto px-6 py-2.5 bg-white dark:bg-[#182032] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 font-bold text-[11px] lg:text-[12px] uppercase tracking-widest hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all active:scale-95 text-center rounded-lg flex items-center justify-center gap-1.5 shadow-sm"
+                                className="w-full sm:order-2 sm:w-auto px-6 py-2 bg-white dark:bg-[#141c2b] border border-zinc-300 dark:border-white/15 text-orange-500 font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5"
                             >
                                 <SafeIcon name="check" size={14} /> Snabbval: Klar
                             </button>
@@ -852,7 +1011,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                         <button 
                             type="submit" 
-                            className="w-full order-1 sm:order-3 sm:w-auto px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-[11px] lg:text-[12px] uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_25px_-4px_rgba(249,115,22,0.5)] border border-orange-400/50 active:scale-95 transition-all text-center rounded-lg flex items-center justify-center gap-1.5"
+                            className="w-full order-1 sm:order-3 sm:w-auto px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-[11px] uppercase tracking-wider shadow-xs rounded-lg transition-all flex items-center justify-center gap-1.5"
                         >
                             <SafeIcon name="save" size={14} /> Spara Jobb
                         </button>
