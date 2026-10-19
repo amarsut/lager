@@ -38,14 +38,16 @@ const formatDate = (dateStr) => {
     return `${day} ${month}`;
 };
 
-// FIX: Säkrare HTML-rensning med inbyggd DOMParser
+// FIX: Säkrare HTML-rensning med inbyggd DOMParser (avkodar även &amp; korrekt)
 const stripHtml = (html) => {
     if (!html) return '';
     try {
         const doc = new DOMParser().parseFromString(html, 'text/html');
-        return doc.body.textContent || "";
+        const text = doc.body.textContent || "";
+        const doc2 = new DOMParser().parseFromString(text, 'text/html');
+        return doc2.body.textContent || text;
     } catch (e) {
-        return String(html).replace(/<[^>]*>?/gm, '').trim();
+        return String(html).replace(/<[^>]*>?/gm, '').replace(/&amp;/g, '&').trim();
     }
 };
 
@@ -372,15 +374,15 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
 
     if (isDesktop) {
         return (
-            <div title="Teknisk fordonsdata finns sparad" className={`absolute right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/50 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all duration-300 group-hover:opacity-0 group-hover:scale-75 group-hover:translate-x-4 shadow-sm pointer-events-none z-0 ${pulse ? 'animate-pulse ring-4 ring-emerald-500/20' : ''}`}>
-                <window.Icon name="database" size={16} />
+            <div title="Teknisk fordonsdata finns sparad" className={`absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-lg bg-teal-50/90 dark:bg-teal-500/10 border border-teal-200/60 dark:border-teal-500/20 text-teal-700 dark:text-teal-400 transition-all duration-200 group-hover:opacity-0 group-hover:scale-90 shadow-xs pointer-events-none z-0 ${pulse ? 'animate-pulse ring-4 ring-teal-500/20' : ''}`}>
+                <window.Icon name="wrench" size={14} />
             </div>
         );
     }
 
     return (
-        <span title="Teknisk data tillgänglig i garaget" className="h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-200/50 dark:border-emerald-500/20 shadow-sm transition-all">
-            <window.Icon name="database" size={9} className={pulse ? "animate-spin" : ""} /> DATA
+        <span title="Teknisk data tillgänglig i garaget" className="h-[20px] px-2 text-[8px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 inline-flex items-center justify-center gap-1 rounded-lg border border-teal-200/50 dark:border-teal-500/20 shadow-sm transition-all">
+            <window.Icon name="wrench" size={9} className={pulse ? "animate-spin" : ""} /> DATA
         </span>
     );
 });
@@ -525,9 +527,6 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         <div className="flex flex-col min-w-0">
                             <div className="text-[15px] font-black tracking-tight truncate leading-tight text-zinc-900 dark:text-white group-hover:text-orange-500 transition-colors">
                                 {job.kundnamn}
-                            </div>
-                            <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
-                                <span className="bg-zinc-100 dark:bg-black/30 px-1.5 py-0.5 rounded text-[9px]">#{job.id.substring(0, 6)}</span>
                             </div>
                         </div>
                     </div>
@@ -1002,6 +1001,62 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
     );
 });
 
+// Hjälpkomponent för att hämta VIN, Märke och Modell i kompakt vy
+// Hjälpkomponent för att hämta VIN, Märke och Modell i kompakt vy
+window.CompactVehicleCells = React.memo(({ job }) => {
+    const [specs, setSpecs] = React.useState({
+        vin: job.vin || '',
+        brand: '',
+        model: job.bilmodell || ''
+    });
+
+    React.useEffect(() => {
+        const localBrand = getLocalBrand(job.bilmodell, '');
+        setSpecs(prev => ({
+            ...prev,
+            vin: job.vin || prev.vin,
+            brand: localBrand ? localBrand.toUpperCase() : prev.brand,
+            model: job.bilmodell || prev.model
+        }));
+
+        const regnr = job.regnr ? job.regnr.toUpperCase().trim() : null;
+        if (!regnr || !window.db) return;
+
+        const unsubscribe = window.db.collection('vehicleSpecs').doc(regnr).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                const foundBrand = data.fabrikat || data.brand_manual || getLocalBrand(data.model, data.fabrikat) || '';
+                setSpecs({
+                    vin: data.vin || job.vin || '',
+                    brand: foundBrand.toUpperCase(),
+                    model: data.model || job.bilmodell || ''
+                });
+            }
+        });
+        return () => unsubscribe();
+    }, [job.regnr, job.bilmodell, job.vin]);
+
+    // Gör om VOLKSWAGEN -> VW och ta bort märkesnamnet ur modellbeteckningen för renare vy
+    const displayBrand = specs.brand === 'VOLKSWAGEN' ? 'VW' : specs.brand;
+    const cleanModel = specs.model && specs.brand && specs.model.toUpperCase().startsWith(specs.brand)
+        ? specs.model.substring(specs.brand.length).trim()
+        : specs.model;
+
+    return (
+        <>
+            <td className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[150px]" title={specs.vin}>
+                {specs.vin || ''}
+            </td>
+            <td className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[95px]">
+                {displayBrand || ''}
+            </td>
+            <td className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[170px]" title={specs.model}>
+                {cleanModel || ''}
+            </td>
+        </>
+    );
+});
+
 window.DashboardView = React.memo(({
     allJobs,
     filteredJobs, setEditingJob, setView,
@@ -1014,6 +1069,15 @@ window.DashboardView = React.memo(({
     const [sortConfig, setSortConfig] = React.useState({ key: null, direction: 'asc' });
     const [showMobileWidgets, setShowMobileWidgets] = React.useState(false);
     const [showWaitingJobs, setShowWaitingJobs] = React.useState(false);
+    const [isCompactView, setIsCompactView] = React.useState(() => {
+        return localStorage.getItem('autogrid_table_density') === 'compact';
+    });
+
+    const toggleCompactView = React.useCallback((compact) => {
+        setIsCompactView(compact);
+        localStorage.setItem('autogrid_table_density', compact ? 'compact' : 'spacious');
+        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+    }, []);
     
     React.useEffect(() => {
         setVisibleCount(20);
@@ -1347,81 +1411,195 @@ window.DashboardView = React.memo(({
                         ))}
                     </div>
 
-                    <div className="relative group mb-2 sm:mb-0 shrink-0 border-b border-transparent hover:border-zinc-300 dark:hover:border-white/20 focus-within:border-orange-500 transition-colors">
-                        <input 
-                            type="text" 
-                            placeholder="Sök i listan..." 
-                            className="bg-transparent py-3 pl-8 pr-8 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-64 transition-all tracking-wide placeholder:text-zinc-400 placeholder:uppercase placeholder:text-[11px] placeholder:tracking-widest"
-                            value={globalSearch}
-                            onChange={(e) => setGlobalSearch(e.target.value)}
-                        />
-                        <window.Icon name="search" size={14} className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
-                        
-                        {globalSearch && (
-                            <button 
-                                onClick={() => setGlobalSearch('')}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-orange-500 rounded-full transition-all active:scale-95"
-                                title="Rensa sökning"
+                    <div className="flex items-center gap-4 mb-2 sm:mb-0 shrink-0">
+                        <div className="relative group border-b border-transparent hover:border-zinc-300 dark:hover:border-white/20 focus-within:border-orange-500 transition-colors">
+                            <input 
+                                type="text" 
+                                placeholder="Sök i listan..." 
+                                className="bg-transparent py-3 pl-8 pr-8 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-64 transition-all tracking-wide placeholder:text-zinc-400 placeholder:uppercase placeholder:text-[11px] placeholder:tracking-widest"
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                            />
+                            <window.Icon name="search" size={14} className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
+                            
+                            {globalSearch && (
+                                <button 
+                                    onClick={() => setGlobalSearch('')}
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-orange-500 rounded-full transition-all active:scale-95"
+                                    title="Rensa sökning"
+                                >
+                                    <window.Icon name="x" size={14} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* VY-VÄXLARE: LUFTIG / KOMPAKT */}
+                        <div className="flex items-center bg-zinc-100 dark:bg-black/30 p-1 rounded-xl border border-zinc-200/80 dark:border-white/10">
+                            <button
+                                onClick={() => toggleCompactView(false)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${!isCompactView ? 'bg-white dark:bg-[#1e293b] text-orange-500 shadow-sm border border-zinc-200/50 dark:border-white/10' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}
+                                title="Luftig vy"
                             >
-                                <window.Icon name="x" size={14} />
+                                <window.Icon name="layout-list" size={13} />
+                                <span className="hidden xl:inline">Luftig</span>
                             </button>
-                        )}
+                            <button
+                                onClick={() => toggleCompactView(true)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${isCompactView ? 'bg-white dark:bg-[#1e293b] text-orange-500 shadow-sm border border-zinc-200/50 dark:border-white/10' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}
+                                title="Kompakt vy (Tabell)"
+                            >
+                                <window.Icon name="table" size={13} />
+                                <span className="hidden xl:inline">Kompakt</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                    <div className="bg-white dark:bg-[#1e293b] rounded-b-3xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col min-h-[500px]">
-                        <div className="flex-1 overflow-auto custom-scrollbar relative">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-b-xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col">
+                        <div className={`${isCompactView ? 'overflow-x-auto' : 'overflow-visible'} relative`}>
                             <table className="w-full text-left border-collapse">
-                                {/* FIX: Sticky Header med check-kolumn */}
-                                <thead className="sticky top-0 z-20 bg-zinc-50/95 dark:bg-[#1e293b]/95 backdrop-blur-md text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200 dark:border-white/10 shadow-sm">
-                                    <tr>
-                                        <th className="pl-6 py-4 w-10">
-                                            <input type="checkbox" className="rounded border-zinc-300 text-orange-500 focus:ring-orange-500/20 cursor-pointer" title="Markera alla" />
-                                        </th>
-                                        <th className="pl-2 pr-4 py-4 w-[25%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
-                                            <div className="flex items-center gap-1.5">
-                                                Kund
-                                                <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundnamn' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                            </div>
-                                        </th>
-                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('paket')}>
-                                            <div className="flex items-center gap-1.5">
-                                                Service Typ
-                                                <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'paket' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                            </div>
-                                        </th>
-                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('regnr')}>
-                                            <div className="flex items-center gap-1.5">
-                                                Reg.nr
-                                                <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'regnr' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                            </div>
-                                        </th>
-                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('datum')}>
-                                            <div className="flex items-center gap-1.5">
-                                                Bokat datum
-                                                <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'datum' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                            </div>
-                                        </th>
-                                        <th className="px-4 py-4 w-[15%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('status')}>
-                                            <div className="flex items-center gap-1.5">
-                                                Status
-                                                <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'status' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                            </div>
-                                        </th>
-                                        <th className="px-4 py-4 w-[15%] text-right cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundpris')}>
-                                            <div className="flex items-center justify-end gap-1.5">
-                                                Pris
-                                                <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundpris' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                            </div>
-                                        </th>
-                                        <th className="pl-4 pr-8 py-4 w-[10%] text-right"></th>
-                                    </tr>
-                                </thead>
+                                {isCompactView ? (
+                                    /* --- KOMPAKT VY: THEAD (Liknar referensvyn till vänster) --- */
+                                    <thead className="sticky top-0 z-20 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
+                                        <tr className="divide-x divide-zinc-300 dark:divide-white/15">
+                                            <th className="w-10 py-3 text-center"></th>
+                                            <th className="w-16 px-2.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('id')}>
+                                                <div className="flex items-center justify-between gap-1">
+                                                    <span>Nr.</span>
+                                                    <div className="flex items-center gap-0.5">
+                                                        <window.Icon name={sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('paket')}>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Uppdrag</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('kundnamn')}>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Kund</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('regnr')}>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Reg.nr</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('datum')}>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Mottagandedatum</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('status')}>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Status</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Chnr.</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name="arrow-up-down" size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Märke</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name="arrow-up-down" size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>Modellbeteckning</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <window.Icon name="arrow-up-down" size={12} className="text-teal-700 dark:text-teal-400" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th className="px-3.5 py-3 text-right cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('kundpris')}>
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <span>Pris</span>
+                                                    <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                ) : (
+                                    /* --- LUFTIG VY: THEAD (Tightare kanter & bättre balans) --- */
+                                    <thead className="bg-zinc-50/90 dark:bg-[#182232] text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200/80 dark:border-white/10">
+                                        <tr>
+                                            <th className="pl-4 pr-2 py-3.5 w-[17%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
+                                                <div className="flex items-center gap-1.5">
+                                                    Kund
+                                                    <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundnamn' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                </div>
+                                            </th>
+                                            <th className="px-3 py-3.5 w-[31%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('paket')}>
+                                                <div className="flex items-center gap-1.5">
+                                                    Service Typ
+                                                    <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'paket' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                </div>
+                                            </th>
+                                            <th className="px-3 py-3.5 w-[14%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('regnr')}>
+                                                <div className="flex items-center gap-1.5">
+                                                    Reg.nr
+                                                    <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'regnr' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                </div>
+                                            </th>
+                                            <th className="px-3 py-3.5 w-[14%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('datum')}>
+                                                <div className="flex items-center gap-1.5">
+                                                    Bokat datum
+                                                    <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'datum' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                </div>
+                                            </th>
+                                            <th className="px-3 py-3.5 w-[11%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('status')}>
+                                                <div className="flex items-center gap-1.5">
+                                                    Status
+                                                    <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'status' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                </div>
+                                            </th>
+                                            <th className="px-3 py-3.5 w-[13%] text-right cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundpris')}>
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    Pris
+                                                    <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundpris' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                </div>
+                                            </th>
+                                            <th className="pl-2 pr-4 py-3.5 w-[110px] text-right"></th>
+                                        </tr>
+                                    </thead>
+                                )}
                                 
                                 {visibleJobs.length === 0 ? (
                                     <tbody>
                                         <tr>
-                                            <td colSpan="8" className="py-32 text-center">
+                                            <td colSpan={isCompactView ? "11" : "8"} className="py-32 text-center">
                                                 <div className="flex flex-col items-center justify-center text-zinc-400">
                                                     <div className="w-20 h-20 mb-4 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center">
                                                         <window.Icon name="inbox" size={32} className="opacity-50" />
@@ -1433,7 +1611,7 @@ window.DashboardView = React.memo(({
                                         </tr>
                                     </tbody>
                                 ) : (
-                                    <tbody className="divide-y divide-zinc-100 dark:divide-white/5 relative z-10">
+                                    <tbody className="divide-y divide-zinc-200/70 dark:divide-white/5 relative z-10">
                                     {(() => {
                                         let hasRenderedWaitingHeader = false;
                                         
@@ -1451,19 +1629,119 @@ window.DashboardView = React.memo(({
                                             const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader;
                                             if (showWaitingHeader) hasRenderedWaitingHeader = true;
 
+                                            // --- KOMPAKT RAD (Matchar referensvyn till vänster) ---
+                                            if (isCompactView) {
+                                                const compactDate = job.datum 
+                                                    ? job.datum.replace('T', ' ').substring(0, 16) 
+                                                    : '';
+                                                const serviceTitle = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
+                                                const cleanComment = stripHtml(job.kommentar);
+
+                                                return (
+                                                    <React.Fragment key={job.id}>
+                                                        {showWaitingHeader && (
+                                                            <tr className="bg-zinc-100/90 dark:bg-white/5 border-y border-zinc-200 dark:border-white/10">
+                                                                <td colSpan="11" className="px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                                    Oplanerade Uppdrag
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                        <tr 
+                                                            onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
+                                                            className={`group transition-colors duration-100 cursor-pointer text-[13px] border-b border-zinc-200/80 dark:border-white/5 hover:bg-zinc-100/70 dark:hover:bg-white/5 ${isDone ? 'bg-zinc-50/60 dark:bg-black/20 text-zinc-400' : 'bg-white dark:bg-[#1e293b]'}`}
+                                                        >
+                                                            {/* Åtgärdsknapp (3 prickar) */}
+                                                            <td className="w-10 py-3 text-center" onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}>
+                                                                <button className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-colors" title="Redigera order">
+                                                                    <window.Icon name="more-vertical" size={16} />
+                                                                </button>
+                                                            </td>
+
+                                                            {/* Nr. (Endast ikon för att spara plats, med ID i tooltip) */}
+                                                            <td className="w-16 px-2.5 py-3 whitespace-nowrap" title={`Order #${job.id.toUpperCase()}`}>
+                                                                <div className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-teal-50/80 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20 transition-colors">
+                                                                    <window.Icon name="wrench" size={14} className="shrink-0" />
+                                                                </div>
+                                                            </td>
+
+                                                            {/* Uppdrag / Kommentar */}
+                                                            <td className="px-3.5 py-3 max-w-[200px] truncate text-zinc-800 dark:text-zinc-200" title={cleanComment ? `${serviceTitle}: ${cleanComment}` : serviceTitle}>
+                                                                <span>{serviceTitle}</span>
+                                                                {cleanComment && (
+                                                                    <span className="text-zinc-400 dark:text-zinc-500 text-[12px] ml-1.5">
+                                                                        – {cleanComment}
+                                                                    </span>
+                                                                )}
+                                                            </td>
+
+                                                            {/* Kund */}
+                                                            <td className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 uppercase max-w-[170px] truncate">
+                                                                {job.kundnamn || ''}
+                                                            </td>
+
+                                                            {/* Reg.nr */}
+                                                            <td 
+                                                                onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)}
+                                                                className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 hover:text-teal-700 dark:hover:text-teal-400 whitespace-nowrap"
+                                                                title="Klicka för att kopiera Reg.nr"
+                                                            >
+                                                                {copiedRegId === job.id ? (
+                                                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Kopierad!</span>
+                                                                ) : (
+                                                                    regDisplay === '-' ? '' : regDisplay
+                                                                )}
+                                                            </td>
+
+                                                            {/* Mottagandedatum */}
+                                                            <td className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
+                                                                {compactDate || ''}
+                                                            </td>
+
+                                                            {/* Status */}
+                                                            <td className="px-3.5 py-3 whitespace-nowrap text-zinc-800 dark:text-zinc-200">
+                                                                {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1).toLowerCase() : 'Bokad'}
+                                                            </td>
+
+                                                            {/* Chnr, Märke, Modell (från helper-komponenten) */}
+                                                            <window.CompactVehicleCells job={job} />
+
+                                                            {/* Pris + Snabbknappar vid hover */}
+                                                            <td className="px-3.5 py-3 text-right text-zinc-800 dark:text-zinc-200 whitespace-nowrap relative">
+                                                                <span className="group-hover:opacity-0 transition-opacity">
+                                                                    {remaining > 0 ? `${remaining.toLocaleString('sv-SE')} kr` : (price > 0 ? `${price.toLocaleString('sv-SE')} kr` : '')}
+                                                                </span>
+                                                                <div className="opacity-0 group-hover:opacity-100 absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white dark:bg-[#1e293b] pl-2 py-0.5 rounded shadow-sm border border-zinc-200 dark:border-white/10">
+                                                                    {job.status !== 'KLAR' && (
+                                                                        <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="p-1 text-zinc-500 hover:text-emerald-600 rounded" title="Markera klar">
+                                                                            <window.Icon name="check" size={14} />
+                                                                        </button>
+                                                                    )}
+                                                                    <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="p-1 text-zinc-500 hover:text-blue-600 rounded" title="Redigera">
+                                                                        <window.Icon name="edit-2" size={14} />
+                                                                    </button>
+                                                                    <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="p-1 text-zinc-500 hover:text-red-600 rounded" title="Radera">
+                                                                        <window.Icon name="trash" size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </React.Fragment>
+                                                );
+                                            }
+
+                                            // --- LUFTIG RAD (Uppdaterad med tightare sidor & renare design) ---
                                             return (
                                                 <React.Fragment key={job.id}>
                                                     {showWaitingHeader && (
-                                                        <tr>
-                                                            <td colSpan="8" className="py-8 relative">
-                                                                <div className="absolute inset-0 flex items-center px-4" aria-hidden="true">
-                                                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/10 to-transparent"></div>
-                                                                </div>
-                                                                <div className="relative flex justify-center">
-                                                                    <span className="bg-zinc-50 dark:bg-[#1a2235] px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 shadow-sm">
-                                                                        <window.Icon name="inbox" size={14} className="text-zinc-400" />
+                                                        <tr className="bg-zinc-50/60 dark:bg-white/[0.02]">
+                                                            <td colSpan="7" className="py-3.5 px-4 relative">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="h-px flex-1 bg-zinc-200/80 dark:bg-white/10"></div>
+                                                                    <span className="bg-white dark:bg-[#1a2235] px-3.5 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 rounded-full border border-zinc-200/80 dark:border-white/10 shadow-sm">
+                                                                        <window.Icon name="inbox" size={12} className="text-orange-500/80" />
                                                                         Oplanerade Uppdrag
                                                                     </span>
+                                                                    <div className="h-px flex-1 bg-zinc-200/80 dark:bg-white/10"></div>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -1471,27 +1749,23 @@ window.DashboardView = React.memo(({
 
                                                     <tr 
                                                         onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                        className={`group transition-colors duration-200 cursor-pointer relative hover:bg-orange-50/50 dark:hover:bg-white/5 border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'bg-zinc-50/50 dark:bg-black/20 opacity-70 hover:opacity-100' : 'bg-transparent'}`}
+                                                        className={`group transition-all duration-150 cursor-pointer relative hover:bg-orange-50/40 dark:hover:bg-white/[0.04] border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'bg-zinc-50/40 dark:bg-black/20 opacity-70 hover:opacity-100' : 'bg-transparent'}`}
                                                     >
-                                                        {/* FIX: Checkbox lagd till i första kolumnen */}
-                                                        <td className="pl-6 py-4 align-middle relative">
-                                                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
-                                                            <input type="checkbox" onClick={(e) => e.stopPropagation()} className="rounded border-zinc-300 text-orange-500 focus:ring-orange-500/20 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        </td>
-
-                                                        <td className="pl-2 pr-4 py-4 align-middle">
-                                                            <div className="flex items-center gap-4">
+                                                        {/* KUND (Utan #ID, snyggt centrerad mot avataren) */}
+                                                        <td className="pl-4 pr-2 py-3.5 align-middle relative">
+                                                            <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
+                                                            <div className="flex items-center gap-3.5">
                                                                 <window.CustomerAvatar job={job} />
-                                                                <div>
-                                                                    <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-none mb-1.5 group-hover:text-orange-500 transition-colors">{job.kundnamn}</div>
-                                                                    <div className="flex items-center gap-2 text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                                                                        <window.Icon name="hash" size={10} className="inline mr-1 -mt-0.5" />{job.id.substring(0,6)}
+                                                                <div className="min-w-0">
+                                                                    <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-tight group-hover:text-orange-500 transition-colors truncate">
+                                                                        {job.kundnamn}
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-4 align-middle relative">
+                                                        {/* SERVICE TYP (Närmare kunden & mycket mer plats för kommentaren) */}
+                                                        <td className="px-3 py-3.5 align-middle relative">
                                                             <div className="flex flex-col min-w-0">
                                                                 <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
                                                                     {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
@@ -1499,17 +1773,17 @@ window.DashboardView = React.memo(({
                                                                 
                                                                 {job.kommentar && (
                                                                     <div 
-                                                                        className="relative group/note cursor-pointer mt-1 w-fit"
+                                                                        className="relative group/note cursor-pointer mt-1 w-fit max-w-full"
                                                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                                                         onTouchStart={(e) => e.stopPropagation()}
                                                                         onTouchEnd={(e) => e.stopPropagation()}
                                                                     >
-                                                                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[140px]">
+                                                                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[300px] xl:max-w-[380px]">
                                                                             <window.Icon name="message-square" size={10} className="shrink-0" />
                                                                             <span className="truncate">{stripHtml(job.kommentar)}</span>
                                                                         </div>
                                                                         
-                                                                        <div className="absolute left-[-10px] top-[-10px] w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-top-left">
+                                                                        <div className="absolute left-0 bottom-full mb-2 w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-bottom-left">
                                                                             <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
                                                                                 <div className="shrink-0 mt-[2px] text-orange-500">
                                                                                     <window.Icon name="message-square" size={14} />
@@ -1524,7 +1798,8 @@ window.DashboardView = React.memo(({
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-4 align-middle">
+                                                        {/* REG.NR (Återställd till bold originalstil) */}
+                                                        <td className="px-3 py-3.5 align-middle">
                                                             <div 
                                                                 onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
                                                                 className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-black/20 border-zinc-200 dark:border-white/10' : 'bg-transparent border-transparent'} transition-all`}
@@ -1536,7 +1811,7 @@ window.DashboardView = React.memo(({
                                                                 )}
                                                                 {isReg ? (
                                                                     <>
-                                                                        <div className="w-[16px] bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
+                                                                        <div className="w-[16px] h-full bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
                                                                             <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
                                                                             <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
                                                                         </div>
@@ -1552,7 +1827,8 @@ window.DashboardView = React.memo(({
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-4 align-middle">
+                                                        {/* BOKAT DATUM (Mindre bold: font-medium istället för font-black/font-bold) */}
+                                                        <td className="px-3 py-3.5 align-middle">
                                                             {job.datum ? (
                                                                 <div className="flex items-center gap-2.5">
                                                                     {isUrgent && (
@@ -1561,11 +1837,11 @@ window.DashboardView = React.memo(({
                                                                             <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
                                                                         </span>
                                                                     )}
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <span className={`text-[13px] font-black uppercase leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-white transition-colors'}`}>
+                                                                    <div className={`flex items-center gap-1.5 text-[13px] font-medium leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-800 dark:text-zinc-200 transition-colors'}`}>
+                                                                        <span className="uppercase">
                                                                             {dateText}
                                                                         </span>
-                                                                        <span className={`font-mono font-bold text-[13px] ${job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                                        <span className={job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600 font-normal' : ''}>
                                                                             {formatTime(job.datum)}
                                                                         </span>
                                                                     </div>
@@ -1573,47 +1849,50 @@ window.DashboardView = React.memo(({
                                                             ) : (
                                                                 <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
                                                                      <window.Icon name="clock" size={10} className="text-zinc-400" />
-                                                                     <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
+                                                                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
                                                                 </div>
                                                             )}
                                                         </td>
 
-                                                        <td className="px-4 py-4 align-middle">
+                                                        {/* STATUS */}
+                                                        <td className="px-3 py-3.5 align-middle">
                                                             <window.Badge status={job.status} />
                                                         </td>
 
-                                                        <td className="px-4 py-4 align-middle text-right">
-                                                            <div className="font-mono font-light tracking-tighter text-[18px] leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
+                                                        {/* PRIS (Mindre bold och renare storlek) */}
+                                                        <td className="px-3 py-3.5 align-middle text-right">
+                                                            <div className="text-[16px] font-normal leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
                                                                 {paid > 0 ? (
-                                                                <>
-                                                                    <span className="text-[10px] text-emerald-500 font-bold font-sans tracking-widest uppercase mb-1">
-                                                                        {paid.toLocaleString('sv-SE')} kr
-                                                                    </span>
+                                                                    <>
+                                                                        <span className="text-[10px] text-emerald-500 font-medium tracking-widest uppercase mb-1">
+                                                                            {paid.toLocaleString('sv-SE')} kr
+                                                                        </span>
                                                                         <div className="text-orange-500">
-                                                                            {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                                            {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
                                                                         </div>
                                                                     </>
                                                                 ) : (
                                                                     <div className="text-zinc-700 dark:text-zinc-200">
-                                                                        {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-widest uppercase font-bold ml-0.5">kr</span>
+                                                                        {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
                                                                     </div>
                                                                 )}
                                                             </div>
                                                         </td>
 
-                                                        <td className="pl-4 pr-8 py-4 align-middle text-right relative">
+                                                        {/* ÅTGÄRDER (Tightare högerkant pr-4 och ingen translate-x som triggar scrollbar) */}
+                                                        <td className="pl-2 pr-4 py-3.5 align-middle text-right relative">
                                                             <window.VehicleDataIcon job={job} isDesktop={true} />
-                                                            <div className="opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 ease-out flex justify-end items-center gap-2 relative z-10 scale-95 group-hover:scale-100">
+                                                            <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out flex justify-end items-center gap-1.5 relative z-10 scale-95 group-hover:scale-100">
                                                                 {job.status !== 'KLAR' && (
-                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 shadow-sm transition-all hover:scale-110 active:scale-95">
-                                                                        <window.Icon name="check" size={16} />
+                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all active:scale-95" title="Markera klar">
+                                                                        <window.Icon name="check" size={15} />
                                                                     </button>
                                                                 )}
-                                                                <button onClick={() => setView('NEW_JOB', { job: job })} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 shadow-sm transition-all hover:scale-110 active:scale-95">
-                                                                    <window.Icon name="edit-2" size={16} />
+                                                                <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-200 shadow-sm transition-all active:scale-95" title="Redigera">
+                                                                    <window.Icon name="edit-2" size={14} />
                                                                 </button>
-                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 shadow-sm transition-all hover:scale-110 active:scale-95">
-                                                                    <window.Icon name="trash" size={16} />
+                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 hover:border-red-200 shadow-sm transition-all active:scale-95" title="Radera">
+                                                                    <window.Icon name="trash" size={14} />
                                                                 </button>
                                                             </div>
                                                         </td>
