@@ -54,16 +54,15 @@ const stripHtml = (html) => {
 // 2. PREMIUM STATUS BADGE (Uppdaterad storlek)
 window.Badge = React.memo(({ status }) => {
     const s = (status || 'BOKAD').toUpperCase();
-    const config = {
-        'BOKAD': { bg: 'bg-orange-50/80 dark:bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-200/60 dark:border-orange-500/20', dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]' },
-        'OFFERERAD': { bg: 'bg-blue-50/80 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200/60 dark:border-blue-500/20', dot: 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]' },
-        'KLAR': { bg: 'bg-emerald-50/80 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200/60 dark:border-emerald-500/20', dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' },
-        'FAKTURERAS': { bg: 'bg-zinc-100/80 dark:bg-white/10', text: 'text-zinc-600 dark:text-zinc-300', border: 'border-zinc-200/80 dark:border-white/10', dot: 'bg-zinc-400' },
+    const styles = {
+        'BOKAD': 'text-orange-600 dark:text-orange-400',
+        'OFFERERAD': 'text-blue-600 dark:text-blue-400',
+        'KLAR': 'text-[#00b074] dark:text-emerald-400', // Starkare, krispigare grön
+        'FAKTURERAS': 'text-[#0096c7] dark:text-sky-400 decoration-[#0096c7]/50 underline-offset-2' // Tydligare blå
     };
-    const style = config[s] || config['BOKAD'];
+    const textStyle = styles[s] || 'text-zinc-700 dark:text-zinc-300';
     return (
-        <span className={`h-6 px-2.5 text-[10px] font-bold uppercase tracking-widest inline-flex items-center justify-center gap-1.5 rounded-lg border backdrop-blur-sm transition-all duration-300 ${style.bg} ${style.text} ${style.border}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`}></span>
+        <span className={`text-[13px] font-medium uppercase tracking-wide inline-flex items-center ${textStyle}`}>
             {s}
         </span>
     );
@@ -1880,14 +1879,16 @@ window.DashboardView = React.memo(({
                                                             </td>
 
                                                             {/* Status */}
-                                                            <td className="px-3.5 py-3 whitespace-nowrap">
-                                                                <span className={`font-medium ${
-                                                                    job.status === 'KLAR' ? 'text-emerald-600 dark:text-emerald-400' :
+                                                            {/* Status (Ren text med krispig färg) */}
+                                                            <td className="px-3.5 py-3 whitespace-nowrap text-[13px]">
+                                                                <span className={`font-medium uppercase tracking-wide ${
+                                                                    job.status === 'KLAR' ? 'text-[#00b074] dark:text-emerald-400' :
                                                                     job.status === 'BOKAD' ? 'text-orange-600 dark:text-orange-400' :
                                                                     job.status === 'OFFERERAD' ? 'text-blue-600 dark:text-blue-400' :
+                                                                    job.status === 'FAKTURERAS' ? 'text-[#0096c7] dark:text-sky-400 decoration-[#0096c7]/50 underline-offset-2' :
                                                                     'text-zinc-700 dark:text-zinc-300'
                                                                 }`}>
-                                                                    {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1).toLowerCase() : 'Bokad'}
+                                                                    {(job.status || 'BOKAD').toUpperCase()}
                                                                 </span>
                                                             </td>
 
