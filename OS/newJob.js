@@ -454,7 +454,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </h1>
                             <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                {activeJob ? `Redigerar order #${activeJob.id.substring(0, 6).toUpperCase()}` : 'Sök befintlig eller skapa ny arbetsorder'}
+                                {activeJob ? `Redigerar order • ${formData.regnr || formData.kundnamn || ''}` : 'Sök befintlig eller skapa ny arbetsorder'}
                             </p>
                         </div>
                     </div>
@@ -552,7 +552,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <thead className="bg-[#f4f5f7] dark:bg-[#182234] text-zinc-700 dark:text-zinc-300 text-[11px] font-bold border-b border-zinc-300 dark:border-white/15 select-none">
                                                 <tr className="divide-x divide-zinc-300 dark:divide-white/15">
                                                     <th className="w-9 py-2.5 text-center"></th>
-                                                    <th className="px-3 py-2.5 w-[130px]">Nr.</th>
+                                                    <th className="px-3 py-2.5 w-[160px]">Uppdrag</th>
                                                     <th className="px-3 py-2.5 w-[110px]">Reg.nr</th>
                                                     <th className="px-3 py-2.5">Kund</th>
                                                     <th className="px-3 py-2.5 w-[160px]">Mottagandedatum</th>
@@ -578,7 +578,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                 <td className="px-3 py-2.5 font-medium text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <SafeIcon name="wrench" size={13} className="text-orange-500" />
-                                                                        <span>#{job.id.substring(0, 8).toUpperCase()}</span>
+                                                                        <span>{serviceTitle}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-3 py-2.5 font-mono text-[12px] font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
