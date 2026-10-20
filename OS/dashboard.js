@@ -1085,12 +1085,129 @@ window.DashboardView = React.memo(({
         setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
     }, []);
     
+    // State för vehicleSpecs (så vi kan söka, filtrera och sortera på Chnr, Märke & Modell)
+    const [specsMap, setSpecsMap] = React.useState({});
+    // State för kolumnfilter (tratt-ikonerna i kompakt vy)
+    const [columnFilters, setColumnFilters] = React.useState({});
+    const [openFilterMenu, setOpenFilterMenu] = React.useState(null);
+
+    React.useEffect(() => {
+        // Läs in ev. lokal cache direkt
+        try {
+            const cached = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}');
+            if (Object.keys(cached).length > 0) setSpecsMap(prev => ({ ...cached, ...prev }));
+        } catch (e) {}
+
+        if (!window.db) return;
+        const unsubscribe = window.db.collection('vehicleSpecs').onSnapshot(snap => {
+            const map = {};
+            snap.forEach(doc => { map[doc.id.toUpperCase().trim()] = doc.data(); });
+            setSpecsMap(prev => ({ ...prev, ...map }));
+        }, () => {});
+        return () => unsubscribe();
+    }, []);
+
+    // Hjälpfunktion som hämtar Chnr, Märke och Modell för ett jobb
+    const getJobVehicleMeta = React.useCallback((job) => {
+        const reg = job.regnr ? job.regnr.toUpperCase().trim() : '';
+        const spec = specsMap[reg] || {};
+        const rawModel = spec.model || job.bilmodell || '';
+        const rawBrand = spec.fabrikat || spec.brand_manual || getLocalBrand(rawModel, spec.fabrikat) || '';
+        const brandUpper = rawBrand.toUpperCase();
+        const displayBrand = brandUpper === 'VOLKSWAGEN' ? 'VW' : brandUpper;
+        const cleanModel = rawModel && brandUpper && rawModel.toUpperCase().startsWith(brandUpper)
+            ? rawModel.substring(brandUpper.length).trim()
+            : rawModel;
+        const vin = spec.vin || spec.chassinummer || job.vin || '';
+        const engine = spec.engine || job.motorkod || '';
+        return { vin, brand: displayBrand, rawBrand: brandUpper, model: cleanModel, rawModel, engine };
+    }, [specsMap]);
+
     React.useEffect(() => {
         setVisibleCount(20);
-    }, [activeFilter, globalSearch]);
+    }, [activeFilter, globalSearch, columnFilters]);
+
+    // Unika värden för filtermenyerna (trattarna)
+    const filterOptions = React.useMemo(() => {
+        const base = allJobs.filter(j => !j.deleted && (activeFilter === 'ALLA' || j.status === activeFilter));
+        const countValues = (getter) => {
+            const counts = {};
+            base.forEach(j => {
+                const val = getter(j);
+                if (val) counts[val] = (counts[val] || 0) + 1;
+            });
+            return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        };
+        return {
+            paket: countValues(j => j.paket || 'Standard'),
+            kundnamn: countValues(j => (j.kundnamn || '').toUpperCase().trim()),
+            status: countValues(j => (j.status || 'BOKAD').toUpperCase()),
+            brand: countValues(j => getJobVehicleMeta(j).brand)
+        };
+    }, [allJobs, activeFilter, getJobVehicleMeta]);
+
+    const toggleColumnFilterValue = (colKey, val) => {
+        setColumnFilters(prev => {
+            const current = prev[colKey] || [];
+            const next = current.includes(val) ? current.filter(x => x !== val) : [...current, val];
+            const copy = { ...prev };
+            if (next.length === 0) delete copy[colKey];
+            else copy[colKey] = next;
+            return copy;
+        });
+    };
+
+    const clearAllColumnFilters = () => {
+        setColumnFilters({});
+        setOpenFilterMenu(null);
+    };
 
     const sortedAndFilteredJobs = React.useMemo(() => {
-        let result = [...filteredJobs];
+        // Om användaren skriver i sökrutan utgår vi från allJobs så att även Chnr, Märke, Modell & Reservdelar hittas!
+        const searchQuery = (globalSearch || '').trim().toLowerCase();
+        let result = searchQuery
+            ? allJobs.filter(j => {
+                if (j.deleted) return false;
+                if (activeFilter !== 'ALLA' && j.status !== activeFilter) return false;
+
+                const meta = getJobVehicleMeta(j);
+                const expensesText = (j.utgifter || []).map(u => `${u.namn || ''} ${u.kostnad || ''}`).join(' ');
+                const commentText = stripHtml(j.kommentar || '');
+
+                const searchableString = [
+                    j.kundnamn,
+                    j.regnr,
+                    j.paket,
+                    j.datum,
+                    j.status,
+                    j.kundpris,
+                    commentText,
+                    expensesText,
+                    meta.vin,
+                    meta.brand,
+                    meta.rawBrand,
+                    meta.model,
+                    meta.rawModel,
+                    meta.engine
+                ].filter(Boolean).join(' ').toLowerCase();
+
+                // Stöd för flera sökord (t.ex. "vw kamrem" eller "fogarolli oljebyte")
+                const terms = searchQuery.split(/\s+/);
+                return terms.every(t => searchableString.includes(t));
+            })
+            : [...filteredJobs];
+
+        // Applicera aktiva kolumnfilter (från tratt-ikonerna)
+        Object.entries(columnFilters).forEach(([colKey, selectedVals]) => {
+            if (!selectedVals || selectedVals.length === 0) return;
+            result = result.filter(j => {
+                if (colKey === 'paket') return selectedVals.includes(j.paket || 'Standard');
+                if (colKey === 'kundnamn') return selectedVals.includes((j.kundnamn || '').toUpperCase().trim());
+                if (colKey === 'status') return selectedVals.includes((j.status || 'BOKAD').toUpperCase());
+                if (colKey === 'brand') return selectedVals.includes(getJobVehicleMeta(j).brand);
+                return true;
+            });
+        });
 
         result.sort((a, b) => {
             if (!sortConfig.key) {
@@ -1098,15 +1215,16 @@ window.DashboardView = React.memo(({
                 return activeFilter === 'BOKAD' ? a.datum.localeCompare(b.datum) : b.datum.localeCompare(a.datum);
             }
 
-            let aVal = a[sortConfig.key];
-            let bVal = b[sortConfig.key];
-
-            if (sortConfig.key === 'kundpris') {
-                aVal = parseInt(aVal) || 0;
-                bVal = parseInt(bVal) || 0;
+            let aVal, bVal;
+            if (['vin', 'brand', 'model'].includes(sortConfig.key)) {
+                aVal = (getJobVehicleMeta(a)[sortConfig.key] || '').toLowerCase();
+                bVal = (getJobVehicleMeta(b)[sortConfig.key] || '').toLowerCase();
+            } else if (sortConfig.key === 'kundpris') {
+                aVal = parseInt(a.kundpris) || 0;
+                bVal = parseInt(b.kundpris) || 0;
             } else {
-                aVal = (aVal || '').toString().toLowerCase();
-                bVal = (bVal || '').toString().toLowerCase();
+                aVal = (a[sortConfig.key] || '').toString().toLowerCase();
+                bVal = (b[sortConfig.key] || '').toString().toLowerCase();
             }
 
             if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -1114,7 +1232,7 @@ window.DashboardView = React.memo(({
             return 0;
         });
         return result;
-    }, [filteredJobs, sortConfig, activeFilter]);
+    }, [filteredJobs, allJobs, globalSearch, sortConfig, activeFilter, columnFilters, getJobVehicleMeta]);
 
     const visibleJobs = sortedAndFilteredJobs.slice(0, visibleCount);
     const hasMore = visibleCount < sortedAndFilteredJobs.length;
@@ -1123,6 +1241,7 @@ window.DashboardView = React.memo(({
         let direction = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
         setSortConfig({ key, direction });
+        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 20);
     };
 
     const handleCopyDesktop = React.useCallback((e, regnr, jobId) => {
@@ -1395,152 +1514,220 @@ window.DashboardView = React.memo(({
                 </div>
 
                 <div className="flex flex-col flex-1 pb-10 relative">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 border-b border-zinc-200 dark:border-white/10 gap-3 sm:gap-0 pt-2 bg-transparent">
-                    <div className="flex space-x-2">
-                        {filters.map(f => (
-                            <button 
-                                key={f} 
-                                data-tab={f} 
-                                onClick={() => setActiveFilter(f)} 
-                                className={`py-3 px-5 text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap relative ${activeFilter === f ? 'text-orange-500' : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-white/5 rounded-t-lg'}`}
-                            >
-                                {f}
-                                {(statusCounts[f] || 0) > 0 && (
-                                    <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] transition-colors ${activeFilter === f ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
-                                        {statusCounts[f]}
-                                    </span>
-                                )}
-                                {activeFilter === f && (
-                                    <span className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="flex items-center gap-4 mb-2 sm:mb-0 shrink-0">
-                        <div className="relative group border-b border-transparent hover:border-zinc-300 dark:hover:border-white/20 focus-within:border-orange-500 transition-colors">
-                            <input 
-                                type="text" 
-                                placeholder="Sök i listan..." 
-                                className="bg-transparent py-3 pl-8 pr-8 text-[12px] font-bold text-zinc-900 dark:text-white outline-none w-full sm:w-64 transition-all tracking-wide placeholder:text-zinc-400 placeholder:uppercase placeholder:text-[11px] placeholder:tracking-widest"
-                                value={globalSearch}
-                                onChange={(e) => setGlobalSearch(e.target.value)}
-                            />
-                            <window.Icon name="search" size={14} className="absolute left-1 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors duration-300" />
-                            
-                            {globalSearch && (
-                                <button 
-                                    onClick={() => setGlobalSearch('')}
-                                    className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-orange-500 rounded-full transition-all active:scale-95"
-                                    title="Rensa sökning"
-                                >
-                                    <window.Icon name="x" size={14} />
-                                </button>
-                            )}
+                    {/* MINIMALISTISK VERKTYGSRAD MED UNDERLINED TABS */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
+                        
+                        {/* VÄNSTER: FLIKAR MED KLASSISK UNDERLINED STIL */}
+                        <div className="flex items-center space-x-6 overflow-x-auto no-scrollbar border-b border-zinc-200 dark:border-white/10">
+                            {filters.map(f => {
+                                const isActive = activeFilter === f;
+                                const count = statusCounts[f] || 0;
+                                return (
+                                    <button 
+                                        key={f} 
+                                        data-tab={f} 
+                                        onClick={() => setActiveFilter(f)} 
+                                        className={`pb-3 text-[12px] font-bold uppercase tracking-wider transition-all whitespace-nowrap relative flex items-center gap-2 ${
+                                            isActive 
+                                                ? 'text-orange-500' 
+                                                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                                        }`}
+                                    >
+                                        <span>{f}</span>
+                                        {count > 0 && (
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold leading-none ${
+                                                isActive 
+                                                    ? 'bg-orange-50 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400' 
+                                                    : 'bg-zinc-100 dark:bg-white/10 text-zinc-500 dark:text-zinc-400'
+                                            }`}>
+                                                {count}
+                                            </span>
+                                        )}
+                                        {isActive && (
+                                            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-orange-500 rounded-t-full shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span>
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
 
-                        {/* VY-VÄXLARE: LUFTIG / KOMPAKT */}
-                        <div className="flex items-center bg-zinc-100 dark:bg-black/30 p-1 rounded-xl border border-zinc-200/80 dark:border-white/10">
+                        {/* HÖGER: SLIMMAD SÖKRUTA + DISKRET VY-VÄXLARE */}
+                        <div className="flex items-center gap-2.5 shrink-0">
+                            <div className="relative group">
+                                <input 
+                                    type="text" 
+                                    placeholder="Sök i listan..." 
+                                    className="h-9 bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 focus:border-orange-500 rounded-lg pl-8 pr-7 text-[12px] font-medium text-zinc-900 dark:text-white outline-none w-full sm:w-56 shadow-2xs transition-all placeholder:text-zinc-400"
+                                    value={globalSearch}
+                                    onChange={(e) => setGlobalSearch(e.target.value)}
+                                />
+                                <window.Icon name="search" size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors pointer-events-none" />
+                                
+                                {globalSearch && (
+                                    <button 
+                                        onClick={() => setGlobalSearch('')}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 dark:hover:text-white"
+                                        title="Rensa sökning"
+                                    >
+                                        <window.Icon name="x" size={12} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Diskret vy-knapp */}
                             <button
-                                onClick={() => toggleCompactView(false)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${!isCompactView ? 'bg-white dark:bg-[#1e293b] text-orange-500 shadow-sm border border-zinc-200/50 dark:border-white/10' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}
-                                title="Luftig vy"
+                                type="button"
+                                onClick={() => toggleCompactView(!isCompactView)}
+                                className="h-9 px-3 rounded-lg bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 hover:border-orange-500 text-zinc-700 dark:text-zinc-300 hover:text-orange-600 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-2xs"
+                                title="Växla vy"
                             >
-                                <window.Icon name="layout-list" size={13} />
-                                <span className="hidden xl:inline">Luftig</span>
-                            </button>
-                            <button
-                                onClick={() => toggleCompactView(true)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${isCompactView ? 'bg-white dark:bg-[#1e293b] text-orange-500 shadow-sm border border-zinc-200/50 dark:border-white/10' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'}`}
-                                title="Kompakt vy (Tabell)"
-                            >
-                                <window.Icon name="table" size={13} />
-                                <span className="hidden xl:inline">Kompakt</span>
+                                <window.Icon name={isCompactView ? "table" : "layout-list"} size={13} className="text-orange-500" />
+                                <span className="hidden sm:inline">{isCompactView ? 'Kompakt' : 'Luftig'}</span>
                             </button>
                         </div>
                     </div>
-                </div>
 
-                    <div className="bg-white dark:bg-[#1e293b] rounded-b-xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-t-0 border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col">
+                    {/* FRISTÅENDE TABELLKORT */}
+                    <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col">
                         <div className={`${isCompactView ? 'overflow-x-auto' : 'overflow-visible'} relative`}>
                             <table className="w-full text-left border-collapse">
                                 {isCompactView ? (
-                                    /* --- KOMPAKT VY: THEAD (Utan #ID-kolumn, med orangea sorteringsikoner) --- */
-                                    <thead className="sticky top-0 z-20 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
+                                    /* --- KOMPAKT VY: THEAD (Med levande filtermenyer och sortering på alla kolumner) --- */
+                                    <thead className="sticky top-0 z-30 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
                                         <tr className="divide-x divide-zinc-300 dark:divide-white/15">
-                                            <th className="w-10 py-3 text-center"></th>
-                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('paket')}>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Uppdrag</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
+                                            <th className="w-10 py-3 text-center">
+                                                {Object.keys(columnFilters).length > 0 && (
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={clearAllColumnFilters}
+                                                        title="Rensa alla kolumnfilter"
+                                                        className="text-orange-500 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <window.Icon name="filter-x" size={13} />
+                                                    </button>
+                                                )}
                                             </th>
-                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('kundnamn')}>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Kund</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('regnr')}>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Reg.nr</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('datum')}>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Mottagandedatum</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('status')}>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Status</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th className="px-3.5 py-3">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Chnr.</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name="arrow-up-down" size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th className="px-3.5 py-3">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Märke</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name="arrow-up-down" size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
-                                            <th className="px-3.5 py-3">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>Modellbeteckning</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <window.Icon name="arrow-up-down" size={12} className="text-orange-500" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
+                                            {[
+                                                { key: 'paket', label: 'Uppdrag', filterKey: 'paket' },
+                                                { key: 'kundnamn', label: 'Kund', filterKey: 'kundnamn' },
+                                                { key: 'regnr', label: 'Reg.nr' },
+                                                { key: 'datum', label: 'Mottagandedatum' },
+                                                { key: 'status', label: 'Status', filterKey: 'status' },
+                                                { key: 'vin', label: 'Chnr.' },
+                                                { key: 'brand', label: 'Märke', filterKey: 'brand' },
+                                                { key: 'model', label: 'Modellbeteckning' }
+                                            ].map(col => {
+                                                const isSorted = sortConfig.key === col.key;
+                                                const activeColFilters = col.filterKey ? (columnFilters[col.filterKey] || []) : [];
+                                                const isFilterOpen = openFilterMenu === col.filterKey;
+
+                                                return (
+                                                    <th key={col.key} className="px-3.5 py-3 relative hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <span 
+                                                                onClick={() => requestSort(col.key)} 
+                                                                className="cursor-pointer flex-1 truncate"
+                                                            >
+                                                                {col.label}
+                                                            </span>
+                                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => requestSort(col.key)}
+                                                                    className="p-0.5 hover:bg-zinc-300/50 dark:hover:bg-white/10 rounded"
+                                                                    title="Sortera"
+                                                                >
+                                                                    <window.Icon 
+                                                                        name={isSorted ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} 
+                                                                        size={12} 
+                                                                        className={isSorted ? "text-orange-600 dark:text-orange-400" : "text-orange-500/70"} 
+                                                                    />
+                                                                </button>
+
+                                                                {col.filterKey && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setOpenFilterMenu(isFilterOpen ? null : col.filterKey);
+                                                                        }}
+                                                                        className={`p-1 rounded transition-colors relative ${
+                                                                            activeColFilters.length > 0 || isFilterOpen
+                                                                                ? 'bg-orange-500 text-white'
+                                                                                : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300/60 dark:hover:bg-white/10'
+                                                                        }`}
+                                                                        title={`Filtrera på ${col.label}`}
+                                                                    >
+                                                                        <window.Icon name="filter" size={10} />
+                                                                        {activeColFilters.length > 0 && (
+                                                                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[8px] font-black flex items-center justify-center">
+                                                                                {activeColFilters.length}
+                                                                            </span>
+                                                                        )}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* FILTER-POPUP FÖR TRATT-IKONEN */}
+                                                        {isFilterOpen && col.filterKey && (
+                                                            <>
+                                                                <div className="fixed inset-0 z-40" onClick={() => setOpenFilterMenu(null)}></div>
+                                                                <div 
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-[#182234] border border-zinc-300 dark:border-white/15 rounded-lg shadow-2xl z-50 overflow-hidden font-normal animate-in fade-in zoom-in-95 duration-150"
+                                                                >
+                                                                    <div className="bg-[#f4f5f7] dark:bg-[#141c2b] px-3 py-2 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between">
+                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+                                                                            Filtrera {col.label}
+                                                                        </span>
+                                                                        {activeColFilters.length > 0 && (
+                                                                            <button 
+                                                                                type="button"
+                                                                                onClick={() => setColumnFilters(prev => { const c = {...prev}; delete c[col.filterKey]; return c; })}
+                                                                                className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                                                                            >
+                                                                                Rensa
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5 custom-scrollbar">
+                                                                        {(filterOptions[col.filterKey] || []).length === 0 ? (
+                                                                            <div className="py-4 text-center text-[11px] text-zinc-400">Inga alternativ</div>
+                                                                        ) : (
+                                                                            (filterOptions[col.filterKey] || []).map(([val, count]) => {
+                                                                                const checked = activeColFilters.includes(val);
+                                                                                return (
+                                                                                    <label 
+                                                                                        key={val} 
+                                                                                        onClick={() => toggleColumnFilterValue(col.filterKey, val)}
+                                                                                        className={`flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] cursor-pointer transition-colors ${
+                                                                                            checked ? 'bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 font-semibold' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5'
+                                                                                        }`}
+                                                                                    >
+                                                                                        <div className="flex items-center gap-2 truncate pr-2">
+                                                                                            <input 
+                                                                                                type="checkbox" 
+                                                                                                checked={checked} 
+                                                                                                readOnly 
+                                                                                                className="rounded border-zinc-300 text-orange-500 focus:ring-0 pointer-events-none" 
+                                                                                            />
+                                                                                            <span className="truncate">{val}</span>
+                                                                                        </div>
+                                                                                        <span className="text-[10px] font-mono text-zinc-400 bg-zinc-100 dark:bg-white/5 px-1.5 py-0.5 rounded">
+                                                                                            {count}
+                                                                                        </span>
+                                                                                    </label>
+                                                                                );
+                                                                            })
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </th>
+                                                );
+                                            })}
                                             <th className="px-3.5 py-3 text-right cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('kundpris')}>
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <span>Pris</span>
@@ -1779,7 +1966,9 @@ window.DashboardView = React.memo(({
                                                                         {cleanComment && (
                                                                             <div className="pl-6 flex items-start gap-2 text-zinc-600 dark:text-zinc-300 max-w-3xl">
                                                                                 <window.Icon name="wrench" size={12} className="text-orange-500 mt-1 shrink-0" />
-                                                                                <span className="whitespace-pre-wrap leading-relaxed">{cleanComment}</span>
+                                                                                <span className="whitespace-pre-wrap leading-relaxed" onClick={(e) => e.stopPropagation()}>
+                                                                                    <window.TaskFormatter text={cleanComment} isDone={false} />
+                                                                                </span>
                                                                             </div>
                                                                         )}
                                                                         {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => (
