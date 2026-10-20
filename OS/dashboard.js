@@ -1072,6 +1072,12 @@ window.DashboardView = React.memo(({
     const [isCompactView, setIsCompactView] = React.useState(() => {
         return localStorage.getItem('autogrid_table_density') === 'compact';
     });
+    const [expandedCompactIds, setExpandedCompactIds] = React.useState([]);
+
+    const toggleCompactExpand = React.useCallback((jobId) => {
+        setExpandedCompactIds(prev => prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]);
+        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
+    }, []);
 
     const toggleCompactView = React.useCallback((compact) => {
         setIsCompactView(compact);
@@ -1459,24 +1465,16 @@ window.DashboardView = React.memo(({
                         <div className={`${isCompactView ? 'overflow-x-auto' : 'overflow-visible'} relative`}>
                             <table className="w-full text-left border-collapse">
                                 {isCompactView ? (
-                                    /* --- KOMPAKT VY: THEAD (Liknar referensvyn till vänster) --- */
+                                    /* --- KOMPAKT VY: THEAD (Utan #ID-kolumn, med orangea sorteringsikoner) --- */
                                     <thead className="sticky top-0 z-20 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
                                         <tr className="divide-x divide-zinc-300 dark:divide-white/15">
                                             <th className="w-10 py-3 text-center"></th>
-                                            <th className="w-16 px-2.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('id')}>
-                                                <div className="flex items-center justify-between gap-1">
-                                                    <span>Nr.</span>
-                                                    <div className="flex items-center gap-0.5">
-                                                        <window.Icon name={sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
-                                                    </div>
-                                                </div>
-                                            </th>
                                             <th className="px-3.5 py-3 cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('paket')}>
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Uppdrag</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1484,8 +1482,8 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Kund</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1493,8 +1491,8 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Reg.nr</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1502,8 +1500,8 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Mottagandedatum</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1511,8 +1509,8 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Status</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1520,8 +1518,8 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Chnr.</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name="arrow-up-down" size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name="arrow-up-down" size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1529,8 +1527,8 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Märke</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name="arrow-up-down" size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name="arrow-up-down" size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
@@ -1538,15 +1536,15 @@ window.DashboardView = React.memo(({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>Modellbeteckning</span>
                                                     <div className="flex items-center gap-1">
-                                                        <window.Icon name="arrow-up-down" size={12} className="text-teal-700 dark:text-teal-400" />
-                                                        <window.Icon name="filter" size={10} className="text-zinc-700 dark:text-zinc-400 fill-current" />
+                                                        <window.Icon name="arrow-up-down" size={12} className="text-orange-500" />
+                                                        <window.Icon name="filter" size={10} className="text-zinc-500 dark:text-zinc-400" />
                                                     </div>
                                                 </div>
                                             </th>
                                             <th className="px-3.5 py-3 text-right cursor-pointer hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors" onClick={() => requestSort('kundpris')}>
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <span>Pris</span>
-                                                    <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-teal-700 dark:text-teal-400" />
+                                                    <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className="text-orange-500" />
                                                 </div>
                                             </th>
                                         </tr>
@@ -1629,49 +1627,46 @@ window.DashboardView = React.memo(({
                                             const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader;
                                             if (showWaitingHeader) hasRenderedWaitingHeader = true;
 
-                                            // --- KOMPAKT RAD (Matchar referensvyn till vänster) ---
+                                            // --- KOMPAKT RAD (Expanderbar med trädvy och action-knappar undertill) ---
                                             if (isCompactView) {
                                                 const compactDate = job.datum 
                                                     ? job.datum.replace('T', ' ').substring(0, 16) 
                                                     : '';
                                                 const serviceTitle = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
                                                 const cleanComment = stripHtml(job.kommentar);
+                                                const isExpanded = expandedCompactIds.includes(job.id);
 
                                                 return (
                                                     <React.Fragment key={job.id}>
                                                         {showWaitingHeader && (
                                                             <tr className="bg-zinc-100/90 dark:bg-white/5 border-y border-zinc-200 dark:border-white/10">
-                                                                <td colSpan="11" className="px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                                <td colSpan="10" className="px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
                                                                     Oplanerade Uppdrag
                                                                 </td>
                                                             </tr>
                                                         )}
                                                         <tr 
-                                                            onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                            className={`group transition-colors duration-100 cursor-pointer text-[13px] border-b border-zinc-200/80 dark:border-white/5 hover:bg-zinc-100/70 dark:hover:bg-white/5 ${isDone ? 'bg-zinc-50/60 dark:bg-black/20 text-zinc-400' : 'bg-white dark:bg-[#1e293b]'}`}
+                                                            onClick={() => toggleCompactExpand(job.id)}
+                                                            className={`group transition-colors duration-100 cursor-pointer text-[13px] border-b border-zinc-200/80 dark:border-white/5 hover:bg-zinc-100/70 dark:hover:bg-white/5 ${isExpanded ? 'bg-orange-50/30 dark:bg-white/[0.04]' : isDone ? 'bg-zinc-50/60 dark:bg-black/20 text-zinc-400' : 'bg-white dark:bg-[#1e293b]'}`}
                                                         >
-                                                            {/* Åtgärdsknapp (3 prickar) */}
-                                                            <td className="w-10 py-3 text-center" onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}>
-                                                                <button className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-colors" title="Redigera order">
-                                                                    <window.Icon name="more-vertical" size={16} />
-                                                                </button>
-                                                            </td>
-
-                                                            {/* Nr. (Endast ikon för att spara plats, med ID i tooltip) */}
-                                                            <td className="w-16 px-2.5 py-3 whitespace-nowrap" title={`Order #${job.id.toUpperCase()}`}>
-                                                                <div className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-teal-50/80 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20 transition-colors">
-                                                                    <window.Icon name="wrench" size={14} className="shrink-0" />
+                                                            {/* Expanderingspil (v / >) */}
+                                                            <td className="w-10 py-3 text-center text-zinc-500">
+                                                                <div className="inline-flex items-center justify-center">
+                                                                    <window.Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={15} className={isExpanded ? "text-orange-500" : ""} />
                                                                 </div>
                                                             </td>
 
-                                                            {/* Uppdrag / Kommentar */}
-                                                            <td className="px-3.5 py-3 max-w-[200px] truncate text-zinc-800 dark:text-zinc-200" title={cleanComment ? `${serviceTitle}: ${cleanComment}` : serviceTitle}>
-                                                                <span>{serviceTitle}</span>
-                                                                {cleanComment && (
-                                                                    <span className="text-zinc-400 dark:text-zinc-500 text-[12px] ml-1.5">
-                                                                        – {cleanComment}
-                                                                    </span>
-                                                                )}
+                                                            {/* Uppdrag + Skiftnyckelikon (utan #ID) */}
+                                                            <td className="px-3.5 py-3 max-w-[230px] truncate text-zinc-800 dark:text-zinc-200">
+                                                                <div className="flex items-center gap-2 truncate">
+                                                                    <window.Icon name="wrench" size={13} className="text-orange-500 shrink-0" />
+                                                                    <span className="font-medium text-zinc-900 dark:text-white">{serviceTitle}</span>
+                                                                    {cleanComment && !isExpanded && (
+                                                                        <span className="text-zinc-400 dark:text-zinc-500 text-[12px] truncate">
+                                                                            – {cleanComment}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             </td>
 
                                                             {/* Kund */}
@@ -1679,10 +1674,10 @@ window.DashboardView = React.memo(({
                                                                 {job.kundnamn || ''}
                                                             </td>
 
-                                                            {/* Reg.nr */}
+                                                            {/* Reg.nr (Klicka för att kopiera utan att fälla ihop raden) */}
                                                             <td 
                                                                 onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)}
-                                                                className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 hover:text-teal-700 dark:hover:text-teal-400 whitespace-nowrap"
+                                                                className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 hover:text-orange-500 dark:hover:text-orange-400 font-medium whitespace-nowrap"
                                                                 title="Klicka för att kopiera Reg.nr"
                                                             >
                                                                 {copiedRegId === job.id ? (
@@ -1698,33 +1693,105 @@ window.DashboardView = React.memo(({
                                                             </td>
 
                                                             {/* Status */}
-                                                            <td className="px-3.5 py-3 whitespace-nowrap text-zinc-800 dark:text-zinc-200">
-                                                                {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1).toLowerCase() : 'Bokad'}
+                                                            <td className="px-3.5 py-3 whitespace-nowrap">
+                                                                <span className={`font-medium ${
+                                                                    job.status === 'KLAR' ? 'text-emerald-600 dark:text-emerald-400' :
+                                                                    job.status === 'BOKAD' ? 'text-orange-600 dark:text-orange-400' :
+                                                                    job.status === 'OFFERERAD' ? 'text-blue-600 dark:text-blue-400' :
+                                                                    'text-zinc-700 dark:text-zinc-300'
+                                                                }`}>
+                                                                    {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1).toLowerCase() : 'Bokad'}
+                                                                </span>
                                                             </td>
 
-                                                            {/* Chnr, Märke, Modell (från helper-komponenten) */}
+                                                            {/* Chnr, Märke, Modell */}
                                                             <window.CompactVehicleCells job={job} />
 
-                                                            {/* Pris + Snabbknappar vid hover */}
-                                                            <td className="px-3.5 py-3 text-right text-zinc-800 dark:text-zinc-200 whitespace-nowrap relative">
-                                                                <span className="group-hover:opacity-0 transition-opacity">
-                                                                    {remaining > 0 ? `${remaining.toLocaleString('sv-SE')} kr` : (price > 0 ? `${price.toLocaleString('sv-SE')} kr` : '')}
-                                                                </span>
-                                                                <div className="opacity-0 group-hover:opacity-100 absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white dark:bg-[#1e293b] pl-2 py-0.5 rounded shadow-sm border border-zinc-200 dark:border-white/10">
-                                                                    {job.status !== 'KLAR' && (
-                                                                        <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="p-1 text-zinc-500 hover:text-emerald-600 rounded" title="Markera klar">
-                                                                            <window.Icon name="check" size={14} />
-                                                                        </button>
-                                                                    )}
-                                                                    <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="p-1 text-zinc-500 hover:text-blue-600 rounded" title="Redigera">
-                                                                        <window.Icon name="edit-2" size={14} />
-                                                                    </button>
-                                                                    <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="p-1 text-zinc-500 hover:text-red-600 rounded" title="Radera">
-                                                                        <window.Icon name="trash" size={14} />
-                                                                    </button>
-                                                                </div>
+                                                            {/* Pris */}
+                                                            <td className="px-3.5 py-3 text-right text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
+                                                                {remaining > 0 ? `${remaining.toLocaleString('sv-SE')} kr` : (price > 0 ? `${price.toLocaleString('sv-SE')} kr` : '')}
                                                             </td>
                                                         </tr>
+
+                                                        {/* EXPANDERAD RAD UNDERTILL (Samma stil som i newJob.js) */}
+                                                        {isExpanded && (
+                                                            <tr className="bg-zinc-50/70 dark:bg-black/25 border-b border-zinc-200/80 dark:border-white/10 animate-in fade-in duration-150">
+                                                                <td></td>
+                                                                <td colSpan="9" className="px-3.5 pb-4 pt-2">
+                                                                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}
+                                                                            className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                        >
+                                                                            Öppna order
+                                                                        </button>
+                                                                        {job.regnr && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={(e) => { e.stopPropagation(); handleOpenHistory(job.regnr, job.id, job); }}
+                                                                                className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                            >
+                                                                                Fordonskort & Historik
+                                                                            </button>
+                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => { 
+                                                                                e.stopPropagation(); 
+                                                                                window.prefillName = job.kundnamn || ''; 
+                                                                                setView('NEW_JOB'); 
+                                                                            }}
+                                                                            className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                        >
+                                                                            Ny länkad order
+                                                                        </button>
+                                                                        {job.status !== 'KLAR' && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); }}
+                                                                                className="px-3 py-1 rounded border border-emerald-500/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                            >
+                                                                                Markera klar
+                                                                            </button>
+                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) window.db.collection("jobs").doc(job.id).update({ deleted: true }); }}
+                                                                            className="ml-auto px-2.5 py-1 rounded border border-red-300 dark:border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-colors"
+                                                                        >
+                                                                            Radera
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {/* Trädstruktur med paket, hela kommentaren och utgifter */}
+                                                                    <div className="pl-1 space-y-1.5 text-[12px] text-zinc-700 dark:text-zinc-300">
+                                                                        <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-white">
+                                                                            <window.Icon name="chevron-down" size={13} className="text-zinc-400" />
+                                                                            <window.Icon name="box" size={13} className="text-orange-500" />
+                                                                            <span>{serviceTitle}</span>
+                                                                            {paid > 0 && (
+                                                                                <span className="ml-2 text-[11px] font-normal text-emerald-600 dark:text-emerald-400">
+                                                                                    (Delbetalt: {paid.toLocaleString('sv-SE')} kr)
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        {cleanComment && (
+                                                                            <div className="pl-6 flex items-start gap-2 text-zinc-600 dark:text-zinc-300 max-w-3xl">
+                                                                                <window.Icon name="wrench" size={12} className="text-orange-500 mt-1 shrink-0" />
+                                                                                <span className="whitespace-pre-wrap leading-relaxed">{cleanComment}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => (
+                                                                            <div key={idx} className="pl-6 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+                                                                                <window.Icon name="tag" size={11} className="text-orange-500 shrink-0" />
+                                                                                <span>{u.namn} ({u.kostnad} kr)</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )}
                                                     </React.Fragment>
                                                 );
                                             }
@@ -1747,156 +1814,206 @@ window.DashboardView = React.memo(({
                                                         </tr>
                                                     )}
 
-                                                    <tr 
-                                                        onClick={() => job.regnr ? handleOpenHistory(job.regnr, job.id, job) : null}
-                                                        className={`group transition-all duration-150 cursor-pointer relative hover:bg-orange-50/40 dark:hover:bg-white/[0.04] border-b border-zinc-100 dark:border-white/5 last:border-0 ${isDone ? 'bg-zinc-50/40 dark:bg-black/20 opacity-70 hover:opacity-100' : 'bg-transparent'}`}
-                                                    >
-                                                        {/* KUND (Utan #ID, snyggt centrerad mot avataren) */}
-                                                        <td className="pl-4 pr-2 py-3.5 align-middle relative">
-                                                            <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)]"></div>
-                                                            <div className="flex items-center gap-3.5">
-                                                                <window.CustomerAvatar job={job} />
-                                                                <div className="min-w-0">
-                                                                    <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-tight group-hover:text-orange-500 transition-colors truncate">
-                                                                        {job.kundnamn}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
+                                                    {(() => {
+                                                        const isSpaciousExpanded = expandedCompactIds.includes(job.id);
+                                                        const serviceTitle = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
+                                                        const cleanComment = stripHtml(job.kommentar);
 
-                                                        {/* SERVICE TYP (Närmare kunden & mycket mer plats för kommentaren) */}
-                                                        <td className="px-3 py-3.5 align-middle relative">
-                                                            <div className="flex flex-col min-w-0">
-                                                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
-                                                                    {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
-                                                                </span>
-                                                                
-                                                                {job.kommentar && (
-                                                                    <div 
-                                                                        className="relative group/note cursor-pointer mt-1 w-fit max-w-full"
-                                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                                                                        onTouchStart={(e) => e.stopPropagation()}
-                                                                        onTouchEnd={(e) => e.stopPropagation()}
-                                                                    >
-                                                                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[300px] xl:max-w-[380px]">
-                                                                            <window.Icon name="message-square" size={10} className="shrink-0" />
-                                                                            <span className="truncate">{stripHtml(job.kommentar)}</span>
-                                                                        </div>
-                                                                        
-                                                                        <div className="absolute left-0 bottom-full mb-2 w-max min-w-[250px] max-w-[380px] bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all duration-200 z-[99] pointer-events-none scale-95 group-hover/note:scale-100 origin-bottom-left">
-                                                                            <div className="flex items-start gap-2 text-[12px] font-medium text-zinc-800 dark:text-zinc-200 not-italic">
-                                                                                <div className="shrink-0 mt-[2px] text-orange-500">
-                                                                                    <window.Icon name="message-square" size={14} />
-                                                                                </div>
-                                                                                <div className="whitespace-normal leading-relaxed break-words">
-                                                                                    {stripHtml(job.kommentar)}
+                                                        return (
+                                                            <>
+                                                                <tr 
+                                                                    onClick={() => toggleCompactExpand(job.id)}
+                                                                    className={`group transition-all duration-150 cursor-pointer relative hover:bg-orange-50/40 dark:hover:bg-white/[0.04] border-b border-zinc-100 dark:border-white/5 last:border-0 ${isSpaciousExpanded ? 'bg-orange-50/30 dark:bg-white/[0.03]' : isDone ? 'bg-zinc-50/40 dark:bg-black/20 opacity-70 hover:opacity-100' : 'bg-transparent'}`}
+                                                                >
+                                                                    {/* KUND */}
+                                                                    <td className="pl-4 pr-2 py-3.5 align-middle relative">
+                                                                        <div className={`absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-orange-500 transition-opacity rounded-r-full shadow-[0_0_8px_rgba(249,115,22,0.5)] ${isSpaciousExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+                                                                        <div className="flex items-center gap-3.5">
+                                                                            <window.CustomerAvatar job={job} />
+                                                                            <div className="min-w-0">
+                                                                                <div className="text-[14px] font-bold text-zinc-900 dark:text-white leading-tight group-hover:text-orange-500 transition-colors truncate">
+                                                                                    {job.kundnamn}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
+                                                                    </td>
 
-                                                        {/* REG.NR (Återställd till bold originalstil) */}
-                                                        <td className="px-3 py-3.5 align-middle">
-                                                            <div 
-                                                                onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
-                                                                className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-black/20 border-zinc-200 dark:border-white/10' : 'bg-transparent border-transparent'} transition-all`}
-                                                            >
-                                                                {copiedRegId === job.id && (
-                                                                    <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
-                                                                        <window.Icon name="check" size={14} />
-                                                                    </div>
-                                                                )}
-                                                                {isReg ? (
-                                                                    <>
-                                                                        <div className="w-[16px] h-full bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
-                                                                            <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
-                                                                            <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
+                                                                    {/* SERVICE TYP */}
+                                                                    <td className="px-3 py-3.5 align-middle relative">
+                                                                        <div className="flex flex-col min-w-0">
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                                                                                    {serviceTitle}
+                                                                                </span>
+                                                                                <window.Icon name={isSpaciousExpanded ? "chevron-up" : "chevron-down"} size={13} className={`transition-transform duration-200 ${isSpaciousExpanded ? 'text-orange-500' : 'text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100'}`} />
+                                                                            </div>
+                                                                            
+                                                                            {cleanComment && !isSpaciousExpanded && (
+                                                                                <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[300px] xl:max-w-[380px] mt-1">
+                                                                                    <window.Icon name="message-square" size={10} className="shrink-0" />
+                                                                                    <span className="truncate">{cleanComment}</span>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
-                                                                        <div className="flex-1 flex items-center justify-center bg-white dark:bg-transparent">
-                                                                            <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px] group-hover/copy:text-orange-600 dark:group-hover/copy:text-orange-400 transition-colors">{regDisplay}</span>
+                                                                    </td>
+
+                                                                    {/* REG.NR */}
+                                                                    <td className="px-3 py-3.5 align-middle">
+                                                                        <div 
+                                                                            onClick={(e) => handleCopyDesktop(e, regDisplay, job.id)} 
+                                                                            className={`inline-flex items-center justify-start rounded-[4px] border overflow-hidden w-[110px] h-[30px] cursor-pointer hover:border-orange-500 group/copy relative ${isReg ? 'bg-zinc-50 dark:bg-black/20 border-zinc-200 dark:border-white/10' : 'bg-transparent border-transparent'} transition-all`}
+                                                                        >
+                                                                            {copiedRegId === job.id && (
+                                                                                <div className="absolute inset-0 bg-emerald-500 flex items-center justify-center text-white z-20 animate-in slide-in-from-bottom-2 duration-200">
+                                                                                    <window.Icon name="check" size={14} />
+                                                                                </div>
+                                                                            )}
+                                                                            {isReg ? (
+                                                                                <>
+                                                                                    <div className="w-[16px] h-full bg-[#003399] flex flex-col items-center justify-between py-[2px] shrink-0 border-r border-zinc-200 dark:border-white/10">
+                                                                                        <div className="w-2 h-2 rounded-full border-[1px] border-[#ffcc00] mt-[1px]"></div>
+                                                                                        <span className="text-[9px] font-sans font-black text-white leading-none antialiased mb-[1px]">S</span>
+                                                                                    </div>
+                                                                                    <div className="flex-1 flex items-center justify-center bg-white dark:bg-transparent">
+                                                                                        <span className="font-mono font-black text-[14px] text-zinc-900 dark:text-zinc-200 tracking-[0.15em] leading-none pt-[2px] group-hover/copy:text-orange-600 dark:group-hover/copy:text-orange-400 transition-colors">{regDisplay}</span>
+                                                                                    </div>
+                                                                                </>
+                                                                            ) : (
+                                                                                <div className="flex-1 flex items-center justify-start px-1">
+                                                                                    <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px] group-hover/copy:text-orange-500 transition-colors">{regDisplay}</span>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
-                                                                    </>
-                                                                ) : (
-                                                                    <div className="flex-1 flex items-center justify-start px-1">
-                                                                        <span className="font-mono font-bold text-[12px] text-zinc-500 tracking-widest uppercase truncate leading-none pt-[2px] group-hover/copy:text-orange-500 transition-colors">{regDisplay}</span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
+                                                                    </td>
 
-                                                        {/* BOKAT DATUM (Mindre bold: font-medium istället för font-black/font-bold) */}
-                                                        <td className="px-3 py-3.5 align-middle">
-                                                            {job.datum ? (
-                                                                <div className="flex items-center gap-2.5">
-                                                                    {isUrgent && (
-                                                                        <span className="relative flex h-2 w-2 shrink-0">
-                                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
-                                                                        </span>
-                                                                    )}
-                                                                    <div className={`flex items-center gap-1.5 text-[13px] font-medium leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-800 dark:text-zinc-200 transition-colors'}`}>
-                                                                        <span className="uppercase">
-                                                                            {dateText}
-                                                                        </span>
-                                                                        <span className={job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600 font-normal' : ''}>
-                                                                            {formatTime(job.datum)}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
-                                                                     <window.Icon name="clock" size={10} className="text-zinc-400" />
-                                                                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
-                                                                </div>
-                                                            )}
-                                                        </td>
+                                                                    {/* BOKAT DATUM */}
+                                                                    <td className="px-3 py-3.5 align-middle">
+                                                                        {job.datum ? (
+                                                                            <div className="flex items-center gap-2.5">
+                                                                                {isUrgent && (
+                                                                                    <span className="relative flex h-2 w-2 shrink-0">
+                                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
+                                                                                    </span>
+                                                                                )}
+                                                                                <div className={`flex items-center gap-1.5 text-[13px] font-medium leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-800 dark:text-zinc-200 transition-colors'}`}>
+                                                                                    <span className="uppercase">{dateText}</span>
+                                                                                    <span className={job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600 font-normal' : ''}>
+                                                                                        {formatTime(job.datum)}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
+                                                                                 <window.Icon name="clock" size={10} className="text-zinc-400" />
+                                                                                 <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
 
-                                                        {/* STATUS */}
-                                                        <td className="px-3 py-3.5 align-middle">
-                                                            <window.Badge status={job.status} />
-                                                        </td>
+                                                                    {/* STATUS */}
+                                                                    <td className="px-3 py-3.5 align-middle">
+                                                                        <window.Badge status={job.status} />
+                                                                    </td>
 
-                                                        {/* PRIS (Mindre bold och renare storlek) */}
-                                                        <td className="px-3 py-3.5 align-middle text-right">
-                                                            <div className="text-[16px] font-normal leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
-                                                                {paid > 0 ? (
-                                                                    <>
-                                                                        <span className="text-[10px] text-emerald-500 font-medium tracking-widest uppercase mb-1">
-                                                                            {paid.toLocaleString('sv-SE')} kr
-                                                                        </span>
-                                                                        <div className="text-orange-500">
-                                                                            {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
+                                                                    {/* PRIS */}
+                                                                    <td className="px-3 py-3.5 align-middle text-right">
+                                                                        <div className="text-[14px] font-normal leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
+                                                                            {paid > 0 ? (
+                                                                                <>
+                                                                                    <span className="text-[10px] text-emerald-500 font-medium tracking-widest uppercase mb-1">
+                                                                                        {paid.toLocaleString('sv-SE')} kr
+                                                                                    </span>
+                                                                                    <div className="text-orange-500">
+                                                                                        {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
+                                                                                    </div>
+                                                                                </>
+                                                                            ) : (
+                                                                                <div className="text-zinc-700 dark:text-zinc-200">
+                                                                                    {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
-                                                                    </>
-                                                                ) : (
-                                                                    <div className="text-zinc-700 dark:text-zinc-200">
-                                                                        {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
+                                                                    </td>
 
-                                                        {/* ÅTGÄRDER (Tightare högerkant pr-4 och ingen translate-x som triggar scrollbar) */}
-                                                        <td className="pl-2 pr-4 py-3.5 align-middle text-right relative">
-                                                            <window.VehicleDataIcon job={job} isDesktop={true} />
-                                                            <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out flex justify-end items-center gap-1.5 relative z-10 scale-95 group-hover:scale-100">
-                                                                {job.status !== 'KLAR' && (
-                                                                    <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all active:scale-95" title="Markera klar">
-                                                                        <window.Icon name="check" size={15} />
-                                                                    </button>
+                                                                    {/* SNABBÅTGÄRDER VID HOVER */}
+                                                                    <td className="pl-2 pr-4 py-3.5 align-middle text-right relative">
+                                                                        <window.VehicleDataIcon job={job} isDesktop={true} />
+                                                                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out flex justify-end items-center gap-1.5 relative z-10 scale-95 group-hover:scale-100">
+                                                                            {job.status !== 'KLAR' && (
+                                                                                <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all active:scale-95" title="Markera klar">
+                                                                                    <window.Icon name="check" size={15} />
+                                                                                </button>
+                                                                            )}
+                                                                            <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-200 shadow-sm transition-all active:scale-95" title="Redigera">
+                                                                                <window.Icon name="edit-2" size={14} />
+                                                                            </button>
+                                                                            <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 hover:border-red-200 shadow-sm transition-all active:scale-95" title="Radera">
+                                                                                <window.Icon name="trash" size={14} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+
+                                                                {/* UTFÄLLD PANEL I LUFTIG VY */}
+                                                                {isSpaciousExpanded && (
+                                                                    <tr className="bg-zinc-50/70 dark:bg-black/25 border-b border-zinc-200/80 dark:border-white/10 animate-in fade-in duration-150">
+                                                                        <td colSpan="7" className="pl-[68px] pr-6 pb-4 pt-2.5">
+                                                                            <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}
+                                                                                    className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                                >
+                                                                                    Öppna order
+                                                                                </button>
+                                                                                {job.regnr && (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={(e) => { e.stopPropagation(); handleOpenHistory(job.regnr, job.id, job); }}
+                                                                                        className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                                    >
+                                                                                        Fordonskort & Historik
+                                                                                    </button>
+                                                                                )}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={(e) => { 
+                                                                                        e.stopPropagation(); 
+                                                                                        window.prefillName = job.kundnamn || ''; 
+                                                                                        setView('NEW_JOB'); 
+                                                                                    }}
+                                                                                    className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                                                                >
+                                                                                    Ny länkad order
+                                                                                </button>
+                                                                            </div>
+
+                                                                            <div className="space-y-1.5 text-[12px] text-zinc-700 dark:text-zinc-300">
+                                                                                <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-white">
+                                                                                    <window.Icon name="chevron-down" size={13} className="text-zinc-400" />
+                                                                                    <window.Icon name="box" size={13} className="text-orange-500" />
+                                                                                    <span>{serviceTitle}</span>
+                                                                                </div>
+                                                                                {cleanComment && (
+                                                                                    <div className="pl-6 flex items-start gap-2 text-zinc-600 dark:text-zinc-300 max-w-3xl">
+                                                                                        <window.Icon name="wrench" size={12} className="text-orange-500 mt-1 shrink-0" />
+                                                                                        <span className="whitespace-pre-wrap leading-relaxed">{cleanComment}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => (
+                                                                                    <div key={idx} className="pl-6 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+                                                                                        <window.Icon name="tag" size={11} className="text-orange-500 shrink-0" />
+                                                                                        <span>{u.namn} ({u.kostnad} kr)</span>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
                                                                 )}
-                                                                <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-200 shadow-sm transition-all active:scale-95" title="Redigera">
-                                                                    <window.Icon name="edit-2" size={14} />
-                                                                </button>
-                                                                <button onClick={(e) => { e.stopPropagation(); if(confirm("Radera?")) window.db.collection("jobs").doc(job.id).update({deleted:true}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 hover:border-red-200 shadow-sm transition-all active:scale-95" title="Radera">
-                                                                    <window.Icon name="trash" size={14} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </React.Fragment>
                                             );
                                         });
