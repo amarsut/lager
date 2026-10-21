@@ -757,22 +757,29 @@ window.TaskFormatter = React.memo(({ text, isDone }) => {
     );
 });
 
-// --- DASHBOARD WIDGETS (Rätt ordernr-format & balanserade hörn) ---
+// --- DASHBOARD WIDGETS (Sök reservdel nu som en exakt kopia av Fordonsrutan) ---
 window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
     const [tasks, setTasks] = React.useState([]);
+    const [lagerItems, setLagerItems] = React.useState([]);
     const [newTask, setNewTask] = React.useState('');
     const [orderSearch, setOrderSearch] = React.useState('');
     const [vehicleSearch, setVehicleSearch] = React.useState('');
+    const [partSearch, setPartSearch] = React.useState('');
 
     React.useEffect(() => {
         if (!window.db) return;
-        const unsubscribe = window.db.collection("tasks").orderBy("createdAt", "asc").limit(50).onSnapshot(snap => {
+        
+        const unsubTasks = window.db.collection("tasks").orderBy("createdAt", "asc").limit(50).onSnapshot(snap => {
             setTasks(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
-        return () => unsubscribe();
+
+        const unsubLager = window.db.collection("lager").onSnapshot(snap => {
+            setLagerItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        return () => { unsubTasks(); unsubLager(); };
     }, []);
 
-    // FIX: Tvingar fram ikon-rendering så att ikonerna aldrig försvinner
     React.useEffect(() => {
         const timer = setTimeout(() => {
             if (window.lucide) window.lucide.createIcons();
@@ -821,41 +828,58 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
         return list.slice(0, 15);
     }, [allJobs, vehicleSearch]);
 
+    const filteredLager = React.useMemo(() => {
+        let res = [...lagerItems];
+        if (partSearch) {
+            const term = partSearch.toLowerCase().replace(/\s+/g, '');
+            res = res.filter(i => 
+                (i.name || "").toLowerCase().replace(/\s+/g, '').includes(term) ||
+                (i.service_filter || "").toLowerCase().replace(/\s+/g, '').includes(term)
+            );
+        }
+        return res.slice(0, 15);
+    }, [lagerItems, partSearch]);
+
+    const cardClass = "bg-white dark:bg-[#1e293b] rounded-xl border border-zinc-200 dark:border-white/10 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[380px] w-[85vw] sm:w-[350px] lg:w-[400px] shrink-0 snap-start";
+
     return (
         <div className="mb-6 lg:mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+            <div className="flex overflow-x-auto gap-4 lg:gap-5 pb-4 custom-scrollbar snap-x snap-mandatory pr-8">
                 
                 {/* 1. Snabblänkar */}
-                <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-zinc-200 dark:border-white/10 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[320px] min-w-0">
-                    <h3 className="text-[13px] font-bold text-zinc-800 dark:text-zinc-200 mb-4">Snabblänkar</h3>
+                <div className={cardClass}>
+                    <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-6">
+                        Snabblänkar
+                    </h3>
                     <div className="flex-1 space-y-4">
-                        <div onClick={() => setView && setView('NEW_JOB')} className="flex items-center gap-2.5 text-[12px] font-medium text-[#308a8a] dark:text-[#40a09b] hover:underline cursor-pointer group w-fit transition-all">
-                            <window.Icon name="file-text" size={14} className="text-zinc-400 group-hover:text-[#308a8a] transition-colors shrink-0" />
+                        <div onClick={() => setView && setView('NEW_JOB')} className="flex items-center gap-3 text-[14px] font-medium text-[#308a8a] dark:text-[#40a09b] hover:underline cursor-pointer group w-fit transition-all">
+                            <window.Icon name="file-text" size={16} className="text-zinc-400 group-hover:text-[#308a8a] transition-colors shrink-0" />
                             <span className="truncate">Ny serviceorder</span>
                         </div>
-                        <div onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} className="flex items-center gap-2.5 text-[12px] font-medium text-[#308a8a] dark:text-[#40a09b] hover:underline cursor-pointer group w-fit transition-all">
-                            <window.Icon name="search" size={14} className="text-zinc-400 group-hover:text-[#308a8a] transition-colors shrink-0" />
+                        <div onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} className="flex items-center gap-3 text-[14px] font-medium text-[#308a8a] dark:text-[#40a09b] hover:underline cursor-pointer group w-fit transition-all">
+                            <window.Icon name="search" size={16} className="text-zinc-400 group-hover:text-[#308a8a] transition-colors shrink-0" />
                             <span className="truncate">Fordonssökning</span>
                         </div>
                     </div>
                 </div>
 
                 {/* 2. Öppna Ordrar */}
-                <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-zinc-200 dark:border-white/10 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[320px] min-w-0">
-                    <h3 className="text-[13px] font-bold text-zinc-800 dark:text-zinc-200 mb-2">Öppna ordrar</h3>
-                    <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-white/10 pb-1.5 mb-3">
-                        <window.Icon name="search" size={12} className="text-zinc-400" />
+                <div className={cardClass}>
+                    <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-3">
+                        Öppna ordrar
+                    </h3>
+                    <div className="flex items-center gap-2 border-b border-zinc-400/50 dark:border-zinc-600 pb-2 mb-4">
+                        <window.Icon name="search" size={14} className="text-zinc-500" />
                         <input 
                             type="text" 
                             placeholder="OrderNr eller Kund" 
-                            className="bg-transparent border-none outline-none text-[12px] w-full text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400"
+                            className="bg-transparent border-none outline-none text-[13px] w-full text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400"
                             value={orderSearch}
                             onChange={(e) => setOrderSearch(e.target.value)}
                         />
                     </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-3">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
                         {filteredOrders.map(job => {
-                            // Skapa ett snyggt ordernummer baserat på datum, annars fallback
                             let orderNr = job.id ? job.id.substring(0,8).toUpperCase() : 'NY';
                             if (job.datum) {
                                 try {
@@ -868,12 +892,12 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                             }
                             
                             const displayName = job.kundnamn ? job.kundnamn.toUpperCase() : 'OKÄND';
-                            const displayReg = job.regnr ? job.regnr.toUpperCase() : (job.bilmodell ? job.bilmodell.toUpperCase() : 'INGET FORDON');
+                            const displayReg = job.regnr && job.regnr !== '-' ? job.regnr.toUpperCase() : (job.bilmodell ? job.bilmodell.toUpperCase() : 'INGET FORDON');
 
                             return (
-                                <div key={job.id} onClick={() => setView && setView('NEW_JOB', { job })} className="flex items-start gap-2.5 cursor-pointer group">
-                                    <window.Icon name="file-text" size={12} className="text-zinc-400 group-hover:text-[#308a8a] transition-colors mt-[2px] shrink-0" />
-                                    <span className="text-[12px] text-[#308a8a] dark:text-[#40a09b] group-hover:underline leading-tight truncate font-medium">
+                                <div key={job.id} onClick={() => setView && setView('NEW_JOB', { job })} className="flex items-start gap-3 cursor-pointer group">
+                                    <window.Icon name="users" size={14} className="text-zinc-500 group-hover:text-[#308a8a] transition-colors mt-[3px] shrink-0" />
+                                    <span className="text-[13px] text-[#308a8a] dark:text-[#40a09b] group-hover:underline leading-relaxed truncate font-medium">
                                         {orderNr}, {displayName}, {displayReg}
                                     </span>
                                 </div>
@@ -883,36 +907,38 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                 </div>
 
                 {/* 3. Senast använda fordon */}
-                <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-zinc-200 dark:border-white/10 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[320px] min-w-0">
-                    <h3 className="text-[13px] text-zinc-800 dark:text-zinc-200 mb-2">Senast använda fordon</h3>
-                    <div className="flex items-center gap-2 border-b border-zinc-300 dark:border-zinc-600 pb-1.5 mb-3">
-                        <window.Icon name="search" size={12} className="text-zinc-400" />
+                <div className={cardClass}>
+                    <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-3">
+                        Senast använda fordon
+                    </h3>
+                    <div className="flex items-center gap-2 border-b border-zinc-400/50 dark:border-zinc-600 pb-2 mb-4">
+                        <window.Icon name="search" size={14} className="text-zinc-500" />
                         <input 
                             type="text" 
                             placeholder="Fordon, registreringsnummer" 
-                            className="bg-transparent border-none outline-none text-[12px] w-full text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400"
+                            className="bg-transparent border-none outline-none text-[13px] w-full text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400"
                             value={vehicleSearch}
                             onChange={(e) => setVehicleSearch(e.target.value)}
                         />
                     </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-transparent">
                         <table className="w-full text-left table-fixed">
-                            <thead className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-300 dark:border-zinc-600">
+                            <thead className="sticky top-0 z-10 text-[12px] font-medium text-zinc-500 dark:text-zinc-400 shadow-sm">
                                 <tr>
-                                    <th className="pb-1.5 w-[65%] truncate font-normal">Fordon</th>
-                                    <th className="pb-1.5 pl-2 border-l border-zinc-300 dark:border-zinc-600 w-[35%] truncate font-normal text-zinc-500">Registreringsnr.</th>
+                                    <th className="py-2 pl-3 w-[65%] truncate font-normal bg-zinc-50 dark:bg-[#1e293b] border-b border-zinc-200 dark:border-zinc-700">Fordon</th>
+                                    <th className="py-2 pl-2 border-l border-zinc-200 dark:border-zinc-700 w-[35%] truncate font-normal text-right pr-3 bg-zinc-50 dark:bg-[#1e293b] border-b border-zinc-200 dark:border-zinc-700">Reg.nr</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
-                                {uniqueVehicles.map(job => (
-                                    <tr key={job.id} onClick={() => { if(window.openVehicleProfile) window.openVehicleProfile(job.regnr, job.id); }} className="cursor-pointer group hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
-                                        <td className="py-2 text-[11px] text-[#308a8a] dark:text-[#40a09b] group-hover:underline truncate pr-2 flex items-center gap-1.5">
-                                            <div className="w-[18px] h-[18px] bg-zinc-500 dark:bg-zinc-600 rounded-sm flex items-center justify-center shrink-0">
-                                                <window.Icon name="car" size={10} className="text-white" />
+                                {uniqueVehicles.map((job, index) => (
+                                    <tr key={job.id} onClick={() => { if(window.openVehicleProfile) window.openVehicleProfile(job.regnr, job.id); }} className={`cursor-pointer group hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors ${index === 0 ? 'bg-zinc-50/50 dark:bg-white/[0.02]' : ''}`}>
+                                        <td className="py-2.5 pl-3 text-[13px] font-medium text-[#308a8a] dark:text-[#40a09b] group-hover:underline truncate pr-2 flex items-center gap-2.5">
+                                            <div className="w-[20px] h-[20px] bg-zinc-500 dark:bg-zinc-600 rounded-[4px] flex items-center justify-center shrink-0">
+                                                <window.Icon name="car" size={12} className="text-white" />
                                             </div>
                                             <span className="truncate">{job.bilmodell || 'Okänd'}</span>
                                         </td>
-                                        <td className="py-2 pl-2 text-[11px] text-zinc-700 dark:text-zinc-300 uppercase truncate">
+                                        <td className="py-2.5 pl-2 pr-3 text-[12px] text-zinc-600 dark:text-zinc-400 text-right uppercase truncate">
                                             {job.regnr}
                                         </td>
                                     </tr>
@@ -922,31 +948,87 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                     </div>
                 </div>
 
-                {/* 4. Anteckningar */}
-                <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-zinc-200 dark:border-white/10 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[320px] min-w-0">
-                    <h3 className="text-[13px] font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex justify-between items-center">
-                        <span>Anteckningar</span>
-                        <span className="text-zinc-400 font-normal text-[10px]">{tasks.filter(t=>t.done).length}/{tasks.length} klara</span>
+                {/* 4. NY RUTA: Sök reservdel (Nu exakt som Fordons-rutan med tabell) */}
+                <div className={cardClass}>
+                    <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-3">
+                        Sök reservdel
                     </h3>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2.5">
+                    <div className="flex items-center gap-2 border-b border-zinc-400/50 dark:border-zinc-600 pb-2 mb-4">
+                        <window.Icon name="search" size={14} className="text-zinc-500" />
+                        <input 
+                            type="text" 
+                            placeholder="Artikelnamn eller art.nr..." 
+                            className="bg-transparent border-none outline-none text-[13px] w-full text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400"
+                            value={partSearch}
+                            onChange={(e) => setPartSearch(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-transparent">
+                        <table className="w-full text-left table-fixed">
+                            <thead className="sticky top-0 z-10 text-[12px] font-medium text-zinc-500 dark:text-zinc-400 shadow-sm">
+                                <tr>
+                                    <th className="py-2 pl-3 w-[55%] truncate font-normal bg-zinc-50 dark:bg-[#1e293b] border-b border-zinc-200 dark:border-zinc-700">Artikel</th>
+                                    <th className="py-2 pl-2 border-l border-zinc-200 dark:border-zinc-700 w-[45%] truncate font-normal text-right pr-3 bg-zinc-50 dark:bg-[#1e293b] border-b border-zinc-200 dark:border-zinc-700">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                {filteredLager.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="2" className="py-4 px-3 text-center text-[12px] text-zinc-400">Inga reservdelar hittades.</td>
+                                    </tr>
+                                ) : (
+                                    filteredLager.map((part, index) => {
+                                        const qty = parseInt(part.quantity) || 0;
+                                        return (
+                                            <tr key={part.id} className={`cursor-pointer group hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors ${index === 0 ? 'bg-zinc-50/50 dark:bg-white/[0.02]' : ''}`}>
+                                                <td className="py-2.5 pl-3 text-[13px] font-medium text-[#308a8a] dark:text-[#40a09b] group-hover:underline truncate pr-2 flex items-center gap-2.5">
+                                                    <div className="w-[20px] h-[20px] bg-zinc-500 dark:bg-zinc-600 rounded-[4px] flex items-center justify-center shrink-0">
+                                                        <window.Icon name="package" size={12} className="text-white" />
+                                                    </div>
+                                                    <span className="truncate">{part.name || 'Okänd artikel'}</span>
+                                                </td>
+                                                <td className="py-2.5 pl-2 pr-3 text-[12px] text-right truncate">
+                                                    <div className="flex justify-end items-center gap-2">
+                                                        <span className="text-zinc-600 dark:text-zinc-400 uppercase font-mono truncate">{part.service_filter || '-'}</span>
+                                                            {qty} st
+                                                        
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* 5. Anteckningar */}
+                <div className={cardClass}>
+                    <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-5 flex justify-between items-center">
+                        <span className="truncate">Anteckningar</span>
+                        <span className="text-[11px] text-zinc-400 font-normal shrink-0 ml-2">{tasks.filter(t=>t.done).length}/{tasks.length} klara</span>
+                    </h3>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3.5 pt-1">
+                        {sortedTasks.length === 0 && <div className="text-[13px] text-zinc-400">Inga anteckningar.</div>}
                         {sortedTasks.map(task => (
-                            <div key={task.id} className={`flex items-start gap-2.5 group ${task.done ? 'opacity-50' : ''}`}>
-                                <div onClick={() => toggleTask(task.id, task.done)} className={`w-4 h-4 mt-[1px] rounded-[4px] border flex items-center justify-center shrink-0 cursor-pointer transition-colors ${task.done ? 'bg-[#308a8a] border-[#308a8a] text-white' : 'border-zinc-300 dark:border-zinc-600 text-transparent hover:border-[#308a8a]'}`}>
-                                    <window.Icon name="check" size={10} className={task.done ? 'scale-100' : 'scale-0 transition-transform'} />
+                            <div key={task.id} className={`flex items-start gap-3 group ${task.done ? 'opacity-50' : ''}`}>
+                                <div onClick={() => toggleTask(task.id, task.done)} className={`w-5 h-5 mt-[1px] rounded-[4px] border flex items-center justify-center shrink-0 cursor-pointer transition-colors ${task.done ? 'bg-[#308a8a] border-[#308a8a] text-white' : 'border-zinc-300 dark:border-zinc-600 text-transparent hover:border-[#308a8a]'}`}>
+                                    <window.Icon name="check" size={12} className={task.done ? 'scale-100' : 'scale-0 transition-transform'} />
                                 </div>
-                                <div className={`text-[12px] flex-1 leading-snug break-words ${task.done ? 'line-through text-zinc-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
+                                <div className={`text-[13px] flex-1 leading-relaxed break-words ${task.done ? 'line-through text-zinc-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
                                     {task.text}
                                 </div>
                                 <button onClick={(e) => deleteTask(e, task.id)} className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 shrink-0 transition-colors">
-                                    <window.Icon name="x" size={14} />
+                                    <window.Icon name="x" size={16} />
                                 </button>
                             </div>
                         ))}
                     </div>
-                    <form onSubmit={addTask} className="mt-3 flex items-center gap-2">
-                        <input type="text" value={newTask} onChange={e => setNewTask(e.target.value)} placeholder="Skriv ny anteckning..." className="flex-1 bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-zinc-700 rounded-md px-2.5 py-1.5 text-[11px] outline-none focus:border-[#308a8a] dark:text-white transition-colors min-w-0" />
-                        <button type="submit" disabled={!newTask.trim()} className="w-8 h-8 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-md flex items-center justify-center disabled:opacity-50 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shrink-0">
-                            <window.Icon name="plus" size={14} />
+                    <form onSubmit={addTask} className="mt-4 flex items-center gap-2">
+                        <input type="text" value={newTask} onChange={e => setNewTask(e.target.value)} placeholder="Skriv ny anteckning..." className="flex-1 bg-white dark:bg-[#1e293b] border border-zinc-300 dark:border-zinc-600 rounded-md px-3 py-2 text-[13px] outline-none focus:border-[#308a8a] dark:text-white transition-colors min-w-0" />
+                        <button type="submit" disabled={!newTask.trim()} className="w-9 h-9 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-md flex items-center justify-center disabled:opacity-50 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors shrink-0">
+                            <window.Icon name="plus" size={16} />
                         </button>
                     </form>
                 </div>
@@ -1959,10 +2041,9 @@ window.DashboardView = React.memo(({
                                                                                 </div>
                                                                             </div>
                                                                         ) : (
-                                                                            <div className="inline-flex items-center gap-1.5 w-fit bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 px-2.5 py-1.5 rounded-md shadow-sm">
-                                                                                 <window.Icon name="clock" size={10} className="text-zinc-400" />
-                                                                                 <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-[1px]">Ej inbokad</span>
-                                                                            </div>
+                                                                            <span className="text-[13px] font-medium text-zinc-400 dark:text-zinc-500">
+                                                                                Ej inbokad
+                                                                            </span>
                                                                         )}
                                                                     </td>
 
