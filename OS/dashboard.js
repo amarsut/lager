@@ -758,7 +758,7 @@ window.TaskFormatter = React.memo(({ text, isDone }) => {
 });
 
 // --- DASHBOARD WIDGETS ---
-window.DashboardWidgets = React.memo(({ allJobs }) => {
+window.DashboardWidgets = React.memo(({ allJobs, isCompactView }) => {
     
     const [tasks, setTasks] = React.useState([]);
     const [newTask, setNewTask] = React.useState('');
@@ -862,7 +862,9 @@ window.DashboardWidgets = React.memo(({ allJobs }) => {
     }, [tasks, upcomingDays]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-2 lg:mb-8">
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${isCompactView ? 'gap-3 mb-3' : 'gap-4 lg:gap-6 mb-2 lg:mb-8'}`}>
+            
+            {/* WIDGET 1: ARBETSBELASTNING */}
             
             <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col justify-between group/widget relative overflow-hidden bg-[radial-gradient(#00000008_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:12px_12px]">
                 <div className="absolute right-0 bottom-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full pointer-events-none transition-all duration-500 group-hover/widget:bg-orange-500/10"></div>
@@ -1072,6 +1074,7 @@ window.DashboardView = React.memo(({
         return localStorage.getItem('autogrid_table_density') === 'compact';
     });
     const [expandedCompactIds, setExpandedCompactIds] = React.useState([]);
+    const [showTopWidgets, setShowTopWidgets] = React.useState(true);
 
     const toggleCompactExpand = React.useCallback((jobId) => {
         setExpandedCompactIds(prev => prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]);
@@ -1260,6 +1263,12 @@ window.DashboardView = React.memo(({
         return allJobs.filter(j => j.status === 'KLAR' && j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted).length;
     }, [allJobs]);
 
+    const totalJobs30Days = React.useMemo(() => {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return allJobs.filter(j => j.datum && new Date(j.datum) >= thirtyDaysAgo && !j.deleted).length;
+    }, [allJobs]);
+
     const statsNext7Days = React.useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -1379,10 +1388,17 @@ window.DashboardView = React.memo(({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => setShowTopWidgets(!showTopWidgets)}
+                            className="w-[46px] h-[46px] flex items-center justify-center rounded-xl bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 hover:text-orange-500 hover:border-orange-300 dark:hover:border-orange-500/50 shadow-lg transition-all active:scale-95"
+                            title={showTopWidgets ? "Dölj widget-översikt" : "Visa widget-översikt"}
+                        >
+                            <window.Icon name={showTopWidgets ? "eye-off" : "eye"} size={18} />
+                        </button>
                         <button 
                             onClick={() => window.dispatchEvent(new CustomEvent('open-spotlight'))} 
-                            className="group w-96 bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-lg"
+                            className="group w-80 bg-white/50 dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 py-3.5 pl-4 pr-3 rounded-xl flex items-center justify-between hover:bg-white hover:border-orange-300 dark:hover:border-orange-500/50 hover:shadow-md transition-all shadow-lg"
                         >
                             <div className="flex items-center gap-2">
                                 <window.Icon name="search" size={16} className="text-zinc-400 dark:text-zinc-400 group-hover:text-orange-500 group-hover:rotate-12 transition-all duration-300" />
@@ -1397,120 +1413,200 @@ window.DashboardView = React.memo(({
                     </div>
                 </div>
 
-                <window.DashboardWidgets allJobs={allJobs} />
+                {showTopWidgets && (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                        <window.DashboardWidgets allJobs={allJobs} isCompactView={isCompactView} />
 
-                <div className="grid grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
-                        <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-emerald-500/10"></div>
-                        <window.Icon name="check-circle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-emerald-500/10 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500" />
-                        
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div>
-                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                    <window.Icon name="bar-chart-2" size={12} /> Utförda (30d)
-                                </div>
-                                <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                    {stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
-                                </div>
-                            </div>
-                            
-                            <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5 flex items-center justify-between">
-                                <div>
-                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Omsättning</div>
-                                    <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">{revenue30Days.toLocaleString('sv-SE')} kr</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Snitt / bil</div>
-                                    <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">
-                                        {stats30Days > 0 ? Math.round(revenue30Days / stats30Days).toLocaleString('sv-SE') : 0} kr
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {activeFilter === 'FAKTURERAS' ? (
-                        <div className="col-span-2 bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden flex items-center justify-between group animate-in fade-in slide-in-from-right-4 duration-500 transition-all">
-                            <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                            <window.Icon name="file-text" size={120} className="absolute -right-4 -bottom-8 text-zinc-100 dark:text-white/[0.02] group-hover:text-orange-500/10 group-hover:scale-105 transition-all duration-700" />
-                            
-                            <div className="relative z-10 flex flex-col justify-center">
-                                <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
-                                    <window.Icon name="pie-chart" size={12} className="text-orange-500" /> Att Fakturera
-                                </div>
-                                <div className="text-5xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-xl font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">kr</span>
-                                </div>
-                            </div>
-
-                            <div className="relative z-10 flex flex-col justify-center flex-1 max-w-sm pl-8 ml-8 border-l border-zinc-200 dark:border-white/10">
-                                <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-3 flex items-center justify-between">
-                                    <span>Berörda Kunder ({invoiceStats.topCustomers.length})</span>
-                                </div>
-                                <div className="space-y-2.5">
-                                    {invoiceStats.topCustomers.slice(0, 3).map(([name, amount], idx) => {
-                                        const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
-                                        return (
-                                            <div key={idx} className="flex flex-col gap-1 group/cust">
-                                                <div className="flex justify-between text-[11px] font-medium text-zinc-700 dark:text-zinc-300 group-hover/cust:text-orange-600 dark:group-hover/cust:text-orange-400 transition-colors">
-                                                    <span className="truncate pr-2">{name}</span>
-                                                    <span className="font-mono text-zinc-500 dark:text-zinc-400 shrink-0">{amount.toLocaleString('sv-SE')} kr</span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
-                                                    <div className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${percentage}%` }}></div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {invoiceStats.topCustomers.length > 3 && (
-                                        <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 pt-1">
-                                            + {invoiceStats.topCustomers.length - 3} fler kunder
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
-                                <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-blue-500/10"></div>
-                                <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500" />
-                                
-                                <div className="relative z-10 flex flex-col h-full">
-                                    <div>
-                                        <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
-                                            <window.Icon name="clock" size={12} /> Kommande (7d)
-                                        </div>
-                                        <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
-                                            {statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
-                                        </div>
-                                    </div>
+                        {!isCompactView ? (
+                            /* LUFTIG VY: Stora detaljerade widgets */
+                            <div className="grid grid-cols-3 gap-6 mb-8">
+                                <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
+                                    <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-emerald-500/10"></div>
+                                    <window.Icon name="check-circle" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-emerald-500/10 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500" />
                                     
-                                    <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5">
-                                        <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-1.5">Nästa i kalendern</div>
-                                        {nextUpcomingJob ? (
-                                            <div className="flex items-center justify-between bg-zinc-50/80 dark:bg-black/20 rounded-lg p-2 border border-zinc-200/50 dark:border-white/5 shadow-sm">
-                                                <div className="flex flex-col min-w-0 pr-2">
-                                                    <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 truncate leading-tight">{nextUpcomingJob.kundnamn}</span>
-                                                    <span className="text-[9px] text-zinc-500 font-mono font-medium mt-0.5">{nextUpcomingJob.regnr || nextUpcomingJob.bilmodell || 'Inget fordon'}</span>
-                                                </div>
-                                                <div className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-500/20 px-2 py-1 rounded border border-blue-200/50 dark:border-blue-500/20 shrink-0">
-                                                    {formatDate(nextUpcomingJob.datum)}
+                                    <div className="relative z-10 flex flex-col h-full">
+                                        <div>
+                                            <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                                <window.Icon name="bar-chart-2" size={12} /> Utförda (30d)
+                                            </div>
+                                            <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                                {stats30Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5 flex items-center justify-between">
+                                            <div>
+                                                <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Omsättning</div>
+                                                <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">{revenue30Days.toLocaleString('sv-SE')} kr</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-0.5">Snitt / bil</div>
+                                                <div className="text-[13px] font-black text-zinc-700 dark:text-zinc-300">
+                                                    {stats30Days > 0 ? Math.round(revenue30Days / stats30Days).toLocaleString('sv-SE') : 0} kr
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="text-[11px] text-zinc-500 italic flex items-center gap-1.5 h-[34px]">
-                                                <window.Icon name="calendar-off" size={12} /> Helt ledigt
-                                            </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <window.ActivityAndWeatherWidget allJobs={allJobs} />
-                        </>
-                    )}
-                </div>
+                                {activeFilter === 'FAKTURERAS' ? (
+                                    <div className="col-span-2 bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden flex items-center justify-between group animate-in fade-in slide-in-from-right-4 duration-500 transition-all">
+                                        <div className="absolute right-0 top-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                                        <window.Icon name="file-text" size={120} className="absolute -right-4 -bottom-8 text-zinc-100 dark:text-white/[0.02] group-hover:text-orange-500/10 group-hover:scale-105 transition-all duration-700" />
+                                        
+                                        <div className="relative z-10 flex flex-col justify-center">
+                                            <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-orange-500 transition-colors">
+                                                <window.Icon name="pie-chart" size={12} className="text-orange-500" /> Att Fakturera
+                                            </div>
+                                            <div className="text-5xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                                {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-xl font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">kr</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative z-10 flex flex-col justify-center flex-1 max-w-sm pl-8 ml-8 border-l border-zinc-200 dark:border-white/10">
+                                            <div className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-3 flex items-center justify-between">
+                                                <span>Berörda Kunder ({invoiceStats.topCustomers.length})</span>
+                                            </div>
+                                            <div className="space-y-2.5">
+                                                {invoiceStats.topCustomers.slice(0, 3).map(([name, amount], idx) => {
+                                                    const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                                    return (
+                                                        <div key={idx} className="flex flex-col gap-1 group/cust">
+                                                            <div className="flex justify-between text-[11px] font-medium text-zinc-700 dark:text-zinc-300 group-hover/cust:text-orange-600 dark:group-hover/cust:text-orange-400 transition-colors">
+                                                                <span className="truncate pr-2">{name}</span>
+                                                                <span className="font-mono text-zinc-500 dark:text-zinc-400 shrink-0">{amount.toLocaleString('sv-SE')} kr</span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
+                                                                <div className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${percentage}%` }}></div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {invoiceStats.topCustomers.length > 3 && (
+                                                    <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 pt-1">
+                                                        + {invoiceStats.topCustomers.length - 3} fler kunder
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-zinc-200 dark:border-white/10 p-6 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between min-h-[170px]">
+                                            <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full pointer-events-none transition-all group-hover:bg-blue-500/10"></div>
+                                            <window.Icon name="calendar" size={100} className="absolute -right-8 -bottom-8 text-zinc-100 dark:text-white/5 group-hover:text-blue-500/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500" />
+                                            
+                                            <div className="relative z-10 flex flex-col h-full">
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                                                        <window.Icon name="clock" size={12} /> Kommande (7d)
+                                                    </div>
+                                                    <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-white leading-none">
+                                                        {statsNext7Days} <span className="text-lg font-bold text-zinc-400 uppercase tracking-widest ml-1">st</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-white/5">
+                                                    <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-1.5">Nästa i kalendern</div>
+                                                    {nextUpcomingJob ? (
+                                                        <div className="flex items-center justify-between bg-zinc-50/80 dark:bg-black/20 rounded-lg p-2 border border-zinc-200/50 dark:border-white/5 shadow-sm">
+                                                            <div className="flex flex-col min-w-0 pr-2">
+                                                                <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 truncate leading-tight">{nextUpcomingJob.kundnamn}</span>
+                                                                <span className="text-[9px] text-zinc-500 font-mono font-medium mt-0.5">{nextUpcomingJob.regnr || nextUpcomingJob.bilmodell || 'Inget fordon'}</span>
+                                                            </div>
+                                                            <div className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-500/20 px-2 py-1 rounded border border-blue-200/50 dark:border-blue-500/20 shrink-0">
+                                                                {formatDate(nextUpcomingJob.datum)}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-[11px] text-zinc-500 italic flex items-center gap-1.5 h-[34px]">
+                                                            <window.Icon name="calendar-off" size={12} /> Helt ledigt
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <window.ActivityAndWeatherWidget allJobs={allJobs} />
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            /* KOMPAKT VY: Eleganta minimerade horisontella widgets */
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 animate-in fade-in zoom-in-95 duration-200">
+                                {/* KOMPAKT: Utförda 30d */}
+                                <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-zinc-200 dark:border-white/10 p-4 shadow-xs flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                                            <window.Icon name="check-circle" size={18} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Utförda (30d)</h4>
+                                            <div className="text-[13px] font-black text-zinc-900 dark:text-white mt-0.5">
+                                                {stats30Days} st <span className="font-medium text-zinc-500 ml-1">({revenue30Days.toLocaleString('sv-SE')} kr)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {activeFilter === 'FAKTURERAS' ? (
+                                    /* KOMPAKT: Att Fakturera */
+                                    <div className="col-span-2 bg-white dark:bg-[#1e293b] rounded-2xl border border-orange-200/60 dark:border-orange-500/30 p-4 shadow-xs flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
+                                                <window.Icon name="file-text" size={18} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Att Fakturera</h4>
+                                                <div className="text-[13px] font-black text-zinc-900 dark:text-white mt-0.5">
+                                                    {invoiceStats.total.toLocaleString('sv-SE')} kr <span className="text-zinc-500 font-medium text-[11px] ml-1">({invoiceStats.topCustomers.length} kunder)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-[9px] font-bold uppercase tracking-widest text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2 py-1 rounded-lg">Granska</div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* KOMPAKT: Kommande */}
+                                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-zinc-200 dark:border-white/10 p-4 shadow-xs flex items-center justify-between">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                                                    <window.Icon name="calendar" size={18} />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Nästa Uppdrag</h4>
+                                                    <div className="text-[13px] font-black text-zinc-900 dark:text-white mt-0.5 truncate pr-2">
+                                                        {nextUpcomingJob ? nextUpcomingJob.kundnamn : 'Inga fler'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {nextUpcomingJob && (
+                                                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded-md shrink-0 border border-blue-200/50 dark:border-blue-500/20">
+                                                    {formatDate(nextUpcomingJob.datum)}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* KOMPAKT: Väder/Aktivitet */}
+                                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-zinc-200 dark:border-white/10 p-4 shadow-xs flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-500 shrink-0">
+                                                    <window.Icon name="activity" size={18} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Aktivitet & Prognos</h4>
+                                                    <div className="text-[13px] font-black text-zinc-900 dark:text-white mt-0.5">
+                                                        {APP_CONFIG.weather.name} • {totalJobs30Days} Uppdrag
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex flex-col flex-1 pb-10 relative">
                     {/* MINIMALISTISK VERKTYGSRAD MED UNDERLINED TABS */}
@@ -1736,46 +1832,48 @@ window.DashboardView = React.memo(({
                                         </tr>
                                     </thead>
                                 ) : (
-                                    /* --- LUFTIG VY: THEAD (Tightare kanter & bättre balans) --- */
-                                    <thead className="bg-zinc-50/90 dark:bg-[#182232] text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-widest font-bold border-b border-zinc-200/80 dark:border-white/10">
-                                        <tr>
-                                            <th className="pl-4 pr-2 py-3.5 w-[17%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundnamn')}>
-                                                <div className="flex items-center gap-1.5">
-                                                    Kund
-                                                    <window.Icon name={sortConfig.key === 'kundnamn' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundnamn' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                                </div>
-                                            </th>
-                                            <th className="px-3 py-3.5 w-[31%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('paket')}>
-                                                <div className="flex items-center gap-1.5">
-                                                    Service Typ
-                                                    <window.Icon name={sortConfig.key === 'paket' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'paket' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                                </div>
-                                            </th>
-                                            <th className="px-3 py-3.5 w-[14%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('regnr')}>
-                                                <div className="flex items-center gap-1.5">
-                                                    Reg.nr
-                                                    <window.Icon name={sortConfig.key === 'regnr' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'regnr' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                                </div>
-                                            </th>
-                                            <th className="px-3 py-3.5 w-[14%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('datum')}>
-                                                <div className="flex items-center gap-1.5">
-                                                    Bokat datum
-                                                    <window.Icon name={sortConfig.key === 'datum' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'datum' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                                </div>
-                                            </th>
-                                            <th className="px-3 py-3.5 w-[11%] cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('status')}>
-                                                <div className="flex items-center gap-1.5">
-                                                    Status
-                                                    <window.Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'status' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
-                                                </div>
-                                            </th>
-                                            <th className="px-3 py-3.5 w-[13%] text-right cursor-pointer hover:text-orange-500 transition-colors select-none group" onClick={() => requestSort('kundpris')}>
+                                    /* --- LUFTIG VY: THEAD (Korrekt kolumnbredd och alignering) --- */
+                                    <thead className="sticky top-0 z-30 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
+                                        <tr className="divide-x divide-zinc-300 dark:divide-white/15">
+                                            {[
+                                                { key: 'kundnamn', label: 'Kund', width: 'w-[17%]', pl: 'pl-4 pr-3' },
+                                                { key: 'paket', label: 'Service Typ', width: 'w-[31%]', px: 'px-3' },
+                                                { key: 'regnr', label: 'Reg.nr', width: 'w-[14%]', px: 'px-3' },
+                                                { key: 'datum', label: 'Bokat datum', width: 'w-[14%]', px: 'px-3' },
+                                                { key: 'status', label: 'Status', width: 'w-[11%]', px: 'px-3' }
+                                            ].map(col => {
+                                                const isSorted = sortConfig.key === col.key;
+                                                return (
+                                                    <th key={col.key} className={`${col.width} ${col.pl || col.px} py-3 hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors`}>
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <span onClick={() => requestSort(col.key)} className="cursor-pointer flex-1 truncate">
+                                                                {col.label}
+                                                            </span>
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => requestSort(col.key)}
+                                                                className="p-0.5 hover:bg-zinc-300/50 dark:hover:bg-white/10 rounded shrink-0"
+                                                                title="Sortera"
+                                                            >
+                                                                <window.Icon 
+                                                                    name={isSorted ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} 
+                                                                    size={12} 
+                                                                    className={isSorted ? "text-orange-600 dark:text-orange-400" : "text-orange-500/70"} 
+                                                                />
+                                                            </button>
+                                                        </div>
+                                                    </th>
+                                                );
+                                            })}
+                                            <th className="w-[13%] px-3 py-3 hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors cursor-pointer" onClick={() => requestSort('kundpris')}>
                                                 <div className="flex items-center justify-end gap-1.5">
-                                                    Pris
-                                                    <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} size={12} className={`shrink-0 ${sortConfig.key === 'kundpris' ? "text-orange-500" : "opacity-30 group-hover:opacity-100 transition-opacity"}`} />
+                                                    <span>Pris</span>
+                                                    <button type="button" className="p-0.5 hover:bg-zinc-300/50 dark:hover:bg-white/10 rounded shrink-0">
+                                                        <window.Icon name={sortConfig.key === 'kundpris' ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size={12} className={sortConfig.key === 'kundpris' ? "text-orange-600 dark:text-orange-400" : "text-orange-500/70"} />
+                                                    </button>
                                                 </div>
                                             </th>
-                                            <th className="pl-2 pr-4 py-3.5 w-[110px] text-right"></th>
+                                            <th className="w-[110px] pl-2 pr-4 py-3 text-right"></th>
                                         </tr>
                                     </thead>
                                 )}
