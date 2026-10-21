@@ -840,7 +840,7 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
         return res.slice(0, 15);
     }, [lagerItems, partSearch]);
 
-    const cardClass = "bg-white dark:bg-[#1e293b] rounded-xl border border-zinc-200 dark:border-white/10 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[380px] w-[85vw] sm:w-[350px] lg:w-[400px] shrink-0 snap-start";
+    const cardClass = "bg-white dark:bg-[#1e293b] rounded-xl border border-zinc-200 dark:border-white/10 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[320px] w-[85vw] sm:w-[350px] lg:w-[400px] shrink-0 snap-start";
 
     return (
         <div className="mb-6 lg:mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
@@ -1110,7 +1110,20 @@ window.DashboardView = React.memo(({
         return localStorage.getItem('autogrid_table_density') === 'compact';
     });
     const [expandedCompactIds, setExpandedCompactIds] = React.useState([]);
-    const [showTopWidgets, setShowTopWidgets] = React.useState(false); // Dold som standard
+    
+    // NYTT: Öppen som standard & minns användarens val
+    const [showTopWidgets, setShowTopWidgets] = React.useState(() => {
+        const saved = localStorage.getItem('autogrid_top_widgets');
+        return saved !== null ? saved === 'true' : true; 
+    });
+
+    const toggleTopWidgets = React.useCallback(() => {
+        setShowTopWidgets(prev => {
+            const newVal = !prev;
+            localStorage.setItem('autogrid_top_widgets', newVal);
+            return newVal;
+        });
+    }, []);
 
     const toggleCompactExpand = React.useCallback((jobId) => {
         setExpandedCompactIds(prev => prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]);
@@ -1272,8 +1285,29 @@ window.DashboardView = React.memo(({
         return result;
     }, [filteredJobs, allJobs, globalSearch, sortConfig, activeFilter, columnFilters, getJobVehicleMeta]);
 
-    const visibleJobs = sortedAndFilteredJobs.slice(0, visibleCount);
+    const visibleJobsBase = sortedAndFilteredJobs.slice(0, visibleCount);
     const hasMore = visibleCount < sortedAndFilteredJobs.length;
+
+    // NYTT: Hämta de 5 senast klara/fakturerade jobben
+    const recentCompletedJobs = React.useMemo(() => {
+        return allJobs
+            .filter(j => !j.deleted && (j.status === 'KLAR' || j.status === 'FAKTURERAS'))
+            .sort((a, b) => {
+                const dateA = a.datum || '';
+                const dateB = b.datum || '';
+                return dateB.localeCompare(dateA);
+            })
+            .slice(0, 5) // Ändra till 10 här om du vill se fler!
+            .map(j => ({ ...j, isRecentCompleted: true }));
+    }, [allJobs]);
+
+    // Slå ihop listorna om vi är på BOKAD-fliken
+    const visibleJobs = React.useMemo(() => {
+        if (activeFilter === 'BOKAD' && recentCompletedJobs.length > 0) {
+            return [...visibleJobsBase, { id: 'separator-recent', isSeparator: true, title: 'Senaste 5 klara uppdrag' }, ...recentCompletedJobs];
+        }
+        return visibleJobsBase;
+    }, [visibleJobsBase, activeFilter, recentCompletedJobs]);
 
     const requestSort = (key) => {
         let direction = 'asc';
@@ -1441,9 +1475,9 @@ window.DashboardView = React.memo(({
                             <window.Icon name="plus" size={16} className="group-hover:rotate-90 transition-transform duration-500" />
                         </button>
                         
-                        {/* DEN NYA KNAPPEN FÖR ATT FÄLLA UT WIDGETSEN */}
+                        {/* DEN NYA KNAPPEN FÖR ATT FÄLLA UT WIDGETSEN (Nu med minne) */}
                         <button 
-                            onClick={() => setShowTopWidgets(!showTopWidgets)}
+                            onClick={toggleTopWidgets}
                             className={`h-[46px] w-[46px] flex items-center justify-center rounded-xl border transition-all active:scale-95 ${showTopWidgets ? 'bg-orange-50 border-orange-200 text-orange-500 dark:bg-orange-500/10 dark:border-orange-500/30' : 'bg-white/50 dark:bg-[#1e293b] border-zinc-200 dark:border-white/10 text-zinc-500 hover:border-orange-300 hover:text-orange-500 shadow-sm hover:shadow-md'}`}
                             title={showTopWidgets ? "Dölj översikt" : "Visa översikt"}
                         >
@@ -1533,13 +1567,13 @@ window.DashboardView = React.memo(({
 
                     {/* FRISTÅENDE TABELLKORT */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col">
-                        <div className={`${isCompactView ? 'overflow-x-auto' : 'overflow-visible'} relative`}>
-                            <table className="w-full text-left border-collapse">
+                        <div className="overflow-x-auto relative"> {/* FIX: Tillåter alltid scroll sidleds, oavsett vy */}
+                            <table className="w-full text-left border-collapse min-w-[800px]"> {/* FIX: Säkerställer en minsta bredd så att tabellen inte trycks ihop */}
                                 {isCompactView ? (
                                     /* --- KOMPAKT VY: THEAD (Med levande filtermenyer och sortering på alla kolumner) --- */
                                     <thead className="sticky top-0 z-30 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
                                         <tr className="divide-x divide-zinc-300 dark:divide-white/15">
-                                            <th className="w-10 py-3 text-center">
+                                            <th className="w-12 pl-3 py-3 text-center">
                                                 {Object.keys(columnFilters).length > 0 && (
                                                     <button 
                                                         type="button" 
@@ -1747,6 +1781,20 @@ window.DashboardView = React.memo(({
                                         let hasRenderedWaitingHeader = false;
                                         
                                         return visibleJobs.map((job, index) => {
+                                            // NYTT: Rita ut avdelaren för klara jobb i tabellen
+                                            if (job.isSeparator) {
+                                                return (
+                                                    <tr key={job.id} className="bg-zinc-100/90 dark:bg-white/5 border-y border-zinc-200 dark:border-white/10">
+                                                        <td colSpan="11" className="px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                                            <div className="flex items-center gap-2">
+                                                                <window.Icon name="check-circle" size={14} className="text-emerald-500" />
+                                                                {job.title}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            }
+
                                             const dateText = formatDate(job.datum);
                                             const isUrgent = ['IDAG', 'IMORGON'].includes(dateText) && job.status !== 'KLAR';
                                             const regDisplay = job.regnr || job.bilmodell || '-';
@@ -1757,7 +1805,7 @@ window.DashboardView = React.memo(({
                                             const remaining = Math.max(0, price - paid);
                                             
                                             const isWaiting = !job.datum;
-                                            const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader;
+                                            const showWaitingHeader = isWaiting && !hasRenderedWaitingHeader && !job.isRecentCompleted;
                                             if (showWaitingHeader) hasRenderedWaitingHeader = true;
 
                                             // --- KOMPAKT RAD (Expanderbar med trädvy och action-knappar undertill) ---
@@ -1782,8 +1830,8 @@ window.DashboardView = React.memo(({
                                                             onClick={() => toggleCompactExpand(job.id)}
                                                             className={`group transition-colors duration-100 cursor-pointer text-[13px] border-b border-zinc-200/80 dark:border-white/5 hover:bg-zinc-100/70 dark:hover:bg-white/5 ${isExpanded ? 'bg-orange-50/30 dark:bg-white/[0.04]' : isDone ? 'bg-zinc-50/60 dark:bg-black/20 text-zinc-400' : 'bg-white dark:bg-[#1e293b]'}`}
                                                         >
-                                                            {/* Expanderingspil (v / >) */}
-                                                            <td className="w-10 py-3 text-center text-zinc-500">
+                                                            {/* Expanderingspil (v / >) (Nu med bättre luft) */}
+                                                            <td className="w-12 pl-3 py-3 text-center text-zinc-500">
                                                                 <div className="inline-flex items-center justify-center">
                                                                     <window.Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={15} className={isExpanded ? "text-orange-500" : ""} />
                                                                 </div>
@@ -2318,15 +2366,31 @@ window.DashboardView = React.memo(({
                         <>
                             {(() => {
                                 let lastDate = null;
-                                const waitingJobsCount = visibleJobs.filter(j => !j.datum).length;
+                                const waitingJobsCount = visibleJobs.filter(j => !j.isSeparator && !j.datum).length;
 
                                 return visibleJobs.map((job, index) => { 
+                                    // NYTT: Rita ut avdelaren för klara jobb på mobilen
+                                    if (job.isSeparator) {
+                                        return (
+                                            <div key={job.id} className="mt-8 mb-4 px-2 flex items-center gap-2 animate-in fade-in duration-300">
+                                                <div className="h-4 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                <h3 className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                                                    {job.title}
+                                                </h3>
+                                            </div>
+                                        );
+                                    }
+
                                     const isWaiting = !job.datum;
                                     const currentDate = isWaiting ? 'INVÄNTAR DATUM' : formatDate(job.datum);
-                                    const showHeader = currentDate !== lastDate;
-                                    lastDate = currentDate;
+                                    const showHeader = currentDate !== lastDate && !job.isRecentCompleted;
+                                    
+                                    // Spara endast datum för aktiva jobb, ej klara historik-jobb
+                                    if (!job.isRecentCompleted) {
+                                        lastDate = currentDate;
+                                    }
 
-                                    if (isWaiting) {
+                                    if (isWaiting && !job.isRecentCompleted) {
                                         return (
                                             <React.Fragment key={job.id}>
                                                 {showHeader && (
