@@ -373,8 +373,8 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
 
     if (isDesktop) {
         return (
-            <div title="Teknisk fordonsdata finns sparad" className={`absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-lg bg-teal-50/90 dark:bg-teal-500/10 border border-teal-200/60 dark:border-teal-500/20 text-teal-700 dark:text-teal-400 transition-all duration-200 group-hover:opacity-0 group-hover:scale-90 shadow-xs pointer-events-none z-0 ${pulse ? 'animate-pulse ring-4 ring-teal-500/20' : ''}`}>
-                <window.Icon name="wrench" size={14} />
+            <div title="Teknisk fordonsdata finns sparad" className={`absolute right-6 top-1/2 -translate-y-1/2 flex items-center justify-center text-teal-600 dark:text-teal-400 transition-all duration-200 group-hover:opacity-0 pointer-events-none z-0 ${pulse ? 'animate-pulse drop-shadow-md' : ''}`}>
+                <window.Icon name="wrench" size={16} />
             </div>
         );
     }
@@ -1860,7 +1860,8 @@ window.DashboardView = React.memo(({
                                                             {/* Uppdrag + Skiftnyckelikon (utan #ID) */}
                                                             <td className="px-3.5 py-3 max-w-[230px] truncate text-zinc-800 dark:text-zinc-200">
                                                                 <div className="flex items-center gap-2 truncate">
-                                                                    <window.Icon name="wrench" size={13} className="text-orange-500 shrink-0" />
+                                                                    {/* FIX: Teal färg på skiftnyckeln för enhetlighet */}
+                                                                    <window.Icon name="wrench" size={13} className="text-teal-600 dark:text-teal-400 shrink-0" />
                                                                     <span className="font-medium text-zinc-900 dark:text-white">{serviceTitle}</span>
                                                                     {cleanComment && !isExpanded && (
                                                                         <span className="text-zinc-400 dark:text-zinc-500 text-[12px] truncate">
@@ -2047,14 +2048,14 @@ window.DashboardView = React.memo(({
                                                                     <td className="px-3 py-3.5 align-middle relative">
                                                                         <div className="flex flex-col min-w-0">
                                                                             <div className="flex items-center gap-1.5">
-                                                                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                                                                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white truncate max-w-[150px] md:max-w-[200px] xl:max-w-none">
                                                                                     {serviceTitle}
                                                                                 </span>
-                                                                                <window.Icon name={isSpaciousExpanded ? "chevron-up" : "chevron-down"} size={13} className={`transition-transform duration-200 ${isSpaciousExpanded ? 'text-orange-500' : 'text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100'}`} />
+                                                                                <window.Icon name={isSpaciousExpanded ? "chevron-up" : "chevron-down"} size={13} className={`shrink-0 transition-transform duration-200 ${isSpaciousExpanded ? 'text-orange-500' : 'text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100'}`} />
                                                                             </div>
                                                                             
                                                                             {cleanComment && !isSpaciousExpanded && (
-                                                                                <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[300px] xl:max-w-[380px] mt-1">
+                                                                                <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 italic max-w-[160px] md:max-w-[200px] lg:max-w-[260px] xl:max-w-[380px] mt-1">
                                                                                     <window.Icon name="message-square" size={10} className="shrink-0" />
                                                                                     <span className="truncate">{cleanComment}</span>
                                                                                 </div>
