@@ -757,7 +757,7 @@ window.TaskFormatter = React.memo(({ text, isDone }) => {
     );
 });
 
-// --- DASHBOARD WIDGETS (Sök reservdel nu som en exakt kopia av Fordonsrutan) ---
+// --- DASHBOARD WIDGETS (Auto-scroll till Öppna ordrar) ---
 window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
     const [tasks, setTasks] = React.useState([]);
     const [lagerItems, setLagerItems] = React.useState([]);
@@ -765,6 +765,9 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
     const [orderSearch, setOrderSearch] = React.useState('');
     const [vehicleSearch, setVehicleSearch] = React.useState('');
     const [partSearch, setPartSearch] = React.useState('');
+
+    // NYTT: Ref för att kunna styra den horisontella rullningslisten
+    const scrollRef = React.useRef(null);
 
     React.useEffect(() => {
         if (!window.db) return;
@@ -786,6 +789,23 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
         }, 50);
         return () => clearTimeout(timer);
     });
+
+    // NYTT: Scrolla fram till kort nummer 2 ("Öppna ordrar") automatiskt när sektionen laddas
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (scrollRef.current) {
+                const container = scrollRef.current;
+                const secondCard = container.children[1]; // Kort index 1 är Öppna ordrar
+                if (secondCard) {
+                    container.scrollTo({
+                        left: secondCard.offsetLeft,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }, 350); // 350ms fördröjning gör att menyns in-animering hinner bli klar först
+        return () => clearTimeout(timer);
+    }, []);
 
     const toggleTask = (id, currentStatus) => window.db.collection("tasks").doc(id).update({ done: !currentStatus });
     const addTask = (e) => {
@@ -844,7 +864,8 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
 
     return (
         <div className="mb-6 lg:mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
-            <div className="flex overflow-x-auto gap-4 lg:gap-5 pb-4 custom-scrollbar snap-x snap-mandatory pr-8">
+            {/* NYTT: Satt "relative" och kopplat "ref={scrollRef}" till behållaren */}
+            <div ref={scrollRef} className="relative flex overflow-x-auto gap-4 lg:gap-5 pb-4 custom-scrollbar snap-x snap-mandatory pr-8">
                 
                 {/* 1. Snabblänkar */}
                 <div className={cardClass}>
@@ -948,7 +969,7 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                     </div>
                 </div>
 
-                {/* 4. NY RUTA: Sök reservdel (Nu exakt som Fordons-rutan med tabell) */}
+                {/* 4. Sök reservdel */}
                 <div className={cardClass}>
                     <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-3">
                         Sök reservdel
@@ -989,9 +1010,8 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                                                 </td>
                                                 <td className="py-2.5 pl-2 pr-3 text-[12px] text-right truncate">
                                                     <div className="flex justify-end items-center gap-2">
-                                                        <span className="text-zinc-600 dark:text-zinc-400 uppercase font-mono truncate">{part.service_filter || '-'}</span>
+                                                        <span className="">{part.service_filter || '-'}</span>
                                                             {qty} st
-                                                        
                                                     </div>
                                                 </td>
                                             </tr>
