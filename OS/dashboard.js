@@ -1735,36 +1735,121 @@ window.DashboardView = React.memo(({
                                         </tr>
                                     </thead>
                                 ) : (
-                                    /* --- LUFTIG VY: THEAD (Korrekt kolumnbredd och alignering) --- */
+                                    /* --- LUFTIG VY: THEAD (Med filtermenyer och sortering) --- */
                                     <thead className="sticky top-0 z-30 bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-y border-zinc-300 dark:border-white/15 select-none">
                                         <tr className="divide-x divide-zinc-300 dark:divide-white/15">
                                             {[
-                                                { key: 'kundnamn', label: 'Kund', width: 'w-[17%]', pl: 'pl-4 pr-3' },
-                                                { key: 'paket', label: 'Service Typ', width: 'w-[31%]', px: 'px-3' },
+                                                { key: 'kundnamn', label: 'Kund', width: 'w-[17%]', pl: 'pl-4 pr-3', filterKey: 'kundnamn' },
+                                                { key: 'paket', label: 'Service Typ', width: 'w-[31%]', px: 'px-3', filterKey: 'paket' },
                                                 { key: 'regnr', label: 'Reg.nr', width: 'w-[14%]', px: 'px-3' },
                                                 { key: 'datum', label: 'Bokat datum', width: 'w-[14%]', px: 'px-3' },
-                                                { key: 'status', label: 'Status', width: 'w-[11%]', px: 'px-3' }
+                                                { key: 'status', label: 'Status', width: 'w-[11%]', px: 'px-3', filterKey: 'status' }
                                             ].map(col => {
                                                 const isSorted = sortConfig.key === col.key;
+                                                const activeColFilters = col.filterKey ? (columnFilters[col.filterKey] || []) : [];
+                                                const isFilterOpen = openFilterMenu === col.filterKey;
+
                                                 return (
-                                                    <th key={col.key} className={`${col.width} ${col.pl || col.px} py-3 hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors`}>
+                                                    <th key={col.key} className={`${col.width} ${col.pl || col.px} py-3 relative hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors`}>
                                                         <div className="flex items-center justify-between gap-2">
                                                             <span onClick={() => requestSort(col.key)} className="cursor-pointer flex-1 truncate">
                                                                 {col.label}
                                                             </span>
-                                                            <button 
-                                                                type="button" 
-                                                                onClick={() => requestSort(col.key)}
-                                                                className="p-0.5 hover:bg-zinc-300/50 dark:hover:bg-white/10 rounded shrink-0"
-                                                                title="Sortera"
-                                                            >
-                                                                <window.Icon 
-                                                                    name={isSorted ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} 
-                                                                    size={12} 
-                                                                    className={isSorted ? "text-orange-600 dark:text-orange-400" : "text-orange-500/70"} 
-                                                                />
-                                                            </button>
+                                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => requestSort(col.key)}
+                                                                    className="p-0.5 hover:bg-zinc-300/50 dark:hover:bg-white/10 rounded"
+                                                                    title="Sortera"
+                                                                >
+                                                                    <window.Icon 
+                                                                        name={isSorted ? (sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} 
+                                                                        size={12} 
+                                                                        className={isSorted ? "text-orange-600 dark:text-orange-400" : "text-orange-500/70"} 
+                                                                    />
+                                                                </button>
+
+                                                                {col.filterKey && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setOpenFilterMenu(isFilterOpen ? null : col.filterKey);
+                                                                        }}
+                                                                        className={`p-1 rounded transition-colors relative ${
+                                                                            activeColFilters.length > 0 || isFilterOpen
+                                                                                ? 'bg-orange-500 text-white'
+                                                                                : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300/60 dark:hover:bg-white/10'
+                                                                        }`}
+                                                                        title={`Filtrera på ${col.label}`}
+                                                                    >
+                                                                        <window.Icon name="filter" size={10} />
+                                                                        {activeColFilters.length > 0 && (
+                                                                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[8px] font-black flex items-center justify-center">
+                                                                                {activeColFilters.length}
+                                                                            </span>
+                                                                        )}
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
+
+                                                        {/* FILTER-POPUP FÖR TRATT-IKONEN */}
+                                                        {isFilterOpen && col.filterKey && (
+                                                            <>
+                                                                <div className="fixed inset-0 z-40" onClick={() => setOpenFilterMenu(null)}></div>
+                                                                <div 
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-[#182234] border border-zinc-300 dark:border-white/15 rounded-lg shadow-2xl z-50 overflow-hidden font-normal animate-in fade-in zoom-in-95 duration-150"
+                                                                >
+                                                                    <div className="bg-[#f4f5f7] dark:bg-[#141c2b] px-3 py-2 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between">
+                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+                                                                            Filtrera {col.label}
+                                                                        </span>
+                                                                        {activeColFilters.length > 0 && (
+                                                                            <button 
+                                                                                type="button"
+                                                                                onClick={() => setColumnFilters(prev => { const c = {...prev}; delete c[col.filterKey]; return c; })}
+                                                                                className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
+                                                                            >
+                                                                                Rensa
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5 custom-scrollbar">
+                                                                        {(filterOptions[col.filterKey] || []).length === 0 ? (
+                                                                            <div className="py-4 text-center text-[11px] text-zinc-400">Inga alternativ</div>
+                                                                        ) : (
+                                                                            (filterOptions[col.filterKey] || []).map(([val, count]) => {
+                                                                                const checked = activeColFilters.includes(val);
+                                                                                return (
+                                                                                    <label 
+                                                                                        key={val} 
+                                                                                        onClick={() => toggleColumnFilterValue(col.filterKey, val)}
+                                                                                        className={`flex items-center justify-between px-2.5 py-1.5 rounded text-[12px] cursor-pointer transition-colors ${
+                                                                                            checked ? 'bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 font-semibold' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5'
+                                                                                        }`}
+                                                                                    >
+                                                                                        <div className="flex items-center gap-2 truncate pr-2">
+                                                                                            <input 
+                                                                                                type="checkbox" 
+                                                                                                checked={checked} 
+                                                                                                readOnly 
+                                                                                                className="rounded border-zinc-300 text-orange-500 focus:ring-0 pointer-events-none" 
+                                                                                            />
+                                                                                            <span className="truncate">{val}</span>
+                                                                                        </div>
+                                                                                        <span className="text-[10px] font-mono text-zinc-400 bg-zinc-100 dark:bg-white/5 px-1.5 py-0.5 rounded">
+                                                                                            {count}
+                                                                                        </span>
+                                                                                    </label>
+                                                                                );
+                                                                            })
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </th>
                                                 );
                                             })}
@@ -1776,7 +1861,18 @@ window.DashboardView = React.memo(({
                                                     </button>
                                                 </div>
                                             </th>
-                                            <th className="w-[110px] pl-2 pr-4 py-3 text-right"></th>
+                                            <th className="w-[110px] pl-2 pr-4 py-3 text-right">
+                                                {Object.keys(columnFilters).length > 0 && (
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={clearAllColumnFilters}
+                                                        title="Rensa alla kolumnfilter"
+                                                        className="text-orange-500 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <window.Icon name="filter-x" size={13} />
+                                                    </button>
+                                                )}
+                                            </th>
                                         </tr>
                                     </thead>
                                 )}
