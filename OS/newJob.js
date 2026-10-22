@@ -131,6 +131,8 @@ const RichNoteEditor = ({ value, onChange }) => {
 
 window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const today = new Date().toISOString().split('T')[0];
+    // NYTT: Referens för att auto-scrolla ner till förslagen när tangentbordet är i vägen
+    const suggestionsRef = React.useRef(null);
     const [formData, setFormData] = React.useState({
         kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
         datum: today, tid: '16:30', kundpris: '100', kommentar: ''
@@ -180,6 +182,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     React.useEffect(() => {
         if (matchingOrders.length > 0) {
             setExpandedMatchIds([matchingOrders[0].id]);
+            // NYTT: Scrolla mjukt ner så att varningsrutan och tabellen syns ovanför tangentbordet
+            setTimeout(() => {
+                if (suggestionsRef.current) {
+                    suggestionsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 250);
         } else {
             setExpandedMatchIds([]);
         }
@@ -454,7 +462,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </h1>
                             <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                {activeJob ? `Redigerar order • ${formData.regnr || formData.kundnamn || ''}` : 'Sök befintlig eller skapa ny arbetsorder'}
+                                {activeJob ? `Redigerar order #${activeJob.id.substring(0, 6).toUpperCase()}` : 'Sök befintlig eller skapa ny arbetsorder'}
                             </p>
                         </div>
                     </div>
@@ -500,14 +508,33 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             
                             <InputWrapper label="Reg.nr" icon="truck">
                                 <div className="relative z-10 flex gap-2">
-                                    <div className="relative flex-1">
+                                    <div className="relative flex-1 flex items-center">
                                         <input 
                                             type="text" value={formData.regnr} onChange={e => handleRegnrChange(e.target.value)} onFocus={() => handleRegnrChange(formData.regnr)}
-                                            className={`${inputClasses} font-mono uppercase tracking-[0.2em] w-full`} 
+                                            // FIX: Tonar rutan lätt orange om det finns träffar
+                                            className={`${inputClasses} font-mono uppercase tracking-[0.2em] w-full ${matchingOrders.length > 0 && !dismissedMatches ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-500/10' : ''}`} 
                                             placeholder="ABC 123" autoComplete="off" 
                                         />
+                                        
+                                        {/* NYTT: Smart knapp inuti inmatningsfältet! Talar om att det finns träffar, stänger tangentbordet och scrollar ner vid klick. */}
+                                        {matchingOrders.length > 0 && !dismissedMatches && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    if (document.activeElement) document.activeElement.blur();
+                                                    setTimeout(() => {
+                                                        const el = document.getElementById('search-results-anchor');
+                                                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }, 150);
+                                                }}
+                                                className="absolute right-1.5 px-2.5 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-wider rounded-md flex items-center gap-1.5 animate-in zoom-in duration-300 shadow-sm transition-colors cursor-pointer"
+                                            >
+                                                {matchingOrders.length} Träffar <SafeIcon name="arrow-down" size={12} />
+                                            </button>
+                                        )}
+
                                         {regnrSuggestions.length > 0 && (
-                                            <div className="absolute z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-lg overflow-hidden animate-in fade-in zoom-in-95">
+                                            <div className="absolute top-full left-0 z-50 w-full bg-white/95 dark:bg-[#1a2235]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl mt-2 rounded-lg overflow-hidden animate-in fade-in zoom-in-95">
                                                 <div className="px-3 py-1.5 bg-zinc-50 dark:bg-white/5 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                                                     Kundens registrerade fordon
                                                 </div>
@@ -527,32 +554,82 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </InputWrapper>
                         </FormRow>
 
-                        {/* KOMPAKT VY FÖR BEFINTLIGA ORDRAR */}
-                        {matchingOrders.length > 0 && (
-                            <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-white/10 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="flex items-center justify-between px-3.5 py-2.5 mb-3 rounded-lg bg-[#fff7ed] dark:bg-orange-500/10 border border-[#fed7aa] dark:border-orange-500/30 text-[#9a3412] dark:text-orange-200 text-[12px]">
+                        {/* KOMPAKT VY FÖR BEFINTLIGA ORDRAR (Delad vy: Lista på mobil, Tabell på dator) */}
+                        {matchingOrders.length > 0 && !dismissedMatches && (
+                            <div id="search-results-anchor" className="mt-4 pt-3 border-t border-zinc-200 dark:border-white/10 animate-in fade-in slide-in-from-top-2 duration-200 scroll-mt-6">
+                                
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3.5 py-3 mb-3 rounded-xl bg-[#fff7ed] dark:bg-orange-500/10 border border-[#fed7aa] dark:border-orange-500/30 text-[#9a3412] dark:text-orange-200 text-[12px] shadow-sm">
                                     <div className="flex items-center gap-2.5">
-                                        <SafeIcon name="info" size={15} className="text-orange-500 shrink-0" />
-                                        <span className="font-medium">
+                                        <SafeIcon name="info" size={16} className="text-orange-500 shrink-0" />
+                                        <span className="font-medium leading-snug">
                                             Arbetsordrar finns tillgängliga för detta fordon / kund ({matchingOrders.length} st)
                                         </span>
                                     </div>
                                     <button 
                                         type="button" 
                                         onClick={() => setDismissedMatches(true)}
-                                        className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 hover:underline px-2 py-0.5"
+                                        className="text-[11px] font-bold uppercase tracking-wider text-orange-700 bg-orange-200/50 hover:bg-orange-200 dark:text-orange-400 dark:bg-orange-500/20 dark:hover:bg-orange-500/30 px-3 py-1.5 rounded-lg transition-colors shrink-0 self-start sm:self-auto"
                                     >
                                         Dölj förslag
                                     </button>
                                 </div>
 
-                                <div className="border border-zinc-300 dark:border-white/15 rounded-lg overflow-hidden bg-white dark:bg-[#141c2b] shadow-xs">
+                                {/* --- MOBIL VY: Slimmad, klickbar lista (Syns bara på telefoner) --- */}
+                                <div className="flex flex-col gap-2.5 lg:hidden">
+                                    {matchingOrders.map((job) => {
+                                        const isExpanded = expandedMatchIds.includes(job.id);
+                                        const formattedDate = job.datum ? job.datum.replace('T', ' ').substring(0, 16) : 'Ej inbokad';
+                                        const serviceTitle = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
+
+                                        return (
+                                            <div key={job.id} className="bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/15 rounded-xl overflow-hidden shadow-xs">
+                                                <div onClick={() => toggleExpandMatch(job.id)} className="p-3.5 flex items-center justify-between cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 active:scale-[0.99] transition-all">
+                                                    <div className="flex flex-col min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <SafeIcon name="wrench" size={13} className="text-orange-500" />
+                                                            <span className="font-mono text-[13px] font-bold text-zinc-800 dark:text-zinc-200">{job.regnr || '-'}</span>
+                                                            <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                                                            <span className="text-[13px] font-bold text-zinc-900 dark:text-white truncate">{job.kundnamn || '-'}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 ml-[21px]">
+                                                            <span>#{job.id.substring(0, 6).toUpperCase()}</span>
+                                                            <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                                                            <span>{formattedDate}</span>
+                                                        </div>
+                                                    </div>
+                                                    <SafeIcon name={isExpanded ? "chevron-up" : "chevron-down"} size={16} className={`shrink-0 ml-2 transition-transform ${isExpanded ? 'text-orange-500' : 'text-zinc-400'}`} />
+                                                </div>
+
+                                                {isExpanded && (
+                                                    <div className="p-3.5 pt-0 bg-zinc-50/50 dark:bg-black/20 border-t border-zinc-100 dark:border-white/5 animate-in fade-in duration-200">
+                                                        <div className="text-[12px] text-zinc-700 dark:text-zinc-300 mb-4 mt-3 font-medium flex items-center gap-2">
+                                                            <SafeIcon name="box" size={13} className="text-orange-500" />
+                                                            <span>{serviceTitle}</span>
+                                                            {job.kundpris && <span className="ml-auto font-mono text-orange-600 font-bold">{parseInt(job.kundpris).toLocaleString('sv-SE')} kr</span>}
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenExistingOrder(job); }} className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[11px] font-bold uppercase tracking-wider flex justify-center items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+                                                                <SafeIcon name="edit-2" size={13} /> Öppna Order
+                                                            </button>
+                                                            <button type="button" onClick={(e) => { e.stopPropagation(); handleCreateLinkedOrder(job); }} className="flex-1 py-2.5 bg-zinc-200 dark:bg-white/10 hover:bg-zinc-300 dark:hover:bg-white/20 text-zinc-700 dark:text-zinc-200 rounded-lg text-[11px] font-bold uppercase tracking-wider flex justify-center items-center gap-1.5 active:scale-95 transition-all">
+                                                                <SafeIcon name="link" size={13} /> Ny Länkad
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* --- DATOR VY: Exakt din originaltabell (Syns bara på stora skärmar) --- */}
+                                <div className="hidden lg:block border border-zinc-300 dark:border-white/15 rounded-lg overflow-hidden bg-white dark:bg-[#141c2b] shadow-xs">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead className="bg-[#f4f5f7] dark:bg-[#182234] text-zinc-700 dark:text-zinc-300 text-[11px] font-bold border-b border-zinc-300 dark:border-white/15 select-none">
                                                 <tr className="divide-x divide-zinc-300 dark:divide-white/15">
                                                     <th className="w-9 py-2.5 text-center"></th>
-                                                    <th className="px-3 py-2.5 w-[160px]">Uppdrag</th>
+                                                    <th className="px-3 py-2.5 w-[130px]">Nr.</th>
                                                     <th className="px-3 py-2.5 w-[110px]">Reg.nr</th>
                                                     <th className="px-3 py-2.5">Kund</th>
                                                     <th className="px-3 py-2.5 w-[160px]">Mottagandedatum</th>
@@ -568,17 +645,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                                                     return (
                                                         <React.Fragment key={job.id}>
-                                                            <tr 
-                                                                onClick={() => toggleExpandMatch(job.id)}
-                                                                className="hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors"
-                                                            >
+                                                            <tr onClick={() => toggleExpandMatch(job.id)} className="hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors">
                                                                 <td className="py-2.5 text-center text-zinc-500">
                                                                     <SafeIcon name={isExpanded ? "chevron-down" : "chevron-right"} size={15} />
                                                                 </td>
                                                                 <td className="px-3 py-2.5 font-medium text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <SafeIcon name="wrench" size={13} className="text-orange-500" />
-                                                                        <span>{serviceTitle}</span>
+                                                                        <span>#{job.id.substring(0, 8).toUpperCase()}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-3 py-2.5 font-mono text-[12px] font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
@@ -591,11 +665,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     {formattedDate}
                                                                 </td>
                                                                 <td className="px-3 py-2.5 whitespace-nowrap">
-                                                                    <span className={`text-[12px] font-medium ${
-                                                                        job.status === 'KLAR' ? 'text-emerald-600 dark:text-emerald-400' :
-                                                                        job.status === 'BOKAD' ? 'text-orange-600 dark:text-orange-400' :
-                                                                        'text-zinc-700 dark:text-zinc-300'
-                                                                    }`}>
+                                                                    <span className={`text-[12px] font-medium ${job.status === 'KLAR' ? 'text-emerald-600 dark:text-emerald-400' : job.status === 'BOKAD' ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
                                                                         {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1).toLowerCase() : 'Bokad'}
                                                                     </span>
                                                                 </td>
@@ -606,45 +676,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     <td></td>
                                                                     <td colSpan="5" className="px-3 pb-3.5 pt-1">
                                                                         <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={(e) => { e.stopPropagation(); handleOpenExistingOrder(job); }}
-                                                                                className="px-3 py-1 rounded border border-orange-500/50 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
-                                                                            >
-                                                                                Öppna order
-                                                                            </button>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={(e) => { e.stopPropagation(); handleCreateLinkedOrder(job); }}
-                                                                                className="px-3 py-1 rounded border border-orange-500/50 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
-                                                                            >
-                                                                                Ny länkad order
-                                                                            </button>
-                                                                            {job.kundpris && (
-                                                                                <span className="ml-auto text-[12px] text-zinc-500 dark:text-zinc-400 pr-2">
-                                                                                    Pris: <strong className="text-zinc-800 dark:text-zinc-200">{parseInt(job.kundpris).toLocaleString('sv-SE')} kr</strong>
-                                                                                </span>
-                                                                            )}
+                                                                            <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenExistingOrder(job); }} className="px-3 py-1 rounded border border-orange-500/50 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Öppna order</button>
+                                                                            <button type="button" onClick={(e) => { e.stopPropagation(); handleCreateLinkedOrder(job); }} className="px-3 py-1 rounded border border-orange-500/50 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Ny länkad order</button>
+                                                                            {job.kundpris && <span className="ml-auto text-[12px] text-zinc-500 dark:text-zinc-400 pr-2">Pris: <strong className="text-zinc-800 dark:text-zinc-200">{parseInt(job.kundpris).toLocaleString('sv-SE')} kr</strong></span>}
                                                                         </div>
-
                                                                         <div className="pl-1 space-y-1 text-[12px] text-zinc-700 dark:text-zinc-300">
-                                                                            <div className="flex items-center gap-1.5 font-medium">
-                                                                                <SafeIcon name="chevron-down" size={13} className="text-zinc-400" />
-                                                                                <SafeIcon name="box" size={13} className="text-orange-500" />
-                                                                                <span>{serviceTitle}</span>
-                                                                            </div>
-                                                                            {cleanNote && (
-                                                                                <div className="pl-6 flex items-start gap-1.5 text-zinc-500 dark:text-zinc-400">
-                                                                                    <SafeIcon name="wrench" size={12} className="text-orange-500 mt-0.5 shrink-0" />
-                                                                                    <span className="line-clamp-2">{cleanNote}</span>
-                                                                                </div>
-                                                                            )}
-                                                                            {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => (
-                                                                                <div key={idx} className="pl-6 flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                                                                                    <SafeIcon name="tag" size={11} className="text-orange-500 shrink-0" />
-                                                                                    <span>{u.namn} ({u.kostnad} kr)</span>
-                                                                                </div>
-                                                                            ))}
+                                                                            <div className="flex items-center gap-1.5 font-medium"><SafeIcon name="chevron-down" size={13} className="text-zinc-400" /><SafeIcon name="box" size={13} className="text-orange-500" /><span>{serviceTitle}</span></div>
+                                                                            {cleanNote && <div className="pl-6 flex items-start gap-1.5 text-zinc-500 dark:text-zinc-400"><SafeIcon name="wrench" size={12} className="text-orange-500 mt-0.5 shrink-0" /><span className="line-clamp-2">{cleanNote}</span></div>}
+                                                                            {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => <div key={idx} className="pl-6 flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400"><SafeIcon name="tag" size={11} className="text-orange-500 shrink-0" /><span>{u.namn} ({u.kostnad} kr)</span></div>)}
                                                                         </div>
                                                                     </td>
                                                                 </tr>
@@ -656,16 +695,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </table>
                                     </div>
                                     <div className="bg-[#f4f5f7] dark:bg-[#182234] px-3.5 py-2 border-t border-zinc-300 dark:border-white/15 flex items-center justify-between">
-                                        <button
-                                            type="button"
-                                            onClick={() => setDismissedMatches(true)}
-                                            className="px-3.5 py-1.5 rounded bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-xs transition-colors"
-                                        >
-                                            Fortsätt med ny order
-                                        </button>
-                                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                                            {matchingOrders.length} {matchingOrders.length === 1 ? 'post' : 'poster'}
-                                        </span>
+                                        <button type="button" onClick={() => setDismissedMatches(true)} className="px-3.5 py-1.5 rounded bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-xs transition-colors">Fortsätt med ny order</button>
+                                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{matchingOrders.length} {matchingOrders.length === 1 ? 'post' : 'poster'}</span>
                                     </div>
                                 </div>
                             </div>
