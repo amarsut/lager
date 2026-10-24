@@ -103,7 +103,7 @@ const RichNoteEditor = ({ value, onChange }) => {
                     onPaste={handlePaste}
                     onBlur={(e) => onChange(e.currentTarget.innerHTML)} 
                     dangerouslySetInnerHTML={{ __html: value }}
-                    className="p-4 min-h-[180px] text-[13px] leading-relaxed text-zinc-900 outline-none cursor-text [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1 [&_*]:!text-[13px] [&_*]:!leading-relaxed"
+                    className="p-4 min-h-[60px] max-h-[250px] overflow-y-auto text-[13px] leading-relaxed text-zinc-900 outline-none cursor-text [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1 [&_*]:!text-[13px] [&_*]:!leading-relaxed"
                     style={{ whiteSpace: 'pre-wrap' }}
                 />
             </div>
@@ -117,7 +117,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [step, setStep] = React.useState(editingJob ? 'DETAIL' : 'SEARCH');
     const [activeTab, setActiveTab] = React.useState('ORDEROMFATTNING');
 
-    // FIX: Sökfält och filter
     const [searchQuery, setSearchQuery] = React.useState('');
     const [advFilters, setAdvFilters] = React.useState({
         status: 'ALLA',
@@ -126,7 +125,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     });
 
     React.useEffect(() => {
-        // FIX: Tvingar sidan att alltid börja högst upp när du öppnar en order
         if (step === 'DETAIL') {
             window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         }
@@ -139,9 +137,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     });
     
     const emptyExpenses = [
-        { desc: '', amount: '', type: 'reservdel' }, 
-        { desc: '', amount: '', type: 'arbetsoperation' }, 
-        { desc: '', amount: '', type: 'reservdel' }
+        { desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, 
+        { desc: '', antal: '1', amount: '', type: 'reservdel' }
     ];
     const [expenses, setExpenses] = React.useState(emptyExpenses);
     const [selectedExpenses, setSelectedExpenses] = React.useState([]);
@@ -160,13 +157,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
     };
 
-    // FIX: Smart OMNI-filtrering som söker på ALLT + Datum/Status
-    // NYTT: Smart filtrering baserat på alla fält i Avancerad Sökning
     const matchingOrders = React.useMemo(() => {
-        // Kontrollera om användaren faktiskt har skrivit något eller bytt filter
         const isSearching = searchQuery.trim().length > 0 || advFilters.status !== 'ALLA' || advFilters.dateStart || advFilters.dateEnd;
-        
-        // Returnera en tom lista direkt om man inte har sökt/filtrerat på något
         if (!isSearching) return [];
 
         let filtered = allJobs.filter(j => !j.deleted);
@@ -181,7 +173,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             filtered = filtered.filter(j => j.datum && j.datum.split('T')[0] <= advFilters.dateEnd);
         }
 
-        // Omni-sök (Söker igenom kund, regnr, chassinr, modell, paket, kommentar och reservdelar)
         const query = searchQuery.trim().toLowerCase();
         if (query) {
             const terms = query.split(/\s+/);
@@ -260,11 +251,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 
                 if (activeJob.utgifter && activeJob.utgifter.length > 0) {
                     let loadedExpenses = activeJob.utgifter.map(ex => ({ 
-                        desc: ex.namn, 
-                        amount: ex.kostnad,
+                        desc: ex.namn || '', 
+                        antal: ex.antal || '1',
+                        amount: ex.kostnad || '',
                         type: ex.type || 'reservdel' 
                     }));
-                    while (loadedExpenses.length < 3) loadedExpenses.push({ desc: '', amount: '', type: 'reservdel' });
+                    while (loadedExpenses.length < 2) loadedExpenses.push({ desc: '', antal: '1', amount: '', type: 'reservdel' });
                     setExpenses(loadedExpenses);
                 } else setExpenses(emptyExpenses);
 
@@ -299,12 +291,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const handleSave = async (e, overrideStatus = null) => {
         if (e) e.preventDefault();
         try {
-            // FIX 1: Kraschsäkrar RegNr om det skulle vara tomt/undefined på gamla ordrar
             const finalRegnr = (formData.regnr || '').toUpperCase().trim();
             
-            const finalExpenses = (expenses || []).filter(ex => ex && ex.desc && ex.amount).map(ex => ({ 
-                namn: ex.desc, kostnad: ex.amount, type: ex.type || 'reservdel'
+            // HÄR ÄR FIXEN: Sparar även om priset saknas.
+            const finalExpenses = (expenses || []).filter(ex => ex && (ex.desc || ex.amount)).map(ex => ({ 
+                namn: ex.desc || '', 
+                antal: ex.antal || '1', 
+                kostnad: ex.amount || '', 
+                type: ex.type || 'reservdel'
             }));
+            
             const finalPayments = (payments || []).filter(p => p && (p.desc || p.amount)).map(p => ({ 
                 desc: p.desc, amount: p.amount 
             }));
@@ -317,7 +313,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             const resolvedVin = fetchedCarInfo?.vin || formData.vin || '';
             const finalStatus = overrideStatus || formData.status || 'BOKAD';
 
-            // FIX 2: Firestore vägrar spara om NÅGOT fält är "undefined". Vi rensar bort dem!
             const cleanFormData = { ...formData };
             Object.keys(cleanFormData).forEach(key => {
                 if (cleanFormData[key] === undefined) {
@@ -363,13 +358,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         try { return JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}'); } catch(e) { return {}; }
     }, []);
 
-    // Håller koll på om vi har sökt något
     const isFiltering = searchQuery || advFilters.status !== 'ALLA' || advFilters.dateStart || advFilters.dateEnd;
 
     return (
-        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-zinc-50/50 dark:bg-transparent text-zinc-900 dark:text-white pb-0 md:pb-10 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full animate-in fade-in slide-in-from-left-4">
+        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-zinc-50/50 dark:bg-transparent text-zinc-900 dark:text-white pb-0 md:pb-10 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full">
             
-            {/* GEMENSAM HEADER (Synlig i Sök och Detalj) */}
             <div className="px-4 pt-4 lg:px-0 lg:pt-0 flex flex-col mb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-zinc-200 dark:border-white/10 gap-4">
                     <div className="flex items-center gap-3 md:gap-4">
@@ -401,15 +394,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 </div>
             </div>
 
-            {/* === STEG 1: SÖK-VYN === */}
             {step === 'SEARCH' && (
                 <div className="w-full flex flex-col gap-4 px-4 lg:px-0 animate-in fade-in duration-300">
                     
-                    {/* AVANCERAD SÖK / FILTERPANEL */}
                     <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl p-5 shadow-sm">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                             
-                            {/* OMNI-SÖK: Ersätter Reg.nr och Kundnamn med ETT fält som söker på ALLT */}
                             <div className="flex flex-col sm:flex-row sm:items-center md:col-span-2">
                                 <label className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1 sm:mb-0">Fritekstsökning</label>
                                 <div className="relative w-full">
@@ -472,18 +462,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         </div>
                     </div>
 
-                    {/* Resultat-Tabellen */}
                     {matchingOrders.length > 0 ? (
                         <div className="w-full animate-in fade-in duration-300 mt-2">
                                 
-                                {/* MOBILVY: Kort-design (Kompaktare med beskrivning & enhetligt Ch.nr) */}
                                 <div className="block lg:hidden space-y-2.5">
                                     {matchingOrders.map(job => {
                                         let formattedModel = job.bilmodell ? job.bilmodell.toUpperCase() : 'OKÄND MODELL';
                                         formattedModel = formattedModel.replace(/VOLKSWAGEN/i, 'VW').replace(/MERCEDES-BENZ/i, 'MB').replace(/MERCEDES/i, 'MB').replace(/LAND ROVER/i, 'LR');
                                         const brandId = (typeof window !== 'undefined' && window.getVehicleBrand) ? window.getVehicleBrand(job.bilmodell) : null;
                                         
-                                        // NYTT: Hämta och tvätta kommentaren för att visa som beskrivning
                                         const cleanComment = job.kommentar ? String(job.kommentar).replace(/<[^>]*>?/gm, '').trim() : '';
                                         
                                         return (
@@ -525,12 +512,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 
                                                 <div className="space-y-1 text-[13px] text-zinc-800 dark:text-zinc-200">
                                                     <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Reg.Nr.:</span> <span className="uppercase">{job.regnr || '-'}</span></div>
-                                                    {/* FIX: Tog bort font-mono och minskade storleken på ch.nr så det matchar */}
                                                     <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Ch.nr:</span> <span className="uppercase">{job.vin || (vehicleCache && vehicleCache[(job.regnr||'').toUpperCase().replace(/\s+/g,'')]?.vin) || '-'}</span></div>
                                                     <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Kund:</span> <span className="capitalize">{job.kundnamn || '-'}</span></div>
                                                     <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Datum:</span> <span>{job.datum ? job.datum.split('T')[0] : '-'}</span></div>
                                                     
-                                                    {/* NYTT: Kompakt Jobb-titel med tillhörande beskrivning undertill */}
                                                     <div className="pt-2 mt-1 border-t border-zinc-100 dark:border-white/5">
                                                         <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                                                             <SafeIcon name="wrench" size={12} className="text-[#168a9c]"/>
@@ -548,7 +533,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     })}
                                 </div>
 
-                                {/* DATORVY: Tabell (Dashboard Kompakt Vy) */}
                                 <div className="hidden lg:block overflow-x-auto bg-white dark:bg-[#1e293b] border border-zinc-300 dark:border-white/10 shadow-sm rounded-xl mt-4">
                                     <table className="w-full text-left border-collapse min-w-[1300px] text-[12px] font-sans">
                                         <thead className="bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-b border-zinc-300 dark:border-white/15 select-none">
@@ -661,10 +645,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                                 <span className="whitespace-pre-wrap leading-relaxed">{cleanComment}</span>
                                                                             </div>
                                                                         )}
-                                                                        {job.utgifter && job.utgifter.filter(u => u.namn).map((u, idx) => (
+                                                                        {job.utgifter && job.utgifter.filter(u => u.namn || u.kostnad).map((u, idx) => (
                                                                             <div key={idx} className="pl-6 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
-                                                                                <SafeIcon name="tag" size={11} className="text-orange-500 shrink-0" />
-                                                                                <span>{u.namn} ({u.kostnad} kr)</span>
+                                                                                <SafeIcon name={u.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={11} className="text-orange-500 shrink-0" />
+                                                                                <span>
+                                                                                    {u.antal && u.antal !== '1' ? `${u.antal}x ` : ''}
+                                                                                    {u.namn || 'Ospecificerad artikel'} 
+                                                                                    {u.kostnad ? ` (${u.kostnad} kr)` : ''}
+                                                                                </span>
                                                                             </div>
                                                                         ))}
                                                                     </div>
@@ -688,10 +676,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 </div>
             )}
 
-            {/* === STEG 2: ORDER-DETALJER === */}
             {step === 'DETAIL' && (
                 <div className="px-4 lg:px-0 pb-0 lg:pb-6">
-                    <form onSubmit={handleSave} className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_340px] gap-5 lg:items-start relative">
+                    <form onSubmit={handleSave} className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_340px] gap-5 lg:items-stretch relative">
                         
                         <div className="order-1 lg:col-start-1 w-full flex items-center gap-4 mb-2 lg:mb-0">
                             <InputWrapper label="Uppdragsstatus" icon="activity">
@@ -704,12 +691,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </InputWrapper>
                         </div>
 
-                        <div className="order-2 lg:col-start-2 lg:row-span-4 w-full flex flex-col gap-4 lg:sticky lg:top-4 pb-0 lg:pb-20">
+                        {/* FIX: En yttre div som spänner över 5 rader med 100% höjd, och en inre sticky div */}
+                        <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-5 w-full h-full">
+                            <div className="w-full flex flex-col gap-4 sticky top-6 z-10 pb-10">
                             
                             <div className="hidden lg:flex flex-col gap-2">
                                 <button type="submit" className="w-full px-6 py-3 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold text-[13px] shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
                                     <SafeIcon name="save" size={16} /> SPARA JOBB
                                 </button>
+                                {/* FIX: Snabbval visas bara när vi uppdaterar en aktiv order (som tidigare) */}
                                 {activeJob && activeJob.status !== 'KLAR' && (
                                     <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-2.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 font-bold text-[12px] shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
                                         <SafeIcon name="check" size={14} /> SNABBVAL: KLAR
@@ -868,8 +858,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
                             </div>
                         </div>
+                        </div> {/* <-- Stänger den inre sticky-rutan som löser scrollproblemet */}
 
-                        <div className="order-3 lg:col-start-1 w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden min-h-[350px]">
+                        <div className="order-3 lg:col-start-1 w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
                             <div className="p-4 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-black/10">
                                 <button type="button" onClick={() => setActiveTab('ORDEROMFATTNING')} className={`font-bold text-[13px] uppercase tracking-wider pb-4 -mb-4 border-b-2 transition-colors ${activeTab === 'ORDEROMFATTNING' ? 'text-[#168a9c] border-[#168a9c]' : 'text-zinc-400 border-transparent hover:text-zinc-600'}`}>
                                     Orderomfattning
@@ -898,7 +889,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         <button 
                                             type="button" 
                                             onClick={() => {
-                                                setExpenses([...expenses, { desc: '', amount: '', type: 'reservdel' }]);
+                                                setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]);
                                                 setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
                                             }} 
                                             className="px-3 py-1.5 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded text-[10px] font-bold text-zinc-600 dark:text-zinc-300 hover:text-[#168a9c] hover:border-[#168a9c] transition-colors shadow-xs"
@@ -963,7 +954,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     type="button" 
                                                                     onClick={() => {
                                                                         const n = [...expenses];
-                                                                        n[i].type = ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation';
+                                                                        n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' };
                                                                         setExpenses(n);
                                                                         setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
                                                                     }}
@@ -973,18 +964,30 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                 </button>
                                                                 <input 
                                                                     placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."}
-                                                                    value={ex.desc} 
-                                                                    onChange={e => { const n = [...expenses]; n[i].desc = e.target.value; setExpenses(n); }} 
+                                                                    value={ex.desc || ''} 
+                                                                    onChange={e => { const n = [...expenses]; n[i] = { ...n[i], desc: e.target.value }; setExpenses(n); }} 
                                                                     className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text font-medium text-[12px] sm:text-[13px]" 
                                                                 />
                                                             </div>
                                                         </td>
                                                         <td className="hidden sm:table-cell p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
-                                                            <input type="number" placeholder="1" className="w-full bg-transparent outline-none text-center text-[12px] sm:text-[13px]" />
+                                                            <input 
+                                                                type="number" 
+                                                                value={ex.antal || ''}
+                                                                onChange={e => { const n = [...expenses]; n[i] = { ...n[i], antal: e.target.value }; setExpenses(n); }}
+                                                                placeholder="1" 
+                                                                className="w-full bg-transparent outline-none text-center text-[12px] sm:text-[13px]" 
+                                                            />
                                                         </td>
                                                         <td className="p-1.5 sm:p-2">
                                                             <div className="flex items-center justify-end gap-1">
-                                                                <input type="number" value={ex.amount} onChange={e => { const n = [...expenses]; n[i].amount = e.target.value; setExpenses(n); }} placeholder="0" className="w-full bg-transparent outline-none text-right font-mono font-medium min-w-0 text-[12px] sm:text-[13px]" />
+                                                                <input 
+                                                                    type="number" 
+                                                                    value={ex.amount || ''} 
+                                                                    onChange={e => { const n = [...expenses]; n[i] = { ...n[i], amount: e.target.value }; setExpenses(n); }} 
+                                                                    placeholder="0" 
+                                                                    className="w-full bg-transparent outline-none text-right font-mono font-medium min-w-0 text-[12px] sm:text-[13px]" 
+                                                                />
                                                                 <span className="text-zinc-400 text-[10px] sm:text-[11px]">kr</span>
                                                             </div>
                                                         </td>
@@ -1084,7 +1087,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             <button type="submit" className="w-full px-6 py-3.5 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold text-[14px] shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
                                 <SafeIcon name="save" size={18} /> SPARA JOBB
                             </button>
-                            {activeJob && activeJob.status !== 'KLAR' && (
+                            {formData.status !== 'KLAR' && (
                                 <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-3.5 bg-zinc-100 border border-zinc-200 text-zinc-700 font-bold text-[14px] shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
                                     <SafeIcon name="check" size={16} /> SNABBVAL: KLAR
                                 </button>
