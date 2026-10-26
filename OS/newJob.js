@@ -769,42 +769,78 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             {/* 3. Ekonomi */}
                             <div className="w-full mb-8">
                                 <h2 className="text-[22px] font-normal text-zinc-800 dark:text-white mb-3">Kostnad</h2>
-                                <div className="w-full border border-zinc-200 dark:border-white/10 rounded-sm flex flex-col md:flex-row overflow-hidden bg-white dark:bg-[#1e293b]">
-                                    <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col p-5 bg-zinc-50/50 dark:bg-transparent">
-                                        <div className="font-medium text-[13px] text-zinc-500 mb-2 uppercase tracking-wider">Summa (inkl. moms)</div>
-                                        <div className="flex items-baseline mb-4">
-                                            <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl font-light tracking-tighter outline-none focus:text-[#168a9c] transition-colors" placeholder="0" />
-                                            <span className="text-lg font-medium text-zinc-400 ml-2">SEK</span>
+                                <div className="w-full border border-zinc-200 dark:border-white/10 rounded-sm flex flex-col md:flex-row overflow-hidden bg-white dark:bg-[#1e293b] shadow-sm">
+                                    
+                                    {/* VÄNSTER SIDA: DELBETALNINGAR */}
+                                    <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col p-4 bg-white dark:bg-transparent">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Delbetalningar</span>
+                                            <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1">
+                                                <SafeIcon name="plus" size={10} /> Lägg till
+                                            </button>
                                         </div>
-                                        <div className="pt-4 border-t border-zinc-200 dark:border-white/10 flex justify-between items-center text-[13px] mt-auto">
-                                            <span className="text-zinc-500">Inbetalt hittills:</span>
-                                            <span className="font-mono font-medium text-emerald-600">{totalPaid.toLocaleString()} kr</span>
-                                        </div>
-                                        {totalPaid > 0 && (
-                                            <div className="mt-2 bg-orange-50 dark:bg-white/5 px-3 py-2 rounded-sm border border-orange-100 dark:border-white/10 flex justify-between items-center">
-                                                <span className="text-[12px] text-orange-800 dark:text-orange-300">Kvar att fakturera</span>
-                                                <span className="font-bold text-orange-600 text-[14px]">{Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 p-5">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <span className="font-medium text-[13px] text-zinc-500 uppercase tracking-wider">Delbetalningar</span>
-                                            <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1"><SafeIcon name="plus" size={10} /> Lägg till</button>
-                                        </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-1.5">
                                             {payments.map((p, i) => (
                                                 <div key={i} className="flex gap-2 items-center">
-                                                    <input placeholder="T.ex. Swish" value={p.desc} onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} className="flex-1 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 px-3 text-[13px] outline-none rounded-sm text-zinc-900 dark:text-white focus:border-[#168a9c]" />
-                                                    <div className="relative w-24 shrink-0 flex items-center">
-                                                        <input placeholder="0" type="number" value={p.amount} onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} className="w-full bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 pl-2 pr-6 text-[13px] font-mono outline-none text-right rounded-sm focus:border-[#168a9c]" />
-                                                        <span className="absolute right-2 text-[10px] text-zinc-400 font-medium uppercase pointer-events-none">kr</span>
+                                                    <input 
+                                                        placeholder="T.ex. Swish" 
+                                                        value={p.desc} 
+                                                        onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} 
+                                                        className="flex-1 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 px-2 text-[13px] outline-none rounded-sm text-zinc-900 dark:text-white focus:border-[#168a9c] transition-colors" 
+                                                    />
+                                                    <div className="relative w-[100px] shrink-0 flex items-center">
+                                                        <input 
+                                                            placeholder="0" 
+                                                            type="number" 
+                                                            value={p.amount} 
+                                                            onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} 
+                                                            className="w-full bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 pl-2 pr-6 text-[13px] font-mono outline-none text-right rounded-sm focus:border-[#168a9c] transition-colors" 
+                                                        />
+                                                        <span className="absolute right-2 text-[10px] text-zinc-400 font-bold uppercase pointer-events-none">kr</span>
                                                     </div>
-                                                    <button type="button" onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} className="text-zinc-400 hover:text-red-500 p-1"><SafeIcon name="trash-2" size={14} /></button>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} 
+                                                        className="text-zinc-400 hover:text-red-500 p-1 transition-colors"
+                                                    >
+                                                        <SafeIcon name="trash-2" size={14} />
+                                                    </button>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
+
+                                    {/* HÖGER SIDA: SUMMA */}
+                                    <div className="flex-1 flex flex-col p-4 bg-zinc-50/50 dark:bg-[#161f30]/30">
+                                        <div className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">Summa (inkl. moms)</div>
+                                        <div className="flex items-baseline justify-end mb-4">
+                                            <input 
+                                                type="number" 
+                                                value={formData.kundpris == 0 ? '' : formData.kundpris} 
+                                                onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} 
+                                                className="w-full bg-transparent text-zinc-900 dark:text-white text-3xl font-light tracking-tighter outline-none text-right focus:text-[#168a9c] transition-colors" 
+                                                placeholder="0" 
+                                            />
+                                            <span className="text-[13px] font-bold text-zinc-400 ml-1.5 shrink-0 uppercase">SEK</span>
+                                        </div>
+                                        
+                                        <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-zinc-200 dark:border-white/10">
+                                            <div className="flex justify-between items-center text-[13px]">
+                                                <span className="font-medium text-zinc-500 dark:text-zinc-400">Inbetalt hittills:</span>
+                                                <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{totalPaid.toLocaleString()} kr</span>
+                                            </div>
+                                            
+                                            {totalPaid > 0 && (
+                                                <div className="flex justify-between items-center text-[13px]">
+                                                    <span className="text-zinc-900 dark:text-white">Kvar att betala:</span>
+                                                    <span className="font-mono font-bold text-orange-600 dark:text-orange-400 text-[14px]">
+                                                        {Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
