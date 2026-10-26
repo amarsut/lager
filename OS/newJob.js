@@ -622,15 +622,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             {/* === DETALJ VY (Blanketten) === */}
             {step === 'DETAIL' && (
                 <div className="px-4 lg:px-0 pb-0 lg:pb-6">
-                    <form onSubmit={handleSave} className="flex flex-col lg:flex-row gap-3 lg:gap-5 relative lg:items-stretch">
+                    <form onSubmit={handleSave} className="flex flex-col lg:flex-row gap-3 lg:gap-8 relative lg:items-stretch mt-0 lg:mt-4">
                         
-                        {/* === VÄNSTER KOLUMN (Skrollar fritt) === */}
-                        <div className="flex-1 flex flex-col gap-3 lg:gap-5 min-w-0 order-2 lg:order-1">
+                        {/* === VÄNSTER KOLUMN === */}
+                        <div className="flex-1 flex flex-col min-w-0 order-2 lg:order-1">
                             
                             {/* 1. Uppdragsstatus */}
-                            <div className="w-full flex items-center gap-4 mb-1 lg:mb-0">
-                                <InputWrapper label="Uppdragsstatus" icon="activity">
-                                    <select value={formData.status} onChange={e => setFormData(p => ({ ...p, status: e.target.value }))} className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-[13px] font-bold p-2.5 rounded-lg outline-none focus:border-[#f97316] shadow-sm w-[150px]">
+                            <div className="w-full flex items-center gap-4 mb-6">
+                                <InputWrapper label="Uppdragsstatus" icon="">
+                                    <select value={formData.status} onChange={e => setFormData(p => ({ ...p, status: e.target.value }))} className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 text-[13px] font-bold p-2.5 rounded-sm outline-none focus:border-[#168a9c] shadow-sm w-[150px]">
                                         <option value="BOKAD">BOKAD</option>
                                         <option value="OFFERERAD">OFFERERAD</option>
                                         <option value="KLAR">KLAR</option>
@@ -639,88 +639,79 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </InputWrapper>
                             </div>
 
-                            {/* 2. Orderomfattning / Kostnadsfördelning */}
-                            <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
-                                <div className="px-4 pt-3 pb-0 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
-                                    <button type="button" onClick={() => setActiveTab('ORDEROMFATTNING')} className={`text-[12px] font-bold uppercase tracking-wider pb-2.5 -mb-px border-b-2 transition-colors ${activeTab === 'ORDEROMFATTNING' ? 'text-zinc-900 dark:text-white border-zinc-900 dark:border-white' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>
-                                        Orderomfattning
-                                    </button>
-                                    <button type="button" onClick={() => setActiveTab('KOSTNADSFÖRDELNING')} className={`text-[12px] font-bold uppercase tracking-wider pb-2.5 -mb-px border-b-2 transition-colors ${activeTab === 'KOSTNADSFÖRDELNING' ? 'text-zinc-900 dark:text-white border-zinc-900 dark:border-white' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>
-                                        Kostnadsfördelning
-                                    </button>
+                            {/* 2. Orderinformation */}
+                            <div className="w-full mb-8">
+                                <h2 className="text-[22px] font-normal text-zinc-800 dark:text-white mb-3">Orderinformation</h2>
+                                
+                                {/* Flikarna ligger nu fritt utan en yttre box, enbart en bottenlinje */}
+                                <div className="flex items-center gap-6 border-b border-zinc-200 dark:border-white/10 mb-4">
+                                    <button type="button" onClick={() => setActiveTab('ORDEROMFATTNING')} className={`text-[14px] pb-2 -mb-px border-b-2 transition-colors ${activeTab === 'ORDEROMFATTNING' ? 'text-[#168a9c] border-[#168a9c] font-medium' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>Orderomfattning</button>
+                                    <button type="button" onClick={() => setActiveTab('KOSTNADSFÖRDELNING')} className={`text-[14px] pb-2 -mb-px border-b-2 transition-colors ${activeTab === 'KOSTNADSFÖRDELNING' ? 'text-[#168a9c] border-[#168a9c] font-medium' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>Kostnadsfördelning</button>
                                 </div>
                                 
                                 {activeTab === 'ORDEROMFATTNING' && (
                                     <div className="animate-in fade-in duration-200">
-                                        <div className="p-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 flex flex-col sm:flex-row sm:items-center gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <SafeIcon name="box" size={14} className="text-zinc-500" />
-                                                <span className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest">Paket</span>
-                                            </div>
-                                            <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="bg-transparent font-bold text-[12px] text-zinc-900 dark:text-white outline-none cursor-pointer">
-                                                <option value="Standard">Standard (Flexibel)</option>
-                                                <option value="Oljebyte">Oljebyte</option>
-                                                <option value="Hjulskifte">Hjulskifte</option>
-                                                <option value="Felsökning">Felsökning</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="p-1.5 px-2.5 border-b border-zinc-200 dark:border-white/10 flex flex-wrap gap-2 bg-zinc-50/50 dark:bg-black/20">
-                                            <button type="button" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded text-[10px] font-bold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors shadow-xs">
+                                        {/* Verktygsrad (Knapparna fristående precis som på Bild 1) */}
+                                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                                            <button type="button" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-transparent border border-[#168a9c] text-[#168a9c] rounded-sm text-[11px] font-bold uppercase tracking-wider hover:bg-[#168a9c] hover:text-white transition-colors">
                                                 LÄGG TILL
                                             </button>
-                                            <button type="button" onClick={() => { const n = expenses.filter((_, idx) => !selectedExpenses.includes(idx)); setExpenses(n); setSelectedExpenses([]); }} disabled={selectedExpenses.length === 0} className={`px-3 py-1.5 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded text-[10px] font-bold transition-colors shadow-xs ${selectedExpenses.length > 0 ? 'text-zinc-600 dark:text-zinc-300 hover:text-red-500 hover:border-red-500' : 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed opacity-70'}`}>
-                                                RADERA
+                                            <button type="button" onClick={() => { const n = expenses.filter((_, idx) => !selectedExpenses.includes(idx)); setExpenses(n); setSelectedExpenses([]); }} disabled={selectedExpenses.length === 0} className={`px-3 py-1.5 bg-transparent border rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors ${selectedExpenses.length > 0 ? 'border-zinc-400 text-zinc-600 hover:border-red-500 hover:text-red-500' : 'border-zinc-200 text-zinc-400 cursor-not-allowed'}`}>
+                                                TA BORT
                                             </button>
+                                            
+                                            <div className="ml-auto flex items-center gap-2 border border-[#168a9c] px-2 py-1 rounded-sm">
+                                                <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer">
+                                                    <option value="Standard">Standard (Flexibel)</option>
+                                                    <option value="Oljebyte">Oljebyte</option>
+                                                    <option value="Hjulskifte">Hjulskifte</option>
+                                                    <option value="Felsökning">Felsökning</option>
+                                                </select>
+                                            </div>
                                         </div>
                                         
-                                        <div className="overflow-x-auto">
+                                        {/* Själva tabellen (Har nu enbart kantlinje runt sig själv) */}
+                                        <div className="border border-zinc-200 dark:border-white/10 rounded-sm overflow-hidden">
                                             <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
-                                                <thead className="bg-[#f4f5f7] dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10 text-[11px] font-bold text-zinc-800 dark:text-zinc-200">
+                                                <thead className="bg-[#f8f9fa] dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10 text-[12px] font-medium text-zinc-600 dark:text-zinc-300">
                                                     <tr>
-                                                        <th className="w-8 sm:w-10 py-1 text-center border-r border-zinc-200 dark:border-white/10">
+                                                        <th className="w-8 sm:w-10 py-2 text-center border-r border-zinc-200 dark:border-white/10">
                                                             <input type="checkbox" checked={expenses.length > 0 && selectedExpenses.length === expenses.length} onChange={(e) => { if (e.target.checked) setSelectedExpenses(expenses.map((_, idx) => idx)); else setSelectedExpenses([]); }} className="rounded-sm border-zinc-300 cursor-pointer focus:ring-0" />
                                                         </th>
-                                                        <th className="px-2 py-1 border-r border-zinc-200 dark:border-white/10">
-                                                            <span className="sm:hidden">Artikel</span>
-                                                            <span className="hidden sm:inline">Artikel / Arbetsoperation</span>
-                                                        </th>
-                                                        <th className="hidden sm:table-cell px-2 py-1 border-r border-zinc-200 dark:border-white/10 text-center w-[60px]">Antal</th>
-                                                        <th className="px-2 py-1 w-[70px] sm:w-[100px] text-right">
-                                                            <span className="sm:hidden">Pris</span>
-                                                            <span className="hidden sm:inline">Bruttopris</span>
-                                                        </th>
-                                                        <th className="w-8 sm:w-10 py-1 text-center"></th>
+                                                        <th className="px-2 sm:px-3 py-2 border-r border-zinc-200 dark:border-white/10">Artikel</th>
+                                                        
+                                                        {/* Döljs på mobilen (hidden sm:table-cell) */}
+                                                        <th className="hidden sm:table-cell px-3 py-2 border-r border-zinc-200 dark:border-white/10 text-center w-[70px]">Antal</th>
+                                                        
+                                                        {/* Minskad yta på mobilen (w-[85px]) för att ge mer plats till artikel */}
+                                                        <th className="px-2 sm:px-3 py-2 w-[85px] sm:w-[110px] text-right">Bruttopris</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-zinc-200/80 dark:divide-white/5">
+                                                <tbody className="divide-y divide-zinc-200 dark:divide-white/5 bg-white dark:bg-[#1e293b]">
                                                     {expenses.map((ex, i) => (
-                                                        <tr key={i} className={`group transition-colors border-b border-zinc-200/80 dark:border-white/5 ${selectedExpenses.includes(i) ? 'bg-zinc-100 dark:bg-white/10' : 'hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
-                                                            <td className="p-1 sm:p-1.5 border-r border-zinc-200 dark:border-white/10 text-center">
+                                                        <tr key={i} className={`group transition-colors ${selectedExpenses.includes(i) ? 'bg-[#168a9c]/5' : 'hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                            <td className="p-1 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
                                                                 <input type="checkbox" checked={selectedExpenses.includes(i)} onChange={() => setSelectedExpenses(prev => prev.includes(i) ? prev.filter(idx => idx !== i) : [...prev, i])} className="rounded-sm border-zinc-300 cursor-pointer focus:ring-0" />
                                                             </td>
-                                                            <td className="p-1 sm:p-1.5 border-r border-zinc-200 dark:border-white/10">
+                                                            <td className="p-1 sm:p-2 border-r border-zinc-200 dark:border-white/10">
                                                                 <div className="flex items-center gap-1.5 sm:gap-2">
                                                                     <button type="button" onClick={() => { const n = [...expenses]; n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' }; setExpenses(n); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="shrink-0 p-1 hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors">
-                                                                        <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={13} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
+                                                                        <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={13} className="text-[#168a9c]" />
                                                                     </button>
-                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], desc: e.target.value }; setExpenses(n); }} className="w-full bg-transparent outline-none text-zinc-900 dark:text-white hover:underline cursor-text font-medium text-[12px] py-0.5" />
+                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], desc: e.target.value }; setExpenses(n); }} className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text text-[13px] py-0.5" />
                                                                 </div>
                                                             </td>
-                                                            <td className="hidden sm:table-cell p-1 sm:p-1.5 border-r border-zinc-200 dark:border-white/10 text-center">
-                                                                <input type="number" value={ex.antal || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], antal: e.target.value }; setExpenses(n); }} placeholder="1" className="w-full bg-transparent outline-none text-center text-[12px] py-0.5" />
+                                                            
+                                                            {/* Döljs på mobilen */}
+                                                            <td className="hidden sm:table-cell p-1 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
+                                                                <input type="number" value={ex.antal || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], antal: e.target.value }; setExpenses(n); }} placeholder="1" className="w-full bg-transparent outline-none text-center text-[13px]" />
                                                             </td>
-                                                            <td className="p-1 sm:p-1.5">
-                                                                <div className="flex items-center justify-end gap-1">
-                                                                    <input type="number" value={ex.amount || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], amount: e.target.value }; setExpenses(n); }} placeholder="0" className="w-full bg-transparent outline-none text-right font-mono font-medium min-w-0 text-[12px] py-0.5" />
-                                                                    <span className="text-zinc-400 text-[10px]">kr</span>
+                                                            
+                                                            <td className="p-1 sm:p-2">
+                                                                <div className="flex items-center justify-end gap-1 px-1">
+                                                                    <input type="number" value={ex.amount || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], amount: e.target.value }; setExpenses(n); }} placeholder="0" className="w-full min-w-0 bg-transparent outline-none text-right font-mono text-[13px]" />
+                                                                    <span className="text-zinc-400 text-[11px] shrink-0">kr</span>
                                                                 </div>
-                                                            </td>
-                                                            <td className="p-1 sm:p-1.5 text-center">
-                                                                {/* Papperskorgen alltid synlig (opacity-0 borttaget) */}
-                                                                <button type="button" onClick={() => { const n = expenses.filter((_, idx) => idx !== i); setExpenses(n); }} className="text-zinc-400 hover:text-red-500 p-1 transition-colors block mx-auto">
-                                                                    <SafeIcon name="trash-2" size={14}/>
-                                                                </button>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -731,159 +722,142 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 )}
 
                                 {activeTab === 'KOSTNADSFÖRDELNING' && (
-                                    <div className="animate-in fade-in duration-200 bg-white dark:bg-[#1e293b]">
-                                        <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
-                                            <tbody className="divide-y divide-zinc-200/80 dark:divide-white/5">
-                                                <tr className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
-                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10 w-[60%]">
-                                                        <div className="flex items-center gap-2">
-                                                            <SafeIcon name="tag" size={14} className="text-zinc-500 dark:text-zinc-400" />
-                                                            <span className="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px]">Reservdelar (Material)</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
-                                                        {materialCost.toLocaleString()} kr
-                                                    </td>
-                                                </tr>
-                                                <tr className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
-                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10">
-                                                        <div className="flex items-center gap-2">
-                                                            <SafeIcon name="wrench" size={14} className="text-zinc-500 dark:text-zinc-400" />
-                                                            <span className="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px]">Arbetskostnad (Tjänst)</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
-                                                        {laborCost.toLocaleString()} kr
-                                                    </td>
-                                                </tr>
-                                                <tr className="bg-[#f4f5f7] dark:bg-[#161f30]">
-                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10">
-                                                        <div className="flex items-center gap-2">
-                                                            <SafeIcon name="dollar-sign" size={14} className="text-[#f97316]" />
-                                                            <span className="font-black text-[#f97316] uppercase tracking-wider text-[11px]">Fastställt Totalpris</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono font-black text-[#f97316] text-[15px]">
-                                                        {finalPriceNum.toLocaleString()} kr
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                    <div className="animate-in fade-in duration-200">
+                                        <div className="border border-zinc-200 dark:border-white/10 rounded-sm overflow-hidden bg-white dark:bg-[#1e293b]">
+                                            <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
+                                                <tbody className="divide-y divide-zinc-200 dark:divide-white/5">
+                                                    <tr>
+                                                        <td className="px-4 py-3 border-r border-zinc-200 dark:border-white/10 w-[60%]">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <SafeIcon name="tag" size={14} className="text-zinc-400 shrink-0" />
+                                                                <span className="font-normal text-zinc-600 dark:text-zinc-300">Reservdelar (Material)</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
+                                                            {materialCost.toLocaleString()} kr
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="px-4 py-3 border-r border-zinc-200 dark:border-white/10">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <SafeIcon name="wrench" size={14} className="text-zinc-400 shrink-0" />
+                                                                <span className="font-normal text-zinc-600 dark:text-zinc-300">Arbetskostnad (Tjänst)</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
+                                                            {laborCost.toLocaleString()} kr
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="px-4 py-3 border-r border-zinc-200 dark:border-white/10">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <SafeIcon name="dollar-sign" size={14} className="text-[#168a9c] shrink-0" />
+                                                                <span className="font-bold text-zinc-900 dark:text-white">Fastställt Totalpris</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right font-mono font-bold text-zinc-900 dark:text-white text-[14px]">
+                                                            {finalPriceNum.toLocaleString()} kr
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
-                            {/* 3. Totalpris / Delbetalningar */}
-                            <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden flex flex-col md:flex-row">
-                                <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col justify-center bg-white dark:bg-[#1e293b]">
-                                    <div className="px-4 pt-3 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
-                                        <div className="font-bold text-[12px] uppercase tracking-wider pb-3 -mb-px border-b-2 text-zinc-900 dark:text-white border-zinc-900 dark:border-white flex items-center gap-2">
-                                            <SafeIcon name="dollar-sign" size={14} className="text-zinc-500" /> Summa (inkl. moms)
+                            {/* 3. Ekonomi */}
+                            <div className="w-full mb-8">
+                                <h2 className="text-[22px] font-normal text-zinc-800 dark:text-white mb-3">Kostnad</h2>
+                                <div className="w-full border border-zinc-200 dark:border-white/10 rounded-sm flex flex-col md:flex-row overflow-hidden bg-white dark:bg-[#1e293b]">
+                                    <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col p-5 bg-zinc-50/50 dark:bg-transparent">
+                                        <div className="font-medium text-[13px] text-zinc-500 mb-2 uppercase tracking-wider">Summa (inkl. moms)</div>
+                                        <div className="flex items-baseline mb-4">
+                                            <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl font-light tracking-tighter outline-none focus:text-[#168a9c] transition-colors" placeholder="0" />
+                                            <span className="text-lg font-medium text-zinc-400 ml-2">SEK</span>
                                         </div>
-                                    </div>
-                                    <div className="p-5">
-                                        <div className="flex items-baseline">
-                                            <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl font-light tracking-tighter outline-none focus:text-zinc-600 transition-colors" placeholder="0" />
-                                            <span className="text-lg font-bold text-zinc-400 ml-2">SEK</span>
-                                        </div>
-                                        <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-white/10 flex justify-between items-center text-[13px]">
-                                            <span className="font-bold text-zinc-500">Inbetalt hittills:</span>
-                                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{totalPaid.toLocaleString()} kr</span>
+                                        <div className="pt-4 border-t border-zinc-200 dark:border-white/10 flex justify-between items-center text-[13px] mt-auto">
+                                            <span className="text-zinc-500">Inbetalt hittills:</span>
+                                            <span className="font-mono font-medium text-emerald-600">{totalPaid.toLocaleString()} kr</span>
                                         </div>
                                         {totalPaid > 0 && (
-                                            <div className="mt-2 bg-zinc-50 dark:bg-white/5 p-2.5 rounded-lg flex justify-between items-center border border-zinc-200 dark:border-white/10">
-                                                <span className="text-[11px] text-zinc-700 dark:text-zinc-300 uppercase font-bold">Kvar att fakturera</span>
-                                                <span className="font-black text-orange-600 text-[16px]">{Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr</span>
+                                            <div className="mt-2 bg-orange-50 dark:bg-white/5 px-3 py-2 rounded-sm border border-orange-100 dark:border-white/10 flex justify-between items-center">
+                                                <span className="text-[12px] text-orange-800 dark:text-orange-300">Kvar att fakturera</span>
+                                                <span className="font-bold text-orange-600 text-[14px]">{Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr</span>
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                                <div className="flex-1 p-5">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5"><SafeIcon name="credit-card" size={12} className="text-zinc-400" />Delbetalningar</label>
-                                        <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-white/10 hover:bg-zinc-200 dark:hover:bg-white/20 transition-colors uppercase px-2 py-1 rounded flex items-center gap-1"><SafeIcon name="plus" size={10} /> Lägg till</button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {payments.map((p, i) => (
-                                            <div key={i} className="flex gap-2 items-center">
-                                                <input placeholder="T.ex. Swish" value={p.desc} onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} className="flex-1 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-2 px-3 text-[13px] font-medium outline-none rounded text-zinc-900 dark:text-white" />
-                                                <div className="relative w-24 shrink-0 flex items-center">
-                                                    <input placeholder="0" type="number" value={p.amount} onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} className="w-full bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-2 pl-2 pr-6 text-[13px] font-mono font-bold text-emerald-600 dark:text-emerald-400 outline-none text-right rounded" />
-                                                    <span className="absolute right-2 text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase pointer-events-none">kr</span>
+                                    <div className="flex-1 p-5">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="font-medium text-[13px] text-zinc-500 uppercase tracking-wider">Delbetalningar</span>
+                                            <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1"><SafeIcon name="plus" size={10} /> Lägg till</button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {payments.map((p, i) => (
+                                                <div key={i} className="flex gap-2 items-center">
+                                                    <input placeholder="T.ex. Swish" value={p.desc} onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} className="flex-1 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 px-3 text-[13px] outline-none rounded-sm text-zinc-900 dark:text-white focus:border-[#168a9c]" />
+                                                    <div className="relative w-24 shrink-0 flex items-center">
+                                                        <input placeholder="0" type="number" value={p.amount} onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} className="w-full bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 pl-2 pr-6 text-[13px] font-mono outline-none text-right rounded-sm focus:border-[#168a9c]" />
+                                                        <span className="absolute right-2 text-[10px] text-zinc-400 font-medium uppercase pointer-events-none">kr</span>
+                                                    </div>
+                                                    <button type="button" onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} className="text-zinc-400 hover:text-red-500 p-1"><SafeIcon name="trash-2" size={14} /></button>
                                                 </div>
-                                                <button type="button" onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} className="text-zinc-400 hover:text-red-500 p-1"><SafeIcon name="trash-2" size={14} /></button>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* 4. Arbetsanteckningar */}
-                            <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden focus-within:border-zinc-400 transition-colors">
-                                <div className="px-4 pt-3 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
-                                    <div className="font-bold text-[12px] uppercase tracking-wider pb-3 -mb-px border-b-2 text-zinc-900 dark:text-white border-zinc-900 dark:border-white flex items-center gap-2">
-                                        <SafeIcon name="terminal" size={14} className="text-zinc-500" /> Arbetsanteckningar
-                                    </div>
+                            <div className="w-full mb-8">
+                                <h2 className="text-[22px] font-normal text-zinc-800 dark:text-white mb-3">Anteckningar</h2>
+                                <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-sm overflow-hidden focus-within:border-[#168a9c] transition-colors">
+                                    <RichNoteEditor value={formData.kommentar} onChange={(newHTML) => setFormData(p => ({ ...p, kommentar: newHTML }))} />
                                 </div>
-                                <RichNoteEditor value={formData.kommentar} onChange={(newHTML) => setFormData(p => ({ ...p, kommentar: newHTML }))} />
                             </div>
 
-                            {/* 5. Mobilknappar för spara (visas endast på mobil) */}
-                            <div className="lg:hidden flex flex-col gap-2 w-full mt-2 mb-4">
-                                <button type="submit" className="w-full px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold text-[14px] shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
+                            {/* Mobilknappar */}
+                            <div className="lg:hidden flex flex-col gap-2 w-full mb-8">
+                                <button type="submit" className="w-full px-6 py-3.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-[14px] shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
                                     <SafeIcon name="save" size={18} /> SPARA JOBB
                                 </button>
                                 {formData.status !== 'KLAR' && (
-                                    <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-3.5 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold text-[14px] shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
+                                    <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-3.5 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold text-[14px] shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
                                         <SafeIcon name="check" size={16} /> SNABBVAL: KLAR
                                     </button>
                                 )}
                             </div>
+                        </div>
 
-                        </div> {/* SLUT VÄNSTER KOLUMN */}
-
-
-                        {/* === HÖGER KOLUMN (Sticky) === */}
+                        {/* === HÖGER KOLUMN === */}
                         <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 order-1 lg:order-2">
                             <div className="sticky top-[75px] lg:top-[90px] flex flex-col gap-3 lg:gap-4 pb-0 lg:pb-10">
                                 
                                 <div className="hidden lg:flex flex-col gap-2">
-                                    <button type="submit" className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white border border-orange-400/50 font-bold text-[13px] tracking-widest uppercase rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                    <button type="submit" className="w-full px-6 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-[13px] tracking-widest uppercase rounded-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
                                         <SafeIcon name="save" size={16} /> SPARA JOBB
                                     </button>
                                     {activeJob && activeJob.status !== 'KLAR' && (
-                                        <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-2.5 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold text-[12px] uppercase tracking-widest shadow-sm rounded-xl transition-colors flex items-center justify-center gap-2">
+                                        <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-2.5 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold text-[12px] uppercase tracking-widest shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
                                             <SafeIcon name="check" size={14} /> SNABBVAL: KLAR
                                         </button>
                                     )}
                                 </div>
 
-                                <div className="bg-white border border-zinc-200 rounded-xl p-3 lg:p-4 shadow-sm dark:bg-[#1e293b] dark:border-white/10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-10 h-10 bg-zinc-100 dark:bg-white/5 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0 overflow-hidden relative border border-zinc-200 dark:border-white/10 shadow-sm">
+                                {/* Fordonskortet */}
+                                <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden">
+                                    {/* Övre sektion: Grå bakgrund med underlinje */}
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
+                                        <div className="w-10 h-10 bg-white dark:bg-white/5 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0 overflow-hidden relative border border-zinc-200 dark:border-white/10 shadow-sm">
                                             {(() => {
                                                 const currentModel = fetchedCarInfo?.bilmodell || formData.bilmodell || '';
                                                 const brandId = (typeof window !== 'undefined' && window.getVehicleBrand) ? window.getVehicleBrand(currentModel) : null;
-                                                
                                                 return brandId ? (
                                                     <>
-                                                        <img 
-                                                            src={`https://cdn.simpleicons.org/${brandId === 'mercedes' ? 'mercedesbenz' : brandId}/3f3f46`} 
-                                                            className="w-6 h-6 object-contain dark:invert opacity-90" 
-                                                            alt="logo" 
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none';
-                                                                const fallback = e.currentTarget.parentElement.querySelector('.fallback-car');
-                                                                if(fallback) fallback.style.display = 'flex';
-                                                            }}
-                                                        />
-                                                        <div className="fallback-car hidden items-center justify-center absolute inset-0">
-                                                            <SafeIcon name="car" size={20} className="text-zinc-500" />
-                                                        </div>
+                                                        <img src={`https://cdn.simpleicons.org/${brandId === 'mercedes' ? 'mercedesbenz' : brandId}/3f3f46`} className="w-6 h-6 object-contain dark:invert opacity-90" alt="logo" onError={(e) => { e.currentTarget.style.display = 'none'; const f = e.currentTarget.parentElement.querySelector('.fallback-car'); if(f) f.style.display = 'flex'; }} />
+                                                        <div className="fallback-car hidden items-center justify-center absolute inset-0"><SafeIcon name="car" size={20} className="text-zinc-500" /></div>
                                                     </>
-                                                ) : (
-                                                    <SafeIcon name="car" size={22} className="text-zinc-500" />
-                                                );
+                                                ) : ( <SafeIcon name="car" size={22} className="text-zinc-500" /> );
                                             })()}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -894,7 +868,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     onChange={(e) => handleSpecChange('bilmodell', e.target.value)}
                                                     onBlur={(e) => saveSpec('bilmodell', e.target.value)}
                                                     placeholder="Märke & Modell..."
-                                                    className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-2 py-1 rounded outline-none font-bold text-[14px] text-zinc-900 dark:text-white truncate" 
+                                                    className="w-full bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-2 py-1 rounded outline-none font-bold text-[14px] text-zinc-900 dark:text-white truncate" 
                                                 />
                                             ) : (
                                                 <div className="font-bold text-[14px] text-zinc-900 dark:text-white truncate uppercase">
@@ -905,12 +879,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <button type="button" onClick={() => setIsEditingVehicle(!isEditingVehicle)} className={`p-1.5 rounded transition-colors shrink-0 ${isEditingVehicle ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5'}`}>
+                                        <button type="button" onClick={() => setIsEditingVehicle(!isEditingVehicle)} className={`p-1.5 rounded transition-colors shrink-0 ${isEditingVehicle ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/5'}`}>
                                             <SafeIcon name={isEditingVehicle ? "check" : "edit-2"} size={16} />
                                         </button>
                                     </div>
                                     
-                                    <div className="flex flex-col gap-0.5 text-[13px] text-zinc-800 dark:text-zinc-200">
+                                    {/* Nedre sektion: Vit bakgrund, ingen ruta i ruta */}
+                                    <div className="flex flex-col py-2 bg-white dark:bg-[#1e293b]">
                                         {[
                                             { label: 'Reg.Nr.:', val: formData.regnr, id: 'regnr', uppercase: true, action: (v) => setFormData(p => ({...p, regnr: v.toUpperCase()})) },
                                             { label: 'Ch.nr:', val: fetchedCarInfo?.vin || '', id: 'vin', uppercase: true, action: (v) => handleSpecChange('vin', v.toUpperCase()), blur: (v) => saveSpec('vin', v) },
@@ -918,15 +893,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             { label: 'År:', val: fetchedCarInfo?.årsmodell || '', id: 'årsmodell', action: (v) => handleSpecChange('årsmodell', v), blur: (v) => saveSpec('årsmodell', v) },
                                             { label: 'Miltal:', val: fetchedCarInfo?.miltal || '', id: 'miltal', action: (v) => handleSpecChange('miltal', v), blur: (v) => saveSpec('miltal', v) },
                                             { label: 'Olje:', val: fetchedCarInfo?.oljevolym || '', id: 'oljevolym', action: (v) => handleSpecChange('oljevolym', v), blur: (v) => saveSpec('oljevolym', v) }
-                                        ].map(field => (
-                                            <div key={field.id} className="flex items-center group">
-                                                <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">{field.label}</span>
+                                        ].map((field, idx) => (
+                                            <div key={field.id} className={`flex items-center group min-h-[26px] px-4 text-[13px] transition-colors duration-300 ${copiedField === field.id ? 'bg-emerald-50 dark:bg-emerald-500/10' : (idx % 2 === 0 ? 'bg-white dark:bg-[#1e293b]' : 'bg-zinc-50/50 dark:bg-[#161f30]/50')}`}>
+                                                <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">{field.label}</span>
                                                 {isEditingVehicle ? (
                                                     <input 
                                                         value={field.val} 
                                                         onChange={e => field.action(e.target.value)}
                                                         onBlur={e => field.blur ? field.blur(e.target.value) : null}
-                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0 rounded outline-none text-zinc-900 dark:text-white ${field.uppercase ? 'uppercase' : ''}`} 
+                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-sm outline-none text-zinc-900 dark:text-white ${field.uppercase ? 'uppercase' : ''}`} 
                                                         placeholder="-" 
                                                     />
                                                 ) : (
@@ -938,7 +913,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                 setTimeout(() => setCopiedField(null), 2000);
                                                             }
                                                         }}
-                                                        className={`w-full bg-transparent text-zinc-800 dark:text-zinc-200 cursor-pointer flex items-center justify-between hover:text-zinc-500 transition-colors ${field.uppercase ? 'uppercase' : ''}`}
+                                                        className={`w-full bg-transparent cursor-pointer flex items-center justify-between transition-colors duration-300 ${copiedField === field.id ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-zinc-800 dark:text-zinc-200 hover:text-[#168a9c]'} ${field.uppercase ? 'uppercase' : ''}`}
                                                         title={field.val ? "Klicka för att kopiera" : ""}
                                                     >
                                                         <span className="truncate">{field.val || '-'}</span>
@@ -951,25 +926,28 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 )}
                                             </div>
                                         ))}
+                                        {isEditingVehicle && (
+                                            <div className="px-4 pb-2 pt-3">
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
+                                                        if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
+                                                    }}
+                                                    className="w-full py-1.5 border border-[#168a9c] text-[#168a9c] hover:bg-[#168a9c] hover:text-white rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                                >
+                                                    <SafeIcon name="refresh-cw" size={14} /> Hämta Fordonsdata
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
-                                    
-                                    {isEditingVehicle && (
-                                        <button 
-                                            type="button" 
-                                            onClick={() => {
-                                                if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
-                                            }}
-                                            className="w-full mt-4 py-2 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                                        >
-                                            <SafeIcon name="refresh-cw" size={14} /> Hämta Fordonsdata
-                                        </button>
-                                    )}
                                 </div>
 
-                                <div className="bg-white border border-zinc-200 rounded-xl p-3 lg:p-4 shadow-sm dark:bg-[#1e293b] dark:border-white/10">
-                                    <div className="flex items-center gap-3 mb-3 lg:mb-4">
-                                        <div className="w-8 h-8 lg:w-10 lg:h-10 bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 rounded-full flex items-center justify-center text-zinc-500 font-bold text-[12px] lg:text-[14px] shrink-0">
+                                {/* Kund- och Datumkortet */}
+                                <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden">
+                                    {/* Övre sektion: Grå bakgrund med underlinje */}
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
+                                        <div className="w-10 h-10 bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 rounded-full flex items-center justify-center text-zinc-500 font-bold text-[14px] shrink-0 shadow-sm">
                                             {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col">
@@ -978,14 +956,16 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 value={formData.kundnamn} 
                                                 onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
                                                 placeholder="Kundens namn"
-                                                className="w-full bg-transparent outline-none font-bold text-[13px] lg:text-[14px] text-zinc-900 dark:text-white hover:underline truncate" 
+                                                className="w-full bg-transparent outline-none font-bold text-[14px] text-[#168a9c] hover:underline underline-offset-2 truncate" 
                                             />
-                                            <span className="text-[11px] lg:text-[13px] text-zinc-500">Kund</span>
+                                            <span className="text-[12px] text-zinc-500 mt-0.5">Kund</span>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-0.5 text-[13px] pt-3 border-t border-zinc-100 dark:border-white/10">
-                                        <div className="flex items-center relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-datum-input'); if(el && el.showPicker) el.showPicker(); }}>
-                                            <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Bokat:</span>
+                                    
+                                    {/* Nedre sektion: Vit bakgrund, ingen ruta i ruta */}
+                                    <div className="flex flex-col py-2 bg-white dark:bg-[#1e293b]">
+                                        <div className="flex items-center min-h-[26px] px-4 bg-white dark:bg-[#1e293b] text-[13px] relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-datum-input'); if(el && el.showPicker) el.showPicker(); }}>
+                                            <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">Bokat:</span>
                                             <input 
                                                 id="bokat-datum-input"
                                                 type="date" 
@@ -993,10 +973,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
                                                 className="w-full bg-transparent outline-none text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
                                             />
-                                            <SafeIcon name="calendar" size={14} className="text-zinc-400 absolute right-1 group-hover:text-zinc-700 transition-colors pointer-events-none" />
+                                            <SafeIcon name="calendar" size={14} className="text-zinc-400 absolute right-4 group-hover:text-zinc-700 transition-colors pointer-events-none" />
                                         </div>
-                                        <div className="flex items-center relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-tid-input'); if(el && el.showPicker) el.showPicker(); }}>
-                                            <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Tid:</span>
+                                        
+                                        <div className="flex items-center min-h-[26px] px-4 bg-zinc-50/50 dark:bg-[#161f30]/50 text-[13px] relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-tid-input'); if(el && el.showPicker) el.showPicker(); }}>
+                                            <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">Tid:</span>
                                             <input 
                                                 id="bokat-tid-input"
                                                 type="time" 
@@ -1004,13 +985,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
                                                 className="w-full bg-transparent outline-none text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
                                             />
-                                            <SafeIcon name="clock" size={14} className="text-zinc-400 absolute right-1 group-hover:text-zinc-700 transition-colors pointer-events-none" />
+                                            <SafeIcon name="clock" size={14} className="text-zinc-400 absolute right-4 group-hover:text-zinc-700 transition-colors pointer-events-none" />
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-                        </div> {/* SLUT HÖGER KOLUMN */}
+                        </div>
 
                     </form>
                 </div>
