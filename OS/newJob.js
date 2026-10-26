@@ -200,6 +200,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         const previousJobs = allJobs.filter(j => String(j.regnr || '').toUpperCase().replace(/\s+/g, '') === cleanReg).sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
         const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
 
+        // NYTT: Fyller i kundnamn automatiskt om vi hittar en tidigare order på detta regnr!
+        if (lastJob && lastJob.kundnamn) {
+            setFormData(p => p.kundnamn ? p : { ...p, kundnamn: lastJob.kundnamn });
+        }
+
         const updateCarInfo = (specs) => {
             if (!isMounted) return;
             const isHistoryUnknown = lastJob && lastJob.bilmodell && lastJob.bilmodell.toLowerCase().includes('okänd');
@@ -329,6 +334,17 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     return (
         <div className="flex flex-col text-zinc-900 dark:text-white pb-0 md:pb-10 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full min-h-[calc(100vh-80px)]">
             
+            {/* DATALISTOR FÖR AUTOCOMPLETE (Syns ej, ger bara sökförslag) */}
+            <datalist id="customers-list">
+                {[...new Set(allJobs.map(j => j?.kundnamn ? String(j.kundnamn) : '').filter(Boolean))].sort().map(c => <option key={c} value={c} />)}
+            </datalist>
+            <datalist id="regnr-list">
+                {[...new Set(allJobs.map(j => j?.regnr ? String(j.regnr) : '').filter(Boolean))].sort().map(r => <option key={r} value={r} />)}
+            </datalist>
+            <datalist id="search-history">
+                {[...new Set([...allJobs.map(j => j?.kundnamn ? String(j.kundnamn) : ''), ...allJobs.map(j => j?.regnr ? String(j.regnr) : '')].filter(Boolean))].sort().map(item => <option key={item} value={item} />)}
+            </datalist>
+
             {/* === STICKY HEADER === */}
             <div className="sticky top-[-16px] lg:top-[-32px] z-[100] pt-[28px] lg:pt-[32px] pb-4 px-4 lg:px-8 mb-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-white/10 gap-4 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl shadow-sm -mt-4 lg:-mt-8 w-full lg:-mx-8 lg:w-[calc(100%+64px)]">
                 <div className="flex items-center gap-4">
@@ -370,6 +386,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     <SafeIcon name="search" size={14} className="absolute left-0 bottom-2 text-zinc-400" />
                                     <input 
                                         type="text" 
+                                        list="search-history"
                                         autoFocus={typeof window !== 'undefined' && window.innerWidth > 768}
                                         value={searchQuery} 
                                         onChange={e => setSearchQuery(e.target.value)} 
@@ -581,6 +598,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                 <td colSpan="9" className="px-3.5 pb-4 pt-2">
                                                                     <div className="flex flex-wrap items-center gap-2 mb-3">
                                                                         <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenExistingOrder(job); }} className="px-3 py-1 rounded border border-orange-500/60 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Öppna order</button>
+                                                                        
+                                                                        <button type="button" onClick={(e) => { 
+                                                                            e.stopPropagation(); 
+                                                                            setFormData(p => ({ ...p, kundnamn: job.kundnamn || '', regnr: job.regnr || '', bilmodell: job.bilmodell || '', motorkod: job.motorkod || '', årsmodell: job.årsmodell || '', vin: job.vin || '', miltal: job.miltal || '', datum: today, tid: '16:30', status: 'BOKAD', paket: 'Standard', kundpris: '0', kommentar: '' }));
+                                                                            setExpenses(emptyExpenses); setPayments(emptyPayments); setActiveJob(null); setStep('DETAIL');
+                                                                        }} className="px-3 py-1 rounded border border-[#168a9c]/50 text-[#168a9c] hover:bg-[#168a9c] hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Skapa ny order</button>
+
                                                                         <button type="button" onClick={async (e) => { e.stopPropagation(); await window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); }} className="px-3 py-1 rounded border border-emerald-500/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Markera klar</button>
                                                                         <button type="button" onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) window.db.collection("jobs").doc(job.id).update({ deleted: true }); }} className="ml-auto px-2.5 py-1 rounded border border-red-300 dark:border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-colors">Radera</button>
                                                                     </div>
@@ -923,40 +947,42 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     {/* Nedre sektion: Vit bakgrund, ingen ruta i ruta */}
                                     <div className="flex flex-col py-2 bg-white dark:bg-[#1e293b]">
                                         {[
-                                            { label: 'Reg.Nr.:', val: formData.regnr, id: 'regnr', uppercase: true, action: (v) => setFormData(p => ({...p, regnr: v.toUpperCase()})) },
-                                            { label: 'Ch.nr:', val: fetchedCarInfo?.vin || '', id: 'vin', uppercase: true, action: (v) => handleSpecChange('vin', v.toUpperCase()), blur: (v) => saveSpec('vin', v) },
-                                            { label: 'Motor:', val: fetchedCarInfo?.motorkod || '', id: 'motorkod', uppercase: true, action: (v) => handleSpecChange('motorkod', v), blur: (v) => saveSpec('motorkod', v) },
-                                            { label: 'År:', val: fetchedCarInfo?.årsmodell || '', id: 'årsmodell', action: (v) => handleSpecChange('årsmodell', v), blur: (v) => saveSpec('årsmodell', v) },
-                                            { label: 'Miltal:', val: fetchedCarInfo?.miltal || '', id: 'miltal', action: (v) => handleSpecChange('miltal', v), blur: (v) => saveSpec('miltal', v) },
-                                            { label: 'Olje:', val: fetchedCarInfo?.oljevolym || '', id: 'oljevolym', action: (v) => handleSpecChange('oljevolym', v), blur: (v) => saveSpec('oljevolym', v) }
-                                        ].map((field, idx) => (
-                                            <div key={field.id} className={`flex items-center group min-h-[26px] px-4 text-[13px] transition-colors duration-300 ${copiedField === field.id ? 'bg-emerald-50 dark:bg-emerald-500/10' : (idx % 2 === 0 ? 'bg-white dark:bg-[#1e293b]' : 'bg-zinc-50/50 dark:bg-[#161f30]/50')}`}>
-                                                <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">{field.label}</span>
+                                            { label: 'Reg.Nr.:', val: formData.regnr, id: 'regnr', uppercase: true, listId: 'regnr-list', action: (v) => setFormData(p => ({...p, regnr: (v || '').toUpperCase()})) },
+                                            { label: 'Ch.nr:', val: fetchedCarInfo?.vin, id: 'vin', uppercase: true, action: (v) => handleSpecChange('vin', (v || '').toUpperCase()), blur: (v) => saveSpec('vin', v || '') },
+                                            { label: 'Motor:', val: fetchedCarInfo?.motorkod, id: 'motorkod', uppercase: true, action: (v) => handleSpecChange('motorkod', v || ''), blur: (v) => saveSpec('motorkod', v || '') },
+                                            { label: 'År:', val: fetchedCarInfo?.årsmodell, id: 'årsmodell', action: (v) => handleSpecChange('årsmodell', v || ''), blur: (v) => saveSpec('årsmodell', v || '') },
+                                            { label: 'Miltal:', val: fetchedCarInfo?.miltal, id: 'miltal', action: (v) => handleSpecChange('miltal', v || ''), blur: (v) => saveSpec('miltal', v || '') },
+                                            { label: 'Olje:', val: fetchedCarInfo?.oljevolym, id: 'oljevolym', action: (v) => handleSpecChange('oljevolym', v || ''), blur: (v) => saveSpec('oljevolym', v || '') }
+                                        ].map((f, idx) => (
+                                            <div key={f.id} className={`flex items-center group min-h-[26px] px-4 text-[13px] transition-colors duration-300 ${copiedField === f.id ? 'bg-emerald-50 dark:bg-emerald-500/10' : (idx % 2 === 0 ? 'bg-white dark:bg-[#1e293b]' : 'bg-zinc-50/50 dark:bg-[#161f30]/50')}`}>
+                                                <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">{f.label}</span>
                                                 {isEditingVehicle ? (
                                                     <input 
-                                                        value={field.val} 
-                                                        onChange={e => field.action(e.target.value)}
-                                                        onBlur={e => field.blur ? field.blur(e.target.value) : null}
-                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-sm outline-none text-zinc-900 dark:text-white ${field.uppercase ? 'uppercase' : ''}`} 
+                                                        type="text"
+                                                        list={f.listId || undefined}
+                                                        value={f.val || ''} 
+                                                        onChange={e => f.action(e.target.value)}
+                                                        onBlur={e => f.blur ? f.blur(e.target.value) : undefined}
+                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-sm outline-none text-zinc-900 dark:text-white ${f.uppercase ? 'uppercase' : ''}`} 
                                                         placeholder="-" 
                                                     />
                                                 ) : (
                                                     <div 
                                                         onClick={() => {
-                                                            if(field.val) {
-                                                                navigator.clipboard.writeText(field.val);
-                                                                setCopiedField(field.id);
+                                                            if(f.val) {
+                                                                navigator.clipboard.writeText(f.val);
+                                                                setCopiedField(f.id);
                                                                 setTimeout(() => setCopiedField(null), 2000);
                                                             }
                                                         }}
-                                                        className={`w-full bg-transparent cursor-pointer flex items-center justify-between transition-colors duration-300 ${copiedField === field.id ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-zinc-800 dark:text-zinc-200 hover:text-[#168a9c]'} ${field.uppercase ? 'uppercase' : ''}`}
-                                                        title={field.val ? "Klicka för att kopiera" : ""}
+                                                        className={`w-full bg-transparent cursor-pointer flex items-center justify-between transition-colors duration-300 ${copiedField === f.id ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-zinc-800 dark:text-zinc-200 hover:text-[#168a9c]'} ${f.uppercase ? 'uppercase' : ''}`}
+                                                        title={f.val ? "Klicka för att kopiera" : ""}
                                                     >
-                                                        <span className="truncate">{field.val || '-'}</span>
-                                                        {copiedField === field.id ? (
+                                                        <span className="truncate">{f.val || '-'}</span>
+                                                        {copiedField === f.id ? (
                                                             <SafeIcon name="check" size={14} className="text-emerald-500 shrink-0" />
                                                         ) : (
-                                                            field.val && <SafeIcon name="copy" size={12} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                                            f.val && <SafeIcon name="copy" size={12} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                                                         )}
                                                     </div>
                                                 )}
@@ -981,7 +1007,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                                 {/* Kund- och Datumkortet */}
                                 <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden">
-                                    {/* Övre sektion: Grå bakgrund med underlinje */}
                                     <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
                                         <div className="w-10 h-10 bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 rounded-full flex items-center justify-center text-zinc-500 font-bold text-[14px] shrink-0 shadow-sm">
                                             {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
@@ -989,7 +1014,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         <div className="flex-1 min-w-0 flex flex-col">
                                             <input 
                                                 type="text" 
-                                                value={formData.kundnamn} 
+                                                list="customers-list"
+                                                value={formData.kundnamn || ''} 
                                                 onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
                                                 placeholder="Kundens namn"
                                                 className="w-full bg-transparent outline-none font-bold text-[14px] text-[#168a9c] hover:underline underline-offset-2 truncate" 
@@ -998,14 +1024,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </div>
                                     </div>
                                     
-                                    {/* Nedre sektion: Vit bakgrund, ingen ruta i ruta */}
                                     <div className="flex flex-col py-2 bg-white dark:bg-[#1e293b]">
                                         <div className="flex items-center min-h-[26px] px-4 bg-white dark:bg-[#1e293b] text-[13px] relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-datum-input'); if(el && el.showPicker) el.showPicker(); }}>
                                             <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">Bokat:</span>
                                             <input 
                                                 id="bokat-datum-input"
                                                 type="date" 
-                                                value={formData.datum} 
+                                                value={formData.datum || ''} 
                                                 onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
                                                 className="w-full bg-transparent outline-none text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
                                             />
@@ -1017,7 +1042,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <input 
                                                 id="bokat-tid-input"
                                                 type="time" 
-                                                value={formData.tid} 
+                                                value={formData.tid || ''} 
                                                 onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
                                                 className="w-full bg-transparent outline-none text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
                                             />
