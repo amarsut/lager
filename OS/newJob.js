@@ -82,7 +82,7 @@ const RichNoteEditor = ({ value, onChange }) => {
                 </button>
             </div>
             <div className="relative">
-                {!hasContent && <div className="absolute top-4 left-4 text-zinc-400 font-medium text-[13px] pointer-events-none">Anteckningar, felsökningsprotokoll...</div>}
+                {!hasContent && <div className="absolute top-3 left-4 text-zinc-400 font-medium text-[13px] pointer-events-none">Anteckningar, felsökningsprotokoll...</div>}
                 <div
                     ref={editorRef}
                     contentEditable
@@ -90,7 +90,7 @@ const RichNoteEditor = ({ value, onChange }) => {
                     onPaste={handlePaste}
                     onBlur={(e) => onChange(e.currentTarget.innerHTML)} 
                     dangerouslySetInnerHTML={{ __html: value }}
-                    className="p-4 min-h-[80px] max-h-[250px] overflow-y-auto text-[13px] leading-relaxed text-zinc-900 dark:text-white outline-none cursor-text [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1 [&_*]:!text-[13px] [&_*]:!leading-relaxed"
+                    className="p-3 min-h-[80px] max-h-[250px] overflow-y-auto text-[13px] leading-relaxed text-zinc-900 dark:text-white outline-none cursor-text [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1 [&_*]:!text-[13px] [&_*]:!leading-relaxed"
                     style={{ whiteSpace: 'pre-wrap' }}
                 />
             </div>
@@ -137,23 +137,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [activeJob, setActiveJob] = React.useState(editingJob || null);
     const [isEditingVehicle, setIsEditingVehicle] = React.useState(false);
     const [copiedField, setCopiedField] = React.useState(null);
-    const [copiedRegId, setCopiedRegId] = React.useState(null);
-    const [specsMap, setSpecsMap] = React.useState({});
-    React.useEffect(() => {
-        try { const cached = JSON.parse(localStorage.getItem('os_vehicle_cache') || '{}'); if (Object.keys(cached).length > 0) setSpecsMap(prev => ({ ...cached, ...prev })); } catch (e) {}
-        if (!window.db) return;
-        const unsub = window.db.collection('vehicleSpecs').onSnapshot(snap => { const m = {}; snap.forEach(d => { m[d.id.toUpperCase().trim()] = d.data(); }); setSpecsMap(prev => ({ ...prev, ...m })); }, () => {});
-        return () => unsub();
-    }, []);
     const [expandedMatchIds, setExpandedMatchIds] = React.useState([]);
-
-    const handleCopyDesktop = React.useCallback((e, regnr, jobId) => {
-        e.stopPropagation();
-        if (!regnr || regnr === '-') return;
-        navigator.clipboard.writeText(regnr);
-        setCopiedRegId(jobId);
-        setTimeout(() => setCopiedRegId(null), 2000);
-    }, []);
 
     const toggleExpandMatch = (id) => {
         setExpandedMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -439,18 +423,25 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                     {matchingOrders.length > 0 ? (
                         <div className="w-full animate-in fade-in duration-300 mt-2">
+                                {/* MOBILVY FÖR TABELLEN (Visas bara på små skärmar) */}
                                 <div className="block lg:hidden space-y-2.5">
                                     {matchingOrders.map(job => {
                                         let formattedModel = job.bilmodell ? job.bilmodell.toUpperCase() : 'OKÄND MODELL';
                                         formattedModel = formattedModel.replace(/VOLKSWAGEN/i, 'VW').replace(/MERCEDES-BENZ/i, 'MB').replace(/MERCEDES/i, 'MB').replace(/LAND ROVER/i, 'LR');
                                         const brandId = (typeof window !== 'undefined' && window.getVehicleBrand) ? window.getVehicleBrand(job.bilmodell) : null;
-                                        const cleanComment = job.kommentar ? String(job.kommentar).replace(/<[^>]*>?/gm, '').trim() : '';
+                                        
+                                        const cleanComment = job.kommentar ? String(job.kommentar).replace(/<[^>]*>?/gm, '').replace(/&amp;/g, '&').trim() : '';
+                                        
+                                        const cleanReg = (job.regnr || '').toUpperCase().replace(/\s+/g, '');
+                                        const chnr = job.vin || (vehicleCache && vehicleCache[cleanReg]?.vin) || '-';
+                                        
+                                        const displayStatus = (job.status || 'BOKAD').toUpperCase();
                                         
                                         return (
-                                            <div key={job.id} onClick={() => handleOpenExistingOrder(job)} className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-sm rounded-[4px] p-3 cursor-pointer hover:border-[#168a9c] transition-colors">
-                                                <div className="flex items-center justify-between mb-2.5">
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="w-8 h-8 bg-[#6b7280] rounded-[4px] flex items-center justify-center shrink-0 overflow-hidden relative">
+                                            <div key={job.id} onClick={() => handleOpenExistingOrder(job)} className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-sm rounded-2xl p-3 cursor-pointer hover:border-[#168a9c] transition-colors">
+                                                <div className="flex items-center mb-2">
+                                                    <div className="flex items-center gap-2.5 truncate">
+                                                        <div className="w-8 h-8 bg-[#6b7280] rounded-xl flex items-center justify-center shrink-0 overflow-hidden relative">
                                                         {brandId ? (
                                                             <>
                                                                 <img src={`https://cdn.simpleicons.org/${brandId === 'mercedes' ? 'mercedesbenz' : brandId}/white`} className="w-5 h-5 object-contain" alt="logo" onError={(e) => { e.currentTarget.style.display = 'none'; const f = e.currentTarget.parentElement.querySelector('.fallback-car'); if(f) f.style.display = 'flex'; }} />
@@ -458,20 +449,32 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                             </>
                                                         ) : ( <SafeIcon name="car" size={16} className="text-white" /> )}
                                                         </div>
-                                                        <span className="text-[#168a9c] font-medium text-[15px] uppercase underline underline-offset-2">{formattedModel}</span>
+                                                        <span className="text-[#168a9c] font-medium text-[15px] uppercase underline underline-offset-2 truncate">{formattedModel}</span>
                                                     </div>
                                                 </div>
-                                                <div className="space-y-1 text-[13px] text-zinc-800 dark:text-zinc-200">
+                                                <div className="flex flex-col gap-0.5 text-[13px] text-zinc-800 dark:text-zinc-200">
                                                     <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Reg.Nr.:</span> <span className="uppercase">{job.regnr || '-'}</span></div>
-                                                    <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Ch.nr:</span> <span className="uppercase">{job.vin || (vehicleCache && vehicleCache[(job.regnr||'').toUpperCase().replace(/\s+/g,'')]?.vin) || '-'}</span></div>
-                                                    <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Kund:</span> <span className="capitalize">{job.kundnamn || '-'}</span></div>
+                                                    <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Ch.nr:</span> <span className="uppercase truncate">{chnr}</span></div>
+                                                    <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Kund:</span> <span className="capitalize truncate">{job.kundnamn || '-'}</span></div>
                                                     <div className="flex items-center"><span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Datum:</span> <span>{job.datum ? job.datum.split('T')[0] : '-'}</span></div>
-                                                    <div className="pt-2 mt-1 border-t border-zinc-100 dark:border-white/5">
+                                                    <div className="flex items-center">
+                                                        <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Status:</span> 
+                                                        <span className={`uppercase font-medium ${
+                                                            displayStatus === 'KLAR' ? 'text-[#00b074] dark:text-emerald-400' :
+                                                            displayStatus === 'BOKAD' ? 'text-orange-600 dark:text-orange-400' :
+                                                            displayStatus === 'OFFERERAD' ? 'text-blue-600 dark:text-blue-400' :
+                                                            displayStatus === 'FAKTURERAS' ? 'text-[#0096c7] dark:text-sky-400' :
+                                                            'text-zinc-700 dark:text-zinc-300'
+                                                        }`}>
+                                                            {displayStatus}
+                                                        </span>
+                                                    </div>
+                                                    <div className="pt-1.5 mt-1 border-t border-zinc-100 dark:border-white/5">
                                                         <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                                                             <SafeIcon name="wrench" size={12} className="text-[#168a9c]"/>
                                                             {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                                                         </div>
-                                                        {cleanComment && <div className="text-[11px] text-zinc-500 italic line-clamp-2 leading-tight mt-1 pr-2">{cleanComment}</div>}
+                                                        {cleanComment && <div className="text-[11px] italic line-clamp-2 leading-tight mt-0.5 pr-2">{cleanComment}</div>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -479,8 +482,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     })}
                                 </div>
 
-                                {/* TABELL MATCHAD MOT DASHBOARD.JS */}
-                                <div className="hidden lg:block overflow-x-auto bg-white dark:bg-[#1e293b] border border-zinc-300 dark:border-white/10 shadow-sm rounded-xl mt-2">
+                                {/* DATORVY FÖR TABELLEN (Visas bara på stora skärmar) */}
+                                <div className="hidden lg:block overflow-x-auto bg-white dark:bg-[#1e293b] border border-zinc-300 dark:border-white/10 shadow-sm rounded-xl">
                                     <table className="w-full text-left border-collapse min-w-[1200px]">
                                         <thead className="bg-[#f4f5f7] dark:bg-[#161f30] text-zinc-800 dark:text-zinc-200 text-[12px] font-bold border-b border-zinc-300 dark:border-white/15 select-none">
                                             <tr className="divide-x divide-zinc-300 dark:divide-white/15">
@@ -501,20 +504,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 const isExpanded = expandedMatchIds.includes(job.id);
                                                 const formattedDate = job.datum ? job.datum.replace('T', ' ').substring(0, 16) : '';
                                                 const serviceTitle = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
-                                                const cleanComment = typeof stripHtml === 'function' ? stripHtml(job.kommentar) : (job.kommentar ? String(job.kommentar).replace(/<[^>]*>?/gm, '').replace(/&amp;/g, '&').trim() : '');
+                                                const cleanComment = job.kommentar ? String(job.kommentar).replace(/<[^>]*>?/gm, '').replace(/&amp;/g, '&').trim() : '';
                                                 
-                                                const regKey = (job.regnr || '').toUpperCase().trim();
-                                                const specData = specsMap[regKey] || (vehicleCache && vehicleCache[regKey]) || {};
-                                                let rawModel = specData.model || job.bilmodell || '';
+                                                let rawModel = job.bilmodell || '';
                                                 let brandId = (typeof window !== 'undefined' && window.getVehicleBrand) ? window.getVehicleBrand(rawModel) : null;
-                                                let displayBrand = '';
-                                                let cleanModel = rawModel;
-                                                const rawBrandStr = (specData.fabrikat || specData.brand_manual || (typeof getLocalBrand === 'function' ? getLocalBrand(rawModel, specData.fabrikat) : '') || '').toUpperCase();
-                                                if (rawBrandStr) {
-                                                    displayBrand = rawBrandStr === 'VOLKSWAGEN' ? 'VW' : rawBrandStr === 'MERCEDESBENZ' ? 'MB' : rawBrandStr;
-                                                    if (cleanModel.toUpperCase().startsWith(rawBrandStr)) cleanModel = cleanModel.substring(rawBrandStr.length).trim();
-                                                    else if (cleanModel.toUpperCase().startsWith(displayBrand)) cleanModel = cleanModel.substring(displayBrand.length).trim();
-                                                } else
+                                                let displayBrand = '-';
+                                                let cleanModel = rawModel.toUpperCase();
                                                 if (brandId) {
                                                     displayBrand = brandId === 'volkswagen' ? 'VW' : brandId === 'mercedesbenz' ? 'MB' : brandId.toUpperCase();
                                                     if (cleanModel.startsWith(displayBrand)) {
@@ -524,7 +519,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     }
                                                 }
 
-                                                const chnr = specData.vin || specData.chassinummer || job.vin || '';
+                                                const cleanReg = (job.regnr || '').toUpperCase().replace(/\s+/g, '');
+                                                const chnr = job.vin || (vehicleCache && vehicleCache[cleanReg]?.vin) || (vehicleCache && vehicleCache[(job.regnr || '').toUpperCase()]?.vin) || '-';
                                                 const displayStatus = (job.status || 'BOKAD').toUpperCase();
 
                                                 return (
@@ -540,7 +536,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     <SafeIcon name="wrench" size={13} className="text-teal-600 dark:text-teal-400 shrink-0" />
                                                                     <span className="font-medium text-zinc-900 dark:text-white">{serviceTitle}</span>
                                                                     {cleanComment && !isExpanded && (
-                                                                        <span className="text-zinc-400 dark:text-zinc-500 text-[12px] truncate">
+                                                                        <span className="text-zinc-400 dark:text-zinc-500 text-[12px] truncate ml-1">
                                                                             – {cleanComment}
                                                                         </span>
                                                                     )}
@@ -549,8 +545,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                             <td className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 uppercase max-w-[170px] truncate align-middle">
                                                                 {job.kundnamn || ''}
                                                             </td>
-                                                            <td onClick={(e) => handleCopyDesktop(e, job.regnr, job.id)} title="Klicka för att kopiera Reg.nr" className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 hover:text-orange-500 dark:hover:text-orange-400 font-medium whitespace-nowrap align-middle">
-                                                                {copiedRegId === job.id ? <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Kopierad!</span> : (job.regnr === '-' ? '' : (job.regnr || ''))}
+                                                            <td className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 hover:text-orange-500 dark:hover:text-orange-400 font-medium whitespace-nowrap align-middle">
+                                                                {job.regnr || '-'}
                                                             </td>
                                                             <td className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 whitespace-nowrap align-middle">
                                                                 {formattedDate}
@@ -573,10 +569,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                 {displayBrand}
                                                             </td>
                                                             <td className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[170px] align-middle" title={cleanModel}>
-                                                                {cleanModel || ''}
+                                                                {cleanModel || '-'}
                                                             </td>
                                                             <td className="px-3.5 py-3 text-right text-zinc-800 dark:text-zinc-200 whitespace-nowrap align-middle">
-                                                                {(() => { const p = parseInt(job.kundpris) || 0; const b = parseInt(job.betaltBelopp) || 0; const r = Math.max(0, p - b); return r > 0 ? `${r.toLocaleString('sv-SE')} kr` : (p > 0 ? `${p.toLocaleString('sv-SE')} kr` : ''); })()}
+                                                                {job.kundpris ? `${parseInt(job.kundpris).toLocaleString('sv-SE')} kr` : '0 kr'}
                                                             </td>
                                                         </tr>
                                                         {isExpanded && (
@@ -720,9 +716,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     <span className="text-zinc-400 text-[10px]">kr</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="p-1 sm:p-1.5 text-center relative">
-                                                                <button type="button" onClick={() => { const n = expenses.filter((_, idx) => idx !== i); setExpenses(n); }} className="text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity relative z-10 block mx-auto lg:opacity-100">
-                                                                    <SafeIcon name="trash-2" size={13}/>
+                                                            <td className="p-1 sm:p-1.5 text-center">
+                                                                {/* Papperskorgen alltid synlig (opacity-0 borttaget) */}
+                                                                <button type="button" onClick={() => { const n = expenses.filter((_, idx) => idx !== i); setExpenses(n); }} className="text-zinc-400 hover:text-red-500 p-1 transition-colors block mx-auto">
+                                                                    <SafeIcon name="trash-2" size={14}/>
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -730,6 +727,48 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'KOSTNADSFÖRDELNING' && (
+                                    <div className="animate-in fade-in duration-200 bg-white dark:bg-[#1e293b]">
+                                        <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
+                                            <tbody className="divide-y divide-zinc-200/80 dark:divide-white/5">
+                                                <tr className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
+                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10 w-[60%]">
+                                                        <div className="flex items-center gap-2">
+                                                            <SafeIcon name="tag" size={14} className="text-zinc-500 dark:text-zinc-400" />
+                                                            <span className="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px]">Reservdelar (Material)</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
+                                                        {materialCost.toLocaleString()} kr
+                                                    </td>
+                                                </tr>
+                                                <tr className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
+                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10">
+                                                        <div className="flex items-center gap-2">
+                                                            <SafeIcon name="wrench" size={14} className="text-zinc-500 dark:text-zinc-400" />
+                                                            <span className="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px]">Arbetskostnad (Tjänst)</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
+                                                        {laborCost.toLocaleString()} kr
+                                                    </td>
+                                                </tr>
+                                                <tr className="bg-[#f4f5f7] dark:bg-[#161f30]">
+                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10">
+                                                        <div className="flex items-center gap-2">
+                                                            <SafeIcon name="dollar-sign" size={14} className="text-[#f97316]" />
+                                                            <span className="font-black text-[#f97316] uppercase tracking-wider text-[11px]">Fastställt Totalpris</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 text-right font-mono font-black text-[#f97316] text-[15px]">
+                                                        {finalPriceNum.toLocaleString()} kr
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 )}
                             </div>
@@ -871,7 +910,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </button>
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-x-2 gap-y-1.5 lg:space-y-1 text-[11px] lg:text-[13px]">
+                                    <div className="flex flex-col gap-0.5 text-[13px] text-zinc-800 dark:text-zinc-200">
                                         {[
                                             { label: 'Reg.Nr.:', val: formData.regnr, id: 'regnr', uppercase: true, action: (v) => setFormData(p => ({...p, regnr: v.toUpperCase()})) },
                                             { label: 'Ch.nr:', val: fetchedCarInfo?.vin || '', id: 'vin', uppercase: true, action: (v) => handleSpecChange('vin', v.toUpperCase()), blur: (v) => saveSpec('vin', v) },
@@ -880,14 +919,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             { label: 'Miltal:', val: fetchedCarInfo?.miltal || '', id: 'miltal', action: (v) => handleSpecChange('miltal', v), blur: (v) => saveSpec('miltal', v) },
                                             { label: 'Olje:', val: fetchedCarInfo?.oljevolym || '', id: 'oljevolym', action: (v) => handleSpecChange('oljevolym', v), blur: (v) => saveSpec('oljevolym', v) }
                                         ].map(field => (
-                                            <div key={field.id} className="flex items-center gap-1.5 group min-h-[20px]">
-                                                <span className="font-bold text-zinc-500 dark:text-zinc-400 w-[60px] lg:w-[95px] shrink-0 uppercase tracking-wide text-[10px] lg:text-[12px]">{field.label}</span>
+                                            <div key={field.id} className="flex items-center group">
+                                                <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">{field.label}</span>
                                                 {isEditingVehicle ? (
                                                     <input 
                                                         value={field.val} 
                                                         onChange={e => field.action(e.target.value)}
                                                         onBlur={e => field.blur ? field.blur(e.target.value) : null}
-                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-2 py-0.5 rounded outline-none text-zinc-900 dark:text-white ${field.uppercase ? 'uppercase' : ''}`} 
+                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0 rounded outline-none text-zinc-900 dark:text-white ${field.uppercase ? 'uppercase' : ''}`} 
                                                         placeholder="-" 
                                                     />
                                                 ) : (
@@ -902,7 +941,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         className={`w-full bg-transparent text-zinc-800 dark:text-zinc-200 cursor-pointer flex items-center justify-between hover:text-zinc-500 transition-colors ${field.uppercase ? 'uppercase' : ''}`}
                                                         title={field.val ? "Klicka för att kopiera" : ""}
                                                     >
-                                                        <span className="truncate font-medium">{field.val || '-'}</span>
+                                                        <span className="truncate">{field.val || '-'}</span>
                                                         {copiedField === field.id ? (
                                                             <SafeIcon name="check" size={14} className="text-emerald-500 shrink-0" />
                                                         ) : (
@@ -939,33 +978,33 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 value={formData.kundnamn} 
                                                 onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
                                                 placeholder="Kundens namn"
-                                                className="w-full bg-transparent outline-none font-bold text-[13px] lg:text-[14px] text-[#f97316] hover:underline truncate" 
+                                                className="w-full bg-transparent outline-none font-bold text-[13px] lg:text-[14px] text-zinc-900 dark:text-white hover:underline truncate" 
                                             />
                                             <span className="text-[11px] lg:text-[13px] text-zinc-500">Kund</span>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col lg:space-y-1 text-[11px] lg:text-[13px] pt-3 border-t border-zinc-100 dark:border-white/10 gap-1.5 lg:gap-0">
-                                        <div className="flex items-center gap-2 relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-datum-input'); if(el && el.showPicker) el.showPicker(); }}>
-                                            <span className="font-bold text-zinc-500 dark:text-zinc-400 w-[60px] lg:w-[100px] shrink-0 uppercase tracking-wide text-[10px] lg:text-[12px]">Bokat:</span>
+                                    <div className="flex flex-col gap-0.5 text-[13px] pt-3 border-t border-zinc-100 dark:border-white/10">
+                                        <div className="flex items-center relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-datum-input'); if(el && el.showPicker) el.showPicker(); }}>
+                                            <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Bokat:</span>
                                             <input 
                                                 id="bokat-datum-input"
                                                 type="date" 
                                                 value={formData.datum} 
                                                 onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
-                                                className="w-full bg-transparent outline-none font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
+                                                className="w-full bg-transparent outline-none text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
                                             />
-                                            <SafeIcon name="calendar" size={14} className="text-zinc-400 absolute right-1 group-hover:text-[#f97316] transition-colors pointer-events-none lg:w-4 lg:h-4" />
+                                            <SafeIcon name="calendar" size={14} className="text-zinc-400 absolute right-1 group-hover:text-zinc-700 transition-colors pointer-events-none" />
                                         </div>
-                                        <div className="flex items-center gap-2 relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-tid-input'); if(el && el.showPicker) el.showPicker(); }}>
-                                            <span className="font-bold text-zinc-500 dark:text-zinc-400 w-[60px] lg:w-[100px] shrink-0 uppercase tracking-wide text-[10px] lg:text-[12px]">Tid:</span>
+                                        <div className="flex items-center relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-tid-input'); if(el && el.showPicker) el.showPicker(); }}>
+                                            <span className="font-bold w-[70px] shrink-0 text-zinc-900 dark:text-white">Tid:</span>
                                             <input 
                                                 id="bokat-tid-input"
                                                 type="time" 
                                                 value={formData.tid} 
                                                 onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
-                                                className="w-full bg-transparent outline-none font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
+                                                className="w-full bg-transparent outline-none text-zinc-800 dark:text-zinc-200 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden" 
                                             />
-                                            <SafeIcon name="clock" size={14} className="text-zinc-400 absolute right-1 group-hover:text-[#f97316] transition-colors pointer-events-none lg:w-4 lg:h-4" />
+                                            <SafeIcon name="clock" size={14} className="text-zinc-400 absolute right-1 group-hover:text-zinc-700 transition-colors pointer-events-none" />
                                         </div>
                                     </div>
                                 </div>
