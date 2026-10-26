@@ -346,29 +346,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         <div className="flex flex-col text-zinc-900 dark:text-white pb-0 md:pb-10 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full min-h-[calc(100vh-80px)]">
             
             {/* === STICKY HEADER === */}
-            <div className="sticky top-[-16px] lg:top-[-32px] z-[100] pt-[16px] lg:pt-[32px] pb-3 px-4 lg:px-8 mb-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-zinc-800 gap-4 bg-zinc-50 dark:bg-[#0f172a] shadow-sm -mt-4 lg:-mt-8 -mx-4 lg:-mx-8 w-[calc(100%+32px)] lg:w-[calc(100%+64px)]">
-                <div className="flex items-center gap-3 md:gap-4">
+            <div className="sticky top-[-16px] lg:top-[-32px] z-[100] pt-[28px] lg:pt-[32px] pb-4 px-4 lg:px-8 mb-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-white/10 gap-4 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl shadow-sm -mt-4 lg:-mt-8 w-full lg:-mx-8 lg:w-[calc(100%+64px)]">
+                <div className="flex items-center gap-4">
                     {step === 'DETAIL' ? (
                         <button onClick={() => setStep('SEARCH')} className="relative group shrink-0 active:scale-95 transition-all" title="Gå tillbaka till sök">
-                            <div className="absolute inset-0 bg-[#f97316]/30 blur-lg rounded-full transition-all duration-700" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-[12px] flex items-center justify-center bg-[#f97316] text-white shadow-sm transition-colors hover:bg-[#ea580c] border border-white/20">
-                                <SafeIcon name="arrow-left" size={20} className="md:w-6 md:h-6" />
+                            <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                            <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <SafeIcon name="arrow-left" size={24} />
                             </div>
                         </button>
                     ) : (
                         <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-[#f97316]/30 blur-lg rounded-full transition-all duration-700" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-[12px] flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-[#f97316]">
-                                <SafeIcon name="search" size={20} className="md:w-6 md:h-6" />
+                            <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700" />
+                            <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <SafeIcon name="search" size={24} />
                             </div>
                         </div>
                     )}
                     <div className="flex flex-col">
-                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                            {step === 'SEARCH' ? 'SÖK FORDON' : (activeJob ? 'UPPDATERA' : 'NYTT')} <span className="text-zinc-400 font-light">UPPDRAG</span>
+                        <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm dark:drop-shadow-none">
+                            {step === 'SEARCH' ? 'SÖK FORDON' : (activeJob ? 'UPPDATERA' : 'NYTT')} <span className="text-zinc-400 dark:text-zinc-500 font-light">UPPDRAG</span>
                         </h1>
-                        <p className="text-[9px] md:text-[10px] font-bold text-[#f97316] uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] animate-pulse"></span>
+                        <p className="text-[9px] md:text-[10px] font-bold text-orange-500 uppercase tracking-widest mt-1 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                             {step === 'SEARCH' ? 'Filtrera och sök i orderhistoriken' : (activeJob ? `REDIGERAR ORDER • ${formData.regnr || activeJob.id.substring(0,6).toUpperCase()}` : 'SKAPAR NY ARBETSORDER')}
                         </p>
                     </div>
@@ -645,23 +645,23 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                             {/* 2. Orderomfattning / Kostnadsfördelning */}
                             <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
-                                <div className="p-4 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
-                                    <button type="button" onClick={() => setActiveTab('ORDEROMFATTNING')} className={`text-[12px] font-bold uppercase tracking-wider pb-4 -mb-4 border-b-2 transition-colors ${activeTab === 'ORDEROMFATTNING' ? 'text-[#f97316] border-[#f97316]' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>
+                                <div className="px-4 pt-3 pb-0 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
+                                    <button type="button" onClick={() => setActiveTab('ORDEROMFATTNING')} className={`text-[12px] font-bold uppercase tracking-wider pb-2.5 -mb-px border-b-2 transition-colors ${activeTab === 'ORDEROMFATTNING' ? 'text-zinc-900 dark:text-white border-zinc-900 dark:border-white' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>
                                         Orderomfattning
                                     </button>
-                                    <button type="button" onClick={() => setActiveTab('KOSTNADSFÖRDELNING')} className={`text-[12px] font-bold uppercase tracking-wider pb-4 -mb-4 border-b-2 transition-colors ${activeTab === 'KOSTNADSFÖRDELNING' ? 'text-[#f97316] border-[#f97316]' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>
+                                    <button type="button" onClick={() => setActiveTab('KOSTNADSFÖRDELNING')} className={`text-[12px] font-bold uppercase tracking-wider pb-2.5 -mb-px border-b-2 transition-colors ${activeTab === 'KOSTNADSFÖRDELNING' ? 'text-zinc-900 dark:text-white border-zinc-900 dark:border-white' : 'text-zinc-500 dark:text-zinc-400 border-transparent hover:text-zinc-700'}`}>
                                         Kostnadsfördelning
                                     </button>
                                 </div>
                                 
                                 {activeTab === 'ORDEROMFATTNING' && (
                                     <div className="animate-in fade-in duration-200">
-                                        <div className="p-3 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 flex flex-col sm:flex-row sm:items-center gap-3">
+                                        <div className="p-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="flex items-center gap-2">
-                                                <SafeIcon name="box" size={16} className="text-[#f97316]" />
-                                                <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Paket</span>
+                                                <SafeIcon name="box" size={14} className="text-zinc-500" />
+                                                <span className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest">Paket</span>
                                             </div>
-                                            <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="bg-transparent font-bold text-[13px] text-zinc-900 dark:text-white outline-none cursor-pointer">
+                                            <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="bg-transparent font-bold text-[12px] text-zinc-900 dark:text-white outline-none cursor-pointer">
                                                 <option value="Standard">Standard (Flexibel)</option>
                                                 <option value="Oljebyte">Oljebyte</option>
                                                 <option value="Hjulskifte">Hjulskifte</option>
@@ -669,8 +669,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             </select>
                                         </div>
 
-                                        <div className="p-2 border-b border-zinc-200 dark:border-white/10 flex flex-wrap gap-2 bg-zinc-50/50 dark:bg-black/20">
-                                            <button type="button" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded text-[10px] font-bold text-zinc-600 dark:text-zinc-300 hover:text-[#f97316] hover:border-[#f97316] transition-colors shadow-xs">
+                                        <div className="p-1.5 px-2.5 border-b border-zinc-200 dark:border-white/10 flex flex-wrap gap-2 bg-zinc-50/50 dark:bg-black/20">
+                                            <button type="button" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded text-[10px] font-bold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors shadow-xs">
                                                 LÄGG TILL
                                             </button>
                                             <button type="button" onClick={() => { const n = expenses.filter((_, idx) => !selectedExpenses.includes(idx)); setExpenses(n); setSelectedExpenses([]); }} disabled={selectedExpenses.length === 0} className={`px-3 py-1.5 bg-white dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 rounded text-[10px] font-bold transition-colors shadow-xs ${selectedExpenses.length > 0 ? 'text-zinc-600 dark:text-zinc-300 hover:text-red-500 hover:border-red-500' : 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed opacity-70'}`}>
@@ -680,49 +680,49 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
-                                                <thead className="bg-[#f4f5f7] dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10 text-[12px] font-bold text-zinc-800 dark:text-zinc-200">
+                                                <thead className="bg-[#f4f5f7] dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10 text-[11px] font-bold text-zinc-800 dark:text-zinc-200">
                                                     <tr>
-                                                        <th className="w-8 sm:w-10 p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
-                                                            <input type="checkbox" checked={expenses.length > 0 && selectedExpenses.length === expenses.length} onChange={(e) => { if (e.target.checked) setSelectedExpenses(expenses.map((_, idx) => idx)); else setSelectedExpenses([]); }} className="rounded-sm border-zinc-300 cursor-pointer accent-[#f97316]" />
+                                                        <th className="w-8 sm:w-10 py-1 text-center border-r border-zinc-200 dark:border-white/10">
+                                                            <input type="checkbox" checked={expenses.length > 0 && selectedExpenses.length === expenses.length} onChange={(e) => { if (e.target.checked) setSelectedExpenses(expenses.map((_, idx) => idx)); else setSelectedExpenses([]); }} className="rounded-sm border-zinc-300 cursor-pointer focus:ring-0" />
                                                         </th>
-                                                        <th className="p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10">
+                                                        <th className="px-2 py-1 border-r border-zinc-200 dark:border-white/10">
                                                             <span className="sm:hidden">Artikel</span>
                                                             <span className="hidden sm:inline">Artikel / Arbetsoperation</span>
                                                         </th>
-                                                        <th className="hidden sm:table-cell p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center w-[70px]">Antal</th>
-                                                        <th className="p-1.5 sm:p-2 w-[70px] sm:w-[110px] text-right">
+                                                        <th className="hidden sm:table-cell px-2 py-1 border-r border-zinc-200 dark:border-white/10 text-center w-[60px]">Antal</th>
+                                                        <th className="px-2 py-1 w-[70px] sm:w-[100px] text-right">
                                                             <span className="sm:hidden">Pris</span>
                                                             <span className="hidden sm:inline">Bruttopris</span>
                                                         </th>
-                                                        <th className="w-8 sm:w-10 p-1.5 sm:p-2 text-center"></th>
+                                                        <th className="w-8 sm:w-10 py-1 text-center"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-200/80 dark:divide-white/5">
                                                     {expenses.map((ex, i) => (
-                                                        <tr key={i} className={`group transition-colors border-b border-zinc-200/80 dark:border-white/5 ${selectedExpenses.includes(i) ? 'bg-[#f97316]/5 dark:bg-[#f97316]/10' : 'hover:bg-zinc-100/70 dark:hover:bg-white/5'}`}>
-                                                            <td className="p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
-                                                                <input type="checkbox" checked={selectedExpenses.includes(i)} onChange={() => setSelectedExpenses(prev => prev.includes(i) ? prev.filter(idx => idx !== i) : [...prev, i])} className="rounded-sm border-zinc-300 cursor-pointer accent-[#f97316]" />
+                                                        <tr key={i} className={`group transition-colors border-b border-zinc-200/80 dark:border-white/5 ${selectedExpenses.includes(i) ? 'bg-zinc-100 dark:bg-white/10' : 'hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                                            <td className="p-1 sm:p-1.5 border-r border-zinc-200 dark:border-white/10 text-center">
+                                                                <input type="checkbox" checked={selectedExpenses.includes(i)} onChange={() => setSelectedExpenses(prev => prev.includes(i) ? prev.filter(idx => idx !== i) : [...prev, i])} className="rounded-sm border-zinc-300 cursor-pointer focus:ring-0" />
                                                             </td>
-                                                            <td className="p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10">
+                                                            <td className="p-1 sm:p-1.5 border-r border-zinc-200 dark:border-white/10">
                                                                 <div className="flex items-center gap-1.5 sm:gap-2">
                                                                     <button type="button" onClick={() => { const n = [...expenses]; n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' }; setExpenses(n); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="shrink-0 p-1 hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors">
-                                                                        <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={14} className="text-[#f97316]" />
+                                                                        <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={13} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
                                                                     </button>
-                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], desc: e.target.value }; setExpenses(n); }} className="w-full bg-transparent outline-none text-[#f97316] hover:underline cursor-text font-medium text-[13px]" />
+                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], desc: e.target.value }; setExpenses(n); }} className="w-full bg-transparent outline-none text-zinc-900 dark:text-white hover:underline cursor-text font-medium text-[12px] py-0.5" />
                                                                 </div>
                                                             </td>
-                                                            <td className="hidden sm:table-cell p-1.5 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
-                                                                <input type="number" value={ex.antal || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], antal: e.target.value }; setExpenses(n); }} placeholder="1" className="w-full bg-transparent outline-none text-center text-[13px]" />
+                                                            <td className="hidden sm:table-cell p-1 sm:p-1.5 border-r border-zinc-200 dark:border-white/10 text-center">
+                                                                <input type="number" value={ex.antal || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], antal: e.target.value }; setExpenses(n); }} placeholder="1" className="w-full bg-transparent outline-none text-center text-[12px] py-0.5" />
                                                             </td>
-                                                            <td className="p-1.5 sm:p-2">
+                                                            <td className="p-1 sm:p-1.5">
                                                                 <div className="flex items-center justify-end gap-1">
-                                                                    <input type="number" value={ex.amount || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], amount: e.target.value }; setExpenses(n); }} placeholder="0" className="w-full bg-transparent outline-none text-right font-mono font-medium min-w-0 text-[13px]" />
-                                                                    <span className="text-zinc-400 text-[11px]">kr</span>
+                                                                    <input type="number" value={ex.amount || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], amount: e.target.value }; setExpenses(n); }} placeholder="0" className="w-full bg-transparent outline-none text-right font-mono font-medium min-w-0 text-[12px] py-0.5" />
+                                                                    <span className="text-zinc-400 text-[10px]">kr</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="p-1.5 sm:p-2 text-center relative">
+                                                            <td className="p-1 sm:p-1.5 text-center relative">
                                                                 <button type="button" onClick={() => { const n = expenses.filter((_, idx) => idx !== i); setExpenses(n); }} className="text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity relative z-10 block mx-auto lg:opacity-100">
-                                                                    <SafeIcon name="trash-2" size={14}/>
+                                                                    <SafeIcon name="trash-2" size={13}/>
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -732,71 +732,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </div>
                                     </div>
                                 )}
-
-                                {activeTab === 'KOSTNADSFÖRDELNING' && (
-                                    <div className="animate-in fade-in duration-200 bg-white dark:bg-[#1e293b]">
-                                        <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
-                                            <tbody className="divide-y divide-zinc-200/80 dark:divide-white/5">
-                                                <tr className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
-                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10 w-[60%]">
-                                                        <div className="flex items-center gap-2">
-                                                            <SafeIcon name="tag" size={14} className="text-zinc-500 dark:text-zinc-400" />
-                                                            <span className="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px]">Reservdelar (Material)</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
-                                                        {materialCost.toLocaleString()} kr
-                                                    </td>
-                                                </tr>
-                                                <tr className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
-                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10">
-                                                        <div className="flex items-center gap-2">
-                                                            <SafeIcon name="wrench" size={14} className="text-zinc-500 dark:text-zinc-400" />
-                                                            <span className="font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-[11px]">Arbetskostnad (Tjänst)</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
-                                                        {laborCost.toLocaleString()} kr
-                                                    </td>
-                                                </tr>
-                                                <tr className="bg-[#f4f5f7] dark:bg-[#161f30]">
-                                                    <td className="p-3 border-r border-zinc-200 dark:border-white/10">
-                                                        <div className="flex items-center gap-2">
-                                                            <SafeIcon name="dollar-sign" size={14} className="text-[#f97316]" />
-                                                            <span className="font-black text-[#f97316] uppercase tracking-wider text-[11px]">Fastställt Totalpris</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono font-black text-[#f97316] text-[15px]">
-                                                        {finalPriceNum.toLocaleString()} kr
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
                             </div>
 
                             {/* 3. Totalpris / Delbetalningar */}
                             <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden flex flex-col md:flex-row">
                                 <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col justify-center bg-white dark:bg-[#1e293b]">
-                                    <div className="px-4 pt-4 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
-                                        <div className="font-bold text-[12px] uppercase tracking-wider pb-4 -mb-[1px] border-b-2 text-[#f97316] border-[#f97316] flex items-center gap-2">
-                                            <SafeIcon name="dollar-sign" size={14} /> Summa (inkl. moms)
+                                    <div className="px-4 pt-3 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
+                                        <div className="font-bold text-[12px] uppercase tracking-wider pb-3 -mb-px border-b-2 text-zinc-900 dark:text-white border-zinc-900 dark:border-white flex items-center gap-2">
+                                            <SafeIcon name="dollar-sign" size={14} className="text-zinc-500" /> Summa (inkl. moms)
                                         </div>
                                     </div>
                                     <div className="p-5">
                                         <div className="flex items-baseline">
-                                            <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl font-light tracking-tighter outline-none focus:text-[#f97316] transition-colors" placeholder="0" />
+                                            <input type="number" value={formData.kundpris} onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} className="w-full bg-transparent text-zinc-900 dark:text-white text-4xl font-light tracking-tighter outline-none focus:text-zinc-600 transition-colors" placeholder="0" />
                                             <span className="text-lg font-bold text-zinc-400 ml-2">SEK</span>
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-white/10 flex justify-between items-center text-[13px]">
                                             <span className="font-bold text-zinc-500">Inbetalt hittills:</span>
-                                            <span className="font-mono font-bold text-[#f97316]">{totalPaid.toLocaleString()} kr</span>
+                                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{totalPaid.toLocaleString()} kr</span>
                                         </div>
                                         {totalPaid > 0 && (
-                                            <div className="mt-2 bg-[#f97316]/10 p-2.5 rounded-lg flex justify-between items-center">
-                                                <span className="text-[11px] text-[#ea580c] uppercase font-bold">Kvar att fakturera</span>
-                                                <span className="font-black text-[#ea580c] text-[16px]">{Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr</span>
+                                            <div className="mt-2 bg-zinc-50 dark:bg-white/5 p-2.5 rounded-lg flex justify-between items-center border border-zinc-200 dark:border-white/10">
+                                                <span className="text-[11px] text-zinc-700 dark:text-zinc-300 uppercase font-bold">Kvar att fakturera</span>
+                                                <span className="font-black text-orange-600 text-[16px]">{Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr</span>
                                             </div>
                                         )}
                                     </div>
@@ -804,15 +762,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <div className="flex-1 p-5">
                                     <div className="flex items-center justify-between mb-3">
                                         <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5"><SafeIcon name="credit-card" size={12} className="text-zinc-400" />Delbetalningar</label>
-                                        <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[9px] font-bold text-[#f97316] bg-[#f97316]/10 uppercase px-2 py-1 rounded transition-colors flex items-center gap-1"><SafeIcon name="plus" size={10} /> Lägg till</button>
+                                        <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-white/10 hover:bg-zinc-200 dark:hover:bg-white/20 transition-colors uppercase px-2 py-1 rounded flex items-center gap-1"><SafeIcon name="plus" size={10} /> Lägg till</button>
                                     </div>
                                     <div className="space-y-2">
                                         {payments.map((p, i) => (
                                             <div key={i} className="flex gap-2 items-center">
                                                 <input placeholder="T.ex. Swish" value={p.desc} onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} className="flex-1 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-2 px-3 text-[13px] font-medium outline-none rounded text-zinc-900 dark:text-white" />
                                                 <div className="relative w-24 shrink-0 flex items-center">
-                                                    <input placeholder="0" type="number" value={p.amount} onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} className="w-full bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-2 pl-2 pr-6 text-[13px] font-mono font-bold text-[#f97316] outline-none text-right rounded" />
-                                                    <span className="absolute right-2 text-[9px] text-[#f97316] font-bold uppercase pointer-events-none">kr</span>
+                                                    <input placeholder="0" type="number" value={p.amount} onChange={e => { const n = [...payments]; n[i].amount = e.target.value; setPayments(n); }} className="w-full bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-2 pl-2 pr-6 text-[13px] font-mono font-bold text-emerald-600 dark:text-emerald-400 outline-none text-right rounded" />
+                                                    <span className="absolute right-2 text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase pointer-events-none">kr</span>
                                                 </div>
                                                 <button type="button" onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} className="text-zinc-400 hover:text-red-500 p-1"><SafeIcon name="trash-2" size={14} /></button>
                                             </div>
@@ -822,10 +780,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             </div>
 
                             {/* 4. Arbetsanteckningar */}
-                            <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden focus-within:border-[#f97316] transition-colors">
-                                <div className="px-4 pt-4 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
-                                    <div className="font-bold text-[12px] uppercase tracking-wider pb-4 -mb-[1px] border-b-2 text-[#f97316] border-[#f97316] flex items-center gap-2">
-                                        <SafeIcon name="terminal" size={14} /> Arbetsanteckningar
+                            <div className="w-full bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden focus-within:border-zinc-400 transition-colors">
+                                <div className="px-4 pt-3 border-b border-zinc-200 dark:border-white/10 flex items-center gap-4 bg-zinc-50/50 dark:bg-[#161f30]">
+                                    <div className="font-bold text-[12px] uppercase tracking-wider pb-3 -mb-px border-b-2 text-zinc-900 dark:text-white border-zinc-900 dark:border-white flex items-center gap-2">
+                                        <SafeIcon name="terminal" size={14} className="text-zinc-500" /> Arbetsanteckningar
                                     </div>
                                 </div>
                                 <RichNoteEditor value={formData.kommentar} onChange={(newHTML) => setFormData(p => ({ ...p, kommentar: newHTML }))} />
@@ -863,7 +821,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                                 <div className="bg-white border border-zinc-200 rounded-xl p-3 lg:p-4 shadow-sm dark:bg-[#1e293b] dark:border-white/10">
                                     <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-10 h-10 bg-zinc-200 dark:bg-[#161f30] rounded-xl flex items-center justify-center text-zinc-500 dark:text-zinc-400 shrink-0 overflow-hidden relative border border-zinc-300 dark:border-white/5">
+                                        <div className="w-10 h-10 bg-zinc-100 dark:bg-white/5 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0 overflow-hidden relative border border-zinc-200 dark:border-white/10 shadow-sm">
                                             {(() => {
                                                 const currentModel = fetchedCarInfo?.bilmodell || formData.bilmodell || '';
                                                 const brandId = (typeof window !== 'undefined' && window.getVehicleBrand) ? window.getVehicleBrand(currentModel) : null;
@@ -871,8 +829,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 return brandId ? (
                                                     <>
                                                         <img 
-                                                            src={`https://cdn.simpleicons.org/${brandId === 'mercedes' ? 'mercedesbenz' : brandId}/#a1a1aa`} 
-                                                            className="w-6 h-6 object-contain" 
+                                                            src={`https://cdn.simpleicons.org/${brandId === 'mercedes' ? 'mercedesbenz' : brandId}/3f3f46`} 
+                                                            className="w-6 h-6 object-contain dark:invert opacity-90" 
                                                             alt="logo" 
                                                             onError={(e) => {
                                                                 e.currentTarget.style.display = 'none';
@@ -881,11 +839,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                             }}
                                                         />
                                                         <div className="fallback-car hidden items-center justify-center absolute inset-0">
-                                                            <SafeIcon name="car" size={20} className="text-zinc-400" />
+                                                            <SafeIcon name="car" size={20} className="text-zinc-500" />
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <SafeIcon name="car" size={22} className="text-zinc-400" />
+                                                    <SafeIcon name="car" size={22} className="text-zinc-500" />
                                                 );
                                             })()}
                                         </div>
@@ -897,10 +855,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     onChange={(e) => handleSpecChange('bilmodell', e.target.value)}
                                                     onBlur={(e) => saveSpec('bilmodell', e.target.value)}
                                                     placeholder="Märke & Modell..."
-                                                    className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-2 py-1 rounded outline-none font-bold text-[14px] text-[#f97316] truncate" 
+                                                    className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-2 py-1 rounded outline-none font-bold text-[14px] text-zinc-900 dark:text-white truncate" 
                                                 />
                                             ) : (
-                                                <div className="font-bold text-[14px] text-[#f97316] truncate uppercase">
+                                                <div className="font-bold text-[14px] text-zinc-900 dark:text-white truncate uppercase">
                                                     {(() => {
                                                         const raw = fetchedCarInfo?.bilmodell || formData.bilmodell || '';
                                                         return raw.replace(/VOLKSWAGEN/i, 'VW').replace(/MERCEDES-BENZ/i, 'MB').replace(/MERCEDES/i, 'MB').replace(/LAND ROVER/i, 'LR') || 'OKÄND MODELL';
@@ -908,7 +866,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <button type="button" onClick={() => setIsEditingVehicle(!isEditingVehicle)} className={`p-1.5 rounded transition-colors shrink-0 ${isEditingVehicle ? 'bg-[#f97316] text-white' : 'text-[#f97316] hover:bg-zinc-100 dark:hover:bg-white/5'}`}>
+                                        <button type="button" onClick={() => setIsEditingVehicle(!isEditingVehicle)} className={`p-1.5 rounded transition-colors shrink-0 ${isEditingVehicle ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5'}`}>
                                             <SafeIcon name={isEditingVehicle ? "check" : "edit-2"} size={16} />
                                         </button>
                                     </div>
@@ -941,7 +899,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                 setTimeout(() => setCopiedField(null), 2000);
                                                             }
                                                         }}
-                                                        className={`w-full bg-transparent text-zinc-800 dark:text-zinc-200 cursor-pointer flex items-center justify-between hover:text-[#f97316] transition-colors ${field.uppercase ? 'uppercase' : ''}`}
+                                                        className={`w-full bg-transparent text-zinc-800 dark:text-zinc-200 cursor-pointer flex items-center justify-between hover:text-zinc-500 transition-colors ${field.uppercase ? 'uppercase' : ''}`}
                                                         title={field.val ? "Klicka för att kopiera" : ""}
                                                     >
                                                         <span className="truncate font-medium">{field.val || '-'}</span>
@@ -963,7 +921,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
                                                 if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
                                             }}
-                                            className="w-full mt-4 py-2 border border-[#f97316] text-[#f97316] hover:bg-[#f97316] hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                            className="w-full mt-4 py-2 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                                         >
                                             <SafeIcon name="refresh-cw" size={14} /> Hämta Fordonsdata
                                         </button>
