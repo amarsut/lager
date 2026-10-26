@@ -380,22 +380,28 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 <div className="w-full flex flex-col gap-2 px-4 lg:px-0 animate-in fade-in duration-300">
                     <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center md:col-span-2">
-                                <label className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1 sm:mb-0">Fritekstsökning</label>
+                            <div className="flex flex-col sm:flex-row sm:items-center md:col-span-2 mb-2 sm:mb-0">
+                                {/* Rubriken döljs på mobilen (hidden sm:block) */}
+                                <label className="hidden sm:block text-[12px] font-bold text-zinc-700 dark:text-zinc-300 w-[160px] shrink-0">Fritekstsökning</label>
+                                
                                 <div className="relative w-full">
-                                    <SafeIcon name="search" size={14} className="absolute left-0 bottom-2 text-zinc-400" />
+                                    {/* Sök-ikonen centreras vertikalt på mobilen, men lägger sig i botten på datorn */}
+                                    <SafeIcon name="search" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 sm:left-0 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 sm:scale-90 transition-all pointer-events-none" />
+                                    
                                     <input 
                                         type="text" 
                                         list="search-history"
                                         autoFocus={typeof window !== 'undefined' && window.innerWidth > 768}
                                         value={searchQuery} 
                                         onChange={e => setSearchQuery(e.target.value)} 
-                                        placeholder="Sök på reg.nr, kundnamn, jobb, beskrivning..." 
-                                        className="w-full bg-transparent border-b-2 border-zinc-200 dark:border-white/20 focus:border-[#f97316] pl-6 pr-8 py-1.5 text-[13px] outline-none text-zinc-900 dark:text-white transition-colors placeholder:text-zinc-400" 
+                                        placeholder="Sök på reg.nr, kundnamn, jobb..." 
+                                        // Tillagt i slutet: [&::-webkit-calendar-picker-indicator]:hidden för att ta bort den fula pilen
+                                        className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 sm:border-0 sm:border-b-2 sm:border-zinc-200 sm:dark:border-white/20 sm:bg-transparent rounded-xl sm:rounded-none pl-10 pr-10 py-3.5 sm:pl-6 sm:pr-8 sm:py-1.5 text-[16px] sm:text-[13px] outline-none text-zinc-900 dark:text-white transition-all placeholder:text-zinc-500 sm:placeholder:text-zinc-400 focus:bg-white sm:focus:bg-transparent focus:border-[#ea580c] sm:focus:border-b-[#ea580c] focus:shadow-sm sm:focus:shadow-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0" 
                                     />
+                                    
                                     {searchQuery && (
-                                        <button onClick={() => setSearchQuery('')} className="absolute right-0 bottom-2 text-zinc-400 hover:text-[#f97316]">
-                                            <SafeIcon name="x" size={14} />
+                                        <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 sm:right-0 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 hover:text-[#ea580c] transition-all p-1 sm:p-0">
+                                            <SafeIcon name="x" size={16} className="sm:scale-90" />
                                         </button>
                                     )}
                                 </div>
