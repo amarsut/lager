@@ -439,55 +439,66 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             {/* === SÖK VY === */}
             {step === 'SEARCH' && (
                 <div className="w-full flex flex-col gap-2 px-4 lg:px-0 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
+                    <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-2xl p-4 sm:p-6 shadow-sm">
                         
-                        {/* FRITEKSTSÖKNING (Designad som en modern app-sök på mobil, klassisk underlinje på dator) */}
+                        {/* FRITEKSTSÖKNING (Modern pill-design för både mobil och dator) */}
                         <div className="mb-5 sm:mb-6">
-                            <label className="hidden sm:block text-[12px] font-bold text-zinc-700 dark:text-zinc-300 mb-2">Fritekstsökning</label>
                             <div className="relative w-full group">
-                                <SafeIcon name="search" size={18} className="absolute left-3.5 sm:left-0 top-1/2 -translate-y-1/2 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 group-focus-within:text-[#ea580c] transition-colors pointer-events-none" />
+                                <SafeIcon name="search" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-[#ea580c] transition-colors pointer-events-none" />
                                 <input 
                                     type="text" 
                                     autoFocus={typeof window !== 'undefined' && window.innerWidth > 768}
                                     value={searchQuery} 
                                     onChange={e => setSearchQuery(e.target.value)} 
                                     placeholder="Sök på reg.nr, kundnamn, jobb..." 
-                                    className="w-full bg-zinc-100 dark:bg-black/20 sm:bg-transparent border border-transparent sm:border-0 sm:border-b-2 sm:border-zinc-200 sm:dark:border-white/20 rounded-xl sm:rounded-none pl-11 pr-10 py-3.5 sm:pl-7 sm:pr-8 sm:py-1.5 text-[16px] sm:text-[13px] outline-none text-zinc-900 dark:text-white transition-all placeholder:text-zinc-500 sm:placeholder:text-zinc-400 focus:bg-white dark:focus:bg-[#161f30] focus:border-zinc-300 sm:focus:border-b-[#ea580c] shadow-inner sm:shadow-none focus:shadow-md sm:focus:shadow-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0" 
+                                    className="w-full bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3.5 sm:py-3 text-[16px] sm:text-[14px] outline-none text-zinc-900 dark:text-white transition-all placeholder:text-zinc-500 focus:bg-white dark:focus:bg-[#161f30] focus:border-[#ea580c] shadow-inner focus:shadow-md [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0" 
                                 />
                                 {searchQuery && (
-                                    <button onClick={() => setSearchQuery('')} className="absolute right-3.5 sm:right-0 top-1/2 -translate-y-1/2 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 hover:text-[#ea580c] transition-all p-1 sm:p-0">
-                                        <SafeIcon name="x" size={18} className="sm:scale-75" />
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-[#ea580c] transition-all p-1">
+                                        <SafeIcon name="x" size={18} />
                                     </button>
                                 )}
                             </div>
                         </div>
 
-                        {/* FILTER FÖR DATUM OCH STATUS */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-x-12 sm:gap-y-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center">
-                                <label className="text-[10px] sm:text-[12px] font-bold text-zinc-500 sm:text-zinc-700 dark:text-zinc-400 sm:dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1.5 sm:mb-0 uppercase tracking-wider sm:tracking-normal sm:normal-case">Datum för kostnadsdokument</label>
+                        {/* FILTER FÖR DATUM OCH STATUS (Moderna fält) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <label className="text-[10px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 w-full sm:w-auto shrink-0 uppercase tracking-wider">Datum</label>
                                 <div className="flex items-center gap-2 w-full">
-                                    <input type="date" value={advFilters.dateStart} onChange={e => setAdvFilters(p => ({...p, dateStart: e.target.value}))} className="w-full bg-zinc-50 sm:bg-transparent border sm:border-0 sm:border-b-2 border-zinc-200 dark:border-white/10 sm:dark:border-white/20 sm:border-transparent sm:border-b-zinc-200 rounded-lg sm:rounded-none px-2 py-2.5 sm:py-1.5 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] sm:focus:border-b-[#ea580c] [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
-                                    <span className="text-zinc-400">-</span>
-                                    <input type="date" value={advFilters.dateEnd} onChange={e => setAdvFilters(p => ({...p, dateEnd: e.target.value}))} className="w-full bg-zinc-50 sm:bg-transparent border sm:border-0 sm:border-b-2 border-zinc-200 dark:border-white/10 sm:dark:border-white/20 sm:border-transparent sm:border-b-zinc-200 rounded-lg sm:rounded-none px-2 py-2.5 sm:py-1.5 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] sm:focus:border-b-[#ea580c] [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                                    <input 
+                                        type="date" 
+                                        value={advFilters.dateStart} 
+                                        onChange={e => setAdvFilters(p => ({...p, dateStart: e.target.value}))} 
+                                        onClick={e => e.target.showPicker && e.target.showPicker()}
+                                        className="w-full cursor-pointer bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 py-2.5 sm:py-2 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] focus:bg-white dark:focus:bg-[#161f30]" 
+                                    />
+                                    <span className="text-zinc-300">-</span>
+                                    <input 
+                                        type="date" 
+                                        value={advFilters.dateEnd} 
+                                        onChange={e => setAdvFilters(p => ({...p, dateEnd: e.target.value}))} 
+                                        onClick={e => e.target.showPicker && e.target.showPicker()}
+                                        className="w-full cursor-pointer bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 py-2.5 sm:py-2 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] focus:bg-white dark:focus:bg-[#161f30]" 
+                                    />
                                 </div>
                             </div>
-                            <div className="flex flex-col sm:flex-row sm:items-center">
-                                <label className="text-[10px] sm:text-[12px] font-bold text-zinc-500 sm:text-zinc-700 dark:text-zinc-400 sm:dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1.5 sm:mb-0 uppercase tracking-wider sm:tracking-normal sm:normal-case">Klusterstatus (Order)</label>
-                                <select value={advFilters.status} onChange={e => setAdvFilters(p => ({...p, status: e.target.value}))} className="w-full bg-zinc-50 sm:bg-transparent border sm:border-0 sm:border-b-2 border-zinc-200 dark:border-white/10 sm:dark:border-white/20 sm:border-transparent sm:border-b-zinc-200 rounded-lg sm:rounded-none px-2 py-2.5 sm:py-1.5 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] sm:focus:border-b-[#ea580c] cursor-pointer">
-                                    <option value="ALLA">VISA ALLA</option>
-                                    <option value="BOKAD">BOKAD (NY)</option>
-                                    <option value="OFFERERAD">OFFERERAD</option>
-                                    <option value="KLAR">STÄNGD (KLAR)</option>
-                                    <option value="FAKTURERAS">FAKTURERAS</option>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <label className="text-[10px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 w-full sm:w-auto shrink-0 uppercase tracking-wider">Status</label>
+                                <select value={advFilters.status} onChange={e => setAdvFilters(p => ({...p, status: e.target.value}))} className="w-full bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 py-2.5 sm:py-2 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] focus:bg-white dark:focus:bg-[#161f30] cursor-pointer">
+                                    <option value="ALLA">Visa Alla</option>
+                                    <option value="BOKAD">Bokad (Ny)</option>
+                                    <option value="OFFERERAD">Offererad</option>
+                                    <option value="KLAR">Stängd (Klar)</option>
+                                    <option value="FAKTURERAS">Faktureras</option>
                                 </select>
                             </div>
                         </div>
                         
-                        {/* KNAPPAR (Stackade på mobil, bredvid varandra på dator) */}
-                        <div className="mt-6 sm:mt-4 pt-5 sm:pt-4 border-t border-zinc-100 dark:border-white/5 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
-                            <button onClick={() => { setAdvFilters({status: 'ALLA', dateStart: '', dateEnd: ''}); setSearchQuery(''); }} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-transparent border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 text-[13px] sm:text-[11px] font-bold uppercase tracking-wider rounded-xl sm:rounded-sm hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shadow-sm">
-                                ÅTERSTÄLL
+                        {/* KNAPPAR */}
+                        <div className="mt-6 sm:mt-5 pt-5 sm:pt-5 border-t border-zinc-100 dark:border-white/5 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
+                            <button onClick={() => { setAdvFilters({status: 'ALLA', dateStart: '', dateEnd: ''}); setSearchQuery(''); }} className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-transparent border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 text-[13px] sm:text-[11px] font-bold uppercase tracking-wider rounded-xl sm:rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shadow-sm">
+                                Återställ sökning
                             </button>
                             <button 
                                 onClick={() => {
@@ -524,9 +535,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     setIsEditingVehicle(false); 
                                     setStep('DETAIL');
                                 }}
-                                className="w-full sm:w-auto px-5 py-4 sm:py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-[14px] sm:text-[11px] font-bold uppercase tracking-wider rounded-xl sm:rounded-sm transition-colors shadow-md sm:shadow-sm flex items-center justify-center gap-2"
+                                className="w-full sm:w-auto px-5 py-4 sm:py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-[14px] sm:text-[12px] font-bold uppercase tracking-wider rounded-xl sm:rounded-lg transition-colors shadow-md sm:shadow-sm flex items-center justify-center gap-2"
                             >
-                                <SafeIcon name="plus" size={18} className="sm:scale-75" /> SKAPA NYTT JOBB
+                                <SafeIcon name="plus" size={16} /> SKAPA NYTT JOBB
                             </button>
                         </div>
                     </div>
@@ -787,10 +798,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
                                                         if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
                                                     }}
-                                                    className="absolute right-1 top-1 bottom-1 px-3 bg-orange-100 hover:bg-orange-200 dark:bg-orange-500/20 dark:hover:bg-orange-500/40 text-orange-700 dark:text-orange-300 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 z-10"
+                                                    className={`absolute right-1 top-1 bottom-1 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 z-10 ${
+                                                        (fetchedCarInfo && (fetchedCarInfo.bilmodell || fetchedCarInfo.vin))
+                                                            ? 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/40 text-emerald-700 dark:text-emerald-300'
+                                                            : 'bg-orange-100 hover:bg-orange-200 dark:bg-orange-500/20 dark:hover:bg-orange-500/40 text-orange-700 dark:text-orange-300'
+                                                    }`}
                                                     title="Hämta från Transportstyrelsen"
                                                 >
-                                                    <SafeIcon name="refresh-cw" size={12} /> Hämta
+                                                    {(fetchedCarInfo && (fetchedCarInfo.bilmodell || fetchedCarInfo.vin)) ? (
+                                                        <><SafeIcon name="check" size={12} /> Hämtad</>
+                                                    ) : (
+                                                        <><SafeIcon name="refresh-cw" size={12} /> Hämta</>
+                                                    )}
                                                 </button>
                                             </div>
                                             
@@ -858,7 +877,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 type="date" 
                                                 value={formData.datum} 
                                                 onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
-                                                className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
+                                                onClick={e => e.target.showPicker && e.target.showPicker()}
+                                                className="w-full cursor-pointer bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm" 
                                             />
                                         </div>
                                         <div>
@@ -867,7 +887,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 type="time" 
                                                 value={formData.tid} 
                                                 onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
-                                                className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
+                                                onClick={e => e.target.showPicker && e.target.showPicker()}
+                                                className="w-full cursor-pointer bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm" 
                                             />
                                         </div>
                                     </div>
