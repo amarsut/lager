@@ -105,6 +105,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [activeTab, setActiveTab] = React.useState('ORDEROMFATTNING');
 
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [quickCreate, setQuickCreate] = React.useState({ kund: '', regnr: '' });
+    const [isQuickCreateOpen, setIsQuickCreateOpen] = React.useState(false); // NY RAD
     const [advFilters, setAdvFilters] = React.useState({
         status: 'ALLA',
         dateStart: '',
@@ -140,8 +142,46 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [expandedMatchIds, setExpandedMatchIds] = React.useState([]);
 
     const [focusedInput, setFocusedInput] = React.useState(null);
+    const [showGrunduppgifter, setShowGrunduppgifter] = React.useState(true); // Håller koll på om Steg 2-rutan är öppen
 
-    // Separerade och unika listor för våra nya snygga dropdowns
+    // Ser till att rutan automatiskt öppnas igen när du klickar på "Skapa nytt jobb"
+    React.useEffect(() => {
+        if (!activeJob && step === 'DETAIL') {
+            setShowGrunduppgifter(true);
+        }
+    }, [activeJob, step]);
+
+    // 1. DYNAMISKA LISTOR FÖR STEG 2: Filtrerar varandra korsvis!
+    const activeRegnrSuggestions = React.useMemo(() => {
+        let pool = allJobs;
+        // Om kundnamn är ifyllt, hämta BARA denna kundens bilar
+        if (formData.kundnamn && formData.kundnamn.length > 1) {
+            pool = pool.filter(j => (j.kundnamn || '').toUpperCase().trim() === formData.kundnamn.toUpperCase().trim());
+        }
+        
+        let uniqueList = [...new Set(pool.map(j => (j.regnr || '').toUpperCase().replace(/\s+/g, '')).filter(Boolean))];
+        
+        // Om du börjat skriva ett regnr, filtrera förslagen vidare på det du skriver
+        if (formData.regnr) uniqueList = uniqueList.filter(r => r.includes(formData.regnr.toUpperCase()) && r !== formData.regnr.toUpperCase());
+        
+        return uniqueList.slice(0, 15);
+    }, [allJobs, formData.regnr, formData.kundnamn]);
+
+    const activeKundSuggestions = React.useMemo(() => {
+        let pool = allJobs;
+        // Om regnr är ifyllt, hämta BARA de kunder som lämnat in just denna bil
+        if (formData.regnr && formData.regnr.length > 2) {
+            pool = pool.filter(j => (j.regnr || '').toUpperCase().replace(/\s+/g, '') === formData.regnr.toUpperCase().replace(/\s+/g, ''));
+        }
+        
+        let uniqueList = [...new Set(pool.map(j => (j.kundnamn || '').trim().toUpperCase()).filter(Boolean))];
+        
+        if (formData.kundnamn) uniqueList = uniqueList.filter(c => c.includes(formData.kundnamn.toUpperCase()) && c !== formData.kundnamn.toUpperCase());
+        
+        return uniqueList.slice(0, 15);
+    }, [allJobs, formData.regnr, formData.kundnamn]);
+
+    // Sparar dina gamla listor intakta så att högerkolumnen fortsätter fungera!
     const uniqueCustomers = React.useMemo(() => [...new Set(allJobs.map(j => (j.kundnamn || '').trim()).filter(Boolean))], [allJobs]);
     const uniqueRegnrs = React.useMemo(() => [...new Set(allJobs.map(j => (j.regnr || '').toUpperCase().replace(/\s+/g, '')).filter(Boolean))], [allJobs]);
 
@@ -198,6 +238,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     const handleOpenExistingOrder = (job) => {
         setActiveJob(job);
+        setIsEditingVehicle(false);
         setStep('DETAIL');
     };
 
@@ -398,79 +439,94 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             {/* === SÖK VY === */}
             {step === 'SEARCH' && (
                 <div className="w-full flex flex-col gap-2 px-4 lg:px-0 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center md:col-span-2 mb-2 sm:mb-0">
-                                {/* Rubriken döljs på mobilen (hidden sm:block) */}
-                                <label className="hidden sm:block text-[12px] font-bold text-zinc-700 dark:text-zinc-300 w-[160px] shrink-0">Fritekstsökning</label>
-                                
-                                <div className="relative w-full">
-                                    {/* Sök-ikonen centreras vertikalt på mobilen, men lägger sig i botten på datorn */}
-                                    <SafeIcon name="search" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 sm:left-0 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 sm:scale-90 transition-all pointer-events-none" />
-                                    
-                                    <input 
-                                        type="text" 
-                                        list="search-history"
-                                        autoFocus={typeof window !== 'undefined' && window.innerWidth > 768}
-                                        value={searchQuery} 
-                                        onChange={e => setSearchQuery(e.target.value)} 
-                                        placeholder="Sök på reg.nr, kundnamn, jobb..." 
-                                        // Tillagt i slutet: [&::-webkit-calendar-picker-indicator]:hidden för att ta bort den fula pilen
-                                        className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 sm:border-0 sm:border-b-2 sm:border-zinc-200 sm:dark:border-white/20 sm:bg-transparent rounded-xl sm:rounded-none pl-10 pr-10 py-3.5 sm:pl-6 sm:pr-8 sm:py-1.5 text-[16px] sm:text-[13px] outline-none text-zinc-900 dark:text-white transition-all placeholder:text-zinc-500 sm:placeholder:text-zinc-400 focus:bg-white sm:focus:bg-transparent focus:border-[#ea580c] sm:focus:border-b-[#ea580c] focus:shadow-sm sm:focus:shadow-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0" 
-                                    />
-                                    
-                                    {searchQuery && (
-                                        <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 sm:right-0 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 hover:text-[#ea580c] transition-all p-1 sm:p-0">
-                                            <SafeIcon name="x" size={16} className="sm:scale-90" />
-                                        </button>
-                                    )}
-                                </div>
+                    <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
+                        
+                        {/* FRITEKSTSÖKNING (Designad som en modern app-sök på mobil, klassisk underlinje på dator) */}
+                        <div className="mb-5 sm:mb-6">
+                            <label className="hidden sm:block text-[12px] font-bold text-zinc-700 dark:text-zinc-300 mb-2">Fritekstsökning</label>
+                            <div className="relative w-full group">
+                                <SafeIcon name="search" size={18} className="absolute left-3.5 sm:left-0 top-1/2 -translate-y-1/2 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 group-focus-within:text-[#ea580c] transition-colors pointer-events-none" />
+                                <input 
+                                    type="text" 
+                                    autoFocus={typeof window !== 'undefined' && window.innerWidth > 768}
+                                    value={searchQuery} 
+                                    onChange={e => setSearchQuery(e.target.value)} 
+                                    placeholder="Sök på reg.nr, kundnamn, jobb..." 
+                                    className="w-full bg-zinc-100 dark:bg-black/20 sm:bg-transparent border border-transparent sm:border-0 sm:border-b-2 sm:border-zinc-200 sm:dark:border-white/20 rounded-xl sm:rounded-none pl-11 pr-10 py-3.5 sm:pl-7 sm:pr-8 sm:py-1.5 text-[16px] sm:text-[13px] outline-none text-zinc-900 dark:text-white transition-all placeholder:text-zinc-500 sm:placeholder:text-zinc-400 focus:bg-white dark:focus:bg-[#161f30] focus:border-zinc-300 sm:focus:border-b-[#ea580c] shadow-inner sm:shadow-none focus:shadow-md sm:focus:shadow-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0" 
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3.5 sm:right-0 top-1/2 -translate-y-1/2 sm:top-auto sm:bottom-2 sm:translate-y-0 text-zinc-400 hover:text-[#ea580c] transition-all p-1 sm:p-0">
+                                        <SafeIcon name="x" size={18} className="sm:scale-75" />
+                                    </button>
+                                )}
                             </div>
+                        </div>
+
+                        {/* FILTER FÖR DATUM OCH STATUS */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-x-12 sm:gap-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center">
-                                <label className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1 sm:mb-0">Datum för kostnadsdokument</label>
+                                <label className="text-[10px] sm:text-[12px] font-bold text-zinc-500 sm:text-zinc-700 dark:text-zinc-400 sm:dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1.5 sm:mb-0 uppercase tracking-wider sm:tracking-normal sm:normal-case">Datum för kostnadsdokument</label>
                                 <div className="flex items-center gap-2 w-full">
-                                    <input type="date" value={advFilters.dateStart} onChange={e => setAdvFilters(p => ({...p, dateStart: e.target.value}))} className="w-full bg-transparent border-b-2 border-transparent border-b-zinc-200 dark:border-b-white/20 focus:border-b-[#f97316] px-2 py-1.5 text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                                    <input type="date" value={advFilters.dateStart} onChange={e => setAdvFilters(p => ({...p, dateStart: e.target.value}))} className="w-full bg-zinc-50 sm:bg-transparent border sm:border-0 sm:border-b-2 border-zinc-200 dark:border-white/10 sm:dark:border-white/20 sm:border-transparent sm:border-b-zinc-200 rounded-lg sm:rounded-none px-2 py-2.5 sm:py-1.5 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] sm:focus:border-b-[#ea580c] [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
                                     <span className="text-zinc-400">-</span>
-                                    <input type="date" value={advFilters.dateEnd} onChange={e => setAdvFilters(p => ({...p, dateEnd: e.target.value}))} className="w-full bg-transparent border-b-2 border-transparent border-b-zinc-200 dark:border-b-white/20 focus:border-b-[#f97316] px-2 py-1.5 text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                                    <input type="date" value={advFilters.dateEnd} onChange={e => setAdvFilters(p => ({...p, dateEnd: e.target.value}))} className="w-full bg-zinc-50 sm:bg-transparent border sm:border-0 sm:border-b-2 border-zinc-200 dark:border-white/10 sm:dark:border-white/20 sm:border-transparent sm:border-b-zinc-200 rounded-lg sm:rounded-none px-2 py-2.5 sm:py-1.5 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] sm:focus:border-b-[#ea580c] [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row sm:items-center">
-                                <label className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1 sm:mb-0">Klusterstatus (Order)</label>
-                                <select value={advFilters.status} onChange={e => setAdvFilters(p => ({...p, status: e.target.value}))} className="w-full bg-transparent border-b-2 border-transparent border-b-zinc-200 dark:border-b-white/20 focus:border-b-[#f97316] px-2 py-1.5 text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors cursor-pointer">
-                                    <option value="ALLA">Visa Alla</option>
-                                    <option value="BOKAD">Bokad (Ny)</option>
-                                    <option value="OFFERERAD">Offererad</option>
-                                    <option value="KLAR">Stängd (Klar)</option>
-                                    <option value="FAKTURERAS">Faktureras</option>
+                                <label className="text-[10px] sm:text-[12px] font-bold text-zinc-500 sm:text-zinc-700 dark:text-zinc-400 sm:dark:text-zinc-300 w-full sm:w-[160px] shrink-0 mb-1.5 sm:mb-0 uppercase tracking-wider sm:tracking-normal sm:normal-case">Klusterstatus (Order)</label>
+                                <select value={advFilters.status} onChange={e => setAdvFilters(p => ({...p, status: e.target.value}))} className="w-full bg-zinc-50 sm:bg-transparent border sm:border-0 sm:border-b-2 border-zinc-200 dark:border-white/10 sm:dark:border-white/20 sm:border-transparent sm:border-b-zinc-200 rounded-lg sm:rounded-none px-2 py-2.5 sm:py-1.5 text-[14px] sm:text-[12px] uppercase outline-none text-zinc-900 dark:text-white transition-colors focus:border-[#ea580c] sm:focus:border-b-[#ea580c] cursor-pointer">
+                                    <option value="ALLA">VISA ALLA</option>
+                                    <option value="BOKAD">BOKAD (NY)</option>
+                                    <option value="OFFERERAD">OFFERERAD</option>
+                                    <option value="KLAR">STÄNGD (KLAR)</option>
+                                    <option value="FAKTURERAS">FAKTURERAS</option>
                                 </select>
                             </div>
                         </div>
                         
-                        <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-white/5 flex flex-wrap items-center justify-between gap-3">
-                            <button onClick={() => { setAdvFilters({status: 'ALLA', dateStart: '', dateEnd: ''}); setSearchQuery(''); }} className="px-6 py-2 bg-transparent border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 text-[11px] font-bold uppercase tracking-wider rounded-sm hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shadow-sm">
+                        {/* KNAPPAR (Stackade på mobil, bredvid varandra på dator) */}
+                        <div className="mt-6 sm:mt-4 pt-5 sm:pt-4 border-t border-zinc-100 dark:border-white/5 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
+                            <button onClick={() => { setAdvFilters({status: 'ALLA', dateStart: '', dateEnd: ''}); setSearchQuery(''); }} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-transparent border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 text-[13px] sm:text-[11px] font-bold uppercase tracking-wider rounded-xl sm:rounded-sm hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shadow-sm">
                                 ÅTERSTÄLL
                             </button>
                             <button 
                                 onClick={() => {
                                     const q = searchQuery.toUpperCase().trim();
-                                    // Smart identifiering: Om det är max 6 tecken, saknar mellanslag OCH innehåller siffror -> Regnr. Annars -> Kundnamn.
-                                    const isRegnr = q.length > 0 && q.length <= 6 && !q.includes(' ') && /\d/.test(q);
+                                    let parsedReg = '';
+                                    let parsedName = '';
+
+                                    if (q.includes(' ')) {
+                                        const parts = q.split(/\s+/);
+                                        parts.forEach(part => {
+                                            if (part.length >= 5 && part.length <= 6 && /\d/.test(part) && !parsedReg) {
+                                                parsedReg = part;
+                                            } else {
+                                                parsedName += (parsedName ? ' ' : '') + part;
+                                            }
+                                        });
+                                    } else {
+                                        const isRegnr = q.length > 0 && q.length <= 6 && /\d/.test(q);
+                                        if (isRegnr) parsedReg = q;
+                                        else parsedName = q;
+                                    }
                                     
                                     setFormData(p => ({ 
                                         ...p, 
-                                        regnr: isRegnr ? q : '', 
-                                        kundnamn: isRegnr ? '' : q 
+                                        regnr: parsedReg, 
+                                        kundnamn: parsedName,
+                                        bilmodell: '', motorkod: '', årsmodell: '', vin: '', miltal: '', oljevolym: '',
+                                        datum: new Date().toISOString().split('T')[0], tid: '16:30', status: 'BOKAD', paket: 'Standard', kundpris: '', kommentar: ''
                                     }));
                                     
-                                    // Rensa tidigare utgifter och order för att starta helt blankt
                                     setExpenses([{ desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); 
                                     setPayments([{ desc: '', amount: '' }]); 
                                     setActiveJob(null);
+                                    setIsEditingVehicle(false); 
                                     setStep('DETAIL');
                                 }}
-                                className="px-5 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-[11px] font-bold uppercase tracking-wider rounded-sm transition-colors shadow-sm flex items-center gap-2"
+                                className="w-full sm:w-auto px-5 py-4 sm:py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-[14px] sm:text-[11px] font-bold uppercase tracking-wider rounded-xl sm:rounded-sm transition-colors shadow-md sm:shadow-sm flex items-center justify-center gap-2"
                             >
-                                <SafeIcon name="plus" size={14} /> SKAPA NYTT JOBB
+                                <SafeIcon name="plus" size={18} className="sm:scale-75" /> SKAPA NYTT JOBB
                             </button>
                         </div>
                     </div>
@@ -687,6 +743,154 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         
                         {/* === VÄNSTER KOLUMN === */}
                         <div className="flex-1 flex flex-col min-w-0 order-2 lg:order-1">
+                            
+                            {/* INMATNINGSFÄLT STEG 2 (Visas enbart för nya, osparade ordrar) */}
+                            {!activeJob && showGrunduppgifter && (
+                                <div className="w-full mb-6 bg-orange-50/50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 p-5 rounded-sm shadow-sm animate-in fade-in slide-in-from-top-2 relative">
+                                    
+                                    {/* STÄNG-KRYSS HÖGST UPP TILL HÖGER */}
+                                    <button 
+                                        type="button" 
+                                        disabled={!(formData.regnr && formData.kundnamn && formData.datum && formData.tid)}
+                                        onClick={() => setShowGrunduppgifter(false)}
+                                        className={`absolute top-4 right-4 p-1 transition-colors ${
+                                            (formData.regnr && formData.kundnamn && formData.datum && formData.tid) 
+                                                ? 'text-orange-400 hover:text-orange-600 dark:text-orange-500 dark:hover:text-orange-300 cursor-pointer' 
+                                                : 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
+                                        }`}
+                                        title={(formData.regnr && formData.kundnamn && formData.datum && formData.tid) ? "Dölj rutan" : "Fyll i alla uppgifter för att stänga"}
+                                    >
+                                        <SafeIcon name="x" size={16} />
+                                    </button>
+
+                                    <h2 className="text-[16px] font-bold text-orange-800 dark:text-orange-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+                                        <SafeIcon name="file-text" size={18} /> Grunduppgifter för ny order
+                                    </h2>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        {/* REGNR FÄLT */}
+                                        <div className="relative z-20">
+                                            <label className="block text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70 uppercase tracking-wider mb-1.5">Registreringsnummer</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    value={formData.regnr} 
+                                                    onChange={e => setFormData(p => ({ ...p, regnr: e.target.value.toUpperCase().replace(/\s+/g, '') }))} 
+                                                    onFocus={() => setFocusedInput('steg2_regnr')}
+                                                    onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
+                                                    placeholder="T.ex. RMK887"
+                                                    className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm" 
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
+                                                        if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
+                                                    }}
+                                                    className="absolute right-1 top-1 bottom-1 px-3 bg-orange-100 hover:bg-orange-200 dark:bg-orange-500/20 dark:hover:bg-orange-500/40 text-orange-700 dark:text-orange-300 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 z-10"
+                                                    title="Hämta från Transportstyrelsen"
+                                                >
+                                                    <SafeIcon name="refresh-cw" size={12} /> Hämta
+                                                </button>
+                                            </div>
+                                            
+                                            {/* DROPDOWN FÖR REGNR */}
+                                            {focusedInput === 'steg2_regnr' && activeRegnrSuggestions.length > 0 && (
+                                                <div className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100] animate-in fade-in slide-in-from-top-1">
+                                                    {activeRegnrSuggestions.map(r => {
+                                                        const linkedJob = allJobs.find(j => j.regnr?.toUpperCase().replace(/\s+/g, '') === r);
+                                                        const linkedName = linkedJob ? linkedJob.kundnamn : '';
+                                                        return (
+                                                            <div key={r} onMouseDown={(e) => {
+                                                                e.preventDefault(); 
+                                                                setFormData(p => ({ ...p, regnr: r, kundnamn: p.kundnamn ? p.kundnamn : linkedName }));
+                                                                setFocusedInput(null);
+                                                            }} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#ea580c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0 flex justify-between items-center group">
+                                                                <span>{r}</span>
+                                                                {linkedName && <span className="text-[10px] font-normal opacity-60 group-hover:opacity-90 truncate max-w-[120px]">{linkedName}</span>}
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* KUNDNAMN FÄLT */}
+                                        <div className="relative z-10">
+                                            <label className="block text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70 uppercase tracking-wider mb-1.5">Kundnamn</label>
+                                            <input 
+                                                type="text" 
+                                                value={formData.kundnamn} 
+                                                onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
+                                                onFocus={() => setFocusedInput('steg2_kundnamn')}
+                                                onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
+                                                placeholder="T.ex. ANDERS"
+                                                className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm" 
+                                            />
+                                            
+                                            {/* DROPDOWN FÖR KUNDNAMN */}
+                                            {focusedInput === 'steg2_kundnamn' && activeKundSuggestions.length > 0 && (
+                                                <div className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100] animate-in fade-in slide-in-from-top-1">
+                                                    {activeKundSuggestions.map(c => {
+                                                        const linkedJob = allJobs.find(j => j.kundnamn?.toUpperCase().trim() === c.toUpperCase());
+                                                        const linkedReg = linkedJob ? linkedJob.regnr : '';
+                                                        return (
+                                                            <div key={c} onMouseDown={(e) => {
+                                                                e.preventDefault(); 
+                                                                setFormData(p => ({ ...p, kundnamn: c.toUpperCase(), regnr: p.regnr ? p.regnr : linkedReg }));
+                                                                setFocusedInput(null);
+                                                            }} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#ea580c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0 flex justify-between items-center group">
+                                                                <span className="truncate">{c}</span>
+                                                                {linkedReg && <span className="text-[10px] font-normal opacity-60 group-hover:opacity-90">{linkedReg}</span>}
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* DATUM & TID */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-orange-200/50 dark:border-orange-500/20 pt-4">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70 uppercase tracking-wider mb-1.5">Bokat datum</label>
+                                            <input 
+                                                type="date" 
+                                                value={formData.datum} 
+                                                onChange={e => setFormData(p => ({ ...p, datum: e.target.value }))} 
+                                                className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70 uppercase tracking-wider mb-1.5">Tid</label>
+                                            <input 
+                                                type="time" 
+                                                value={formData.tid} 
+                                                onChange={e => setFormData(p => ({ ...p, tid: e.target.value }))} 
+                                                className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-orange-200/50 dark:border-orange-500/20 pt-4">
+                                        <p className="text-[11px] text-orange-600/70 dark:text-orange-400/70 italic flex items-center gap-1.5">
+                                            <SafeIcon name="info" size={12} /> Synkas direkt till korten. Döljs när du sparar.
+                                        </p>
+                                        <button 
+                                            type="button" 
+                                            disabled={!(formData.regnr && formData.kundnamn && formData.datum && formData.tid)}
+                                            onClick={() => setShowGrunduppgifter(false)}
+                                            className={`w-full sm:w-auto px-5 py-2 text-[11px] font-bold uppercase tracking-wider rounded-sm transition-colors flex items-center justify-center gap-1.5 ${
+                                                (formData.regnr && formData.kundnamn && formData.datum && formData.tid) 
+                                                    ? 'bg-orange-100 hover:bg-orange-200 dark:bg-orange-500/20 dark:hover:bg-orange-500/40 text-orange-700 dark:text-orange-300 cursor-pointer' 
+                                                    : 'bg-zinc-100 dark:bg-white/5 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            <SafeIcon name="check" size={14} /> FÄRDIG, DÖLJ RUTAN
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             
                             {/* 1. Uppdragsstatus */}
                             <div className="w-full flex items-center gap-4 mb-6">
@@ -942,7 +1146,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
 
                                 {/* Fordonskortet */}
-                                <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden">
+                                <div className={`bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden ${!activeJob && showGrunduppgifter ? 'hidden lg:block' : 'block'}`}>
                                     <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
                                         <div className="w-10 h-10 bg-white dark:bg-white/5 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0 overflow-hidden relative border border-zinc-200 dark:border-white/10 shadow-sm">
                                             {(() => {
@@ -1035,7 +1239,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
 
                                 {/* Kund- och Datumkortet */}
-                                <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden relative">
+                                <div className={`bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden relative ${!activeJob && showGrunduppgifter ? 'hidden lg:block' : 'block'}`}>
                                     <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
                                         <div className="w-10 h-10 bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 rounded-full flex items-center justify-center text-zinc-500 font-bold text-[14px] shrink-0 shadow-sm">
                                             {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
