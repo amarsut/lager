@@ -322,23 +322,27 @@ const App = () => {
         const root = document.documentElement;
         root.style.setProperty('--brand-primary', '#f97316');
 
+        // Tvingar både body och html att anta rätt bakgrundsfärg för att undvika färg-läckage (t.ex. orange overscroll i iOS)
         if (isDark) {
             root.classList.add('dark');
             localStorage.setItem('sys_theme', 'dark');
-            document.body.style.background = '#09090b';
+            document.body.style.backgroundColor = '#09090b';
+            document.documentElement.style.backgroundColor = '#09090b';
         } else {
             root.classList.remove('dark');
             localStorage.setItem('sys_theme', 'light');
-            document.body.style.background = '#fafafa'; 
+            document.body.style.backgroundColor = '#fafafa'; 
+            document.documentElement.style.backgroundColor = '#fafafa';
         }
 
+        // Tvingar iOS Safari och Android Chrome att sätta app-ramen till exakt rätt färg
         let meta = document.querySelector('meta[name="theme-color"]');
         if (!meta) {
             meta = document.createElement('meta');
             meta.name = 'theme-color';
             document.head.appendChild(meta);
         }
-        meta.content = isDark ? '#0a0f18' : '#ffffff';
+        meta.content = isDark ? '#09090b' : '#fafafa';
 
         let styleTag = document.getElementById('dynamic-theme-style');
         if (!styleTag) {
