@@ -852,7 +852,7 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
     }, [lagerItems, partSearch]);
 
     // FIX: Korten fyller ut skärmens höjd på mobilen (100dvh - marginaler), men behåller h-[340px] på dator (lg:h-[340px])
-    const cardClass = "bg-white dark:bg-[#1e293b] rounded-2xl border border-zinc-200/80 dark:border-white/10 p-3.5 sm:p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[calc(90dvh-220px)] lg:h-[340px] w-[88vw] sm:w-[350px] lg:w-[400px] shrink-0 snap-start";
+    const cardClass = "bg-white dark:bg-[#1e293b] rounded-2xl border border-zinc-200/80 dark:border-white/10 p-3.5 sm:p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col h-[calc(85dvh-200px)] sm:h-[340px] w-[88vw] sm:w-[350px] lg:w-[400px] shrink-0 snap-start";
 
     return (
         <div className="mb-6 lg:mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
