@@ -139,6 +139,25 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [copiedField, setCopiedField] = React.useState(null);
     const [expandedMatchIds, setExpandedMatchIds] = React.useState([]);
 
+    const [focusedInput, setFocusedInput] = React.useState(null);
+
+    // Separerade och unika listor för våra nya snygga dropdowns
+    const uniqueCustomers = React.useMemo(() => [...new Set(allJobs.map(j => (j.kundnamn || '').trim()).filter(Boolean))], [allJobs]);
+    const uniqueRegnrs = React.useMemo(() => [...new Set(allJobs.map(j => (j.regnr || '').toUpperCase().replace(/\s+/g, '')).filter(Boolean))], [allJobs]);
+
+    // Logik för att hitta tidigare kopplingar mellan Regnr <-> Kund
+    const smartVehicleSuggestions = React.useMemo(() => {
+        if (!formData.kundnamn || formData.kundnamn.length < 2) return [];
+        const cleanName = formData.kundnamn.toUpperCase().trim();
+        return [...new Set(allJobs.filter(j => (j.kundnamn || '').toUpperCase().trim() === cleanName).map(j => j.regnr).filter(Boolean))];
+    }, [formData.kundnamn, allJobs]);
+
+    const smartCustomerSuggestions = React.useMemo(() => {
+        if (!formData.regnr || formData.regnr.length < 3) return [];
+        const cleanReg = formData.regnr.toUpperCase().replace(/\s+/g, '');
+        return [...new Set(allJobs.filter(j => (j.regnr || '').toUpperCase().replace(/\s+/g, '') === cleanReg).map(j => j.kundnamn).filter(Boolean))];
+    }, [formData.regnr, allJobs]);
+
     const toggleExpandMatch = (id) => {
         setExpandedMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
         setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
@@ -200,6 +219,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         const previousJobs = allJobs.filter(j => String(j.regnr || '').toUpperCase().replace(/\s+/g, '') === cleanReg).sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
         const lastJob = previousJobs.length > 0 ? previousJobs[0] : null;
 
+        // NYTT: Fyller i kundnamn automatiskt om vi hittar en tidigare order på detta regnr!
         // NYTT: Fyller i kundnamn automatiskt om vi hittar en tidigare order på detta regnr!
         if (lastJob && lastJob.kundnamn) {
             setFormData(p => p.kundnamn ? p : { ...p, kundnamn: lastJob.kundnamn });
@@ -433,8 +453,19 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                             <button 
                                 onClick={() => {
                                     const q = searchQuery.toUpperCase().trim();
-                                    if (q.length <= 6 && !q.includes(' ')) setFormData(p => ({ ...p, regnr: q }));
-                                    else setFormData(p => ({ ...p, kundnamn: q }));
+                                    // Smart identifiering: Om det är max 6 tecken, saknar mellanslag OCH innehåller siffror -> Regnr. Annars -> Kundnamn.
+                                    const isRegnr = q.length > 0 && q.length <= 6 && !q.includes(' ') && /\d/.test(q);
+                                    
+                                    setFormData(p => ({ 
+                                        ...p, 
+                                        regnr: isRegnr ? q : '', 
+                                        kundnamn: isRegnr ? '' : q 
+                                    }));
+                                    
+                                    // Rensa tidigare utgifter och order för att starta helt blankt
+                                    setExpenses([{ desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); 
+                                    setPayments([{ desc: '', amount: '' }]); 
+                                    setActiveJob(null);
                                     setStep('DETAIL');
                                 }}
                                 className="px-5 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-[11px] font-bold uppercase tracking-wider rounded-sm transition-colors shadow-sm flex items-center gap-2"
@@ -912,7 +943,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                                 {/* Fordonskortet */}
                                 <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden">
-                                    {/* Övre sektion: Grå bakgrund med underlinje */}
                                     <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
                                         <div className="w-10 h-10 bg-white dark:bg-white/5 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0 overflow-hidden relative border border-zinc-200 dark:border-white/10 shadow-sm">
                                             {(() => {
@@ -950,10 +980,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </button>
                                     </div>
                                     
-                                    {/* Nedre sektion: Vit bakgrund, ingen ruta i ruta */}
                                     <div className="flex flex-col py-2 bg-white dark:bg-[#1e293b]">
                                         {[
-                                            { label: 'Reg.Nr.:', val: formData.regnr, id: 'regnr', uppercase: true, listId: 'regnr-list', action: (v) => setFormData(p => ({...p, regnr: (v || '').toUpperCase()})) },
+                                            { label: 'Reg.Nr.:', val: formData.regnr, id: 'regnr', uppercase: true, action: (v) => setFormData(p => ({...p, regnr: (v || '').toUpperCase()})) },
                                             { label: 'Ch.nr:', val: fetchedCarInfo?.vin, id: 'vin', uppercase: true, action: (v) => handleSpecChange('vin', (v || '').toUpperCase()), blur: (v) => saveSpec('vin', v || '') },
                                             { label: 'Motor:', val: fetchedCarInfo?.motorkod, id: 'motorkod', uppercase: true, action: (v) => handleSpecChange('motorkod', v || ''), blur: (v) => saveSpec('motorkod', v || '') },
                                             { label: 'År:', val: fetchedCarInfo?.årsmodell, id: 'årsmodell', action: (v) => handleSpecChange('årsmodell', v || ''), blur: (v) => saveSpec('årsmodell', v || '') },
@@ -963,47 +992,41 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <div key={f.id} className={`flex items-center group min-h-[26px] px-4 text-[13px] transition-colors duration-300 ${copiedField === f.id ? 'bg-emerald-50 dark:bg-emerald-500/10' : (idx % 2 === 0 ? 'bg-white dark:bg-[#1e293b]' : 'bg-zinc-50/50 dark:bg-[#161f30]/50')}`}>
                                                 <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">{f.label}</span>
                                                 {isEditingVehicle ? (
-                                                    <input 
-                                                        type="text"
-                                                        list={f.listId || undefined}
-                                                        value={f.val || ''} 
-                                                        onChange={e => f.action(e.target.value)}
-                                                        onBlur={e => f.blur ? f.blur(e.target.value) : undefined}
-                                                        className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-sm outline-none text-zinc-900 dark:text-white ${f.uppercase ? 'uppercase' : ''}`} 
-                                                        placeholder="-" 
-                                                    />
+                                                    <div className="relative w-full">
+                                                        <input 
+                                                            type="text"
+                                                            value={f.val || ''} 
+                                                            onChange={e => f.action(e.target.value)}
+                                                            onFocus={() => setFocusedInput(f.id)}
+                                                            onBlur={e => { setTimeout(() => setFocusedInput(null), 200); if (f.blur) f.blur(e.target.value); }}
+                                                            className={`w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 px-1.5 py-0.5 rounded-sm outline-none text-zinc-900 dark:text-white ${f.uppercase ? 'uppercase' : ''}`} 
+                                                            placeholder="-" 
+                                                        />
+                                                        {focusedInput === 'regnr' && f.id === 'regnr' && f.val && uniqueRegnrs.filter(r => r.includes(f.val.toUpperCase()) && r !== f.val.toUpperCase()).length > 0 && (
+                                                            <div className="absolute top-full left-0 mt-1 w-[130%] max-h-32 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100]">
+                                                                {uniqueRegnrs.filter(r => r.includes(f.val.toUpperCase()) && r !== f.val.toUpperCase()).map(r => (
+                                                                    <div key={r} onMouseDown={() => f.action(r)} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#168a9c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0">
+                                                                        {r}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     <div 
-                                                        onClick={() => {
-                                                            if(f.val) {
-                                                                navigator.clipboard.writeText(f.val);
-                                                                setCopiedField(f.id);
-                                                                setTimeout(() => setCopiedField(null), 2000);
-                                                            }
-                                                        }}
+                                                        onClick={() => { if(f.val) { navigator.clipboard.writeText(f.val); setCopiedField(f.id); setTimeout(() => setCopiedField(null), 2000); } }}
                                                         className={`w-full bg-transparent cursor-pointer flex items-center justify-between transition-colors duration-300 ${copiedField === f.id ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-zinc-800 dark:text-zinc-200 hover:text-[#168a9c]'} ${f.uppercase ? 'uppercase' : ''}`}
                                                         title={f.val ? "Klicka för att kopiera" : ""}
                                                     >
                                                         <span className="truncate">{f.val || '-'}</span>
-                                                        {copiedField === f.id ? (
-                                                            <SafeIcon name="check" size={14} className="text-emerald-500 shrink-0" />
-                                                        ) : (
-                                                            f.val && <SafeIcon name="copy" size={12} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                                        )}
+                                                        {copiedField === f.id ? <SafeIcon name="check" size={14} className="text-emerald-500 shrink-0" /> : (f.val && <SafeIcon name="copy" size={12} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />)}
                                                     </div>
                                                 )}
                                             </div>
                                         ))}
                                         {isEditingVehicle && (
                                             <div className="px-4 pb-2 pt-3">
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => {
-                                                        if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                        if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
-                                                    }}
-                                                    className="w-full py-1.5 border border-[#168a9c] text-[#168a9c] hover:bg-[#168a9c] hover:text-white rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                                                >
+                                                <button type="button" onClick={() => { if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; } if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true); }} className="w-full py-1.5 border border-[#168a9c] text-[#168a9c] hover:bg-[#168a9c] hover:text-white rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm">
                                                     <SafeIcon name="refresh-cw" size={14} /> Hämta Fordonsdata
                                                 </button>
                                             </div>
@@ -1012,24 +1035,61 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
 
                                 {/* Kund- och Datumkortet */}
-                                <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden">
+                                <div className="bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden relative">
                                     <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
                                         <div className="w-10 h-10 bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 rounded-full flex items-center justify-center text-zinc-500 font-bold text-[14px] shrink-0 shadow-sm">
                                             {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
                                         </div>
-                                        <div className="flex-1 min-w-0 flex flex-col">
+                                        <div className="flex-1 min-w-0 flex flex-col relative">
                                             <input 
                                                 type="text" 
-                                                list="customers-list"
                                                 value={formData.kundnamn || ''} 
                                                 onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
+                                                onFocus={() => setFocusedInput('kundnamn')}
+                                                onBlur={() => setTimeout(() => setFocusedInput(null), 200)}
                                                 placeholder="Kundens namn"
                                                 className="w-full bg-transparent outline-none font-bold text-[14px] text-[#168a9c] hover:underline underline-offset-2 truncate" 
                                             />
+                                            {focusedInput === 'kundnamn' && formData.kundnamn && uniqueCustomers.filter(c => c.toUpperCase().includes(formData.kundnamn.toUpperCase()) && c.toUpperCase() !== formData.kundnamn.toUpperCase()).length > 0 && (
+                                                <div className="absolute top-full left-0 mt-1 w-[150%] max-h-40 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100]">
+                                                    {uniqueCustomers.filter(c => c.toUpperCase().includes(formData.kundnamn.toUpperCase()) && c.toUpperCase() !== formData.kundnamn.toUpperCase()).map(c => (
+                                                        <div key={c} onMouseDown={() => setFormData(p => ({ ...p, kundnamn: c.toUpperCase() }))} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#168a9c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0">
+                                                            {c}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                             <span className="text-[12px] text-zinc-500 mt-0.5">Kund</span>
                                         </div>
                                     </div>
                                     
+                                    {/* SMARTA KOPPLINGAR - Visas automatiskt när relationer hittas men fältet gapar tomt */}
+                                    {(!formData.regnr && smartVehicleSuggestions.length > 0) && (
+                                        <div className="bg-orange-50 dark:bg-orange-500/10 border-b border-orange-100 dark:border-orange-500/20 px-4 py-2.5 flex flex-col gap-2">
+                                            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Hittade fordon för {formData.kundnamn}</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {smartVehicleSuggestions.map(r => (
+                                                    <button key={r} type="button" onClick={() => setFormData(p => ({...p, regnr: r}))} className="px-3 py-1.5 bg-white dark:bg-[#1e293b] border border-orange-200 dark:border-orange-500/30 text-orange-700 dark:text-orange-400 rounded-sm text-[11px] font-bold hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-colors shadow-sm">
+                                                        + KOPPLA {r}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {(!formData.kundnamn && smartCustomerSuggestions.length > 0) && (
+                                        <div className="bg-emerald-50 dark:bg-emerald-500/10 border-b border-emerald-100 dark:border-emerald-500/20 px-4 py-2.5 flex flex-col gap-2">
+                                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Tidigare ägare av {formData.regnr}</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {smartCustomerSuggestions.map(c => (
+                                                    <button key={c} type="button" onClick={() => setFormData(p => ({...p, kundnamn: c}))} className="px-3 py-1.5 bg-white dark:bg-[#1e293b] border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-sm text-[11px] font-bold hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-colors shadow-sm">
+                                                        + KOPPLA {c}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex flex-col py-2 bg-white dark:bg-[#1e293b]">
                                         <div className="flex items-center min-h-[26px] px-4 bg-white dark:bg-[#1e293b] text-[13px] relative group cursor-pointer" onClick={() => { const el = document.getElementById('bokat-datum-input'); if(el && el.showPicker) el.showPicker(); }}>
                                             <span className="font-bold text-zinc-900 dark:text-white w-[75px] shrink-0 text-[10px] uppercase tracking-wider">Bokat:</span>
