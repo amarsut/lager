@@ -201,6 +201,14 @@ const App = () => {
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     const [globalVehicle, setGlobalVehicle] = useState(null);
 
+    // Tvingar scroll-containern till toppen varje gång 'view' ändras
+    useEffect(() => {
+        const scrollArea = document.getElementById('main-scroll-area');
+        if (scrollArea) {
+            scrollArea.scrollTo({ top: 0, behavior: 'instant' });
+        }
+    }, [view]);
+
     useEffect(() => {
         localStorage.setItem('sys_nightlight', isNightLight);
     }, [isNightLight]);
@@ -720,7 +728,7 @@ const App = () => {
                         </>
                     )}
 
-                    <div className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY', 'ACTIVE_JOBS', 'VEHICLES', 'INVOICE', 'SETTINGS'].includes(view) ? 'p-0' : 'p-4'}`}>
+                    <div id="main-scroll-area" className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY', 'ACTIVE_JOBS', 'VEHICLES', 'INVOICE', 'SETTINGS'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {/* BEFINTLIGA VYER */}
                         {view === 'DASHBOARD' && window.DashboardView && <window.DashboardView allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} />}
                         {view === 'PROGNOS' && window.PrognosView && <window.PrognosView allJobs={allJobs} setView={navigateTo} />}
