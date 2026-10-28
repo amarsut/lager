@@ -360,6 +360,13 @@ const App = () => {
         }
 
         styleTag.innerHTML = `
+            /* Bombsäker override för Android & iOS bottenyta */
+            html, body, #root { 
+                background-color: ${isDark ? '#09090b' : '#fafafa'} !important; 
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+            
             @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
             input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
             input[type=number] { -moz-appearance: textfield; }
