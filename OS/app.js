@@ -562,7 +562,7 @@ const App = () => {
             )}
 
             {window.GlobalSystemRadar && (
-                <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} />
+                <window.GlobalSystemRadar isChatOpen={isChatOpen} navigateTo={navigateTo} isHidden={view === 'NEW_JOB'} />
             )}
 
             {/* NATTLJUS-FILTER */}
