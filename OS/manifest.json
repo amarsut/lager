@@ -6,7 +6,7 @@
   "scope": "/lager/OS/",
   "display": "standalone",
   "background_color": "#06080a",
-  "theme_color": "#f97316",
+  "theme_color": "#09090b",
   "icons": [
         {
             "src": "icons/192x192.png",
