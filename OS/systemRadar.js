@@ -62,8 +62,20 @@ window.osSearchVehicle = async (regnr, targetType = 'SMART_SEARCH', forceScrape 
     }
 };
 
-window.GlobalSystemRadar = ({ isChatOpen }) => {
-    const { useState, useEffect } = React;
+window.GlobalSystemRadar = ({ isChatOpen, isHidden }) => {
+    const { useState, useEffect, useRef } = React; // Lade till useRef
+    
+    // Håller stenkoll på om vi befinner oss i en tyst vy (utan att fastna i gamla renderingar)
+    const isHiddenRef = useRef(isHidden);
+    useEffect(() => { isHiddenRef.current = isHidden; }, [isHidden]);
+
+    // Rensar eventuella "kvarhängande" rutor när man går in i en tyst vy
+    useEffect(() => {
+        if (isHidden) {
+            setRadars([]);
+            localStorage.removeItem('os_active_radars');
+        }
+    }, [isHidden]);
     
     const [radars, setRadars] = useState(() => {
         try {
@@ -81,6 +93,9 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
         const handleTrigger = (e) => {
             const { regnr, forceShowData, waitForExtension, actionTrigger, partialData } = e.detail;
             if (!regnr) return;
+
+            // SPÄRR: Lägg inte till någon laddningsruta om vi är i tyst läge (t.ex. inne på Ny Order)
+            if (isHiddenRef.current) return;
 
             setRadars(prev => {
                 const othersMinimized = prev.map(r => r.regnr !== regnr ? { ...r, isMinimized: true } : r);
@@ -153,7 +168,8 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
                 }
             });
 
-            if (!fordonData.silentSync) {
+            // SPÄRR: Öppna inte radarn om silentSync är sant ELLER om radarn är inaktiverad via isHidden
+            if (!fordonData.silentSync && !isHiddenRef.current) {
                 setRadars(prev => {
                     const existing = prev.find(r => r.regnr === regnr);
                     if (existing) {
@@ -210,6 +226,8 @@ window.GlobalSystemRadar = ({ isChatOpen }) => {
     const handleRetry = (radar) => window.osSearchVehicle(radar.regnr, radar.actionTrigger || 'START_OS_RADAR', true);
 
     if (radars.length === 0) return null;
+    // Dölj hela popupen om vi är i "tyst läge" (t.ex. inne i orderblanketten)
+    if (isHidden) return null;
 
     const StatCard = ({ icon, label, val, highlight }) => {
         const displayVal = val || '-';
