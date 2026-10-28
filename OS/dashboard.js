@@ -1300,26 +1300,8 @@ window.DashboardView = React.memo(({
     const visibleJobsBase = sortedAndFilteredJobs.slice(0, visibleCount);
     const hasMore = visibleCount < sortedAndFilteredJobs.length;
 
-    // NYTT: Hämta de 5 senast klara/fakturerade jobben
-    const recentCompletedJobs = React.useMemo(() => {
-        return allJobs
-            .filter(j => !j.deleted && (j.status === 'KLAR' || j.status === 'FAKTURERAS'))
-            .sort((a, b) => {
-                const dateA = a.datum || '';
-                const dateB = b.datum || '';
-                return dateB.localeCompare(dateA);
-            })
-            .slice(0, 5) // Ändra till 10 här om du vill se fler!
-            .map(j => ({ ...j, isRecentCompleted: true }));
-    }, [allJobs]);
-
-    // Slå ihop listorna om vi är på BOKAD-fliken
-    const visibleJobs = React.useMemo(() => {
-        if (activeFilter === 'BOKAD' && recentCompletedJobs.length > 0) {
-            return [...visibleJobsBase, { id: 'separator-recent', isSeparator: true, title: 'Senaste 5 klara uppdrag' }, ...recentCompletedJobs];
-        }
-        return visibleJobsBase;
-    }, [visibleJobsBase, activeFilter, recentCompletedJobs]);
+    // Använd enbart den filtrerade listan (Senaste 5 klara är borttaget)
+    const visibleJobs = visibleJobsBase;
 
     const requestSort = (key) => {
         let direction = 'asc';
