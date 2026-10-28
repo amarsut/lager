@@ -796,7 +796,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     type="button"
                                                     onClick={() => {
                                                         if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                        if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true);
+                                                        // Skickar den smarta signalen till Chrome-tillägget för Car.info + Oljemagasinet
+                                                        window.postMessage({ action: 'BMG_REMOTE_SEARCH', regnr: formData.regnr, engine: 'combo-ci-om' }, '*');
                                                     }}
                                                     className={`absolute right-1 top-1 bottom-1 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 z-10 ${
                                                         (fetchedCarInfo && (fetchedCarInfo.bilmodell || fetchedCarInfo.vin))
@@ -1250,10 +1251,15 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             </div>
                                         ))}
                                         {isEditingVehicle && (
-                                            <div className="px-4 pb-2 pt-3">
-                                                <button type="button" onClick={() => { if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; } if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true); }} className="w-full py-1.5 border border-[#168a9c] text-[#168a9c] hover:bg-[#168a9c] hover:text-white rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm">
-                                                    <SafeIcon name="refresh-cw" size={14} /> Hämta Fordonsdata
-                                                </button>
+                                            <div className="px-4 pb-3 pt-3">
+                                                {/* Vi använder din befintliga smarta meny här istället! */}
+                                                {window.AutoSearchMenu ? (
+                                                    <window.AutoSearchMenu regnr={formData.regnr} variant="full" />
+                                                ) : (
+                                                    <button type="button" onClick={() => { if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; } if (window.osSearchVehicle) window.osSearchVehicle(formData.regnr, 'START_OS_RADAR', true); }} className="w-full py-2 border border-[#168a9c] text-[#168a9c] hover:bg-[#168a9c] hover:text-white rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                                                        <SafeIcon name="refresh-cw" size={14} /> Hämta Fordonsdata
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                     </div>
