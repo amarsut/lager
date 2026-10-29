@@ -973,49 +973,6 @@ window.DashboardWidgets = React.memo(({ allJobs, setView, activeFilter, setActiv
                     </div>
                 </div>
 
-                {/* 3. Att Fakturera (Samma design som övriga, fokuserad vid flik-byte) */}
-                <div id="widget-faktura" className={cardClass}>
-                    <div className="flex justify-between items-end mb-3">
-                        <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 leading-none">
-                            Att Fakturera
-                        </h3>
-                        <div className="text-[16px] font-normal tabular-nums text-zinc-800 dark:text-zinc-200 leading-none">
-                            {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[12px] text-zinc-400 font-normal ml-0.5">kr</span>
-                        </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 border-b border-zinc-400/50 dark:border-zinc-600 pb-2 mb-4 text-[13px] text-zinc-500">
-                        <window.Icon name="users" size={14} />
-                        <span>{invoiceStats.topCustomers.length} kunder väntar</span>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                        {invoiceStats.topCustomers.length === 0 ? (
-                            <div className="text-[13px] text-zinc-400">Inga väntande fakturor.</div>
-                        ) : (
-                            invoiceStats.topCustomers.map(([name, amount], idx) => {
-                                const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
-                                return (
-                                    <div key={idx} className="flex flex-col gap-1.5 cursor-pointer group" onClick={() => setActiveFilter && setActiveFilter('FAKTURERAS')}>
-                                        <div className="flex justify-between items-end text-[13px] font-medium text-zinc-700 dark:text-zinc-300 leading-none group-hover:text-orange-500 transition-colors">
-                                            <span className="truncate pr-2">{name}</span>
-                                            <span className="font-normal tabular-nums text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors">
-                                                {amount.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 group-hover:text-orange-400 transition-colors ml-0.5">kr</span>
-                                            </span>
-                                        </div>
-                                        <div className="h-[3px] w-full bg-zinc-100 dark:bg-white/5 rounded-full overflow-hidden">
-                                            <div 
-                                                className="h-full bg-orange-400 rounded-full transition-all duration-1000" 
-                                                style={{ width: `${percentage}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-
                 {/* 3. Senast använda fordon */}
                 <div className={cardClass}>
                     <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-3">
@@ -1109,6 +1066,49 @@ window.DashboardWidgets = React.memo(({ allJobs, setView, activeFilter, setActiv
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                {/* 3. Att Fakturera (Samma design som övriga, fokuserad vid flik-byte) */}
+                <div id="widget-faktura" className={cardClass}>
+                    <div className="flex justify-between items-end mb-3">
+                        <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 leading-none">
+                            Att Fakturera
+                        </h3>
+                        <div className="text-[16px] font-normal tabular-nums text-zinc-800 dark:text-zinc-200 leading-none">
+                            {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[12px] text-zinc-400 font-normal ml-0.5">kr</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 border-b border-zinc-400/50 dark:border-zinc-600 pb-2 mb-4 text-[13px] text-zinc-500">
+                        <window.Icon name="users" size={14} />
+                        <span>{invoiceStats.topCustomers.length} kunder väntar</span>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                        {invoiceStats.topCustomers.length === 0 ? (
+                            <div className="text-[13px] text-zinc-400">Inga väntande fakturor.</div>
+                        ) : (
+                            invoiceStats.topCustomers.map(([name, amount], idx) => {
+                                const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                return (
+                                    <div key={idx} className="flex flex-col gap-1.5 cursor-pointer group" onClick={() => setActiveFilter && setActiveFilter('FAKTURERAS')}>
+                                        <div className="flex justify-between items-end text-[13px] font-medium text-zinc-700 dark:text-zinc-300 leading-none group-hover:text-orange-500 transition-colors">
+                                            <span className="truncate pr-2">{name}</span>
+                                            <span className="font-normal tabular-nums text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors">
+                                                {amount.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 group-hover:text-orange-400 transition-colors ml-0.5">kr</span>
+                                            </span>
+                                        </div>
+                                        <div className="h-[3px] w-full bg-zinc-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-orange-400 rounded-full transition-all duration-1000" 
+                                                style={{ width: `${percentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
                 </div>
 
