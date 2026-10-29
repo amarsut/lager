@@ -779,13 +779,33 @@ window.TaskFormatter = React.memo(({ text, isDone }) => {
 });
 
 // --- DASHBOARD WIDGETS (Auto-scroll till Öppna ordrar) ---
-window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
+window.DashboardWidgets = React.memo(({ allJobs, setView, activeFilter, setActiveFilter }) => {
     const [tasks, setTasks] = React.useState([]);
     const [lagerItems, setLagerItems] = React.useState([]);
     const [newTask, setNewTask] = React.useState('');
     const [orderSearch, setOrderSearch] = React.useState('');
     const [vehicleSearch, setVehicleSearch] = React.useState('');
     const [partSearch, setPartSearch] = React.useState('');
+
+    const invoiceStats = React.useMemo(() => {
+        let totalRemaining = 0;
+        const customers = {};
+        allJobs.forEach(job => {
+            if (!job.status || job.status.toUpperCase() !== 'FAKTURERAS' || job.deleted) return;
+            const price = parseInt(String(job.kundpris || '0').replace(/\D/g, '')) || 0;
+            const paid = parseInt(String(job.betaltBelopp || '0').replace(/\D/g, '')) || 0;
+            const remaining = Math.max(0, price - paid);
+            if (remaining > 0) { 
+                totalRemaining += remaining;
+                const name = job.kundnamn || 'Okänd kund';
+                customers[name] = (customers[name] || 0) + remaining;
+            }
+        });
+        return {
+            total: totalRemaining,
+            topCustomers: Object.entries(customers).sort((a, b) => b[1] - a[1])
+        };
+    }, [allJobs]);
 
     // NYTT: Ref för att kunna styra den horisontella rullningslisten
     const scrollRef = React.useRef(null);
@@ -811,22 +831,25 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
         return () => clearTimeout(timer);
     });
 
-    // NYTT: Scrolla fram till kort nummer 2 ("Öppna ordrar") automatiskt när sektionen laddas
+    // NYTT: Smart scroll som fokuserar på rätt widget beroende på vald flik
     React.useEffect(() => {
         const timer = setTimeout(() => {
             if (scrollRef.current) {
                 const container = scrollRef.current;
-                const secondCard = container.children[1]; // Kort index 1 är Öppna ordrar
-                if (secondCard) {
+                // Fokuserar på Faktura-widgeten om fliken är aktiv, annars alltid Öppna Ordrar
+                const targetId = activeFilter === 'FAKTURERAS' ? 'widget-faktura' : 'widget-oppna-ordrar';
+                const targetCard = document.getElementById(targetId);
+                
+                if (targetCard) {
                     container.scrollTo({
-                        left: secondCard.offsetLeft,
+                        left: targetCard.offsetLeft - container.offsetLeft,
                         behavior: 'smooth'
                     });
                 }
             }
-        }, 350); // 350ms fördröjning gör att menyns in-animering hinner bli klar först
+        }, 350);
         return () => clearTimeout(timer);
-    }, []);
+    }, [activeFilter]);
 
     const toggleTask = (id, currentStatus) => window.db.collection("tasks").doc(id).update({ done: !currentStatus });
     const addTask = (e) => {
@@ -887,10 +910,11 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
     return (
         <div className="mb-6 lg:mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
             {/* NYTT: Satt "relative" och kopplat "ref={scrollRef}" till behållaren */}
+            {/* NYTT: Satt "relative" och kopplat "ref={scrollRef}" till behållaren */}
             <div ref={scrollRef} className="relative flex overflow-x-auto gap-4 lg:gap-5 pb-4 custom-scrollbar snap-x snap-mandatory pr-8">
                 
-                {/* 1. Snabblänkar */}
-                <div className={cardClass}>
+                {/* 1. Snabblänkar (Ligger till vänster, utom synhåll vid start) */}
+                <div id="widget-snabblankar" className={cardClass}>
                     <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-6">
                         Snabblänkar
                     </h3>
@@ -906,8 +930,8 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                     </div>
                 </div>
 
-                {/* 2. Öppna Ordrar */}
-                <div className={cardClass}>
+                {/* 2. Öppna Ordrar (Fokuserad vid start) */}
+                <div id="widget-oppna-ordrar" className={cardClass}>
                     <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 mb-3">
                         Öppna ordrar
                     </h3>
@@ -946,6 +970,49 @@ window.DashboardWidgets = React.memo(({ allJobs, setView }) => {
                                 </div>
                             );
                         })}
+                    </div>
+                </div>
+
+                {/* 3. Att Fakturera (Samma design som övriga, fokuserad vid flik-byte) */}
+                <div id="widget-faktura" className={cardClass}>
+                    <div className="flex justify-between items-end mb-3">
+                        <h3 className="text-[16px] text-zinc-800 dark:text-zinc-200 leading-none">
+                            Att Fakturera
+                        </h3>
+                        <div className="text-[16px] font-normal tabular-nums text-zinc-800 dark:text-zinc-200 leading-none">
+                            {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[12px] text-zinc-400 font-normal ml-0.5">kr</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 border-b border-zinc-400/50 dark:border-zinc-600 pb-2 mb-4 text-[13px] text-zinc-500">
+                        <window.Icon name="users" size={14} />
+                        <span>{invoiceStats.topCustomers.length} kunder väntar</span>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                        {invoiceStats.topCustomers.length === 0 ? (
+                            <div className="text-[13px] text-zinc-400">Inga väntande fakturor.</div>
+                        ) : (
+                            invoiceStats.topCustomers.map(([name, amount], idx) => {
+                                const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
+                                return (
+                                    <div key={idx} className="flex flex-col gap-1.5 cursor-pointer group" onClick={() => setActiveFilter && setActiveFilter('FAKTURERAS')}>
+                                        <div className="flex justify-between items-end text-[13px] font-medium text-zinc-700 dark:text-zinc-300 leading-none group-hover:text-orange-500 transition-colors">
+                                            <span className="truncate pr-2">{name}</span>
+                                            <span className="font-normal tabular-nums text-zinc-900 dark:text-white shrink-0 group-hover:text-orange-500 transition-colors">
+                                                {amount.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 group-hover:text-orange-400 transition-colors ml-0.5">kr</span>
+                                            </span>
+                                        </div>
+                                        <div className="h-[3px] w-full bg-zinc-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-orange-400 rounded-full transition-all duration-1000" 
+                                                style={{ width: `${percentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
                 </div>
 
@@ -1419,11 +1486,16 @@ window.DashboardView = React.memo(({
 
     const invoiceStats = React.useMemo(() => {
         if (activeFilter !== 'FAKTURERAS') return { total: 0, topCustomers: [] };
+        
         let totalRemaining = 0;
         const customers = {};
-        filteredJobs.forEach(job => {
-            const price = parseInt(job.kundpris) || 0;
-            const paid = parseInt(job.betaltBelopp) || 0;
+        
+        // Loopa alla jobb och säkra att priserna räknas rätt även med mellanslag
+        allJobs.forEach(job => {
+            if (!job.status || job.status.toUpperCase() !== 'FAKTURERAS' || job.deleted) return;
+            
+            const price = parseInt(String(job.kundpris || '0').replace(/\D/g, '')) || 0;
+            const paid = parseInt(String(job.betaltBelopp || '0').replace(/\D/g, '')) || 0;
             const remaining = Math.max(0, price - paid);
 
             if (remaining > 0) { 
@@ -1432,11 +1504,12 @@ window.DashboardView = React.memo(({
                 customers[name] = (customers[name] || 0) + remaining;
             }
         });
+        
         return {
             total: totalRemaining,
             topCustomers: Object.entries(customers).sort((a, b) => b[1] - a[1])
         };
-    }, [filteredJobs, activeFilter]);
+    }, [allJobs, activeFilter]);
 
     const getHeaderDate = () => {
         const d = new Date();
@@ -1532,7 +1605,7 @@ window.DashboardView = React.memo(({
 
                 {/* ENDAST DEN NYA WIDGET-VYN */}
                 {showTopWidgets && (
-                    <window.DashboardWidgets allJobs={allJobs} setView={setView} />
+                    <window.DashboardWidgets allJobs={allJobs} setView={setView} activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
                 )}
 
                 <div className="flex flex-col flex-1 pb-10 relative">
@@ -2426,23 +2499,23 @@ window.DashboardView = React.memo(({
                             {/* FIX: Ändrat till en giltig färgklass (/95). 
                                 Lade även till 'rounded-b-3xl' för snygga hörn i botten nu när du kör 90dvh! */}
                             <div className="absolute top-full left-0 right-0 bg-zinc-100/95 dark:bg-[#09090b]/95 backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.3)] dark:shadow-[0_40px_80px_rgba(0,0,0,0.8)] border-b border-zinc-300/50 dark:border-white/10 rounded-b-3xl p-4 pt-5 pb-6 animate-in slide-in-from-top-2 fade-in duration-200 h-[90dvh] overflow-y-auto custom-scrollbar z-50">
-                                <window.DashboardWidgets allJobs={allJobs} />
+                                <window.DashboardWidgets allJobs={allJobs} setView={setView} activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
                             </div>
                         </>
                     )}
                 </div>
 
-                {activeFilter === 'FAKTURERAS' && invoiceStats.total > 0 && (
+                {invoiceStats.total > 0 && (
                     <div className="mx-3 mt-4 mb-2 p-4 rounded-2xl bg-white/90 dark:bg-[#1e293b]/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none"></div>
                         
                         <div className="flex items-center justify-between relative z-10">
                             <div>
-                                <h3 className="text-[9px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                <h3 className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                     <window.Icon name="pie-chart" size={10} className="text-orange-500" /> Att Fakturera
                                 </h3>
-                                <div className="text-2xl font-light text-zinc-900 dark:text-white tracking-tighter leading-none">
-                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-0.5">kr</span>
+                                <div className="text-2xl font-normal tabular-nums text-zinc-800 dark:text-zinc-200 leading-none">
+                                    {invoiceStats.total.toLocaleString('sv-SE')} <span className="text-[12px] font-normal text-zinc-400 dark:text-zinc-500 ml-0.5">kr</span>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -2458,15 +2531,15 @@ window.DashboardView = React.memo(({
                                     const percentage = invoiceStats.total > 0 ? Math.round((amount / invoiceStats.total) * 100) : 0;
                                     return (
                                         <div key={idx} className="flex flex-col gap-1.5">
-                                            <div className="flex justify-between items-end text-[12px] font-medium text-zinc-800 dark:text-zinc-200 leading-none">
+                                            <div className="flex justify-between items-end text-[12px] font-medium text-zinc-700 dark:text-zinc-300 leading-none">
                                                 <span className="truncate pr-2">{name}</span>
-                                                <span className="font-mono font-bold shrink-0">
-                                                    {amount.toLocaleString('sv-SE')} <span className="text-[9px] text-zinc-400 font-sans tracking-widest">kr</span>
+                                                <span className="font-normal tabular-nums text-zinc-900 dark:text-white shrink-0">
+                                                    {amount.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 ml-0.5">kr</span>
                                                 </span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
+                                            <div className="h-[3px] w-full bg-zinc-100 dark:bg-black/40 rounded-full overflow-hidden border border-transparent dark:border-white/5">
                                                 <div 
-                                                    className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out" 
+                                                    className="h-full bg-orange-400 rounded-full transition-all duration-1000 ease-out" 
                                                     style={{ width: `${percentage}%` }}
                                                 ></div>
                                             </div>
