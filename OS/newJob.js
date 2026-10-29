@@ -742,7 +742,32 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 </div>
                         </div>
                     ) : (
-                        isFiltering ? ( <div className="w-full text-center text-zinc-500 py-10 text-[13px] bg-white border border-zinc-200 mt-2 rounded-xl">Inga fordon hittades för dina valda filter.</div> ) : null
+                        isFiltering ? ( 
+                            <div className="w-full flex flex-col items-center justify-center py-20 mt-4 text-zinc-400">
+                                <SafeIcon name="search-x" size={32} className="mb-4 opacity-50" />
+                                <span className="text-[14px] font-medium">Inga uppdrag hittades för din sökning.</span>
+                            </div>
+                        ) : (
+                            <div className="w-full flex flex-col items-center justify-center py-6 pb-24 lg:py-32 mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="relative flex items-center justify-center mb-3 lg:mb-6">
+                                    {/* Mjuk glow-effekt bakom ikonen */}
+                                    <div className="absolute inset-0 bg-orange-500/10 dark:bg-orange-500/5 blur-xl lg:blur-3xl rounded-full scale-150"></div>
+                                    
+                                    {/* Svävande, polerad ikon-cirkel (Mycket mindre och tajtare på mobil) */}
+                                    <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-white dark:bg-[#1e293b] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-zinc-100 dark:border-white/5 flex items-center justify-center relative z-10 transition-transform duration-700 hover:scale-105 hover:shadow-[0_15px_50px_rgba(234,88,12,0.1)]">
+                                        <SafeIcon name="car" size={24} className="text-zinc-300 dark:text-zinc-600 lg:w-[36px] lg:h-[36px]" />
+                                    </div>
+                                </div>
+                                
+                                {/* Stilren text med tajtare marginaler */}
+                                <h3 className="text-[15px] lg:text-lg font-semibold text-zinc-700 dark:text-zinc-200 tracking-tight mb-1 lg:mb-2 text-center">
+                                    Sök i orderhistoriken
+                                </h3>
+                                <p className="text-[11px] lg:text-[13px] text-zinc-400 dark:text-zinc-500 max-w-[240px] lg:max-w-[300px] text-center leading-relaxed px-2">
+                                    Börja skriva ovan för att hitta fordon och uppdrag.
+                                </p>
+                            </div>
+                        )
                     )}
                 </div>
             )}
