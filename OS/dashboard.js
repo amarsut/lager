@@ -468,30 +468,35 @@ window.CustomerAvatar = React.memo(({ job }) => {
 });
 
 // 3. MOBILKORTET
+// dashboard.js - Uppdaterad MobileJobCard (Förbättrad mobilvy)
+
 const mobileCardPropsAreEqual = (prev, next) => {
     return prev.job === next.job && prev.job.status === next.job.status && prev.job.datum === next.job.datum;
 };
 
-// FIX: Stramare och mer linjär "affärssystem"-design för mobilkortet
-const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
+window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
     
-    // NYTT: State för att hämta bilmodellen från fordonsregistret om den saknas på ordern
     const [displayModel, setDisplayModel] = React.useState(job.bilmodell || '');
+    const [displayVin, setDisplayVin] = React.useState(job.vin || '');
+    const [copiedVin, setCopiedVin] = React.useState(false);
 
     React.useEffect(() => {
         setDisplayModel(job.bilmodell || '');
+        setDisplayVin(job.vin || '');
         const regnr = job.regnr ? job.regnr.toUpperCase().trim() : null;
         if (!regnr || regnr === '-' || !window.db) return;
 
         const unsubscribe = window.db.collection('vehicleSpecs').doc(regnr).onSnapshot(doc => {
-            if (doc.exists && doc.data().model) {
-                setDisplayModel(doc.data().model);
+            if (doc.exists) {
+                const data = doc.data();
+                if (data.model) setDisplayModel(data.model);
+                if (data.vin) setDisplayVin(data.vin);
             }
         });
         return () => unsubscribe();
-    }, [job.regnr, job.bilmodell]);
+    }, [job.regnr, job.bilmodell, job.vin]);
 
     const isWaiting = !job.datum;
     const dateString = formatDate(job.datum);
@@ -512,6 +517,14 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
         setTimeout(() => setCopied(false), 2000);
     }, [job.regnr, vehicleDisplay]);
 
+    const handleCopyVin = React.useCallback((e) => {
+        e.stopPropagation();
+        if (!displayVin || displayVin === '-') return;
+        navigator.clipboard.writeText(displayVin);
+        setCopiedVin(true);
+        setTimeout(() => setCopiedVin(false), 2000);
+    }, [displayVin]);
+
     const handleCardClick = React.useCallback(() => {
         if (job.regnr) onOpenHistory(job.regnr, job.id, job);
     }, [job.regnr, job.id, job, onOpenHistory]);
@@ -524,27 +537,28 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     return (
         <div
             onClick={handleCardClick}
-            // FIX: Använder flex-col för att strukturera kortet och en lite djupare skugga för att lyfta det från bakgrunden
-            className={`w-full relative active:scale-[0.98] transition-all duration-200 overflow-hidden mb-3.5 group cursor-pointer border rounded-xl bg-white dark:bg-[#1e293b] flex flex-col
+            // ÄNDRING HÄR: border-zinc-300 ger en skarpare linje, shadow-[0_4px_14px_rgba(0,0,0,0.1)] ger en tajtare skugga som lyfter kortet. Ökade även marginalen från mb-3.5 till mb-4 för lite mer luft.
+            className={`w-full relative active:scale-[0.98] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border rounded-xl bg-white dark:bg-[#1e293b] flex flex-col
                 ${isDone ? 'opacity-70 grayscale-[0.2] border-zinc-200 dark:border-white/5 shadow-sm' : 
-                  isUrgentDate ? 'border-orange-300 dark:border-orange-500/50 shadow-md shadow-orange-500/5' : 
-                  'border-zinc-200/80 dark:border-white/10 shadow-md dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'}
+                  isUrgentDate ? 'border-orange-400 dark:border-orange-500/50 shadow-[0_4px_14px_rgba(249,115,22,0.2)]' : 
+                  'border-zinc-300 dark:border-white/10 shadow-[0_4px_14px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'}
             `}
         >
-            {/* ÖVRE DELEN (Kund, Status, Service Typ, Kommentar) */}
             <div className="p-3.5 relative z-10 flex flex-col">
                 
-                {/* RAD 1: Kund & Status/Meny */}
+                {/* IDENTITET: Kund, Modell, Ch.nr & Status */}
                 <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-3 min-w-0 pr-2 flex-1">
-                        <window.CustomerAvatar job={job} />
-                        <div className="flex flex-col min-w-0 mt-0.5 flex-1">
+                    <div className="flex items-start gap-3 min-w-0 pr-2 flex-1">
+                        {/* Avatar är knuffad lite nedåt för att centrera snyggt mellan Namn och Ch.nr */}
+                        <div className="mt-0.5 shrink-0">
+                            <window.CustomerAvatar job={job} />
+                        </div>
+                        
+                        <div className="flex flex-col min-w-0 flex-1">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <span className="text-[15px] font-bold tracking-tight truncate text-zinc-900 dark:text-white group-hover:text-orange-500 transition-colors shrink-0 max-w-[50%]">
                                     {job.kundnamn}
                                 </span>
-                                
-                                {/* FIX: Tydligare textfärg för bilmodellen (skarpare kontrast) */}
                                 {displayModel && displayModel !== '-' && (
                                     <span className="text-[12px] font-medium text-zinc-600 dark:text-zinc-300 truncate pt-[1.5px]">
                                         <span className="mr-1.5 text-zinc-300 dark:text-zinc-600 font-light">/</span>
@@ -552,11 +566,24 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                     </span>
                                 )}
                             </div>
+                            
+                            {/* NY PLACERING AV CH.NR (Samma font som modell/datum) */}
+                            {displayVin && displayVin !== '-' && (
+                                <div 
+                                    onClick={handleCopyVin}
+                                    className={`flex items-center gap-1.5 text-[12px] font-medium mt-1 cursor-pointer w-fit transition-colors active:scale-95 ${copiedVin ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400 hover:text-orange-500'}`}
+                                    title="Kopiera Chassinummer"
+                                >
+                                    <window.Icon name={copiedVin ? "check" : "fingerprint"} size={11} className={copiedVin ? "" : "opacity-70"} />
+                                    <span className="uppercase">{copiedVin ? 'KOPIERAT' : displayVin}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                     
                     <div className="flex items-center gap-1 shrink-0">
-                        <div className="flex items-center gap-1.5 opacity-60 transform scale-[0.85] origin-right pr-1">
+                        {/* Skarpa färger på BOKAD och Skiftnyckel (opacity borttaget, scale ökat) */}
+                        <div className="flex items-center gap-1.5 transform scale-95 origin-right pr-1">
                             <window.VehicleDataIcon job={job} isDesktop={false} />
                             <window.Badge status={job.status} />
                         </div>
@@ -587,14 +614,16 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     </div>
                 </div>
 
-                {/* RAD 2: Service Typ & Kommentar (FIX: Ligger nu hela vägen till vänster, under loggan) */}
-                <div className="flex flex-col min-w-0">
-                    <span className="text-[13px] text-zinc-800 dark:text-zinc-200 truncate">
+                {/* UPPDRAG: Tjänst och Kommentar */}
+                <div className="flex flex-col min-w-0 mt-0.5">
+                    <span className="text-[13px] font-bold text-zinc-900 dark:text-white truncate">
                         {job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard')}
                     </span>
+                    
                     {job.kommentar && (
-                        <div className="flex items-start gap-2 text-[11px] text-zinc-800 dark:text-zinc-300 italic mt-2 bg-zinc-50 dark:bg-[#161f30] p-2.5 rounded-lg border border-zinc-200/80 dark:border-white/5">
-                            <window.Icon name="message-square" size={11} className="shrink-0 mt-[1.5px] opacity-60 text-zinc-500" />                            <span className="line-clamp-2 leading-relaxed">
+                        <div className="flex items-start gap-2 text-[11px] text-zinc-700 dark:text-zinc-300 italic bg-zinc-50 dark:bg-[#161f30] p-2.5 rounded-lg border border-zinc-200/80 dark:border-white/5 mt-2">
+                            <window.Icon name="message-square" size={11} className="shrink-0 mt-[1.5px] opacity-50 text-zinc-500" />                            
+                            <span className="line-clamp-2 leading-relaxed">
                                 {stripHtml(job.kommentar)}
                             </span>
                         </div>
@@ -602,16 +631,17 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 </div>
             </div>
 
-            {/* FOTEN: Reg, Datum, Pris (FIX: Tydlig separator med ljusgrå bakgrundsfärg som bryter det vita) */}
-            <div className="flex items-center justify-between px-3.5 py-2.5 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/10 mt-auto">
+            {/* FOTEN: Regnr, Datum & Pris */}
+            {/* ÄNDRING HÄR: Tydlig grå bakgrund (bg-zinc-100/90), lite mer padding (py-3), och rundade hörn nedtill (rounded-b-xl) */}
+            <div className="flex items-center justify-between px-3.5 py-3 border-t border-zinc-200/80 dark:border-white/5 bg-zinc-100/90 dark:bg-black/20 mt-auto rounded-b-xl">
                 <div className="flex items-center gap-3 sm:gap-5 min-w-0 pr-2">
                     {/* Reg Plate */}
                     <div
                         onClick={handleCopy}
                         className={`inline-flex shrink-0 items-center rounded-[4px] border overflow-hidden h-[26px] relative transition-all active:scale-95 cursor-pointer
                             ${copied
-                                ? 'border-emerald-400 ring-2 ring-emerald-400/20'
-                                : isReg ? 'bg-white dark:bg-black/20 border-zinc-300 dark:border-white/10' : 'border-transparent'
+                                ? 'border-emerald-400 ring-2 ring-emerald-400/20 shadow-sm'
+                                : isReg ? 'bg-white dark:bg-[#1e293b] border-zinc-300 dark:border-white/10 shadow-sm' : 'border-transparent'
                             }`}
                     >
                         {isReg ? (
@@ -684,7 +714,7 @@ const MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             )}
                         </div>
                     ) : (
-                        <span className="text-[10px] font-medium text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded border border-zinc-200 dark:border-white/5">Ej prissatt</span>
+                        <span className="text-[10px] font-bold text-zinc-500 bg-white dark:bg-black/40 px-2 py-1 rounded border border-zinc-200 dark:border-white/10 shadow-sm">Ej prissatt</span>
                     )}
                 </div>
             </div>
