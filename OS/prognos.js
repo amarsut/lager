@@ -13,15 +13,51 @@ const getMonthDiff = (d1, d2) => {
 };
 
 window.PrognosView = React.memo(({ allJobs, setView }) => {
-    
+    const [historyJobs, setHistoryJobs] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        let isMounted = true;
+        const fetchHistory = async () => {
+            if (!window.db) return;
+            setIsLoading(true);
+            try {
+                // Sätt gränsen exakt 2 år tillbaka i tiden
+                const twoYearsAgo = new Date();
+                twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+                const dateLimit = twoYearsAgo.toISOString().split('T')[0];
+
+                const snap = await window.db.collection('jobs')
+                    .where('datum', '>=', dateLimit)
+                    .get();
+                
+                if (isMounted) {
+                    setHistoryJobs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                console.error("Fel vid hämtning av prognoshistorik:", error);
+                if (isMounted) setIsLoading(false);
+            }
+        };
+        fetchHistory();
+        return () => { isMounted = false; };
+    }, []);
+
     const feedData = React.useMemo(() => {
         const groups = {};
         
-        allJobs.forEach(job => {
+        // Slå ihop globala live-jobb med vår specifika 2-årshistorik
+        const combined = [...historyJobs, ...allJobs];
+        const uniqueJobs = Array.from(new Map(combined.map(j => [j.id, j])).values());
+        
+        uniqueJobs.forEach(job => {
             if (!job.regnr || job.regnr === '-' || job.deleted || !job.datum) return;
             if (job.kundnamn && job.kundnamn.toUpperCase().includes('BMG')) return;
 
+            // Här definieras 'reg' (som saknades)
             const reg = job.regnr.toUpperCase().replace(/\s+/g, '');
+            
             if (!groups[reg]) groups[reg] = { jobs: [], customer: job.kundnamn, model: job.bilmodell };
             groups[reg].jobs.push(job);
         });
@@ -194,7 +230,7 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
         results.UPCOMING = results.UPCOMING.slice(0, 5);
 
         return results;
-    }, [allJobs]);
+    }, [allJobs, historyJobs]);
 
     React.useEffect(() => {
         if (window.lucide) window.lucide.createIcons();
@@ -346,6 +382,11 @@ window.PrognosView = React.memo(({ allJobs, setView }) => {
                 </div>
 
                 <div className="w-full max-w-5xl ml-0 pb-10">
+                    {isLoading && (
+                        <div className="py-20 text-center text-zinc-400 font-bold uppercase tracking-widest text-[11px] animate-pulse">
+                            Hämtar historik för 24 månader...
+                        </div>
+                    )}
                     {totalLeads === 0 && feedData.OLD_OVERDUE.length === 0 && (
                         <div className="py-20 text-left text-zinc-400 flex flex-col items-start">
                             <SafeIcon name="check-circle" size={40} className="mb-4 opacity-20" />
