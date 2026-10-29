@@ -194,6 +194,11 @@ const App = () => {
     const [allNotes, setAllNotes] = useState([]);
     const [isDark, setIsDark] = useState(() => localStorage.getItem('sys_theme') === 'dark');
     const [isNightLight, setIsNightLight] = useState(() => localStorage.getItem('sys_nightlight') === 'true');
+    const [enableJobLimit, setEnableJobLimit] = useState(() => localStorage.getItem('sys_job_limit') !== 'false');
+
+    useEffect(() => {
+        localStorage.setItem('sys_job_limit', enableJobLimit);
+    }, [enableJobLimit]);
     const [time, setTime] = useState(new Date());
     const [hasUnread, setHasUnread] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -478,25 +483,23 @@ const App = () => {
         let recentJobs = [];
         let activeJobs = [];
 
-        // Funktion för att slå ihop listorna och ta bort eventuella dubbletter
         const updateJobs = () => {
             const combined = [...recentJobs, ...activeJobs];
-            // Använder en Map för att garantera att varje ID bara finns en gång
             const uniqueJobs = Array.from(new Map(combined.map(job => [job.id, job])).values());
             setAllJobs(uniqueJobs.filter(j => !j.deleted));
         };
 
-        // LYSSNARE 1: De 150 senaste jobben (ger oss färsk historik och nyligen avslutade jobb)
-        const unsubRecent = db.collection("jobs")
-            .orderBy("datum", "desc")
-            .limit(150)
-            .onSnapshot(snap => {
-                recentJobs = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                updateJobs();
-            });
+        // Kollar om spärren är aktiv innan vi hämtar
+        let recentQuery = db.collection("jobs").orderBy("datum", "desc");
+        if (enableJobLimit) {
+            recentQuery = recentQuery.limit(150);
+        }
 
-        // LYSSNARE 2: ALLA viktiga aktiva jobb, oavsett hur gamla de är
-        // (Inkluderar både små och stora bokstäver för säkerhets skull)
+        const unsubRecent = recentQuery.onSnapshot(snap => {
+            recentJobs = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+            updateJobs();
+        });
+
         const unsubActive = db.collection("jobs")
             .where("status", "in", ["BOKAD", "bokad", "OFFERERAD", "offererad", "FAKTURERAS", "faktureras"])
             .onSnapshot(snap => {
@@ -508,7 +511,7 @@ const App = () => {
             unsubRecent();
             unsubActive();
         };
-    }, [user]);
+    }, [user, enableJobLimit]); // <- VIKTIGT: Lade till enableJobLimit här
 
     useEffect(() => {
         if (!user) return;
@@ -750,7 +753,7 @@ const App = () => {
                         {view === 'REFERENCE' && window.ReferenceView && <window.ReferenceView setView={navigateTo} />}
 
                         {/* NYA VYER (Visar platshållare om komponenten inte skapats ännu) */}
-                        {view === 'SETTINGS' && (window.SettingsView ? <window.SettingsView user={user} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Inställningar...</div>)}
+                        {view === 'SETTINGS' && (window.SettingsView ? <window.SettingsView user={user} enableJobLimit={enableJobLimit} setEnableJobLimit={setEnableJobLimit} isDark={isDark} setIsDark={setIsDark} isNightLight={isNightLight} setIsNightLight={setIsNightLight} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Inställningar...</div>)}
                     </div>
 
                     {/* Mobila Bottenmenyn */}
