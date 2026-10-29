@@ -277,7 +277,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 if (specs.mileage) updated.miltal = specs.mileage; else if (!updated.miltal && lastJob?.miltal) updated.miltal = lastJob.miltal;
                 if (specs.year) updated.årsmodell = specs.year; else if (!updated.årsmodell && lastJob?.årsmodell) updated.årsmodell = lastJob.årsmodell;
                 if (specs.vin || specs.chassinummer) updated.vin = specs.vin || specs.chassinummer; else if (!updated.vin && lastJob?.vin) updated.vin = lastJob.vin;
-                if (specs.oil) updated.oljevolym = String(specs.oil).replace(' l', ''); else if (!updated.oljevolym && lastJob?.oljevolym) updated.oljevolym = String(lastJob.oljevolym).replace(' l', '');
+                if (specs.oil) updated.oljevolym = String(specs.oil).toLowerCase().includes('l') ? String(specs.oil) : `${specs.oil} l`; else if (!updated.oljevolym && lastJob?.oljevolym) updated.oljevolym = String(lastJob.oljevolym).toLowerCase().includes('l') ? String(lastJob.oljevolym) : `${lastJob.oljevolym} l`;
                 if (specs.oil_type) updated.oljetyp = specs.oil_type; else if (!updated.oljetyp && lastJob?.oljetyp) updated.oljetyp = lastJob.oljetyp;
                 return updated;
             });
