@@ -1058,6 +1058,9 @@ window.CompactVehicleCells = React.memo(({ job }) => {
         brand: '',
         model: job.bilmodell || ''
     });
+    
+    // NYTT: State för att hålla reda på kopieringsstatus för just chassinumret
+    const [copiedVinId, setCopiedVinId] = React.useState(null);
 
     React.useEffect(() => {
         const localBrand = getLocalBrand(job.bilmodell, '');
@@ -1085,6 +1088,15 @@ window.CompactVehicleCells = React.memo(({ job }) => {
         return () => unsubscribe();
     }, [job.regnr, job.bilmodell, job.vin]);
 
+    // NYTT: Klick- och kopieringsfunktion för chassinumret
+    const handleCopyVin = React.useCallback((e, vinText, jobId) => {
+        e.stopPropagation();
+        if (!vinText || vinText === '-' || vinText.trim() === '') return;
+        navigator.clipboard.writeText(vinText);
+        setCopiedVinId(jobId);
+        setTimeout(() => setCopiedVinId(null), 2000);
+    }, []);
+
     // Gör om VOLKSWAGEN -> VW och ta bort märkesnamnet ur modellbeteckningen för renare vy
     const displayBrand = specs.brand === 'VOLKSWAGEN' ? 'VW' : specs.brand;
     const cleanModel = specs.model && specs.brand && specs.model.toUpperCase().startsWith(specs.brand)
@@ -1093,8 +1105,16 @@ window.CompactVehicleCells = React.memo(({ job }) => {
 
     return (
         <>
-            <td className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[150px]" title={specs.vin}>
-                {specs.vin || ''}
+            <td 
+                onClick={(e) => handleCopyVin(e, specs.vin, job.id)}
+                className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[150px] cursor-pointer hover:text-orange-500 dark:hover:text-orange-400 font-medium transition-colors relative" 
+                title={specs.vin ? "Klicka för att kopiera chassinummer" : ""}
+            >
+                {copiedVinId === job.id ? (
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Kopierad!</span>
+                ) : (
+                    specs.vin || ''
+                )}
             </td>
             <td className="px-3.5 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 truncate max-w-[95px]">
                 {displayBrand || ''}
