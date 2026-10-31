@@ -405,13 +405,26 @@ const App = () => {
 
     const navigateTo = useCallback((newView, params = null) => {
         triggerHaptic();
-        const hashPath = `#${newView.toLowerCase()}`;
+        
+        // NYTT: Kontrollera om vi navigerar till NEW_JOB med ett specifikt jobb
+        let hashPath = `#${newView.toLowerCase()}`;
+        if (newView === 'NEW_JOB') {
+            if (params && params.job && params.job.id) {
+                hashPath = `#job_${params.job.id}`; // Öppnar specifikt jobb
+            } else {
+                hashPath = '#new_job'; // Standard: går alltid till sökvyn
+            }
+        }
+
         if (view === newView) {
              window.history.replaceState({ view: newView, params: params }, "", hashPath);
         } else {
              window.history.pushState({ view: newView, params: params }, "", hashPath);
         }
         setView(newView);
+        
+        // Tvinga webbläsaren att berätta för alla komponenter att URL:en har ändrats
+        window.dispatchEvent(new Event('hashchange'));
         setViewParams(params);
         if (params && Object.prototype.hasOwnProperty.call(params, 'job')) setEditingJob(params.job);
         if (window.innerWidth < 768) setSidebarOpen(false);
@@ -444,18 +457,44 @@ const App = () => {
 
     useEffect(() => {
         const syncWithUrl = () => {
-            const hash = window.location.hash.replace('#', '').toUpperCase();
-            // Uppdaterad lista med alla nya vyer
-            const validViews = ['DASHBOARD', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE', 'SETTINGS'];            if (hash && validViews.includes(hash)) {
-                setView(hash);
+            const hash = window.location.hash;
+            const cleanHash = hash.replace('#', '').toUpperCase();
+            const validViews = ['DASHBOARD', 'PROGNOS', 'STATISTICS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'OIL_SUPPLY', 'CHAT', 'LAGER', 'GARAGE', 'REFERENCE', 'SETTINGS'];            
+            
+            // 1. Fånga länk för tomt formulär
+            if (hash === '#new_job' || hash === '#new_job_form') {
+                setView('NEW_JOB');
+                setEditingJob(null);
+                if (window.innerWidth < 768) setSidebarOpen(false);
+                setGlobalVehicle(null);
+            } 
+            // 2. Fånga specifik jobblänk (Deep Link)
+            else if (hash.startsWith('#job_')) {
+                const jobId = hash.replace('#job_', '');
+                const jobToEdit = allJobs.find(j => j.id === jobId);
+                
+                if (jobToEdit) {
+                    setEditingJob(jobToEdit);
+                    setView('NEW_JOB');
+                } else if (allJobs.length > 0) {
+                    // Om jobbet är raderat, backa till vanligt tomt formulär
+                    window.location.hash = '#new_job';
+                }
+                if (window.innerWidth < 768) setSidebarOpen(false);
+                setGlobalVehicle(null);
+            }
+            // 3. Vanlig hantering av övriga menyer
+            else if (cleanHash && validViews.includes(cleanHash)) {
+                setView(cleanHash);
                 if (window.innerWidth < 768) setSidebarOpen(false);
                 setGlobalVehicle(null);
             }
         };
+        
         syncWithUrl();
         window.addEventListener('hashchange', syncWithUrl);
         return () => window.removeEventListener('hashchange', syncWithUrl);
-    }, []);
+    }, [allJobs]); // <-- Viktigt att allJobs finns här!
 
     useEffect(() => { window.openEditModal = (jobId) => { const job = allJobs.find(j => j.id === jobId); if (job) navigateTo('NEW_JOB', { job: job }); }; }, [allJobs, navigateTo]);
 
