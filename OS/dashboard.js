@@ -394,8 +394,8 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
 
     // FIX: Samma rena ikon-look på mobilen som på datorn! Inga boxar.
     return (
-        <div title="Teknisk data tillgänglig i garaget" className={`flex items-center justify-center text-teal-600 dark:text-teal-400 transition-all duration-200 pointer-events-none z-0 ${pulse ? 'animate-pulse drop-shadow-md' : ''}`}>
-            <window.Icon name="wrench" size={15} />
+        <div title="Teknisk data tillgänglig" className={`flex items-center justify-center text-zinc-400 dark:text-zinc-500 transition-all duration-200 pointer-events-none z-0 ${pulse ? 'animate-pulse text-teal-500' : ''}`}>
+            <window.Icon name="wrench" size={16} />
         </div>
     );
 });
@@ -594,15 +594,37 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-1 shrink-0">
-                        {/* Skarpa färger på BOKAD och Skiftnyckel (opacity borttaget, scale ökat) */}
-                        <div className="flex items-center gap-1.5 transform scale-95 origin-right pr-1">
+                    <div className="flex items-center gap-3 shrink-0">
+                        {/* 1. Fordonsdata (Skiftnyckeln) - Justerad för att ligga i perfekt linje */}
+                        <div className="flex items-center justify-center translate-y-[0.5px]">
                             <window.VehicleDataIcon job={job} isDesktop={false} />
-                            <window.Badge status={job.status} />
                         </div>
+                        
+                        {/* 2. Status-ikonen - Skarpare färger och konsekvent storlek */}
+                        <div 
+                            className={`flex items-center justify-center ${
+                                job.status === 'KLAR' ? 'text-emerald-500 dark:text-emerald-400' : 
+                                job.status === 'FAKTURERAS' ? 'text-sky-500 dark:text-sky-400' : 
+                                job.status === 'OFFERERAD' ? 'text-blue-500 dark:text-blue-400' : 
+                                'text-orange-500 dark:text-orange-400'
+                            }`}
+                            title={job.status || 'BOKAD'}
+                        >
+                            <window.Icon 
+                                name={
+                                    job.status === 'KLAR' ? 'check-circle' : 
+                                    job.status === 'FAKTURERAS' ? 'receipt' : 
+                                    job.status === 'OFFERERAD' ? 'file-text' : 
+                                    'calendar'
+                                } 
+                                size={16} 
+                            />
+                        </div>
+
+                        {/* 3. Menyn (Lodräta prickar) - Bättre klickyta utan att sabba marginalen */}
                         <div className="relative">
-                            <button onClick={handleMenuToggle} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-md active:scale-90 -mr-2">
-                                <window.Icon name="more-horizontal" size={18} />
+                            <button onClick={handleMenuToggle} className="h-8 w-6 flex items-center justify-end text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors active:scale-90 -mr-1">
+                                <window.Icon name="more-vertical" size={18} />
                             </button>
                             {menuOpen && (
                                 <>
@@ -732,7 +754,7 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 </div>
             </div>
 
-            {/* NYTT: Snabbknappar under kortet */}
+            {/* NYTT: Snabbknappar under kortet (Vit design) */}
             <div className="flex items-center divide-x divide-zinc-200/80 dark:divide-white/5 border-t border-zinc-200/80 dark:border-white/5 bg-white dark:bg-transparent rounded-b-xl">
                 {job.status !== 'KLAR' && (
                     <button 
@@ -743,31 +765,31 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                 setConfirmKlar(false);
                             } else {
                                 setConfirmKlar(true);
-                                setTimeout(() => setConfirmKlar(false), 3000); // Återställs efter 3 sekunder
+                                setTimeout(() => setConfirmKlar(false), 3000); 
                             }
                         }}
-                        className={`flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                        className={`flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
                             confirmKlar 
-                                ? 'text-white bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700' 
+                                ? 'text-white bg-emerald-500 hover:bg-emerald-600 rounded-bl-xl dark:bg-emerald-600' 
                                 : 'text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10'
                         }`}
                     >
-                        <window.Icon name={confirmKlar ? "check" : "check-circle"} size={14} /> 
+                        <window.Icon name={confirmKlar ? "check" : "check-circle"} size={15} /> 
                         {confirmKlar ? 'Bekräfta' : 'Klar'}
                     </button>
                 )}
                 <button 
                     onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}
-                    className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 transition-colors"
+                    className="flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 transition-colors"
                 >
-                    <window.Icon name="edit-2" size={14} /> Redigera
+                    <window.Icon name="edit-2" size={15} /> Redigera
                 </button>
                 {job.regnr && job.regnr !== '-' && (
                     <button 
                         onClick={(e) => { e.stopPropagation(); onOpenHistory(job.regnr, job.id, job); }}
-                        className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
+                        className={`flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors ${job.status === 'KLAR' ? 'rounded-bl-xl' : ''}`}
                     >
-                        <window.Icon name="history" size={14} /> Historik
+                        <window.Icon name="history" size={15} /> Historik
                     </button>
                 )}
             </div>
