@@ -101,7 +101,15 @@ const RichNoteEditor = ({ value, onChange }) => {
 window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const today = new Date().toISOString().split('T')[0];
     
-    const [step, setStep] = React.useState(editingJob ? 'DETAIL' : 'SEARCH');
+    // Läs av URL:en för att bestämma startvy
+    const initialStep = React.useMemo(() => {
+        if (editingJob) return 'DETAIL';
+        const hash = window.location.hash;
+        if (hash === '#new_job_form' || hash.startsWith('#job_')) return 'DETAIL';
+        return 'SEARCH';
+    }, [editingJob]);
+
+    const [step, setStep] = React.useState(initialStep);
     const [activeTab, setActiveTab] = React.useState('ORDEROMFATTNING');
 
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -237,10 +245,43 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     }, [advFilters, searchQuery, allJobs]);
 
     const handleOpenExistingOrder = (job) => {
+        window.location.hash = `#job_${job.id}`; // Skapar den unika länken
         setActiveJob(job);
         setIsEditingVehicle(false);
         setStep('DETAIL');
     };
+
+    // NYTT: Lyssna på när du klickar i sidomenyn medan du redan är inne i vyn
+    React.useEffect(() => {
+        const handleHash = () => {
+            const hash = window.location.hash;
+            if (hash === '#new_job') {
+                setActiveJob(null);
+                setStep('SEARCH');
+            } else if (hash === '#new_job_form') {
+                setActiveJob(null);
+                setStep('DETAIL');
+            }
+        };
+        window.addEventListener('hashchange', handleHash);
+        return () => window.removeEventListener('hashchange', handleHash);
+    }, []);
+
+    // NYTT: Tvinga vyn att uppdateras om app.js ändrar jobbet
+    React.useEffect(() => {
+        setActiveJob(editingJob || null);
+        
+        if (editingJob) {
+            setStep('DETAIL');
+        } else {
+            // Om vi nollställer jobbet via menyn, kolla länken. Är vi inte uttryckligen på formuläret, gå till sök!
+            if (window.location.hash === '#new_job_form') {
+                setStep('DETAIL');
+            } else {
+                setStep('SEARCH');
+            }
+        }
+    }, [editingJob]);
 
     React.useEffect(() => {
         const rawReg = formData.regnr || '';
@@ -318,7 +359,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 else setPayments(emptyPayments);
                 
             } else {
-                setFormData(p => ({ ...p, datum: today, tid: '16:30', kundpris: '100', status: 'BOKAD', paket: 'Standard' }));
+                // Tvingar hela formuläret att bli tomt så inga gamla biluppgifter hänger kvar
+                setFormData({
+                    kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
+                    datum: today, tid: '16:30', kundpris: '0', kommentar: '', 
+                    bilmodell: '', motorkod: '', miltal: '', årsmodell: '', vin: '', oljevolym: ''
+                });
+                setFetchedCarInfo(null);
                 setExpenses(emptyExpenses); setPayments(emptyPayments);
             }
         };
@@ -514,7 +561,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             <div className="sticky top-[-16px] lg:top-[-32px] z-[100] pt-[28px] lg:pt-[32px] pb-4 px-4 lg:px-8 mb-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-white/10 gap-4 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl shadow-sm -mt-4 lg:-mt-8 w-full lg:-mx-8 lg:w-[calc(100%+64px)]">
                 <div className="flex items-center gap-4">
                     {step === 'DETAIL' ? (
-                        <button onClick={() => setStep('SEARCH')} className="relative group shrink-0 active:scale-95 transition-all" title="Gå tillbaka till sök">
+                        <button onClick={() => { window.location.hash = '#new_job'; setStep('SEARCH'); }} className="relative group shrink-0 active:scale-95 transition-all" title="Gå tillbaka till sök">
                             <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
                             <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
                                 <SafeIcon name="arrow-left" size={24} />
@@ -637,6 +684,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     setPayments([{ desc: '', amount: '' }]); 
                                     setActiveJob(null);
                                     setIsEditingVehicle(false); 
+                                    window.location.hash = '#new_job_form';
                                     setStep('DETAIL');
                                 }}
                                 className="w-full sm:w-auto px-5 py-4 sm:py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-[14px] sm:text-[12px] font-bold uppercase tracking-wider rounded-xl sm:rounded-lg transition-colors shadow-md sm:shadow-sm flex items-center justify-center gap-2"
@@ -1087,7 +1135,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     <option value="Hjulskifte">Hjulskifte</option>
                                                     <option value="Hjulinställning">Hjulinställning</option>
                                                     <option value="Felsökning">Felsökning</option>
-                                                    <option disabled>── TILLÄGG (LÄGGER TILL RADER) ──</option>
+                                                    <option disabled>── TILLÄGG x ──</option>
                                                     <option value="DigitalStampel">+ Digital stämpel (500 kr)</option>
                                                     <option value="AddBromsvatska">+ Bromsvätskebyte (550 kr)</option>
                                                     <option value="AddArbete100">+ Extra arbete (100 kr)</option>
