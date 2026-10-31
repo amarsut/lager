@@ -616,7 +616,7 @@ const App = () => {
             <div className="flex h-[100dvh] overflow-hidden bg-zinc-50 dark:bg-[#0f1522] relative transition-colors duration-300">
 
                 {/* DYNAMISK SIDEBAR */}
-                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[285px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#0b0f19] text-white border-r border-white/5 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
+                <aside className={`fixed md:relative h-full z-[200] transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0 w-[285px]' : '-translate-x-full md:translate-x-0 md:w-20'} bg-[#000000] text-white border-r border-white/10 flex flex-col shadow-2xl md:shadow-none select-none group/sidebar`}>
 
                     <div className={`h-20 flex items-center ${sidebarOpen ? 'justify-between px-6' : 'justify-center'} border-b border-white/5 overflow-hidden shrink-0`}>
                         <div className="flex items-center gap-3.5">
@@ -796,7 +796,7 @@ const App = () => {
                     </div>
 
                     {/* Mobila Bottenmenyn */}
-                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0b0f19]/95 border-t border-white/5 flex items-center justify-around z-[210] px-1 pb-safe backdrop-blur-2xl shadow-[0_-10px_20px_rgba(0,0,0,0.3)] select-none">                        
+                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#000000] border-t border-white/10 flex items-center justify-around z-[210] px-1 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.8)] select-none">
                         {[
                             { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
                             { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
