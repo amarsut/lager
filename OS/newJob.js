@@ -151,6 +151,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
     const [focusedInput, setFocusedInput] = React.useState(null);
     const [showGrunduppgifter, setShowGrunduppgifter] = React.useState(true); // Håller koll på om Steg 2-rutan är öppen
+    const [availableDraft, setAvailableDraft] = React.useState(null); // NY: Håller koll på om ett utkast finns
 
     // Ser till att rutan automatiskt öppnas igen när du klickar på "Skapa nytt jobb"
     React.useEffect(() => {
@@ -359,38 +360,29 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 else setPayments(emptyPayments);
                 
             } else {
-                // NYTT: Kolla efter osparat utkast!
+                // NYTT: Kolla tyst efter osparat utkast (ingen popup)
                 const savedDraft = localStorage.getItem('os_job_draft');
-                let restored = false;
                 
                 if (savedDraft) {
                     try {
                         const parsed = JSON.parse(savedDraft);
                         if (parsed.formData && (parsed.formData.regnr || parsed.formData.kundnamn)) {
-                            if (window.confirm(`Du har ett osparat utkast för ${parsed.formData.regnr || parsed.formData.kundnamn}. Vill du återställa det?`)) {
-                                setFormData(parsed.formData);
-                                setExpenses(parsed.expenses || emptyExpenses);
-                                setPayments(parsed.payments || emptyPayments);
-                                setFetchedCarInfo(parsed.fetchedCarInfo || null);
-                                restored = true;
-                            } else {
-                                localStorage.removeItem('os_job_draft');
-                            }
+                            setAvailableDraft(parsed);
                         }
                     } catch(e) {}
+                } else {
+                    setAvailableDraft(null);
                 }
 
-                if (!restored) {
-                    // Tvingar hela formuläret att bli tomt så inga gamla biluppgifter hänger kvar
-                    setFormData({
-                        kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
-                        datum: today, tid: '16:30', kundpris: '0', kommentar: '', 
-                        bilmodell: '', motorkod: '', miltal: '', årsmodell: '', vin: '', oljevolym: ''
-                    });
-                    setFetchedCarInfo(null);
-                    setExpenses([{ desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); 
-                    setPayments([{ desc: '', amount: '' }]);
-                }
+                // Ladda alltid ett tomt formulär i bakgrunden!
+                setFormData({
+                    kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
+                    datum: today, tid: '16:30', kundpris: '0', kommentar: '', 
+                    bilmodell: '', motorkod: '', miltal: '', årsmodell: '', vin: '', oljevolym: ''
+                });
+                setFetchedCarInfo(null);
+                setExpenses([{ desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); 
+                setPayments([{ desc: '', amount: '' }]);
             }
         };
         loadExistingJob();
@@ -969,29 +961,70 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                         
                         {/* === VÄNSTER KOLUMN === */}
                         <div className="flex-1 flex flex-col min-w-0 order-2 lg:order-1">
+
+                            {/* DYNAMISK UTKAST-BANNER (Ersätter popupen) */}
+                            {!activeJob && availableDraft && (
+                                <div className="w-full mb-6 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 p-4 rounded-sm shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
+                                    <div className="flex items-center gap-3">
+                                        <SafeIcon name="save" size={20} className="text-blue-500 shrink-0" />
+                                        <div>
+                                            <p className="text-[13px] font-bold text-blue-900 dark:text-blue-100">
+                                                Osparat utkast hittades ({availableDraft.formData?.regnr || availableDraft.formData?.kundnamn})
+                                            </p>
+                                            <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-0.5">
+                                                Vill du återställa uppgifterna du skrev in tidigare?
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                localStorage.removeItem('os_job_draft');
+                                                setAvailableDraft(null);
+                                            }}
+                                            className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 rounded-sm transition-colors w-full sm:w-auto"
+                                        >
+                                            Rensa
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                setFormData(availableDraft.formData);
+                                                setExpenses(availableDraft.expenses || emptyExpenses);
+                                                setPayments(availableDraft.payments || emptyPayments);
+                                                setFetchedCarInfo(availableDraft.fetchedCarInfo || null);
+                                                setAvailableDraft(null);
+                                            }}
+                                            className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded-sm transition-colors shadow-sm w-full sm:w-auto flex justify-center"
+                                        >
+                                            Återställ
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             
                             {/* INMATNINGSFÄLT STEG 2 (Visas enbart för nya, osparade ordrar) */}
                             {!activeJob && showGrunduppgifter && (
-                                <div className="w-full mb-6 bg-orange-50/50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 p-5 rounded-sm shadow-sm animate-in fade-in slide-in-from-top-2 relative">
+                                <div className="w-full mb-8 animate-in fade-in slide-in-from-top-2">
+                                    <h2 className="text-[22px] font-normal text-zinc-800 dark:text-white mb-3">Grunduppgifter</h2>
                                     
-                                    {/* STÄNG-KRYSS HÖGST UPP TILL HÖGER */}
-                                    <button 
-                                        type="button" 
-                                        disabled={!(formData.regnr && formData.kundnamn && formData.datum && formData.tid)}
-                                        onClick={() => setShowGrunduppgifter(false)}
-                                        className={`absolute top-4 right-4 p-1 transition-colors ${
-                                            (formData.regnr && formData.kundnamn && formData.datum && formData.tid) 
-                                                ? 'text-orange-400 hover:text-orange-600 dark:text-orange-500 dark:hover:text-orange-300 cursor-pointer' 
-                                                : 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
-                                        }`}
-                                        title={(formData.regnr && formData.kundnamn && formData.datum && formData.tid) ? "Dölj rutan" : "Fyll i alla uppgifter för att stänga"}
-                                    >
-                                        <SafeIcon name="x" size={16} />
-                                    </button>
-
-                                    <h2 className="text-[16px] font-bold text-orange-800 dark:text-orange-400 mb-4 uppercase tracking-wider flex items-center gap-2">
-                                        <SafeIcon name="file-text" size={18} /> Grunduppgifter för ny order
-                                    </h2>
+                                    <div className="w-full bg-orange-50/50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 p-5 rounded-sm shadow-sm relative">
+                                        
+                                        {/* STÄNG-KRYSS HÖGST UPP TILL HÖGER */}
+                                        <button 
+                                            type="button" 
+                                            disabled={!(formData.regnr && formData.kundnamn && formData.datum && formData.tid)}
+                                            onClick={() => setShowGrunduppgifter(false)}
+                                            className={`absolute top-4 right-4 p-1 transition-colors ${
+                                                (formData.regnr && formData.kundnamn && formData.datum && formData.tid) 
+                                                    ? 'text-orange-400 hover:text-orange-600 dark:text-orange-500 dark:hover:text-orange-300 cursor-pointer' 
+                                                    : 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
+                                            }`}
+                                            title={(formData.regnr && formData.kundnamn && formData.datum && formData.tid) ? "Dölj rutan" : "Fyll i alla uppgifter för att stänga"}
+                                        >
+                                            <SafeIcon name="x" size={16} />
+                                        </button>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                         {/* REGNR FÄLT */}
@@ -1127,6 +1160,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
                             )}
                             
                             {/* 1. Uppdragsstatus */}
@@ -1339,7 +1373,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                         <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-zinc-200 dark:border-white/10">
                                             <div className="flex justify-between items-center text-[13px]">
                                                 <span className="font-medium text-zinc-500 dark:text-zinc-400">Inbetalt hittills:</span>
-                                                <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{totalPaid.toLocaleString()} kr</span>
+                                                <span className="font-medium text-zinc-500 dark:text-zinc-400">{totalPaid.toLocaleString()} kr</span>
                                             </div>
                                             
                                             {totalPaid > 0 && (
