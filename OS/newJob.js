@@ -325,8 +325,112 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         loadExistingJob();
     }, [activeJob, today]);
 
-    const handlePackageChange = (val) => setFormData(p => ({ ...p, paket: val }));
     const handleSpecChange = (key, value) => setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
+
+    const handlePackageChange = (val) => {
+        let updatedFormData = { paket: val };
+
+        if (val === 'Oljebyte') {
+            let rawVol = fetchedCarInfo?.oljevolym || formData.oljevolym || '';
+            let volNum = parseFloat(String(rawVol).replace(',', '.').replace(/[^0-9.]/g, ''));
+
+            if (!volNum || isNaN(volNum)) {
+                const userVol = prompt('Oljevolym saknas. Ange antal liter motorolja (t.ex. 4.3):');
+                if (userVol) {
+                    volNum = parseFloat(userVol.replace(',', '.').replace(/[^0-9.]/g, ''));
+                    if (volNum && !isNaN(volNum)) {
+                        handleSpecChange('oljevolym', `${volNum} l`); 
+                    }
+                }
+            }
+
+            if (volNum && !isNaN(volNum)) {
+                const oilPrice = Math.round(volNum * 200); 
+                const filterPrice = 200; 
+                const laborPrice = 500; 
+                
+                setExpenses([
+                    { desc: 'Motorolja (á 200kr/l)', antal: String(volNum), amount: String(oilPrice), type: 'reservdel' },
+                    { desc: 'Oljefilter', antal: '1', amount: String(filterPrice), type: 'reservdel' },
+                    { desc: 'Arbetskostnad Oljebyte', antal: '1', amount: String(laborPrice), type: 'arbetsoperation' }
+                ]);
+                updatedFormData.kundpris = String(oilPrice + filterPrice + laborPrice);
+                
+                // Uppdaterar titeln så den sparas som "Oljebyte 6.4l"
+                updatedFormData.paket = `Oljebyte ${volNum}l`; 
+            } else {
+                alert("Välj en giltig oljevolym för att beräkna priset.");
+            }
+        } 
+        else if (val === 'Felsökning') {
+            setExpenses([{ desc: 'Felsökning', antal: '1', amount: '500', type: 'arbetsoperation' }]);
+            updatedFormData.kundpris = '500';
+        } 
+        else if (val === 'Hjulskifte') {
+            setExpenses([{ desc: 'Hjulskifte', antal: '1', amount: '200', type: 'arbetsoperation' }]);
+            updatedFormData.kundpris = '200';
+        }
+        else if (val === 'Hjulinställning') {
+            setExpenses([{ desc: 'Hjulinställning', antal: '1', amount: '1000', type: 'arbetsoperation' }]);
+            updatedFormData.kundpris = '1000';
+        }
+        else if (val === 'DigitalStampel') {
+            updatedFormData.paket = formData.paket; 
+            setExpenses(prev => [...prev, { desc: 'Digital Servicebok / Stämpel', antal: '1', amount: '500', type: 'arbetsoperation' }]);
+            updatedFormData.kundpris = String(Math.max(0, (parseFloat(formData.kundpris) || 0) + 500));
+        }
+        else if (val === 'AddBromsvatska') {
+            updatedFormData.paket = formData.paket;
+            setExpenses(prev => [...prev, 
+                { desc: 'Bromsvätska', antal: '1', amount: '150', type: 'reservdel' },
+                { desc: 'Byte bromsvätska', antal: '1', amount: '400', type: 'arbetsoperation' }
+            ]);
+            updatedFormData.kundpris = String((parseFloat(formData.kundpris) || 0) + 550);
+        }
+        else if (val === 'AddArbete100') {
+            updatedFormData.paket = formData.paket;
+            setExpenses(prev => [...prev, { desc: 'Extra arbetskostnad tillägg', antal: '1', amount: '100', type: 'arbetsoperation' }]);
+            updatedFormData.kundpris = String((parseFloat(formData.kundpris) || 0) + 100);
+        }
+        else if (val === 'AddArbete200') {
+            updatedFormData.paket = formData.paket;
+            setExpenses(prev => [...prev, { desc: 'Extra arbetskostnad tillägg', antal: '1', amount: '200', type: 'arbetsoperation' }]);
+            updatedFormData.kundpris = String((parseFloat(formData.kundpris) || 0) + 200);
+        }
+        else if (val === 'Standard') {
+            setExpenses([
+                { desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, 
+                { desc: '', antal: '1', amount: '', type: 'reservdel' }
+            ]);
+            updatedFormData.kundpris = '0';
+        }
+        
+        setFormData(p => ({ ...p, ...updatedFormData }));
+        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+    };
+
+    const handleUpdateExpense = (index, field, value) => {
+        const newExpenses = [...expenses];
+        const oldAmount = parseFloat(newExpenses[index].amount) || 0;
+        
+        newExpenses[index] = { ...newExpenses[index], [field]: value };
+        
+        // Magi: Om du ändrar 'antal' på motorolja räknas priset om direkt (liter * 200 kr)
+        if (field === 'antal' && newExpenses[index].desc && newExpenses[index].desc.toLowerCase().includes('motorolja')) {
+            const liters = parseFloat(String(value).replace(',', '.'));
+            newExpenses[index].amount = !isNaN(liters) ? String(Math.round(liters * 200)) : '0';
+        }
+        
+        // Räkna ut prisskillnaden på raden och uppdatera Totalpriset automatiskt!
+        const newAmount = parseFloat(newExpenses[index].amount) || 0;
+        const diff = newAmount - oldAmount;
+        
+        if (diff !== 0) {
+            setFormData(p => ({ ...p, kundpris: String(Math.max(0, (parseFloat(p.kundpris) || 0) + diff)) }));
+        }
+
+        setExpenses(newExpenses);
+    };
 
     const saveSpec = async (key, value) => {
         const finalRegnr = formData.regnr?.toUpperCase().replace(/\s+/g, '');
@@ -973,11 +1077,21 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             </button>
                                             
                                             <div className="ml-auto flex items-center gap-2 border border-[#168a9c] px-2 py-1 rounded-sm">
-                                                <select value={formData.paket} onChange={e => handlePackageChange(e.target.value)} className="bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer">
+                                                <select 
+                                                    value={formData.paket?.startsWith('Oljebyte') ? 'Oljebyte' : formData.paket} 
+                                                    onChange={e => handlePackageChange(e.target.value)} 
+                                                    className="bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer"
+                                                >
                                                     <option value="Standard">Standard (Flexibel)</option>
                                                     <option value="Oljebyte">Oljebyte</option>
                                                     <option value="Hjulskifte">Hjulskifte</option>
+                                                    <option value="Hjulinställning">Hjulinställning</option>
                                                     <option value="Felsökning">Felsökning</option>
+                                                    <option disabled>── TILLÄGG (LÄGGER TILL RADER) ──</option>
+                                                    <option value="DigitalStampel">+ Digital stämpel (500 kr)</option>
+                                                    <option value="AddBromsvatska">+ Bromsvätskebyte (550 kr)</option>
+                                                    <option value="AddArbete100">+ Extra arbete (100 kr)</option>
+                                                    <option value="AddArbete200">+ Extra arbete (200 kr)</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -1010,18 +1124,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     <button type="button" onClick={() => { const n = [...expenses]; n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' }; setExpenses(n); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="shrink-0 p-1 hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors">
                                                                         <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={13} className="text-[#168a9c]" />
                                                                     </button>
-                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], desc: e.target.value }; setExpenses(n); }} className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text text-[13px] py-0.5" />
+                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => handleUpdateExpense(i, 'desc', e.target.value)} className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text text-[13px] py-0.5" />
                                                                 </div>
                                                             </td>
                                                             
                                                             {/* Döljs på mobilen */}
                                                             <td className="hidden sm:table-cell p-1 sm:p-2 border-r border-zinc-200 dark:border-white/10 text-center">
-                                                                <input type="number" value={ex.antal || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], antal: e.target.value }; setExpenses(n); }} placeholder="1" className="w-full bg-transparent outline-none text-center text-[13px]" />
+                                                                <input type="number" value={ex.antal || ''} onChange={e => handleUpdateExpense(i, 'antal', e.target.value)} placeholder="1" className="w-full bg-transparent outline-none text-center text-[13px]" />
                                                             </td>
                                                             
                                                             <td className="p-1 sm:p-2">
                                                                 <div className="flex items-center justify-end gap-1 px-1">
-                                                                    <input type="number" value={ex.amount || ''} onChange={e => { const n = [...expenses]; n[i] = { ...n[i], amount: e.target.value }; setExpenses(n); }} placeholder="0" className="w-full min-w-0 bg-transparent outline-none text-right font-mono text-[13px]" />
+                                                                    <input type="number" value={ex.amount || ''} onChange={e => handleUpdateExpense(i, 'amount', e.target.value)} placeholder="0" className="w-full min-w-0 bg-transparent outline-none text-right font-mono text-[13px]" />
                                                                     <span className="text-zinc-400 text-[11px] shrink-0">kr</span>
                                                                 </div>
                                                             </td>
