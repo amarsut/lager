@@ -18,15 +18,28 @@ const formatTime = (dateStr) => {
 const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const targetDate = new Date(dateStr);
+    
+    // Nollställ tiden för att räkna exakta dagar oavsett klockslag
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    today.setHours(0, 0, 0, 0);
+    
+    const targetDateMidnight = new Date(targetDate);
+    targetDateMidnight.setHours(0, 0, 0, 0);
 
-    const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+    // Räkna ut skillnaden i dagar
+    const diffTime = targetDateMidnight.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-    if (isSameDay(targetDate, today)) return "IDAG";
-    if (isSameDay(targetDate, tomorrow)) return "IMORGON";
+    if (diffDays === 0) return "IDAG";
+    if (diffDays === 1) return "IMORGON";
+    
+    // Om datumet är om 2 till 6 dagar, skriv ut veckodagen
+    if (diffDays > 1 && diffDays < 7) {
+        const weekdays = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORSDAG', 'FREDAG', 'LÖRDAG'];
+        return weekdays[targetDate.getDay()];
+    }
 
+    // Annars, visa vanligt datum
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAJ', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEC'];
     const day = targetDate.getDate();
     const month = months[targetDate.getMonth()];
@@ -449,7 +462,7 @@ window.CustomerAvatar = React.memo(({ job }) => {
 
     return (
         <div className="relative shrink-0 z-10 group-hover:scale-105 transition-transform duration-300">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[12px] font-bold border shadow-sm transition-all ${avatarTheme} ${isDone ? 'opacity-70 grayscale' : ''}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[12px] font-bold border shadow-sm transition-all ${avatarTheme}`}>
                 {initials}
             </div>
             
@@ -539,8 +552,7 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
             onClick={handleCardClick}
             // ÄNDRING HÄR: border-zinc-300 ger en skarpare linje, shadow-[0_4px_14px_rgba(0,0,0,0.1)] ger en tajtare skugga som lyfter kortet. Ökade även marginalen från mb-3.5 till mb-4 för lite mer luft.
             className={`w-full relative active:scale-[0.98] transition-all duration-200 overflow-hidden mb-4 group cursor-pointer border rounded-xl bg-white dark:bg-[#1e293b] flex flex-col
-                ${isDone ? 'opacity-70 grayscale-[0.2] border-zinc-200 dark:border-white/5 shadow-sm' : 
-                  isUrgentDate ? 'border-orange-400 dark:border-orange-500/50 shadow-[0_4px_14px_rgba(249,115,22,0.2)]' : 
+                ${isUrgentDate ? 'border-orange-400 dark:border-orange-500/50 shadow-[0_4px_14px_rgba(249,115,22,0.2)]' : 
                   'border-zinc-300 dark:border-white/10 shadow-[0_4px_14px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'}
             `}
         >
@@ -632,8 +644,8 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
             </div>
 
             {/* FOTEN: Regnr, Datum & Pris */}
-            {/* ÄNDRING HÄR: Tydlig grå bakgrund (bg-zinc-100/90), lite mer padding (py-3), och rundade hörn nedtill (rounded-b-xl) */}
-            <div className="flex items-center justify-between px-3.5 py-3 border-t border-zinc-200/80 dark:border-white/5 bg-zinc-100/90 dark:bg-black/20 mt-auto rounded-b-xl">
+            {/* Tog bort rounded-b-xl härifrån så att knappraden nedan får de runda hörnen */}
+            <div className="flex items-center justify-between px-3.5 py-3 border-t border-zinc-200/80 dark:border-white/5 bg-zinc-100/90 dark:bg-black/20 mt-auto">
                 <div className="flex items-center gap-3 sm:gap-5 min-w-0 pr-2">
                     {/* Reg Plate */}
                     <div
@@ -669,12 +681,6 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     <div className="flex items-center gap-1.5 truncate">
                         {job.datum ? (
                             <>
-                                {!isDone && isUrgentDate && (
-                                    <span className="relative flex h-2 w-2 shrink-0 hidden sm:flex">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                    </span>
-                                )}
                                 <span className={`text-[12px] font-medium leading-none truncate ${!isDone && isUrgentDate ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-zinc-700 dark:text-zinc-300'}`}>
                                     {dateString}
                                 </span>
@@ -694,18 +700,24 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 <div className="shrink-0 text-right">
                     {price > 0 ? (
                         <div className="flex flex-col items-end">
-                            {paid > 0 ? (
+                            {paid > 0 && remaining > 0 ? (
                                 <>
-                                    <span className="text-[9px] text-emerald-500 font-medium tracking-widest uppercase mb-0.5">{paid.toLocaleString('sv-SE')} kr</span>
-                                    <div className="flex items-baseline gap-1 text-orange-500">
-                                        <span className="text-[14px] font-normal leading-none tracking-tight">
-                                            {remaining.toLocaleString('sv-SE')}
+                                    <span className="text-[10px] text-zinc-400 line-through decoration-zinc-300 dark:decoration-zinc-600 mb-0.5">{price.toLocaleString('sv-SE')} kr</span>
+                                    <div className="flex items-center gap-1.5 text-orange-500 dark:text-orange-400">
+                                        <window.Icon name="hourglass" size={12} />
+                                        <span className="flex items-baseline gap-1">
+                                            <span className="text-[14px] font-medium leading-none tracking-tight">{remaining.toLocaleString('sv-SE')}</span>
+                                            <span className="text-[9px] font-medium uppercase opacity-80">kvar</span>
                                         </span>
-                                        <span className="text-[10px] font-normal uppercase text-zinc-400">kr</span>
                                     </div>
                                 </>
+                            ) : (paid > 0 && remaining === 0) || (job.status === 'KLAR' && paid === 0) ? (
+                                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mt-1">
+                                    <window.Icon name="check" size={12} />
+                                    <span className="text-[14px] font-medium leading-none tracking-tight">{price.toLocaleString('sv-SE')} kr</span>
+                                </div>
                             ) : (
-                                <div className="flex items-baseline gap-1">
+                                <div className="flex items-baseline gap-1 mt-1">
                                     <span className="text-[14px] font-normal leading-none tracking-tight text-zinc-800 dark:text-zinc-200">
                                         {price.toLocaleString('sv-SE')}
                                     </span>
@@ -714,9 +726,35 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                             )}
                         </div>
                     ) : (
-                        <span className="text-[10px] font-bold text-zinc-500 bg-white dark:bg-black/40 px-2 py-1 rounded border border-zinc-200 dark:border-white/10 shadow-sm">Ej prissatt</span>
+                        <span className="text-[10px] font-bold text-zinc-500 bg-white dark:bg-black/40 px-2 py-1 rounded border border-zinc-200 dark:border-white/10 shadow-sm mt-1">Ej prissatt</span>
                     )}
                 </div>
+            </div>
+
+            {/* NYTT: Snabbknappar under kortet */}
+            <div className="flex items-center divide-x divide-zinc-200/80 dark:divide-white/5 border-t border-zinc-200/80 dark:border-white/5 bg-white dark:bg-transparent rounded-b-xl">
+                {job.status !== 'KLAR' && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); }}
+                        className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10 transition-colors"
+                    >
+                        <window.Icon name="check-circle" size={14} /> Klar
+                    </button>
+                )}
+                <button 
+                    onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}
+                    className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 transition-colors"
+                >
+                    <window.Icon name="edit-2" size={14} /> Redigera
+                </button>
+                {job.regnr && job.regnr !== '-' && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onOpenHistory(job.regnr, job.id, job); }}
+                        className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
+                    >
+                        <window.Icon name="car" size={14} /> Fordonskort
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -2041,7 +2079,7 @@ window.DashboardView = React.memo(({
                                                         )}
                                                         <tr 
                                                             onClick={() => toggleCompactExpand(job.id)}
-                                                            className={`group transition-colors duration-100 cursor-pointer text-[13px] border-b border-zinc-200/80 dark:border-white/5 hover:bg-zinc-100/70 dark:hover:bg-white/5 ${isExpanded ? 'bg-orange-50/30 dark:bg-white/[0.04]' : isDone ? 'bg-zinc-50/60 dark:bg-black/20 text-zinc-400' : 'bg-white dark:bg-[#1e293b]'}`}
+                                                            className={`group transition-colors duration-100 cursor-pointer text-[13px] border-b border-zinc-200/80 dark:border-white/5 hover:bg-zinc-100/70 dark:hover:bg-white/5 ${isExpanded ? 'bg-orange-50/30 dark:bg-white/[0.04]' : 'bg-white dark:bg-[#1e293b]'}`}
                                                         >
                                                             {/* Expanderingspil (v / >) (Nu med bättre luft) */}
                                                             <td className="w-12 pl-3 py-3 text-center text-zinc-500">
@@ -2083,8 +2121,21 @@ window.DashboardView = React.memo(({
                                                             </td>
 
                                                             {/* Mottagandedatum */}
-                                                            <td className="px-3.5 py-3 text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
-                                                                {compactDate || ''}
+                                                            <td className="px-3.5 py-3 whitespace-nowrap">
+                                                                {job.datum ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className={`flex items-center gap-1.5 text-[13px] font-medium leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-800 dark:text-zinc-200 transition-colors'}`}>
+                                                                            <span className="uppercase">{dateText}</span>
+                                                                            <span className={job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600 font-normal' : ''}>
+                                                                                {formatTime(job.datum)}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-[13px] font-medium text-zinc-400 dark:text-zinc-500">
+                                                                        Ej inbokad
+                                                                    </span>
+                                                                )}
                                                             </td>
 
                                                             {/* Status */}
@@ -2105,8 +2156,20 @@ window.DashboardView = React.memo(({
                                                             <window.CompactVehicleCells job={job} />
 
                                                             {/* Pris */}
-                                                            <td className="px-3.5 py-3 text-right text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
-                                                                {remaining > 0 ? `${remaining.toLocaleString('sv-SE')} kr` : (price > 0 ? `${price.toLocaleString('sv-SE')} kr` : '')}
+                                                            <td className="px-3.5 py-3 text-right whitespace-nowrap">
+                                                                {price > 0 ? (
+                                                                    paid > 0 && remaining > 0 ? (
+                                                                        <div className="flex justify-end items-center gap-1.5 text-orange-500 dark:text-orange-400 font-medium text-[13px]" title="Delbetalt - Kvar att betala">
+                                                                            <window.Icon name="hourglass" size={12} /> {remaining.toLocaleString('sv-SE')} kr
+                                                                        </div>
+                                                                    ) : (paid > 0 && remaining === 0) || (job.status === 'KLAR' && paid === 0) ? (
+                                                                        <div className="flex justify-end items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium text-[13px]" title="Fullbetald">
+                                                                            <window.Icon name="check" size={12} /> {price.toLocaleString('sv-SE')} kr
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-zinc-800 dark:text-zinc-200 text-[13px]">{price.toLocaleString('sv-SE')} kr</span>
+                                                                    )
+                                                                ) : ''}
                                                             </td>
                                                         </tr>
 
@@ -2222,7 +2285,7 @@ window.DashboardView = React.memo(({
                                                             <>
                                                                 <tr 
                                                                     onClick={() => toggleCompactExpand(job.id)}
-                                                                    className={`group transition-all duration-150 cursor-pointer relative hover:bg-orange-50/40 dark:hover:bg-white/[0.04] border-b border-zinc-100 dark:border-white/5 last:border-0 ${isSpaciousExpanded ? 'bg-orange-50/30 dark:bg-white/[0.03]' : isDone ? 'bg-zinc-50/40 dark:bg-black/20 opacity-70 hover:opacity-100' : 'bg-transparent'}`}
+                                                                    className={`group transition-all duration-150 cursor-pointer relative hover:bg-orange-50/40 dark:hover:bg-white/[0.04] border-b border-zinc-100 dark:border-white/5 last:border-0 ${isSpaciousExpanded ? 'bg-orange-50/30 dark:bg-white/[0.03]' : 'bg-transparent'}`}
                                                                 >
                                                                     {/* KUND */}
                                                                     <td className="pl-4 pr-2 py-3.5 align-middle relative">
@@ -2289,12 +2352,6 @@ window.DashboardView = React.memo(({
                                                                     <td className="px-3 py-3.5 align-middle">
                                                                         {job.datum ? (
                                                                             <div className="flex items-center gap-2.5">
-                                                                                {isUrgent && (
-                                                                                    <span className="relative flex h-2 w-2 shrink-0">
-                                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
-                                                                                    </span>
-                                                                                )}
                                                                                 <div className={`flex items-center gap-1.5 text-[13px] font-medium leading-none ${isUrgent ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-800 dark:text-zinc-200 transition-colors'}`}>
                                                                                     <span className="uppercase">{dateText}</span>
                                                                                     <span className={job.datum.includes('00:00') ? 'text-zinc-300 dark:text-zinc-600 font-normal' : ''}>
@@ -2317,17 +2374,24 @@ window.DashboardView = React.memo(({
                                                                     {/* PRIS */}
                                                                     <td className="px-3 py-3.5 align-middle text-right">
                                                                         <div className="text-[14px] font-normal leading-none tabular-nums group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex flex-col items-end">
-                                                                            {paid > 0 ? (
+                                                                            {price === 0 ? (
+                                                                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded border border-zinc-200 dark:border-white/10 shadow-sm">Ej prissatt</span>
+                                                                            ) : paid > 0 && remaining > 0 ? (
                                                                                 <>
-                                                                                    <span className="text-[10px] text-emerald-500 font-medium tracking-widest uppercase mb-1">
-                                                                                        {paid.toLocaleString('sv-SE')} kr
-                                                                                    </span>
-                                                                                    <div className="text-orange-500">
-                                                                                        {remaining.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
+                                                                                    <span className="text-[11px] text-zinc-400 line-through decoration-zinc-300 dark:decoration-zinc-600 mb-1">{price.toLocaleString('sv-SE')} kr</span>
+                                                                                    <div className="text-orange-500 dark:text-orange-400 font-medium flex items-center gap-1.5" title="Delbetalt - Kvar att betala">
+                                                                                        <window.Icon name="hourglass" size={13} />
+                                                                                        <span className="flex items-baseline gap-1">
+                                                                                            {remaining.toLocaleString('sv-SE')} <span className="text-[10px] font-normal uppercase opacity-80">kvar</span>
+                                                                                        </span>
                                                                                     </div>
                                                                                 </>
+                                                                            ) : (paid > 0 && remaining === 0) || (job.status === 'KLAR' && paid === 0) ? (
+                                                                                <div className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 mt-1" title="Fullbetald">
+                                                                                    <window.Icon name="check" size={13} /> {price.toLocaleString('sv-SE')} kr
+                                                                                </div>
                                                                             ) : (
-                                                                                <div className="text-zinc-700 dark:text-zinc-200">
+                                                                                <div className="text-zinc-800 dark:text-zinc-200 flex items-baseline gap-1 mt-1">
                                                                                     {price.toLocaleString('sv-SE')} <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tracking-widest uppercase font-normal ml-0.5">kr</span>
                                                                                 </div>
                                                                             )}
