@@ -490,6 +490,7 @@ const mobileCardPropsAreEqual = (prev, next) => {
 window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
+    const [confirmKlar, setConfirmKlar] = React.useState(false); // <--- NY RAD
     
     const [displayModel, setDisplayModel] = React.useState(job.bilmodell || '');
     const [displayVin, setDisplayVin] = React.useState(job.vin || '');
@@ -735,10 +736,24 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
             <div className="flex items-center divide-x divide-zinc-200/80 dark:divide-white/5 border-t border-zinc-200/80 dark:border-white/5 bg-white dark:bg-transparent rounded-b-xl">
                 {job.status !== 'KLAR' && (
                     <button 
-                        onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); }}
-                        className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10 transition-colors"
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (confirmKlar) {
+                                window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' });
+                                setConfirmKlar(false);
+                            } else {
+                                setConfirmKlar(true);
+                                setTimeout(() => setConfirmKlar(false), 3000); // Återställs efter 3 sekunder
+                            }
+                        }}
+                        className={`flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                            confirmKlar 
+                                ? 'text-white bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700' 
+                                : 'text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10'
+                        }`}
                     >
-                        <window.Icon name="check-circle" size={14} /> Klar
+                        <window.Icon name={confirmKlar ? "check" : "check-circle"} size={14} /> 
+                        {confirmKlar ? 'Bekräfta' : 'Klar'}
                     </button>
                 )}
                 <button 
