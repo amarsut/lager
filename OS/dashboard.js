@@ -732,27 +732,27 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
             </div>
 
             {/* NYTT: Snabbknappar under kortet */}
-            <div className="flex items-center divide-x divide-zinc-200/80 dark:divide-white/5 border-t border-zinc-200/80 dark:border-white/5 bg-white dark:bg-transparent rounded-b-xl">
+            <div className="flex items-center divide-x divide-zinc-200/80 dark:divide-white/5 border-t border-zinc-200/50 dark:border-white/5 bg-zinc-100/90 dark:bg-black/20 rounded-b-xl">
                 {job.status !== 'KLAR' && (
                     <button 
                         onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); }}
-                        className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10 transition-colors"
+                        className="flex-1 py-2.5 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10 transition-colors"
                     >
                         <window.Icon name="check-circle" size={14} /> Klar
                     </button>
                 )}
                 <button 
                     onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }}
-                    className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 transition-colors"
+                    className="flex-1 py-2.5 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-500/10 transition-colors"
                 >
                     <window.Icon name="edit-2" size={14} /> Redigera
                 </button>
                 {job.regnr && job.regnr !== '-' && (
                     <button 
                         onClick={(e) => { e.stopPropagation(); onOpenHistory(job.regnr, job.id, job); }}
-                        className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
+                        className="flex-1 py-2.5 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
                     >
-                        <window.Icon name="car" size={14} /> Fordonskort
+                        <window.Icon name="car" size={14} /> Historik
                     </button>
                 )}
             </div>
