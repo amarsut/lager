@@ -386,10 +386,10 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
 
     if (isDesktop) {
         return (
-            <div title="Teknisk fordonsdata finns sparad" className={`absolute right-6 top-1/2 -translate-y-1/2 flex items-center justify-center text-teal-600 dark:text-teal-400 transition-all duration-200 group-hover:opacity-0 pointer-events-none z-0 ${pulse ? 'animate-pulse drop-shadow-md' : ''}`}>
-                <window.Icon name="wrench" size={16} />
-            </div>
-        );
+        <div title="Teknisk data tillgänglig i garaget" className={`flex items-center justify-center text-teal-600 dark:text-teal-400 transition-all duration-200 pointer-events-none z-0 ${pulse ? 'animate-pulse drop-shadow-md' : ''}`}>
+            <window.Icon name="wrench" size={15} />
+        </div>
+    );
     }
 
     // FIX: Samma rena ikon-look på mobilen som på datorn! Inga boxar.
@@ -561,8 +561,9 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                 
                 {/* IDENTITET: Kund, Modell, Ch.nr & Status */}
                 <div className="flex justify-between items-start mb-3">
+                    
+                    {/* VÄNSTER SIDA AV IDENTITET: Avatar, Kundnamn, Chnr */}
                     <div className="flex items-start gap-3 min-w-0 pr-2 flex-1">
-                        {/* Avatar är knuffad lite nedåt för att centrera snyggt mellan Namn och Ch.nr */}
                         <div className="mt-0.5 shrink-0">
                             <window.CustomerAvatar job={job} />
                         </div>
@@ -580,7 +581,6 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                 )}
                             </div>
                             
-                            {/* NY PLACERING AV CH.NR (Samma font som modell/datum) */}
                             {displayVin && displayVin !== '-' && (
                                 <div 
                                     onClick={handleCopyVin}
@@ -594,54 +594,80 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 shrink-0">
-                        {/* 1. Fordonsdata (Skiftnyckeln) - Justerad för att ligga i perfekt linje */}
-                        <div className="flex items-center justify-center translate-y-[0.5px]">
+                    {/* HÖGER SIDA AV IDENTITET: Skiftnyckel, Status, Meny */}
+                    <div className="flex items-center gap-1.5 shrink-0 mt-[1px]">
+                        
+                        {/* 1. Fordonsdata (Grön skiftnyckel) */}
+                        <div className="flex items-center justify-center mr-0.5">
                             <window.VehicleDataIcon job={job} isDesktop={false} />
                         </div>
                         
-                        {/* 2. Status-ikonen - Skarpare färger och konsekvent storlek */}
-                        <div 
-                            className={`flex items-center justify-center ${
-                                job.status === 'KLAR' ? 'text-emerald-500 dark:text-emerald-400' : 
-                                job.status === 'FAKTURERAS' ? 'text-sky-500 dark:text-sky-400' : 
-                                job.status === 'OFFERERAD' ? 'text-blue-500 dark:text-blue-400' : 
-                                'text-orange-500 dark:text-orange-400'
-                            }`}
-                            title={job.status || 'BOKAD'}
-                        >
-                            <window.Icon 
-                                name={
-                                    job.status === 'KLAR' ? 'check-circle' : 
-                                    job.status === 'FAKTURERAS' ? 'receipt' : 
-                                    job.status === 'OFFERERAD' ? 'file-text' : 
-                                    'calendar'
-                                } 
-                                size={16} 
-                            />
+                        {/* 2. Text-etiketten (BOKAD, KLAR etc) */}
+                        <div className="flex items-center">
+                            <window.Badge status={job.status} />
                         </div>
 
-                        {/* 3. Menyn (Lodräta prickar) - Bättre klickyta utan att sabba marginalen */}
-                        <div className="relative">
-                            <button onClick={handleMenuToggle} className="h-8 w-6 flex items-center justify-end text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors active:scale-90 -mr-1">
+                        {/* 3. Lodräta prickar - Finjusterad höjd med mt-[1px] */}
+                        <div className="relative ml-0.5">
+                            <button onClick={handleMenuToggle} className="w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:bg-zinc-100 dark:hover:bg-white/10 rounded-md active:scale-90 -mr-1 mt-[1px]">
                                 <window.Icon name="more-vertical" size={18} />
                             </button>
+                            
                             {menuOpen && (
                                 <>
-                                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-100 dark:border-white/10 z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right">
-                                        {job.status !== 'KLAR' && (
-                                            <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-3 rounded-xl transition-colors">
-                                                <window.Icon name="check-circle" size={16} className="text-emerald-500" /> Markera klar
+                                    {/* SKÄRMSÄKER SPÄRR: Fångar klicket direkt vid beröring och blockerar genomsläpp */}
+                                    <div 
+                                        className="fixed inset-0 z-40 bg-transparent" 
+                                        onMouseDown={(e) => { 
+                                            e.preventDefault(); 
+                                            e.stopPropagation(); 
+                                            setMenuOpen(false); 
+                                        }}
+                                        onTouchStart={(e) => { 
+                                            e.preventDefault(); 
+                                            e.stopPropagation(); 
+                                            setMenuOpen(false); 
+                                        }}
+                                        onClick={(e) => { 
+                                            e.preventDefault(); 
+                                            e.stopPropagation(); 
+                                        }}
+                                    ></div>
+                                    
+                                    {/* PROFFSIG MENY UTAN DIMNING OCH KLICK-LÄCKAGE */}
+                                    <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl border border-zinc-200/80 dark:border-white/10 z-50 p-1.5 overflow-hidden animate-in fade-in zoom-in-95 origin-top-right divide-y divide-zinc-100 dark:divide-white/5">
+                                        <div className="py-1 space-y-0.5">
+                                            {job.status !== 'KLAR' && (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({ status: 'KLAR' }); setMenuOpen(false); }} 
+                                                    className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-3 rounded-xl transition-all active:scale-[0.98]"
+                                                >
+                                                    <window.Icon name="check-circle" size={16} className="text-emerald-500 shrink-0" /> Markera klar
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} 
+                                                className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-3 rounded-xl transition-all active:scale-[0.98]"
+                                            >
+                                                <window.Icon name="edit-2" size={16} className="text-blue-500 shrink-0" /> Redigera order
                                             </button>
-                                        )}
-                                        <button onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-3 rounded-xl transition-colors">
-                                            <window.Icon name="edit-2" size={16} className="text-blue-500" /> Redigera order
-                                        </button>
-                                        <div className="h-[1px] bg-zinc-100 dark:bg-white/5 my-1 mx-2"></div>
-                                        <button onClick={(e) => { e.stopPropagation(); if (confirm("Radera ordern?")) { window.db.collection("jobs").doc(job.id).update({ deleted: true }); } setMenuOpen(false); }} className="w-full text-left px-3 py-3 text-[12px] font-bold uppercase tracking-wide text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 flex items-center gap-3 rounded-xl transition-colors">
-                                            <window.Icon name="trash-2" size={16} className="text-red-500" /> Radera order
-                                        </button>
+                                            {job.regnr && job.regnr !== '-' && (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); onOpenHistory(job.regnr, job.id, job); setMenuOpen(false); }} 
+                                                    className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-200 hover:bg-orange-50 dark:hover:bg-orange-500/20 hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-3 rounded-xl transition-all active:scale-[0.98]"
+                                                >
+                                                    <window.Icon name="history" size={16} className="text-orange-500 shrink-0" /> Historik
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="pt-1 mt-1">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); if (confirm("Är du säker på att du vill radera ordern?")) { window.db.collection("jobs").doc(job.id).update({ deleted: true }); } setMenuOpen(false); }} 
+                                                className="w-full text-left px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 flex items-center gap-3 rounded-xl transition-all active:scale-[0.98]"
+                                            >
+                                                <window.Icon name="trash" size={16} className="text-red-500 shrink-0" /> Radera order
+                                            </button>
+                                        </div>
                                     </div>
                                 </>
                             )}
@@ -725,7 +751,7 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         <div className="flex flex-col items-end">
                             {paid > 0 && remaining > 0 ? (
                                 <>
-                                    <span className="text-[10px] text-zinc-400 line-through decoration-zinc-300 dark:decoration-zinc-600 mb-0.5">{price.toLocaleString('sv-SE')} kr</span>
+                                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500 line-through decoration-zinc-400/60 font-medium tracking-wide mb-0.5">{price.toLocaleString('sv-SE')} kr</span>
                                     <div className="flex items-center gap-1.5 text-orange-500 dark:text-orange-400">
                                         <window.Icon name="hourglass" size={12} />
                                         <span className="flex items-baseline gap-1">
