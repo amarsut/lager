@@ -359,20 +359,55 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 else setPayments(emptyPayments);
                 
             } else {
-                // Tvingar hela formuläret att bli tomt så inga gamla biluppgifter hänger kvar
-                setFormData({
-                    kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
-                    datum: today, tid: '16:30', kundpris: '0', kommentar: '', 
-                    bilmodell: '', motorkod: '', miltal: '', årsmodell: '', vin: '', oljevolym: ''
-                });
-                setFetchedCarInfo(null);
-                setExpenses(emptyExpenses); setPayments(emptyPayments);
+                // NYTT: Kolla efter osparat utkast!
+                const savedDraft = localStorage.getItem('os_job_draft');
+                let restored = false;
+                
+                if (savedDraft) {
+                    try {
+                        const parsed = JSON.parse(savedDraft);
+                        if (parsed.formData && (parsed.formData.regnr || parsed.formData.kundnamn)) {
+                            if (window.confirm(`Du har ett osparat utkast för ${parsed.formData.regnr || parsed.formData.kundnamn}. Vill du återställa det?`)) {
+                                setFormData(parsed.formData);
+                                setExpenses(parsed.expenses || emptyExpenses);
+                                setPayments(parsed.payments || emptyPayments);
+                                setFetchedCarInfo(parsed.fetchedCarInfo || null);
+                                restored = true;
+                            } else {
+                                localStorage.removeItem('os_job_draft');
+                            }
+                        }
+                    } catch(e) {}
+                }
+
+                if (!restored) {
+                    // Tvingar hela formuläret att bli tomt så inga gamla biluppgifter hänger kvar
+                    setFormData({
+                        kundnamn: '', regnr: '', paket: 'Standard', status: 'BOKAD',
+                        datum: today, tid: '16:30', kundpris: '0', kommentar: '', 
+                        bilmodell: '', motorkod: '', miltal: '', årsmodell: '', vin: '', oljevolym: ''
+                    });
+                    setFetchedCarInfo(null);
+                    setExpenses([{ desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); 
+                    setPayments([{ desc: '', amount: '' }]);
+                }
             }
         };
         loadExistingJob();
     }, [activeJob, today]);
 
     const handleSpecChange = (key, value) => setFetchedCarInfo(prev => ({ ...prev, [key]: value }));
+
+    // NYTT: Auto-spara utkast i bakgrunden vid varje tangenttryck (endast för nya ordrar)
+    React.useEffect(() => {
+        if (!activeJob && step === 'DETAIL') {
+            // Spara bara om vi faktiskt har börjat fylla i något (regnr, kund, utgifter eller anteckning)
+            if (formData.regnr || formData.kundnamn || expenses.some(e => e.desc || e.amount) || formData.kommentar) {
+                const draft = { formData, expenses, payments, fetchedCarInfo };
+                localStorage.setItem('os_job_draft', JSON.stringify(draft));
+            }
+        }
+    }, [formData, expenses, payments, fetchedCarInfo, activeJob, step]);
 
     const handlePackageChange = (val) => {
         let updatedFormData = { paket: val };
@@ -525,8 +560,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             if (activeJob && activeJob.id) await window.db.collection("jobs").doc(activeJob.id).set(data, { merge: true });
             else await window.db.collection("jobs").add(data);
 
+            // NYTT: Rensa utkastet permanent när ordern har sparats i databasen!
+            localStorage.removeItem('os_job_draft');
+
             if (typeof setView === 'function') setView('DASHBOARD');
-        } catch (error) { 
+        } catch (error) {
             console.error("Fel vid sparande:", error);
             alert("Kunde inte spara: " + error.message); 
         }
@@ -1455,30 +1493,63 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 {/* Kund- och Datumkortet */}
                                 <div className={`bg-white border border-zinc-200 rounded-sm shadow-sm dark:bg-[#1e293b] dark:border-white/10 overflow-hidden relative ${!activeJob && showGrunduppgifter ? 'hidden lg:block' : 'block'}`}>
                                     <div className="flex items-center gap-3 px-4 py-3 bg-zinc-50 dark:bg-[#161f30] border-b border-zinc-200 dark:border-white/10">
-                                        <div className="w-10 h-10 bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 rounded-full flex items-center justify-center text-zinc-500 font-bold text-[14px] shrink-0 shadow-sm">
-                                            {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
-                                        </div>
-                                        <div className="flex-1 min-w-0 flex flex-col relative">
-                                            <input 
-                                                type="text" 
-                                                value={formData.kundnamn || ''} 
-                                                onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
-                                                onFocus={() => setFocusedInput('kundnamn')}
-                                                onBlur={() => setTimeout(() => setFocusedInput(null), 200)}
-                                                placeholder="Kundens namn"
-                                                className="w-full bg-transparent outline-none font-bold text-[14px] text-[#168a9c] hover:underline underline-offset-2 truncate" 
-                                            />
-                                            {focusedInput === 'kundnamn' && formData.kundnamn && uniqueCustomers.filter(c => c.toUpperCase().includes(formData.kundnamn.toUpperCase()) && c.toUpperCase() !== formData.kundnamn.toUpperCase()).length > 0 && (
-                                                <div className="absolute top-full left-0 mt-1 w-[150%] max-h-40 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100]">
-                                                    {uniqueCustomers.filter(c => c.toUpperCase().includes(formData.kundnamn.toUpperCase()) && c.toUpperCase() !== formData.kundnamn.toUpperCase()).map(c => (
-                                                        <div key={c} onMouseDown={() => setFormData(p => ({ ...p, kundnamn: c.toUpperCase() }))} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#168a9c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0">
-                                                            {c}
+                                        {(() => {
+                                            const cleanName = (formData.kundnamn || '').toUpperCase().trim();
+                                            // Räkna antal ordrar på denna kund
+                                            const visitCount = cleanName.length > 1 ? allJobs.filter(j => (j.kundnamn || '').toUpperCase().trim() === cleanName).length : 0;
+                                            const isVIP = visitCount >= 3; // Gränsen för att bli guld-stammis
+
+                                            return (
+                                                <>
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0 transition-all duration-500 relative ${
+                                                        isVIP 
+                                                        ? 'bg-gradient-to-br from-yellow-300 to-amber-500 border border-yellow-400 text-amber-950 shadow-[0_0_15px_rgba(245,158,11,0.3)]' 
+                                                        : 'bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 text-zinc-500 shadow-sm'
+                                                    }`}
+                                                    title={isVIP ? `Stammis: ${visitCount} tidigare besök` : `${visitCount} tidigare besök`}
+                                                    >
+                                                        {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
+                                                        {isVIP && (
+                                                            <div className="absolute -top-1 -right-1 bg-white dark:bg-[#1e293b] w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-amber-200 dark:border-white/10 text-[9px]">
+                                                                ⭐
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="flex-1 min-w-0 flex flex-col relative">
+                                                        <input 
+                                                            type="text" 
+                                                            value={formData.kundnamn || ''} 
+                                                            onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
+                                                            onFocus={() => setFocusedInput('kundnamn')}
+                                                            onBlur={() => setTimeout(() => setFocusedInput(null), 200)}
+                                                            placeholder="Kundens namn"
+                                                            className="w-full bg-transparent outline-none font-bold text-[14px] text-[#168a9c] hover:underline underline-offset-2 truncate" 
+                                                        />
+                                                        {focusedInput === 'kundnamn' && formData.kundnamn && uniqueCustomers.filter(c => c.toUpperCase().includes(formData.kundnamn.toUpperCase()) && c.toUpperCase() !== formData.kundnamn.toUpperCase()).length > 0 && (
+                                                            <div className="absolute top-full left-0 mt-1 w-[150%] max-h-40 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100]">
+                                                                {uniqueCustomers.filter(c => c.toUpperCase().includes(formData.kundnamn.toUpperCase()) && c.toUpperCase() !== formData.kundnamn.toUpperCase()).map(c => (
+                                                                    <div key={c} onMouseDown={() => setFormData(p => ({ ...p, kundnamn: c.toUpperCase() }))} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#168a9c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0">
+                                                                        {c}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        
+                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                            <span className={`text-[12px] ${isVIP ? 'text-amber-600 dark:text-amber-500 font-bold' : 'text-zinc-500'}`}>
+                                                                {isVIP ? 'Kund' : 'Kund'}
+                                                            </span>
+                                                            {visitCount > 0 && (
+                                                                <span className={`text-[10px] ${isVIP ? 'text-amber-600/70 dark:text-amber-500/70' : 'text-zinc-400'}`}>
+                                                                    ({visitCount} {visitCount === 1 ? 'besök' : 'besök'})
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <span className="text-[12px] text-zinc-500 mt-0.5">Kund</span>
-                                        </div>
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                     
                                     {/* SMARTA KOPPLINGAR - Visas automatiskt när relationer hittas men fältet gapar tomt */}
