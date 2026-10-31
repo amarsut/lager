@@ -752,7 +752,7 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                         onClick={(e) => { e.stopPropagation(); onOpenHistory(job.regnr, job.id, job); }}
                         className="flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
                     >
-                        <window.Icon name="car" size={14} /> Historik
+                        <window.Icon name="history" size={14} /> Historik
                     </button>
                 )}
             </div>
