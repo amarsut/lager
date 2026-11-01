@@ -490,7 +490,8 @@ const mobileCardPropsAreEqual = (prev, next) => {
 window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
-    const [confirmKlar, setConfirmKlar] = React.useState(false); // <--- NY RAD
+    const [confirmKlar, setConfirmKlar] = React.useState(false);
+    const [showPriceDetails, setShowPriceDetails] = React.useState(false); // Nytt state för pris-info
     
     const [displayModel, setDisplayModel] = React.useState(job.bilmodell || '');
     const [displayVin, setDisplayVin] = React.useState(job.vin || '');
@@ -750,16 +751,30 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                     {price > 0 ? (
                         <div className="flex flex-col items-end">
                             {paid > 0 && remaining > 0 ? (
-                                <>
-                                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500 line-through decoration-zinc-400/60 font-medium tracking-wide mb-0.5">{price.toLocaleString('sv-SE')} kr</span>
-                                    <div className="flex items-center gap-1.5 text-orange-500 dark:text-orange-400">
+                                <div 
+                                    className="relative flex flex-col items-end cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); setShowPriceDetails(!showPriceDetails); setTimeout(() => setShowPriceDetails(false), 4000); }}
+                                >
+                                    <div className="flex items-center gap-1.5 text-orange-500 dark:text-orange-400 active:scale-95 transition-transform">
                                         <window.Icon name="hourglass" size={12} />
                                         <span className="flex items-baseline gap-1">
                                             <span className="text-[14px] font-medium leading-none tracking-tight">{remaining.toLocaleString('sv-SE')}</span>
                                             <span className="text-[9px] font-medium uppercase opacity-80">kvar</span>
                                         </span>
                                     </div>
-                                </>
+                                    {showPriceDetails && (
+                                        <div className="absolute bottom-[120%] right-0 mb-1 bg-zinc-800/95 dark:bg-zinc-100/95 backdrop-blur-sm text-white dark:text-zinc-900 text-[11px] px-2.5 py-2 rounded-lg shadow-lg z-50 whitespace-nowrap animate-in fade-in zoom-in-95 flex flex-col gap-1 border border-zinc-700/50 dark:border-zinc-200/50 min-w-[110px]">
+                                            <div className="flex justify-between gap-3">
+                                                <span className="text-zinc-400 dark:text-zinc-500">Totalt:</span>
+                                                <span className="font-medium">{price.toLocaleString('sv-SE')} kr</span>
+                                            </div>
+                                            <div className="flex justify-between gap-3">
+                                                <span className="text-zinc-400 dark:text-zinc-500">Betalt:</span>
+                                                <span className="font-medium text-emerald-400 dark:text-emerald-600">{paid.toLocaleString('sv-SE')} kr</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             ) : (paid > 0 && remaining === 0) || (job.status === 'KLAR' && paid === 0) ? (
                                 <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mt-1">
                                     <window.Icon name="check" size={12} />
@@ -2222,8 +2237,20 @@ window.DashboardView = React.memo(({
                                                             <td className="px-3.5 py-3 text-right whitespace-nowrap">
                                                                 {price > 0 ? (
                                                                     paid > 0 && remaining > 0 ? (
-                                                                        <div className="flex justify-end items-center gap-1.5 text-orange-500 dark:text-orange-400 font-medium text-[13px]" title="Delbetalt - Kvar att betala">
+                                                                        <div className="flex justify-end items-center gap-1.5 text-orange-500 dark:text-orange-400 font-medium text-[13px] relative group/tooltip cursor-help">
                                                                             <window.Icon name="hourglass" size={12} /> {remaining.toLocaleString('sv-SE')} kr
+                                                                            
+                                                                            {/* Diskret Info-ruta vid hover (Klassisk men modern) */}
+                                                                            <div className="absolute right-full mr-3 top-[-4px] opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 bg-zinc-800/95 dark:bg-zinc-100/95 backdrop-blur-sm text-white dark:text-zinc-900 text-[11px] px-2.5 py-2 rounded-lg shadow-lg whitespace-nowrap flex flex-col gap-1 text-left font-normal border border-zinc-700/50 dark:border-zinc-200/50 min-w-[110px]">
+                                                                                <div className="flex justify-between gap-3">
+                                                                                    <span className="text-zinc-400 dark:text-zinc-500">Totalt:</span>
+                                                                                    <span className="font-medium">{price.toLocaleString('sv-SE')} kr</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between gap-3">
+                                                                                    <span className="text-zinc-400 dark:text-zinc-500">Betalt:</span>
+                                                                                    <span className="font-medium text-emerald-400 dark:text-emerald-600">{paid.toLocaleString('sv-SE')} kr</span>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                     ) : (paid > 0 && remaining === 0) || (job.status === 'KLAR' && paid === 0) ? (
                                                                         <div className="flex justify-end items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium text-[13px]" title="Fullbetald">
@@ -2440,15 +2467,26 @@ window.DashboardView = React.memo(({
                                                                             {price === 0 ? (
                                                                                 <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100 dark:bg-white/5 px-2 py-1 rounded border border-zinc-200 dark:border-white/10 shadow-sm">Ej prissatt</span>
                                                                             ) : paid > 0 && remaining > 0 ? (
-                                                                                <>
-                                                                                    <span className="text-[11px] text-zinc-400 line-through decoration-zinc-300 dark:decoration-zinc-600 mb-1">{price.toLocaleString('sv-SE')} kr</span>
-                                                                                    <div className="text-orange-500 dark:text-orange-400 font-medium flex items-center gap-1.5" title="Delbetalt - Kvar att betala">
+                                                                                <div className="relative group/tooltip flex flex-col items-end cursor-help pt-1">
+                                                                                    <div className="text-orange-500 dark:text-orange-400 font-medium flex items-center gap-1.5">
                                                                                         <window.Icon name="hourglass" size={13} />
                                                                                         <span className="flex items-baseline gap-1">
                                                                                             {remaining.toLocaleString('sv-SE')} <span className="text-[10px] font-normal uppercase opacity-80">kvar</span>
                                                                                         </span>
                                                                                     </div>
-                                                                                </>
+                                                                                    
+                                                                                    {/* Diskret Info-ruta vid hover */}
+                                                                                    <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 bg-zinc-800 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] p-2 rounded-lg shadow-xl whitespace-nowrap flex flex-col gap-1 text-left font-normal border border-zinc-700 dark:border-zinc-200">
+                                                                                        <div className="flex justify-between gap-4">
+                                                                                            <span className="text-zinc-400 dark:text-zinc-500">Totalt:</span>
+                                                                                            <span className="font-medium">{price.toLocaleString('sv-SE')} kr</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between gap-4">
+                                                                                            <span className="text-zinc-400 dark:text-zinc-500">Betalt:</span>
+                                                                                            <span className="font-medium text-emerald-400 dark:text-emerald-600">{paid.toLocaleString('sv-SE')} kr</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
                                                                             ) : (paid > 0 && remaining === 0) || (job.status === 'KLAR' && paid === 0) ? (
                                                                                 <div className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 mt-1" title="Fullbetald">
                                                                                     <window.Icon name="check" size={13} /> {price.toLocaleString('sv-SE')} kr
