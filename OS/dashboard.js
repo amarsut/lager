@@ -387,7 +387,7 @@ window.VehicleDataIcon = React.memo(({ job, isDesktop }) => {
     if (isDesktop) {
         return (
         <div title="Teknisk data tillgänglig i garaget" className={`flex items-center justify-center text-teal-600 dark:text-teal-400 transition-all duration-200 pointer-events-none z-0 ${pulse ? 'animate-pulse drop-shadow-md' : ''}`}>
-            <window.Icon name="wrench" size={15} />
+            <window.Icon name="wrench" size={18} />
         </div>
     );
     }
@@ -2462,8 +2462,11 @@ window.DashboardView = React.memo(({
                                                                     </td>
 
                                                                     {/* SNABBÅTGÄRDER VID HOVER */}
-                                                                    <td className="pl-2 pr-4 py-3.5 align-middle text-right relative">
-                                                                        <window.VehicleDataIcon job={job} isDesktop={true} />
+                                                                    <td className="pl-2 pr-4 py-3.5 align-middle text-right relative w-[150px]">
+                                                                        {/* Skiftnyckeln syns som standard, döljs mjukt vid hovring */}
+                                                                        <div className="absolute inset-y-0 right-6 flex items-center justify-end group-hover:opacity-0 transition-opacity duration-200">
+                                                                            <window.VehicleDataIcon job={job} isDesktop={true} />
+                                                                        </div>
                                                                         <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out flex justify-end items-center gap-1.5 relative z-10 scale-95 group-hover:scale-100">
                                                                             {job.status !== 'KLAR' && (
                                                                                 <button onClick={(e) => { e.stopPropagation(); window.db.collection("jobs").doc(job.id).update({status: 'KLAR'}); }} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-zinc-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all active:scale-95" title="Markera klar">
