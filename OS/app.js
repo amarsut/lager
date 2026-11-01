@@ -777,7 +777,7 @@ const App = () => {
                         </>
                     )}
 
-                    <div id="main-scroll-area" className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-28 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY', 'ACTIVE_JOBS', 'VEHICLES', 'INVOICE', 'SETTINGS'].includes(view) ? 'p-0' : 'p-4'}`}>
+                    <div id="main-scroll-area" className={`flex-1 overflow-y-auto overscroll-none lg:p-8 space-y-6 pb-20 lg:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${['DASHBOARD', 'PROGNOS', 'CALENDAR', 'NEW_JOB', 'CUSTOMERS', 'GARAGE', 'OIL_SUPPLY', 'ACTIVE_JOBS', 'VEHICLES', 'INVOICE', 'SETTINGS'].includes(view) ? 'p-0' : 'p-4'}`}>
                         {/* BEFINTLIGA VYER */}
                         {view === 'DASHBOARD' && window.DashboardView && <window.DashboardView allJobs={allJobs} filteredJobs={filteredJobs} setEditingJob={setEditingJob} setView={navigateTo} activeFilter={activeFilter} setActiveFilter={setActiveFilter} statusCounts={statusCounts} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} />}
                         {view === 'PROGNOS' && window.PrognosView && <window.PrognosView allJobs={allJobs} setView={navigateTo} />}
@@ -795,19 +795,19 @@ const App = () => {
                         {view === 'SETTINGS' && (window.SettingsView ? <window.SettingsView user={user} enableJobLimit={enableJobLimit} setEnableJobLimit={setEnableJobLimit} isDark={isDark} setIsDark={setIsDark} isNightLight={isNightLight} setIsNightLight={setIsNightLight} /> : <div className="p-8 text-zinc-500 font-bold uppercase tracking-widest text-center mt-20">Laddar Inställningar...</div>)}
                     </div>
 
-                    {/* Mobila Bottenmenyn */}
-                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#000000] border-t border-white/10 flex items-center justify-around z-[210] px-1 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.8)] select-none">
+                    {/* Mobila Bottenmenyn (Klassisk men renare, utan text) */}
+                    <div className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-[#000000] border-t border-white/10 flex items-center justify-around z-[210] px-1 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.8)] select-none">
                         {[
-                            { id: 'DASHBOARD', icon: 'grid', label: 'Status' },
-                            { id: 'CALENDAR', icon: 'calendar', label: 'Plan' },
-                            { id: 'NEW_JOB', icon: 'plus-square', label: 'Nytt', param: { job: null } },
-                            { id: 'CHAT', icon: 'message-square', label: 'Chatt', hasBadge: hasUnread },
+                            { id: 'DASHBOARD', icon: 'grid', param: null },
+                            { id: 'CALENDAR', icon: 'calendar', param: null },
+                            { id: 'NEW_JOB', icon: 'plus-square', param: { job: null } },
+                            { id: 'CHAT', icon: 'message-square', hasBadge: hasUnread },
                         ].map(item => {
                             const isActive = view === item.id && !sidebarOpen;
                             return (
-                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative ${isActive ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                    <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
-                                        <window.Icon name={item.icon} size={20} className={isActive ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
+                                <button key={item.id} onClick={() => { triggerHaptic(); navigateTo(item.id, item.param); }} className={`mobile-nav-btn relative flex items-center justify-center h-full ${isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'}`}>
+                                    <div className="relative inline-flex items-center justify-center p-1">
+                                        <window.Icon name={item.icon} size={24} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'scale-110 transition-all duration-300' : 'transition-all duration-300'} />
                                         {item.hasBadge && (
                                             <span className="absolute -top-1 -right-1 flex h-3 w-3 z-[999]">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -815,18 +815,14 @@ const App = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <span className="mobile-nav-label">{item.label}</span>
-                                    {isActive && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full animate-in fade-in duration-300"></span>}
                                 </button>
                             );
                         })}
 
-                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative ${sidebarOpen ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                            <div className="relative inline-flex items-center justify-center p-1 mb-0.5">
-                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={20} className={sidebarOpen ? 'scale-110 transition-transform duration-300' : 'transition-transform duration-300'} />
+                        <button onClick={() => { triggerHaptic(); setSidebarOpen(!sidebarOpen); }} className={`mobile-nav-btn relative flex items-center justify-center h-full ${sidebarOpen ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'}`}>
+                            <div className="relative inline-flex items-center justify-center p-1">
+                                <window.Icon name={sidebarOpen ? "x" : "more-horizontal"} size={24} strokeWidth={sidebarOpen ? 2.5 : 2} className={sidebarOpen ? 'scale-110 transition-all duration-300' : 'transition-all duration-300'} />
                             </div>
-                            <span className="mobile-nav-label">{sidebarOpen ? "Stäng" : "Mer"}</span>
-                            {sidebarOpen && <span className="absolute bottom-1 w-1 h-1 bg-orange-500 rounded-full animate-in fade-in duration-300"></span>}
                         </button>
                     </div>
 
