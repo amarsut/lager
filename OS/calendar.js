@@ -187,7 +187,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
             {/* HUVUD-CONTAINER: p-0 för exakt 0 i padding överallt */}
-            <div className="flex flex-col w-full p-0 h-full">
+            <div className="flex flex-col w-full px-2 xl:px-0 pt-2 h-full">
                 
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 pb-4 border-b border-zinc-200/50 dark:border-white/5 lg:border-none lg:pb-0 gap-4 p-0">
