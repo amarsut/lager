@@ -232,13 +232,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                             </button>
                             
                             <div className="hidden lg:flex items-center gap-2 border-l border-zinc-200 dark:border-white/10 pl-2 ml-1 h-6">
-                                <span className="text-[10px] font-black uppercase text-zinc-400">V.{getWeekNumber(currentDate)}</span>
-                                <span className="text-[10px] font-black uppercase text-emerald-500">
-                                    {(calendarDays.reduce((acc, d) => {
-                                        const dStr = `${d.date.getFullYear()}-${String(d.date.getMonth() + 1).padStart(2, '0')}-${String(d.date.getDate()).padStart(2, '0')}`;
-                                        return acc + (jobsByDate[dStr] || []).reduce((sum, j) => sum + (parseInt(j.kundpris) || 0), 0);
-                                    }, 0) / 1000).toFixed(1)}k kr
-                                </span>
+                                <span className="text-[10px] font-black uppercase">V.{getWeekNumber(currentDate)}</span>
                             </div>
                         </div>
                     </div>
@@ -527,7 +521,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                             className="flex flex-col bg-white dark:bg-[#1e293b] border-y border-l border-zinc-200 dark:border-white/10 rounded-l-xl rounded-r-none shadow-xl transition-all overflow-hidden w-full xl:w-[350px] shrink-0 border-r-0 mr-0"
                         >
                             <div className="flex items-center justify-between p-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 shrink-0 h-[45px]">
-                                <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Oplanerad Dropzone</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider">Oplanerad Dropzone</span>
                                 <button onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-800 dark:hover:text-white transition-colors px-2 py-1 rounded bg-white dark:bg-white/10 border border-zinc-200 dark:border-white/10" title="Dölj panel">
                                     Dölj panel <SafeIcon name="panel-right-close" size={13} />
                                 </button>
