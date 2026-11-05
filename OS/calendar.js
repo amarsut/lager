@@ -187,7 +187,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
             {/* HUVUD-CONTAINER: p-0 för exakt 0 i padding överallt */}
-            <div className="flex flex-col w-full px-2 xl:px-0 pt-2 h-full">
+            <div className="flex flex-col w-full px-2 pt-2 xl:p-0 h-full">
                 
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 pb-4 border-b border-zinc-200/50 dark:border-white/5 lg:border-none lg:pb-0 gap-4 p-0">
@@ -530,12 +530,12 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                 </button>
                             </div>
                             
-                            <div className="p-2.5 space-y-2.5">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
                                 {Object.entries(backlogJobs).map(([catName, jobs]) => (
-                                    <div key={catName} className="flex flex-col border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden bg-zinc-50/50 dark:bg-[#161f30]/50">
+                                    <div key={catName} className="flex flex-col border-b border-zinc-200 dark:border-white/10 last:border-b-0">
                                         <div 
                                             onClick={() => setExpandedCategories(prev => ({ ...prev, [catName]: !prev[catName] }))}
-                                            className="flex items-center justify-between p-2.5 cursor-pointer hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                                            className="flex items-center justify-between p-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <SafeIcon name={expandedCategories[catName] ? "chevron-down" : "chevron-right"} size={13} className="text-zinc-400" />
