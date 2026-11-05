@@ -386,38 +386,41 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                                     onDragStart={(e) => onDragStart(e, job)} 
                                                                     onDragEnd={(e) => e.currentTarget.style.opacity = '1'} 
                                                                     onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} 
-                                                                    className={`group relative bg-white dark:bg-[#161f30] border border-zinc-200 dark:border-white/10 p-1 md:px-2.5 md:py-2 transition-all ${!isBlocked ? 'cursor-grab active:cursor-grabbing hover:border-zinc-300 dark:hover:border-white/30 hover:shadow-md hover:-translate-y-0.5' : ''} shadow-xs rounded-lg overflow-hidden ${isKlar ? 'opacity-70 hover:opacity-100' : ''}`}
+                                                                    className={`group relative bg-white dark:bg-[#161f30] border border-zinc-200 dark:border-white/10 md:p-1 md:px-2.5 md:py-2 transition-all ${!isBlocked ? 'cursor-grab active:cursor-grabbing hover:border-zinc-300 dark:hover:border-white/30 hover:shadow-md hover:-translate-y-0.5' : ''} shadow-xs rounded-lg overflow-hidden ${isKlar ? 'opacity-70 hover:opacity-100' : ''} flex flex-col`}
                                                                 >
                                                                     {price === 0 && !isKlar && (
-                                                                        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_5px_rgba(239,68,68,0.8)]" title="Pris saknas"></span>
+                                                                        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_5px_rgba(239,68,68,0.8)] z-10" title="Pris saknas"></span>
                                                                     )}
 
-                                                                    <div className={`absolute left-0 top-0 bottom-0 w-[2.5px] ${statusAccent}`}></div>
+                                                                    {/* Statuslinje som stannar ovanför reg-skylten på mobil */}
+                                                                    <div className={`absolute left-0 top-0 bottom-0 md:bottom-0 ${job.regnr && job.regnr !== '-' ? 'max-md:bottom-[16px]' : ''} w-[2.5px] ${statusAccent} z-10`}></div>
                                                                     
-                                                                    <div className="md:hidden flex flex-col justify-between pl-1.5 pr-1 py-1 gap-1 h-full w-full">
-                                                                        <div className="flex flex-col gap-0.5">
-                                                                            <div className="flex justify-between items-center gap-1">
-                                                                                <span className="text-[9.5px] font-bold text-black dark:text-white uppercase tracking-tight truncate w-full">
-                                                                                    {job.kundnamn}
-                                                                                </span>
-                                                                            </div>
+                                                                    {/* --- MOBIL VY --- */}
+                                                                    <div className="md:hidden flex flex-col w-full h-full">
+                                                                        {/* Innehållssektion med mjukare padding */}
+                                                                        <div className="flex flex-col gap-[2px] p-1.5 pb-2">
+                                                                            <span className="text-[9.5px] font-bold text-black dark:text-white uppercase tracking-tight truncate w-full">
+                                                                                {job.kundnamn}
+                                                                            </span>
                                                                             <span className="text-[8.5px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                                                                                 {serviceLabel}
                                                                             </span>
                                                                             {timeStr !== '00:00' && (
-                                                                                <span className="text-[8.5px] font-mono font-semibold text-black dark:text-white">
+                                                                                <span className="text-[8.5px] font-semibold text-zinc-900 dark:text-zinc-100">
                                                                                     {timeStr}
                                                                                 </span>
                                                                             )}
                                                                         </div>
+
+                                                                        {/* Reg-skylt kant-i-kant i botten */}
                                                                         {job.regnr && job.regnr !== '-' && (
-                                                                            <div className="mt-auto border-t border-zinc-200 dark:border-white/10 pt-1 flex justify-center">
-                                                                                <div className="flex items-center bg-white dark:bg-[#121826] border border-zinc-400 dark:border-white/30 rounded-[3px] overflow-hidden shadow-sm h-[14px]">
-                                                                                    <div className="bg-[#003399] h-full w-[8px] flex flex-col items-center justify-between py-[1px] shrink-0 border-r border-zinc-400 dark:border-white/30">
-                                                                                        <div className="w-[2px] h-[2px] rounded-full border-[0.5px] border-[#ffcc00] mt-[1px]"></div>
-                                                                                        <span className="text-[3px] font-sans font-black text-white leading-none mb-[0.5px]">S</span>
+                                                                            <div className="mt-auto w-full z-20">
+                                                                                <div className="flex items-center w-full bg-white dark:bg-[#121826] border-t border-zinc-200 dark:border-white/10 h-[17px]">
+                                                                                    <div className="bg-[#003399] h-full w-[11px] flex flex-col items-center justify-between py-[1.5px] shrink-0 border-r border-zinc-200 dark:border-white/10">
+                                                                                        <div className="w-[3px] h-[3px] rounded-full border-[0.5px] border-[#ffcc00]"></div>
+                                                                                        <span className="text-[4.5px] font-sans font-black text-white leading-none mb-[0.5px]">S</span>
                                                                                     </div>
-                                                                                    <span className="font-mono font-semibold text-[8px] tracking-widest text-black dark:text-white px-1 leading-none pt-[1px]">
+                                                                                    <span className="font-mono font-bold text-[9.5px] tracking-widest text-black dark:text-white flex-1 text-center truncate bg-white dark:bg-[#121826] pt-[1px]">
                                                                                         {job.regnr}
                                                                                     </span>
                                                                                 </div>
