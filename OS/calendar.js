@@ -226,22 +226,29 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                 
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-1 pb-2 md:mb-4 md:pb-4 border-b border-zinc-200/50 dark:border-white/5 lg:border-none lg:pb-0 gap-4 p-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="relative group cursor-default shrink-0">
-                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                            <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                <SafeIcon name="calendar" size={20} className="md:w-6 md:h-6" />
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <div className="relative group cursor-default shrink-0">
+                                <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
+                                <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <SafeIcon name="calendar" size={20} className="md:w-6 md:h-6" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                    CAL <span className="text-zinc-400 dark:text-zinc-500 font-light">ENDAR</span>
+                                </h1>
                             </div>
                         </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                SCHEDULE <span className="text-zinc-400 dark:text-zinc-500 font-light">TIMELINE</span>
-                            </h1>
-                            <p className="text-[9px] md:text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                {viewMode === 'WEEK' ? `Veckoöversikt` : `Månadsöversikt: ${monthNames[currentDate.getMonth()]}`}
-                            </p>
-                        </div>
+
+                        {/* Dagens datum-knapp */}
+                        <button 
+                            onClick={() => { setCurrentDate(new Date()); setSelectedMobileDate(new Date()); }} 
+                            className="md:hidden w-10 h-10 flex items-center justify-center rounded-[10px] border border-zinc-200 dark:border-white/10 text-[15px] font-bold text-zinc-700 dark:text-zinc-300 active:scale-95 transition-all shadow-sm bg-white dark:bg-[#121826] hover:text-orange-500 dark:hover:text-orange-400 mr-1"
+                            title="Gå till idag"
+                        >
+                            {new Date().getDate()}
+                        </button>
                     </div>
                 </div>
 
@@ -322,63 +329,79 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                         {/* --- NY MOBILVY (Lista & Kompakt månad) --- */}
                         <div className="md:hidden flex flex-col w-full h-full pb-24 px-2 mt-2 relative">
                             
-                            {/* Kompakt Månadskalender (Design från Bild 1) */}
-                            <div className="bg-white dark:bg-[#1e293b] rounded-[24px] p-5 shadow-sm border border-zinc-100 dark:border-white/5 mb-6">
+                            {/* Kompakt Månadskalender (Utan bakgrund/fyrkant, utdragen) */}
+                            <div className="mb-2 pt-0">
                                 
                                 {/* Header med knappar och centrerad text */}
-                                <div className="flex justify-between items-center mb-4">
-                                    <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-[#121826] shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-2xl active:scale-95 transition-all border border-zinc-50 dark:border-white/5">
-                                        <SafeIcon name="chevron-left" size={16} className="text-zinc-400"/>
+                                <div className="flex justify-between items-center mb-3 px-1">
+                                    <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-start bg-transparent active:scale-95 transition-all">
+                                        <SafeIcon name="chevron-left" size={20} className="text-zinc-400"/>
                                     </button>
-                                    <span className="text-[15px] font-semibold text-zinc-800 dark:text-white">
+                                    <span className="text-[16px] font-bold text-zinc-800 dark:text-white uppercase tracking-wide">
                                         {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                                     </span>
-                                    <button onClick={() => changeDate(30)} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-[#121826] shadow-[0_2px_8px_rgba(0,0,0,0.04)] rounded-2xl active:scale-95 transition-all border border-zinc-50 dark:border-white/5">
-                                        <SafeIcon name="chevron-right" size={16} className="text-zinc-400"/>
+                                    <button onClick={() => changeDate(30)} className="w-10 h-10 flex items-center justify-end bg-transparent active:scale-95 transition-all">
+                                        <SafeIcon name="chevron-right" size={20} className="text-zinc-400"/>
                                     </button>
                                 </div>
                                 
-                                {/* Tunn avdelare */}
-                                <div className="h-[1px] w-full bg-zinc-100 dark:bg-white/5 mb-4"></div>
-                                
-                                <div className="grid grid-cols-7 mb-4">
-                                    {["Må", "Ti", "On", "To", "Fr", "Lö", "Sö"].map((wd, idx) => (
-                                        <div key={idx} className={`text-center text-[12px] font-medium ${idx >= 5 ? 'text-red-400' : 'text-zinc-400'}`}>{wd}</div>
-                                    ))}
-                                </div>
-                                <div className="grid grid-cols-7 gap-y-3 gap-x-1">
-                                    {mobileMonthDays.map(({ date, isCurrentMonth }, i) => {
-                                        const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                        const dayJobs = jobsByDate[dStr] || [];
-                                        const isSelected = date.toDateString() === selectedMobileDate.toDateString();
-                                        
-                                        return (
-                                            <div 
-                                                key={i} 
-                                                onClick={() => setSelectedMobileDate(date)}
-                                                className={`relative flex flex-col items-center justify-center h-8 rounded-full cursor-pointer transition-all ${
-                                                    isSelected ? 'bg-orange-500 text-white shadow-md' : 
-                                                    !isCurrentMonth ? 'text-zinc-400/50 dark:text-zinc-600' : 
-                                                    'text-zinc-800 dark:text-zinc-200'
-                                                }`}
-                                            >
-                                                <span className={`text-[13px] ${isSelected ? 'font-bold' : 'font-medium'}`}>
-                                                    {String(date.getDate()).padStart(2, '0')}
-                                                </span>
-                                                {dayJobs.length > 0 && !isSelected && (
-                                                    <div className="absolute bottom-0.5 w-1 h-1 rounded-full bg-orange-500"></div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                <div className="relative -ml-[10px] -mr-[10px]">
+                                    {/* Den kontinuerliga vertikala linjen */}
+                                    <div className="absolute top-0 bottom-0 left-[22px] w-px bg-zinc-200 dark:bg-white/10"></div>
+                                    
+                                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] mb-3 gap-x-1">
+                                        <div className="text-center text-[8px] font-black text-black dark:text-white pt-0.5 pr-1">V.</div>
+                                        {["Må", "Ti", "On", "To", "Fr", "Lö", "Sö"].map((wd, idx) => (
+                                            <div key={idx} className={`text-center text-[12px] font-medium uppercase ${idx >= 5 ? 'text-red-500' : 'text-black dark:text-white'}`}>{wd}</div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1">
+                                        {mobileMonthDays.map(({ date, isCurrentMonth }, i) => {
+                                            const showWeekNum = i % 7 === 0;
+                                            const weekNum = showWeekNum ? getWeekNumber(date) : null;
+                                            const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                            const dayJobs = jobsByDate[dStr] || [];
+                                            const isSelected = date.toDateString() === selectedMobileDate.toDateString();
+                                            const isTodayDate = date.toDateString() === new Date().toDateString();
+                                            
+                                            return (
+                                                <React.Fragment key={i}>
+                                                    {showWeekNum ? (
+                                                        <div className="flex items-center justify-center text-[8px] text-black dark:text-white h-8 pr-1">
+                                                            {weekNum}
+                                                        </div>
+                                                    ) : null}
+                                                    <div 
+                                                        onClick={() => setSelectedMobileDate(date)}
+                                                        className={`relative flex flex-col items-center justify-center h-8 rounded-full cursor-pointer transition-all ${
+                                                            isSelected ? 'bg-orange-500 text-white shadow-md' : 
+                                                            isTodayDate ? 'bg-gradient-to-br from-white to-zinc-100 dark:from-zinc-700 dark:to-zinc-800 text-black dark:text-white shadow-sm border border-zinc-300 dark:border-white/10' :
+                                                            !isCurrentMonth ? 'text-zinc-400/50 dark:text-zinc-600' : 
+                                                            'text-zinc-800 dark:text-zinc-200'
+                                                        }`}
+                                                    >
+                                                        <span className={`text-[13px] ${isSelected || isTodayDate ? 'font-black' : 'font-medium'}`}>
+                                                            {String(date.getDate()).padStart(2, '0')}
+                                                        </span>
+                                                        {dayJobs.length > 0 && !isSelected && (
+                                                            <div className={`absolute bottom-0.5 w-1 h-1 rounded-full bg-orange-500`}></div>
+                                                        )}
+                                                    </div>
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Jobb-lista för vald dag (Exakt samma kort som desktop-vyn) */}
+                            {/* Jobb-lista för vald dag */}
                             <div className="flex flex-col gap-3 px-1">
-                                <div className="flex justify-between items-center mb-1">
-                                    <h3 className="text-[15px] font-black text-zinc-900 dark:text-white">Kommande</h3>
-                                    <span className="text-[11px] font-bold text-orange-500 uppercase tracking-widest">
+                                <div className="flex justify-between items-center mb-1 mt-0">
+                                    <h3 className="text-[18px] font-black text-black dark:text-white uppercase tracking-tight">
+                                        {selectedMobileDate.getDate()} {weekDays[selectedMobileDate.getDay() === 0 ? 6 : selectedMobileDate.getDay() - 1].toUpperCase()}
+                                    </h3>
+                                    <span className="text-[14px] font-black text-orange-500 uppercase tracking-wide">
                                         {selectedMobileDate.getDate()} {monthNames[selectedMobileDate.getMonth()].substring(0,3)}
                                     </span>
                                 </div>
@@ -413,10 +436,10 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                 
                                                 {/* Datum & Tid till vänster */}
                                                 <div className="flex flex-col items-center justify-center w-[70px] shrink-0 py-3 pl-2">
-                                                    <span className={`text-[22px] font-light leading-none ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>
+                                                    <span className={`text-[28px] font-normal leading-none ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>
                                                         {selectedMobileDate.getDate()}
                                                     </span>
-                                                    <span className={`text-[9.5px] font-bold uppercase tracking-widest mt-1 mb-2 ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>
+                                                    <span className={`text-[11px] font-bold uppercase tracking-widest mt-1 mb-2 ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>
                                                         {monthNames[selectedMobileDate.getMonth()].substring(0,3)}
                                                     </span>
                                                     {timeStr !== '00:00' && (
