@@ -9,7 +9,6 @@ const SafeIcon = ({ name, size = 12, className = "" }) => (
 window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     const [currentDate, setCurrentDate] = React.useState(new Date());
     const [viewMode, setViewMode] = React.useState('MONTH');
-    const [touchStart, setTouchStart] = React.useState(null);
     const [blockedDates, setBlockedDates] = React.useState([]);
     const [calSearch, setCalSearch] = React.useState('');
     const [statusFilter, setStatusFilter] = React.useState('ALLA');
@@ -36,22 +35,10 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         return () => window.removeEventListener('scroll', handleScroll, { capture: true });
     }, [lastScrollY]);
 
-    // --- NYTT FÖR MOBILVYN ---
-
-    // --- NYTT FÖR MOBILVYN ---
     const [selectedMobileDate, setSelectedMobileDate] = React.useState(new Date());
-    const mobileMonthDays = React.useMemo(() => {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const days = [];
-        const startPadding = (new Date(year, month, 1).getDay() + 6) % 7;
-        for (let i = startPadding; i > 0; i--) days.push({ date: new Date(year, month, 1 - i), isCurrentMonth: false });
-        const lastDay = new Date(year, month + 1, 0).getDate();
-        for (let i = 1; i <= lastDay; i++) days.push({ date: new Date(year, month, i), isCurrentMonth: true });
-        return days;
-    }, [currentDate]);
 
     const monthNames = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
+    const weekDays = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
 
     const backlogJobs = React.useMemo(() => {
         const categories = {
@@ -69,7 +56,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         });
         return categories;
     }, [allJobs]);
-    const weekDays = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
 
     const getWeekNumber = (d) => {
         const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -165,48 +151,199 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         return () => clearTimeout(timer);
     }, [viewMode, currentDate, calendarDays, calSearch, allJobs]);
 
-    const [monthAnim, setMonthAnim] = React.useState('');
-    const [dayAnim, setDayAnim] = React.useState('');
-    const [monthTouch, setMonthTouch] = React.useState(null);
-    const [dayTouch, setDayTouch] = React.useState(null);
+    // --- ÄKTA KARUSELL-STATES OCH SCROLL-LOGIK ---
+    const [monthDragX, setMonthDragX] = React.useState(0);
+    const [isMonthDragging, setIsMonthDragging] = React.useState(false);
+    const [monthTransition, setMonthTransition] = React.useState(false);
+    const [monthTouchStart, setMonthTouchStart] = React.useState(null);
+
+    const [dayDragX, setDayDragX] = React.useState(0);
+    const [isDayDragging, setIsDayDragging] = React.useState(false);
+    const [dayTransition, setDayTransition] = React.useState(false);
+    const [dayTouchStart, setDayTouchStart] = React.useState(null);
+
+    const handleMonthTouchStart = (e) => {
+        setMonthTouchStart(e.targetTouches[0].clientX);
+        setIsMonthDragging(true);
+        setMonthTransition(false);
+    };
+    
+    const handleMonthTouchMove = (e) => {
+        if (!monthTouchStart) return;
+        setMonthDragX(e.targetTouches[0].clientX - monthTouchStart);
+    };
+
+    const handleMonthTouchEnd = () => {
+        if (!monthTouchStart) return;
+        setIsMonthDragging(false);
+        setMonthTransition(true);
+        
+        if (monthDragX < -50) { // Swipe vänster (nästa månad)
+            setMonthDragX(-window.innerWidth);
+            setTimeout(() => { changeDate(30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
+        } else if (monthDragX > 50) { // Swipe höger (förra månaden)
+            setMonthDragX(window.innerWidth);
+            setTimeout(() => { changeDate(-30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
+        } else { // Återgå (inte tillräckligt dragen)
+            setMonthDragX(0);
+            setTimeout(() => setMonthTransition(false), 250);
+        }
+        setMonthTouchStart(null);
+    };
+
+    const handleDayTouchStart = (e) => {
+        setDayTouchStart(e.targetTouches[0].clientX);
+        setIsDayDragging(true);
+        setDayTransition(false);
+    };
+
+    const handleDayTouchMove = (e) => {
+        if (!dayTouchStart) return;
+        setDayDragX(e.targetTouches[0].clientX - dayTouchStart);
+    };
+
+    const handleDayTouchEnd = () => {
+        if (!dayTouchStart) return;
+        setIsDayDragging(false);
+        setDayTransition(true);
+        
+        if (dayDragX < -50) { // Swipe vänster (nästa dag)
+            setDayDragX(-window.innerWidth);
+            setTimeout(() => { changeSelectedDay(1); setDayDragX(0); setDayTransition(false); }, 250);
+        } else if (dayDragX > 50) { // Swipe höger (förra dagen)
+            setDayDragX(window.innerWidth);
+            setTimeout(() => { changeSelectedDay(-1); setDayDragX(0); setDayTransition(false); }, 250);
+        } else {
+            setDayDragX(0);
+            setTimeout(() => setDayTransition(false), 250);
+        }
+        setDayTouchStart(null);
+    };
+
+    const changeDate = (days, skipAnim = false) => {
+        if (!skipAnim) {
+            setMonthTransition(true);
+            setMonthDragX(days > 0 ? -window.innerWidth : window.innerWidth);
+            setTimeout(() => {
+                const d = new Date(currentDate); d.setDate(d.getDate() + days);
+                setCurrentDate(d); setMonthTransition(false); setMonthDragX(0);
+            }, 250);
+            return;
+        }
+        const d = new Date(currentDate); d.setDate(d.getDate() + days);
+        setCurrentDate(d);
+    };
 
     const changeSelectedDay = (days) => {
-        setDayAnim(days > 0 ? 'slide-left' : 'slide-right');
-        const d = new Date(selectedMobileDate);
-        d.setDate(d.getDate() + days);
+        const d = new Date(selectedMobileDate); d.setDate(d.getDate() + days);
         setSelectedMobileDate(d);
-        
-        // Auto-byt månad om vi svajpar oss in i en ny månad
         if (d.getMonth() !== currentDate.getMonth() || d.getFullYear() !== currentDate.getFullYear()) {
-            const newMonthDate = new Date(d);
-            newMonthDate.setDate(1);
+            const newMonthDate = new Date(d); newMonthDate.setDate(1);
             setCurrentDate(newMonthDate);
-            setMonthAnim(days > 0 ? 'slide-left' : 'slide-right');
         }
     };
 
-    const handleMonthTouchStart = (e) => setMonthTouch(e.targetTouches[0].clientX);
-    const handleMonthTouchEnd = (e) => {
-        if (!monthTouch) return;
-        const diff = monthTouch - e.changedTouches[0].clientX;
-        if (diff > 50) changeDate(30);
-        else if (diff < -50) changeDate(-30);
-        setMonthTouch(null);
+    // Hjälpfunktion för att bygga månads-karusellen
+    // Hjälpfunktion för att bygga månads-karusellen
+    const renderMobileMonth = (offset) => {
+        const targetDate = new Date(currentDate); targetDate.setMonth(targetDate.getMonth() + offset);
+        const year = targetDate.getFullYear(); const month = targetDate.getMonth(); const days = [];
+        const startPadding = (new Date(year, month, 1).getDay() + 6) % 7;
+        for (let i = startPadding; i > 0; i--) days.push({ date: new Date(year, month, 1 - i), isCurrentMonth: false });
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        for (let i = 1; i <= lastDay; i++) days.push({ date: new Date(year, month, i), isCurrentMonth: true });
+
+        return (
+            <div key={offset} className="w-1/3 shrink-0 relative px-0">
+                <div className="relative -ml-[6px] -mr-[6px]">
+                    <div className="absolute top-0 bottom-0 left-[20px] w-px bg-zinc-200 dark:bg-white/10 z-10"></div>
+                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] mb-3 gap-x-1">
+                        <div className="text-center text-[9px] font-black text-black dark:text-white pt-0.5 pr-1">V.</div>
+                        {["Må", "Ti", "On", "To", "Fr", "Lö", "Sö"].map((wd, idx) => (
+                            <div key={idx} className={`text-center text-[12px] font-medium uppercase ${idx >= 5 ? 'text-red-500' : 'text-black dark:text-white'}`}>{wd}</div>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1">
+                        {days.map(({ date, isCurrentMonth }, i) => {
+                            const showWeekNum = i % 7 === 0; const weekNum = showWeekNum ? getWeekNumber(date) : null;
+                            const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                            const dayJobs = jobsByDate[dStr] || [];
+                            const isSelected = date.toDateString() === selectedMobileDate.toDateString();
+                            const isTodayDate = date.toDateString() === new Date().toDateString();
+                            
+                            return (
+                                <React.Fragment key={i}>
+                                    {showWeekNum ? <div className="flex items-center justify-center text-[9px] font-medium text-black dark:text-white h-8 pr-1">{weekNum}</div> : null}
+                                    <div onClick={() => setSelectedMobileDate(date)} className={`relative flex flex-col items-center justify-center h-8 rounded-full cursor-pointer transition-all ${isSelected ? 'bg-orange-500 text-white shadow-md' : isTodayDate ? 'bg-gradient-to-br from-white to-zinc-100 dark:from-zinc-700 dark:to-zinc-800 text-black dark:text-white shadow-sm border border-zinc-800 dark:border-zinc-400' : !isCurrentMonth ? 'text-zinc-400/50 dark:text-zinc-600' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                                        <span className={`text-[13px] ${isSelected || isTodayDate ? 'font-black' : 'font-medium'}`}>{String(date.getDate()).padStart(2, '0')}</span>
+                                        {dayJobs.length > 0 && !isSelected && <div className={`absolute bottom-0.5 w-1 h-1 rounded-full bg-orange-500`}></div>}
+                                    </div>
+                                </React.Fragment>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
     };
 
-    const handleDayTouchStart = (e) => setDayTouch(e.targetTouches[0].clientX);
-    const handleDayTouchEnd = (e) => {
-        if (!dayTouch) return;
-        const diff = dayTouch - e.changedTouches[0].clientX;
-        if (diff > 50) changeSelectedDay(1);
-        else if (diff < -50) changeSelectedDay(-1);
-        setDayTouch(null);
-    };
+    // Hjälpfunktion för att bygga dags-karusellen
+    const renderMobileDay = (offset) => {
+        const targetDate = new Date(selectedMobileDate); targetDate.setDate(targetDate.getDate() + offset);
+        const dStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+        const activeJobs = jobsByDate[dStr] || [];
 
-    const changeDate = (days) => {
-        const d = new Date(currentDate);
-        d.setDate(d.getDate() + days);
-        setCurrentDate(d);
+        return (
+            <div key={offset} className="w-1/3 shrink-0 px-0 pb-8">
+                <div className="flex items-baseline gap-2 mb-3 mt-3 pb-2 border-b border-zinc-100 dark:border-white/5">
+                    <h3 className="text-[28px] font-black text-black dark:text-white tracking-tighter leading-none">{targetDate.getDate()}</h3>
+                    <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{weekDays[targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1]} {monthNames[targetDate.getMonth()]}</span>
+                </div>
+                
+                {activeJobs.length === 0 ? (
+                    <div className="text-center text-zinc-400 dark:text-zinc-500 text-xs py-8">Ledig dag, inga inbokade jobb.</div>
+                ) : (
+                    <div className="flex flex-col gap-3">
+                        {activeJobs.map(job => {
+                            const serviceLabel = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
+                            const timeStr = job.datum?.split('T')[1]?.substring(0, 5) || '08:00';
+                            const isKlar = job.status === 'KLAR';
+                            const statusAccent = isKlar ? 'bg-emerald-500' : job.status === 'FAKTURERAS' ? 'bg-sky-500' : job.status === 'OFFERERAD' ? 'bg-blue-500' : 'bg-[#f97316]';
+                            const price = parseInt(job.kundpris) || 0;
+                            const rawDesc = job.kommentar || job.orderanteckningar || job.anteckningar || job.kommentarer || job.beskrivning || job.notering || '';
+                            const descText = rawDesc ? String(rawDesc).replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim() : '';
+
+                            return (
+                                <div key={job.id} onClick={() => setView('NEW_JOB', { job })} className={`group relative bg-white dark:bg-[#161f30] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden flex flex-row active:scale-[0.98] transition-all cursor-pointer ${isKlar ? 'opacity-70' : ''}`}>
+                                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${statusAccent}`}></div>
+                                    <div className="flex flex-col items-center justify-center w-[70px] shrink-0 py-3 pl-2">
+                                        <span className={`text-[32px] font-light tracking-tighter leading-none ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>{targetDate.getDate()}</span>
+                                        <span className={`text-[11px] font-bold uppercase tracking-widest mt-1 mb-2 ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>{monthNames[targetDate.getMonth()].substring(0,3)}</span>
+                                        {timeStr !== '00:00' && <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 tabular-nums">{timeStr}</span>}
+                                    </div>
+                                    <div className="flex flex-col flex-1 p-2.5 border-l border-zinc-100 dark:border-white/5 w-[calc(100%-70px)] min-w-0">
+                                        <div className="flex items-start justify-between gap-1 w-full">
+                                            <span className="text-[12px] font-semibold uppercase tracking-tight text-black dark:text-white truncate transition-colors leading-snug">{job.kundnamn}</span>
+                                            {price > 0 && <span className="text-[11px] font-medium tabular-nums text-black dark:text-white shrink-0 pl-1">{price.toLocaleString('sv-SE')} kr</span>}
+                                        </div>
+                                        <div className="text-[10.5px] text-zinc-900 dark:text-zinc-100 truncate font-medium mt-1 flex items-center gap-1.5"><span className="truncate">{serviceLabel}</span></div>
+                                        {descText !== '' && <div className="text-[10.5px] dark:text-zinc-400 truncate font-medium italic mt-1 w-full block">{descText}</div>}
+                                        <div className="flex items-center justify-end border-t border-zinc-200 dark:border-white/10 pt-1.5 mt-1.5 w-full">
+                                            {job.regnr && job.regnr !== '-' && (
+                                                <div className="flex items-center bg-white dark:bg-[#121826] border border-zinc-400 dark:border-white/30 rounded-[4px] overflow-hidden shadow-sm h-[17px]">
+                                                    <div className="bg-[#003399] h-full w-[12px] flex flex-col items-center justify-between py-[1px] shrink-0 border-r border-zinc-400 dark:border-white/30"><div className="w-1 h-1 rounded-full border-[0.5px] border-[#ffcc00] mt-[1px]"></div><span className="text-[5px] font-sans font-black text-white leading-none mb-[0.5px]">S</span></div>
+                                                    <span className="font-mono font-semibold text-[11px] tracking-widest text-black dark:text-white leading-none px-1.5 pt-[1px]">{job.regnr}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     const onDragStart = (e, job) => {
@@ -249,7 +386,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
             
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            {/* HUVUD-CONTAINER: p-0 för exakt 0 i padding överallt */}
             <div className="flex flex-col w-full px-2 pt-2 xl:p-0 h-full">
                 
                 {/* HEADER */}
@@ -264,7 +400,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                             </div>
                             <div className="flex flex-col">
                                 <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
-                                    CAL <span className="text-zinc-400 dark:text-zinc-500 font-light">ENDAR</span>
+                                    KAL<span className="text-zinc-400 dark:text-zinc-500 font-light">ENDAR</span>
                                 </h1>
                             </div>
                         </div>
@@ -272,7 +408,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                         {/* Dagens datum-knapp */}
                         <button 
                             onClick={() => { setCurrentDate(new Date()); setSelectedMobileDate(new Date()); }} 
-                            className="md:hidden w-10 h-10 flex items-center justify-center rounded-[10px] border border-zinc-200 dark:border-white/10 text-[15px] font-bold text-zinc-700 dark:text-zinc-300 active:scale-95 transition-all shadow-sm bg-white dark:bg-[#121826] hover:text-orange-500 dark:hover:text-orange-400 mr-1"
+                            className="md:hidden w-10 h-10 flex items-center justify-center rounded-[10px] border border-zinc-200 dark:border-white/10 text-[15px] font-bold text-zinc-700 dark:text-zinc-300 active:scale-95 transition-all shadow-sm bg-white dark:bg-[#121826] hover:text-orange-500 dark:hover:text-orange-400"
                             title="Gå till idag"
                         >
                             {new Date().getDate()}
@@ -280,7 +416,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     </div>
                 </div>
 
-                {/* CONTROLS */}
                 {/* CONTROLS */}
                 <div className="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 z-10 mb-4 mt-2 xl:mt-0 p-0">
                     <div className="flex flex-wrap items-center gap-2.5">
@@ -348,194 +483,36 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     </div>
                 </div>
 
-                {/* HUVUDGRID: Kalender & Sidebar helt utan padding i kanterna */}
+                {/* HUVUDGRID */}
                 <div className="flex flex-col xl:flex-row w-full gap-2 items-start p-0">
                     
                     {/* VÄNSTRA SIDAN: Kalenderrutnät */}
                     <div className="flex-1 flex flex-col min-w-0 w-full p-0 relative">
                         
-                        {/* --- NY MOBILVY (Lista & Kompakt månad) --- */}
-                        <div className="md:hidden flex flex-col w-full h-full pb-24 px-2 mt-2 relative">
+                        {/* --- NY MOBILVY (Karussell) --- */}
+                        <div className="md:hidden flex flex-col w-full h-full mt-2 relative overflow-hidden">
                             
-                            {/* Kompakt Månadskalender (Med Swipe & Animation) */}
-                            <div className="mb-2 pt-0 overflow-x-hidden" onTouchStart={handleMonthTouchStart} onTouchEnd={handleMonthTouchEnd}>
-                                
-                                {/* Header med knappar och centrerad text */}
-                                <div className="flex justify-between items-center mb-3 px-1">
-                                    <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-start bg-transparent active:scale-95 transition-all">
-                                        <SafeIcon name="chevron-left" size={20} className="text-zinc-400"/>
-                                    </button>
-                                    <span className="text-[16px] font-bold text-zinc-800 dark:text-white uppercase tracking-wide">
-                                        {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                                    </span>
-                                    <button onClick={() => changeDate(30)} className="w-10 h-10 flex items-center justify-end bg-transparent active:scale-95 transition-all">
-                                        <SafeIcon name="chevron-right" size={20} className="text-zinc-400"/>
-                                    </button>
+                            <div className="mb-2 pt-0 relative" onTouchStart={handleMonthTouchStart} onTouchMove={handleMonthTouchMove} onTouchEnd={handleMonthTouchEnd}>
+                                <div className="flex justify-between items-center mb-3 px-3">
+                                    <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-start bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-left" size={20} className="text-zinc-400"/></button>
+                                    <span className="text-[16px] font-bold text-zinc-800 dark:text-white uppercase tracking-wide">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
+                                    <button onClick={() => changeDate(30)} className="w-10 h-10 flex items-center justify-end bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-right" size={20} className="text-zinc-400"/></button>
                                 </div>
-                                
-                                <div className="relative -ml-[10px] -mr-[10px]">
-                                    {/* Den kontinuerliga vertikala linjen (utanför animationen så den står still) */}
-                                    <div className="absolute top-0 bottom-0 left-[22px] w-px bg-zinc-200 dark:bg-white/10 z-10"></div>
-                                    
-                                    <div 
-                                        key={`${currentDate.toISOString()}-month`} 
-                                        className={`w-full ${monthAnim === 'slide-left' ? 'animate-in slide-in-from-right-16 fade-in duration-300' : monthAnim === 'slide-right' ? 'animate-in slide-in-from-left-16 fade-in duration-300' : ''}`}
-                                    >
-                                        <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] mb-3 gap-x-1">
-                                            <div className="text-center text-[8px] font-black text-black dark:text-white pt-0.5 pr-1">V.</div>
-                                            {["Må", "Ti", "On", "To", "Fr", "Lö", "Sö"].map((wd, idx) => (
-                                                <div key={idx} className={`text-center text-[12px] font-medium uppercase ${idx >= 5 ? 'text-red-500' : 'text-black dark:text-white'}`}>{wd}</div>
-                                            ))}
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1">
-                                            {mobileMonthDays.map(({ date, isCurrentMonth }, i) => {
-                                                const showWeekNum = i % 7 === 0;
-                                                const weekNum = showWeekNum ? getWeekNumber(date) : null;
-                                                const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                                const dayJobs = jobsByDate[dStr] || [];
-                                                const isSelected = date.toDateString() === selectedMobileDate.toDateString();
-                                                const isTodayDate = date.toDateString() === new Date().toDateString();
-                                                
-                                                return (
-                                                    <React.Fragment key={i}>
-                                                        {showWeekNum ? (
-                                                            <div className="flex items-center justify-center text-[8px] text-black dark:text-white h-8 pr-1">
-                                                                {weekNum}
-                                                            </div>
-                                                        ) : null}
-                                                        <div 
-                                                            onClick={() => {
-                                                                if (date > selectedMobileDate) setDayAnim('slide-left');
-                                                                else if (date < selectedMobileDate) setDayAnim('slide-right');
-                                                                setSelectedMobileDate(date);
-                                                            }}
-                                                            className={`relative flex flex-col items-center justify-center h-8 rounded-full cursor-pointer transition-all ${
-                                                                isSelected ? 'bg-orange-500 text-white shadow-md' : 
-                                                                isTodayDate ? 'bg-gradient-to-br from-white to-zinc-100 dark:from-zinc-700 dark:to-zinc-800 text-black dark:text-white shadow-sm border border-zinc-300 dark:border-white/10' :
-                                                                !isCurrentMonth ? 'text-zinc-400/50 dark:text-zinc-600' : 
-                                                                'text-zinc-800 dark:text-zinc-200'
-                                                            }`}
-                                                        >
-                                                            <span className={`text-[13px] ${isSelected || isTodayDate ? 'font-black' : 'font-medium'}`}>
-                                                                {String(date.getDate()).padStart(2, '0')}
-                                                            </span>
-                                                            {dayJobs.length > 0 && !isSelected && (
-                                                                <div className={`absolute bottom-0.5 w-1 h-1 rounded-full bg-orange-500`}></div>
-                                                            )}
-                                                        </div>
-                                                    </React.Fragment>
-                                                );
-                                            })}
-                                        </div>
+                                <div className="overflow-hidden w-full relative">
+                                    <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${monthDragX}px)`, transition: monthTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                                        {[-1, 0, 1].map(renderMobileMonth)}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Jobb-lista för vald dag (Med Swipe & Animation) */}
-                            <div className="flex flex-col gap-3 px-1 overflow-x-hidden" onTouchStart={handleDayTouchStart} onTouchEnd={handleDayTouchEnd}>
-                                <div 
-                                    key={`${selectedMobileDate.toISOString()}-day`} 
-                                    className={`flex flex-col gap-3 w-full ${dayAnim === 'slide-left' ? 'animate-in slide-in-from-right-16 fade-in duration-300' : dayAnim === 'slide-right' ? 'animate-in slide-in-from-left-16 fade-in duration-300' : ''}`}
-                                >
-                                    <div className="flex items-baseline gap-2 mb-2 mt-3 border-b border-zinc-100 dark:border-white/5 pb-2">
-                                        <h3 className="text-[24px] font-black text-black dark:text-white tracking-tighter leading-none">
-                                            {selectedMobileDate.getDate()}
-                                        </h3>
-                                        <span className="text-[12px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                                            {weekDays[selectedMobileDate.getDay() === 0 ? 6 : selectedMobileDate.getDay() - 1]} {monthNames[selectedMobileDate.getMonth()]}
-                                        </span>
+                            <div className="flex flex-col relative flex-1" onTouchStart={handleDayTouchStart} onTouchMove={handleDayTouchMove} onTouchEnd={handleDayTouchEnd}>
+                                <div className="overflow-hidden w-full relative h-full">
+                                    <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                                        {[-1, 0, 1].map(renderMobileDay)}
                                     </div>
-                                    
-                                    {(() => {
-                                        const selectedDStr = `${selectedMobileDate.getFullYear()}-${String(selectedMobileDate.getMonth() + 1).padStart(2, '0')}-${String(selectedMobileDate.getDate()).padStart(2, '0')}`;
-                                        const activeJobs = jobsByDate[selectedDStr] || [];
-                                        
-                                        if (activeJobs.length === 0) {
-                                            return <div className="text-center text-zinc-400 dark:text-zinc-500 text-xs py-8">Ledig dag, inga inbokade jobb.</div>;
-                                        }
-                                        
-                                        return activeJobs.map(job => {
-                                            const serviceLabel = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
-                                            const timeStr = job.datum?.split('T')[1]?.substring(0, 5) || '08:00';
-                                            const isKlar = job.status === 'KLAR';
-                                            const statusAccent = isKlar ? 'bg-emerald-500' : job.status === 'FAKTURERAS' ? 'bg-sky-500' : job.status === 'OFFERERAD' ? 'bg-blue-500' : 'bg-[#f97316]';
-                                            const price = parseInt(job.kundpris) || 0;
-                                            
-                                            // Hämtar kommentar och rensar bort all HTML och osynliga tecken från editorn
-                                            const rawDesc = job.kommentar || job.orderanteckningar || job.anteckningar || job.kommentarer || job.beskrivning || job.notering || '';
-                                            const descText = rawDesc ? String(rawDesc).replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim() : '';
-
-                                            return (
-                                                <div 
-                                                    key={job.id}
-                                                    onClick={() => setView('NEW_JOB', { job })}
-                                                    className={`group relative bg-white dark:bg-[#161f30] border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden flex flex-row active:scale-[0.98] transition-all cursor-pointer ${isKlar ? 'opacity-70' : ''}`}
-                                                >
-                                                    {/* Vänster status-linje */}
-                                                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${statusAccent}`}></div>
-                                                    
-                                                    {/* Datum & Tid till vänster */}
-                                                    <div className="flex flex-col items-center justify-center w-[70px] shrink-0 py-3 pl-2">
-                                                        <span className={`text-[28px] font-normal leading-none ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>
-                                                            {selectedMobileDate.getDate()}
-                                                        </span>
-                                                        <span className={`text-[11px] font-bold uppercase tracking-widest mt-1 mb-2 ${isKlar ? 'text-emerald-500' : 'text-[#f67664]'}`}>
-                                                            {monthNames[selectedMobileDate.getMonth()].substring(0,3)}
-                                                        </span>
-                                                        {timeStr !== '00:00' && (
-                                                            <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 tabular-nums">
-                                                                {timeStr}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    {/* Informationsblocket */}
-                                                    <div className="flex flex-col flex-1 p-2.5 border-l border-zinc-100 dark:border-white/5 w-[calc(100%-70px)] min-w-0">
-                                                        <div className="flex items-start justify-between gap-1 w-full">
-                                                            <span className="text-[12px] font-semibold uppercase tracking-tight text-black dark:text-white truncate transition-colors leading-snug">
-                                                                {job.kundnamn}
-                                                            </span>
-                                                            {price > 0 && (
-                                                                <span className="text-[11px] font-medium tabular-nums text-black dark:text-white shrink-0 pl-1">
-                                                                    {price.toLocaleString('sv-SE')} kr
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="text-[10.5px] text-zinc-900 dark:text-zinc-100 truncate font-medium mt-1 flex items-center gap-1.5">
-                                                            <span className="truncate">{serviceLabel}</span>
-                                                        </div>
-
-                                                        {descText !== '' && (
-                                                            <div className="text-[10.5px] dark:text-zinc-400 truncate font-medium italic mt-1 w-full block">
-                                                                {descText}
-                                                            </div>
-                                                        )}
-
-                                                        <div className="flex items-center justify-end border-t border-zinc-200 dark:border-white/10 pt-1.5 mt-1.5 w-full">
-                                                            {job.regnr && job.regnr !== '-' && (
-                                                                <div className="flex items-center bg-white dark:bg-[#121826] border border-zinc-400 dark:border-white/30 rounded-[4px] overflow-hidden shadow-sm h-[17px]">
-                                                                    <div className="bg-[#003399] h-full w-[12px] flex flex-col items-center justify-between py-[1px] shrink-0 border-r border-zinc-400 dark:border-white/30">
-                                                                        <div className="w-1 h-1 rounded-full border-[0.5px] border-[#ffcc00] mt-[1px]"></div>
-                                                                        <span className="text-[5px] font-sans font-black text-white leading-none mb-[0.5px]">S</span>
-                                                                    </div>
-                                                                    <span className="font-mono font-semibold text-[11px] tracking-widest text-black dark:text-white leading-none px-1.5 pt-[1px]">
-                                                                        {job.regnr}
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        });
-                                    })()}
                                 </div>
                             </div>
                         </div>
-
-                        {/* FAB borttagen härifrån - flyttas till botten utanför animationen */}
 
                         {/* --- DESKTOP VY (Gömms helt på mobilen) --- */}
                         <div className="hidden md:block bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden rounded-xl mb-6">
