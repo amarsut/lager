@@ -246,7 +246,8 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                 </div>
 
                 {/* CONTROLS */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 z-10 mb-4 mt-2 xl:mt-0 p-0">
+                {/* CONTROLS */}
+                <div className="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 z-10 mb-4 mt-2 xl:mt-0 p-0">
                     <div className="flex flex-wrap items-center gap-2.5">
                         <div className="hidden md:flex bg-white dark:bg-[#1e293b] p-1 border border-zinc-200 dark:border-white/10 rounded-lg shadow-sm">
                             {['WEEK', 'MONTH'].map(m => (
