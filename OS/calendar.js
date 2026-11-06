@@ -173,18 +173,20 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     
     const handleMonthTouchMove = (e) => {
         if (!monthTouchStart) return;
-        const currentX = e.targetTouches[0].clientX;
-        const currentY = e.targetTouches[0].clientY;
-        const diffX = currentX - monthTouchStart.x;
-        const diffY = currentY - monthTouchStart.y;
+        const diffX = e.targetTouches[0].clientX - monthTouchStart.x;
+        const diffY = e.targetTouches[0].clientY - monthTouchStart.y;
 
         let lock = monthScrollLock;
-        if (!lock && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
-            lock = Math.abs(diffX) > Math.abs(diffY) ? 'x' : 'y';
-            setMonthScrollLock(lock);
+        if (!lock) {
+            if (Math.abs(diffX) > 7 || Math.abs(diffY) > 7) {
+                lock = Math.abs(diffX) > Math.abs(diffY) ? 'x' : 'y';
+                setMonthScrollLock(lock);
+            }
         }
 
-        if (lock !== 'y') {
+        if (lock === 'y') {
+            setMonthDragX(0);
+        } else if (lock === 'x' || !lock) {
             setMonthDragX(diffX);
         }
     };
@@ -223,18 +225,20 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const handleDayTouchMove = (e) => {
         if (!dayTouchStart) return;
-        const currentX = e.targetTouches[0].clientX;
-        const currentY = e.targetTouches[0].clientY;
-        const diffX = currentX - dayTouchStart.x;
-        const diffY = currentY - dayTouchStart.y;
+        const diffX = e.targetTouches[0].clientX - dayTouchStart.x;
+        const diffY = e.targetTouches[0].clientY - dayTouchStart.y;
 
         let lock = dayScrollLock;
-        if (!lock && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
-            lock = Math.abs(diffX) > Math.abs(diffY) ? 'x' : 'y';
-            setDayScrollLock(lock);
+        if (!lock) {
+            if (Math.abs(diffX) > 7 || Math.abs(diffY) > 7) {
+                lock = Math.abs(diffX) > Math.abs(diffY) ? 'x' : 'y';
+                setDayScrollLock(lock);
+            }
         }
 
-        if (lock !== 'y') {
+        if (lock === 'y') {
+            setDayDragX(0);
+        } else if (lock === 'x' || !lock) {
             setDayDragX(diffX);
         }
     };
@@ -536,7 +540,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                         {/* --- NY MOBILVY (Karussell) --- */}
                         <div className="md:hidden flex flex-col w-full h-full mt-2 relative overflow-hidden">
                             
-                            <div className="mb-2 pt-0 relative" onTouchStart={handleMonthTouchStart} onTouchMove={handleMonthTouchMove} onTouchEnd={handleMonthTouchEnd}>
+                            <div className="mb-2 pt-0 relative touch-pan-y" onTouchStart={handleMonthTouchStart} onTouchMove={handleMonthTouchMove} onTouchEnd={handleMonthTouchEnd}>
                                 <div className="flex justify-between items-center mb-3 px-3">
                                     <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-start bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-left" size={20} className="text-zinc-400"/></button>
                                     <span className="text-[16px] font-bold text-zinc-800 dark:text-white uppercase tracking-wide">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
@@ -549,7 +553,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col relative flex-1" onTouchStart={handleDayTouchStart} onTouchMove={handleDayTouchMove} onTouchEnd={handleDayTouchEnd}>
+                            <div className="flex flex-col relative flex-1 pb-24 touch-pan-y" onTouchStart={handleDayTouchStart} onTouchMove={handleDayTouchMove} onTouchEnd={handleDayTouchEnd}>
                                 <div className="overflow-hidden w-full relative h-full">
                                     <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
                                         {[-1, 0, 1].map(renderMobileDay)}
