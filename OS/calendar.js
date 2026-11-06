@@ -397,12 +397,12 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
                             {/* Jobb-lista för vald dag */}
                             <div className="flex flex-col gap-3 px-1">
-                                <div className="flex justify-between items-center mb-1 mt-0">
-                                    <h3 className="text-[18px] font-black text-black dark:text-white uppercase tracking-tight">
-                                        {selectedMobileDate.getDate()} {weekDays[selectedMobileDate.getDay() === 0 ? 6 : selectedMobileDate.getDay() - 1].toUpperCase()}
+                                <div className="flex items-baseline gap-2 mb-2 mt-3 border-b border-zinc-100 dark:border-white/5 pb-2">
+                                    <h3 className="text-[24px] font-black text-black dark:text-white tracking-tighter leading-none">
+                                        {selectedMobileDate.getDate()}
                                     </h3>
-                                    <span className="text-[14px] font-black text-orange-500 uppercase tracking-wide">
-                                        {selectedMobileDate.getDate()} {monthNames[selectedMobileDate.getMonth()].substring(0,3)}
+                                    <span className="text-[12px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                                        {weekDays[selectedMobileDate.getDay() === 0 ? 6 : selectedMobileDate.getDay() - 1]} {monthNames[selectedMobileDate.getMonth()]}
                                     </span>
                                 </div>
                                 
