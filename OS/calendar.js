@@ -16,24 +16,30 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
     const [expandedCategories, setExpandedCategories] = React.useState({ 'Oplanerade jobb': true });
 
-    // --- SCROLL-LOGIK FÖR FAB ---
+    // --- SÄKER SCROLL- & SVEP-LOGIK FÖR KOLLAPS ---
     const [showFab, setShowFab] = React.useState(true);
-    const [lastScrollY, setLastScrollY] = React.useState(0);
+    const [isCollapsed, setIsCollapsed] = React.useState(false);
     
     React.useEffect(() => {
+        let lastY = 0;
         const handleScroll = (e) => {
-            const currentScrollY = e.target.scrollTop !== undefined ? e.target.scrollTop : window.scrollY;
-            if (currentScrollY > lastScrollY && currentScrollY > 50) {
-                setShowFab(false);
-            } else {
-                setShowFab(true);
-            }
-            setLastScrollY(currentScrollY);
+            // Fånga scroll oavsett om det är fönstret eller en specifik div
+            const target = e.target.scrollingElement || (e.target.nodeType === 1 ? e.target : null);
+            const currentY = target ? target.scrollTop : window.scrollY;
+            
+            // Hantera FAB-knappen
+            if (currentY > lastY && currentY > 50) setShowFab(false);
+            else setShowFab(true);
+            
+            // Fäll ihop via vanlig scroll om webbläsaren tillåter det
+            if (currentY > 30) setIsCollapsed(true);
+            if (currentY <= 10) setIsCollapsed(false);
+            
+            lastY = currentY;
         };
-        
         window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
         return () => window.removeEventListener('scroll', handleScroll, { capture: true });
-    }, [lastScrollY]);
+    }, []);
 
     const [selectedMobileDate, setSelectedMobileDate] = React.useState(new Date());
 
@@ -151,22 +157,19 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         return () => clearTimeout(timer);
     }, [viewMode, currentDate, calendarDays, calSearch, allJobs]);
 
-    // --- ÄKTA KARUSELL-STATES OCH SCROLL-LOGIK ---
+    // --- ÄKTA KARUSELL-STATES OCH SCROLL-LOGIK (Med riktningslås för att förhindra fel-swipe) ---
     const [monthDragX, setMonthDragX] = React.useState(0);
-    const [isMonthDragging, setIsMonthDragging] = React.useState(false);
     const [monthTransition, setMonthTransition] = React.useState(false);
     const [monthTouchStart, setMonthTouchStart] = React.useState(null);
     const [monthScrollLock, setMonthScrollLock] = React.useState(null);
 
     const [dayDragX, setDayDragX] = React.useState(0);
-    const [isDayDragging, setIsDayDragging] = React.useState(false);
     const [dayTransition, setDayTransition] = React.useState(false);
     const [dayTouchStart, setDayTouchStart] = React.useState(null);
     const [dayScrollLock, setDayScrollLock] = React.useState(null);
 
     const handleMonthTouchStart = (e) => {
         setMonthTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
-        setIsMonthDragging(true);
         setMonthTransition(false);
         setMonthScrollLock(null);
     };
@@ -186,6 +189,8 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
         if (lock === 'y') {
             setMonthDragX(0);
+            if (diffY < -20) setIsCollapsed(true);
+            if (diffY > 20) setIsCollapsed(false);
         } else if (lock === 'x' || !lock) {
             setMonthDragX(diffX);
         }
@@ -193,7 +198,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const handleMonthTouchEnd = () => {
         if (!monthTouchStart) return;
-        setIsMonthDragging(false);
         setMonthTransition(true);
         
         if (monthScrollLock !== 'y') {
@@ -218,7 +222,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const handleDayTouchStart = (e) => {
         setDayTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
-        setIsDayDragging(true);
         setDayTransition(false);
         setDayScrollLock(null);
     };
@@ -238,6 +241,8 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
         if (lock === 'y') {
             setDayDragX(0);
+            if (diffY > 30) setIsCollapsed(false);
+            if (diffY < -30) setIsCollapsed(true);
         } else if (lock === 'x' || !lock) {
             setDayDragX(diffX);
         }
@@ -245,7 +250,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const handleDayTouchEnd = () => {
         if (!dayTouchStart) return;
-        setIsDayDragging(false);
         setDayTransition(true);
         
         if (dayScrollLock !== 'y') {
@@ -292,7 +296,6 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     };
 
     // Hjälpfunktion för att bygga månads-karusellen
-    // Hjälpfunktion för att bygga månads-karusellen
     const renderMobileMonth = (offset) => {
         const targetDate = new Date(currentDate); targetDate.setMonth(targetDate.getMonth() + offset);
         const year = targetDate.getFullYear(); const month = targetDate.getMonth(); const days = [];
@@ -301,18 +304,26 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         const lastDay = new Date(year, month + 1, 0).getDate();
         for (let i = 1; i <= lastDay; i++) days.push({ date: new Date(year, month, i), isCurrentMonth: true });
 
+        // När kalendern krymper plockar vi bara ut den aktuella veckan
+        let displayDays = days;
+        if (isCollapsed) {
+            const selectedIdx = days.findIndex(d => d.date.getDate() === selectedMobileDate.getDate() && d.date.getMonth() === selectedMobileDate.getMonth());
+            const weekStart = selectedIdx !== -1 ? Math.floor(selectedIdx / 7) * 7 : 0;
+            displayDays = days.slice(weekStart, weekStart + 7);
+        }
+
         return (
             <div key={offset} className="w-1/3 shrink-0 relative px-0">
                 <div className="relative -ml-[6px] -mr-[6px]">
-                    <div className="absolute top-0 bottom-0 left-[20px] w-px bg-zinc-200 dark:bg-white/10 z-10"></div>
+                    <div className="absolute top-0 bottom-0 left-[20px] w-px bg-zinc-200 dark:bg-white/10 z-10 transition-all duration-300"></div>
                     <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] mb-3 gap-x-1">
                         <div className="text-center text-[9px] font-black text-black dark:text-white pt-0.5 pr-1">V.</div>
                         {["Må", "Ti", "On", "To", "Fr", "Lö", "Sö"].map((wd, idx) => (
                             <div key={idx} className={`text-center text-[12px] font-medium uppercase ${idx >= 5 ? 'text-red-500' : 'text-black dark:text-white'}`}>{wd}</div>
                         ))}
                     </div>
-                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1">
-                        {days.map(({ date, isCurrentMonth }, i) => {
+                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1 transition-all duration-300">
+                        {displayDays.map(({ date, isCurrentMonth }, i) => {
                             const showWeekNum = i % 7 === 0; const weekNum = showWeekNum ? getWeekNumber(date) : null;
                             const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                             const dayJobs = jobsByDate[dStr] || [];
@@ -343,7 +354,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
         return (
             <div key={offset} className="w-1/3 shrink-0 px-0 pb-8">
-                <div className="flex items-baseline gap-2 mb-3 mt-3 pb-2 border-b border-zinc-100 dark:border-white/5">
+                <div className="flex items-baseline gap-2 mb-3 mt-3 pb-2 border-b border-zinc-100 dark:border-white/5 px-2">
                     <h3 className="text-[28px] font-black text-black dark:text-white tracking-tighter leading-none">{targetDate.getDate()}</h3>
                     <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{weekDays[targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1]} {monthNames[targetDate.getMonth()]}</span>
                 </div>
@@ -351,7 +362,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                 {activeJobs.length === 0 ? (
                     <div className="text-center text-zinc-400 dark:text-zinc-500 text-xs py-8">Ledig dag, inga inbokade jobb.</div>
                 ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 px-2">
                         {activeJobs.map(job => {
                             const serviceLabel = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
                             const timeStr = job.datum?.split('T')[1]?.substring(0, 5) || '08:00';
@@ -430,69 +441,99 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     return (
         <>
-        <div className="flex flex-col min-h-[calc(100vh-80px)] md:min-h-screen bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-full ml-0 w-full animate-in fade-in slide-in-from-left-4">
+        <div className="flex flex-col max-md:h-[calc(100vh-70px)] md:min-h-screen max-md:overflow-hidden bg-transparent text-zinc-900 dark:text-white pb-0 transition-colors duration-500 relative max-w-full ml-0 w-full animate-in fade-in slide-in-from-left-4">
             
             <div className="absolute top-0 left-[-10%] w-[60%] h-[400px] bg-orange-500/10 dark:bg-orange-500/5 blur-[120px] rounded-full pointer-events-none -z-10 hidden lg:block"></div>
 
-            <div className="flex flex-col w-full px-2 pt-2 xl:p-0 h-full">
+            <div className="flex flex-col w-full px-2 pt-2 xl:p-0 h-full relative max-md:flex-1 max-md:overflow-hidden">
                 
-                {/* HEADER */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-1 pb-2 md:mb-4 md:pb-4 border-b border-zinc-200/50 dark:border-white/5 lg:border-none lg:pb-0 gap-4 p-0">
-                    <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-3 md:gap-4">
+                {/* --- MOBIL TOPP (Fast flex-block, ritar aldrig över listan) --- */}
+                <div className="md:hidden shrink-0 z-50 bg-[#f4f5f7] dark:bg-[#0b0f19] -mx-2 px-2 pt-2 border-b border-zinc-200 dark:border-white/10 shadow-sm touch-pan-y transition-all duration-300" 
+                     onTouchStart={handleMonthTouchStart} 
+                     onTouchMove={handleMonthTouchMove} 
+                     onTouchEnd={handleMonthTouchEnd}
+                >
+                    {/* Header (KALENDAR + Dagens datum) */}
+                    <div className="flex justify-between items-center mb-3 px-1">
+                        <div className="flex items-center gap-3">
                             <div className="relative group cursor-default shrink-0">
-                                <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700 group-hover:bg-orange-500/60" />
-                                <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
-                                    <SafeIcon name="calendar" size={20} className="md:w-6 md:h-6" />
+                                <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full" />
+                                <div className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <SafeIcon name="calendar" size={20} />
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
                                     KAL<span className="text-zinc-400 dark:text-zinc-500 font-light">ENDAR</span>
                                 </h1>
                             </div>
                         </div>
-
-                        {/* Dagens datum-knapp */}
-                        <button 
-                            onClick={() => { setCurrentDate(new Date()); setSelectedMobileDate(new Date()); }} 
-                            className="md:hidden w-10 h-10 flex items-center justify-center rounded-[10px] border border-zinc-200 dark:border-white/10 text-[15px] font-bold text-zinc-700 dark:text-zinc-300 active:scale-95 transition-all shadow-sm bg-white dark:bg-[#121826] hover:text-orange-500 dark:hover:text-orange-400"
-                            title="Gå till idag"
-                        >
+                        <button onClick={() => { setCurrentDate(new Date()); setSelectedMobileDate(new Date()); }} className="w-10 h-10 flex items-center justify-center rounded-[10px] border border-zinc-200 dark:border-white/10 text-[15px] font-bold text-zinc-700 dark:text-zinc-300 shadow-sm bg-white dark:bg-[#121826] hover:text-orange-500">
                             {new Date().getDate()}
                         </button>
                     </div>
+
+                    {/* Månad/År Titel & Pilar */}
+                    <div className="flex justify-between items-center px-1 mb-2">
+                        <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-start bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-left" size={20} className="text-zinc-400"/></button>
+                        <span className="text-[16px] font-bold text-zinc-800 dark:text-white uppercase tracking-wide">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
+                        <button onClick={() => changeDate(30)} className="w-10 h-10 flex items-center justify-end bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-right" size={20} className="text-zinc-400"/></button>
+                    </div>
+                    
+                    {/* Själva Rutnätet */}
+                    <div className="overflow-hidden w-full relative">
+                        <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${monthDragX}px)`, transition: monthTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                            {[-1, 0, 1].map(renderMobileMonth)}
+                        </div>
+                    </div>
                 </div>
 
-                {/* CONTROLS */}
+                {/* --- DESKTOP HEADER (Gömms helt på mobilen) --- */}
+                <div className="hidden md:flex flex-col md:flex-row md:items-end justify-between mb-4 pb-4 border-none gap-4 p-0">
+                    <div className="flex items-center gap-4">
+                        <div className="relative group cursor-default shrink-0">
+                            <div className="absolute inset-0 bg-orange-500/40 blur-lg rounded-full transition-all duration-700" />
+                            <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md border border-white/20 transition-colors bg-gradient-to-br from-orange-400 to-orange-600">
+                                <SafeIcon name="calendar" size={24} />
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <h1 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight leading-none">
+                                KAL<span className="text-zinc-400 dark:text-zinc-500 font-light">ENDAR</span>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- CONTROLS (Döljs helt på mobilen för en renare app-känsla) --- */}
                 <div className="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 z-10 mb-4 mt-2 xl:mt-0 p-0">
                     <div className="flex flex-wrap items-center gap-2.5">
-                        <div className="hidden md:flex bg-white dark:bg-[#1e293b] p-1 border border-zinc-200 dark:border-white/10 rounded-lg shadow-sm">
+                        <div className="bg-white dark:bg-[#1e293b] p-1 border border-zinc-200 dark:border-white/10 rounded-lg shadow-sm">
                             {['WEEK', 'MONTH'].map(m => (
-                                <button key={m} onClick={() => setViewMode(m)} className={`px-4 py-2 text-[10px] md:text-[11px] font-bold uppercase tracking-wider rounded-md transition-all flex-1 sm:flex-none ${viewMode === m ? 'bg-orange-500 text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
+                                <button key={m} onClick={() => setViewMode(m)} className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-md transition-all flex-none ${viewMode === m ? 'bg-orange-500 text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
                                     {m === 'WEEK' ? 'Vecka' : 'Månad'}
                                 </button>
                             ))}
                         </div>
-                        <div className="hidden md:flex gap-1 bg-white dark:bg-[#1e293b] p-1 border border-zinc-200 dark:border-white/10 rounded-lg shadow-sm items-center">
-                            <button onClick={() => changeDate(viewMode === 'WEEK' ? -7 : -30)} className="w-9 md:w-10 py-2 bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md transition-all flex items-center justify-center">
+                        <div className="flex gap-1 bg-white dark:bg-[#1e293b] p-1 border border-zinc-200 dark:border-white/10 rounded-lg shadow-sm items-center">
+                            <button onClick={() => changeDate(viewMode === 'WEEK' ? -7 : -30)} className="w-10 py-2 bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md transition-all flex items-center justify-center">
                                 <SafeIcon name="chevron-left" size={15}/>
                             </button>
-                            <button onClick={() => setCurrentDate(new Date())} className="px-3 md:px-5 py-2 bg-transparent text-[10px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-orange-500 uppercase tracking-wider rounded-md transition-all flex-1 sm:flex-none">
+                            <button onClick={() => setCurrentDate(new Date())} className="px-5 py-2 bg-transparent text-[11px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-orange-500 uppercase tracking-wider rounded-md transition-all flex-none">
                                 IDAG
                             </button>
-                            <button onClick={() => changeDate(viewMode === 'WEEK' ? 7 : 30)} className="w-9 md:w-10 py-2 bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md transition-all flex items-center justify-center">
+                            <button onClick={() => changeDate(viewMode === 'WEEK' ? 7 : 30)} className="w-10 py-2 bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md transition-all flex items-center justify-center">
                                 <SafeIcon name="chevron-right" size={15}/>
                             </button>
                             
-                            <div className="hidden lg:flex items-center gap-2 border-l border-zinc-200 dark:border-white/10 pl-2 ml-1 h-6">
+                            <div className="flex items-center gap-2 border-l border-zinc-200 dark:border-white/10 pl-2 ml-1 h-6">
                                 <span className="text-[10px] font-black uppercase">V.{getWeekNumber(currentDate)}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="relative shrink-0 w-[110px] sm:w-[130px]">
+                    <div className="flex items-center gap-2 w-auto">
+                        <div className="relative shrink-0 w-[130px]">
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -507,7 +548,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                             <SafeIcon name="chevron-down" size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
                         </div>
 
-                        <div className="relative flex-1 sm:w-64">
+                        <div className="relative w-64">
                             <SafeIcon name="search" size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
                             <input
                                 type="text"
@@ -531,38 +572,22 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     </div>
                 </div>
 
-                {/* HUVUDGRID */}
+                {/* --- HUVUDGRID --- */}
                 <div className="flex flex-col xl:flex-row w-full gap-2 items-start p-0">
                     
                     {/* VÄNSTRA SIDAN: Kalenderrutnät */}
                     <div className="flex-1 flex flex-col min-w-0 w-full p-0 relative">
                         
-                        {/* --- NY MOBILVY (Karussell) --- */}
-                        <div className="md:hidden flex flex-col w-full h-full mt-2 relative overflow-hidden">
-                            
-                            <div className="mb-2 pt-0 relative touch-pan-y" onTouchStart={handleMonthTouchStart} onTouchMove={handleMonthTouchMove} onTouchEnd={handleMonthTouchEnd}>
-                                <div className="flex justify-between items-center mb-3 px-3">
-                                    <button onClick={() => changeDate(-30)} className="w-10 h-10 flex items-center justify-start bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-left" size={20} className="text-zinc-400"/></button>
-                                    <span className="text-[16px] font-bold text-zinc-800 dark:text-white uppercase tracking-wide">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
-                                    <button onClick={() => changeDate(30)} className="w-10 h-10 flex items-center justify-end bg-transparent active:scale-95 transition-all"><SafeIcon name="chevron-right" size={20} className="text-zinc-400"/></button>
-                                </div>
-                                <div className="overflow-hidden w-full relative">
-                                    <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${monthDragX}px)`, transition: monthTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
-                                        {[-1, 0, 1].map(renderMobileMonth)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col relative flex-1 pb-24 touch-pan-y" onTouchStart={handleDayTouchStart} onTouchMove={handleDayTouchMove} onTouchEnd={handleDayTouchEnd}>
-                                <div className="overflow-hidden w-full relative h-full">
-                                    <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
-                                        {[-1, 0, 1].map(renderMobileDay)}
-                                    </div>
+                        {/* MOBILVY: Intern scroll inuti den nedre vyn */}
+                        <div className="md:hidden flex flex-col relative flex-1 overflow-y-auto custom-scrollbar touch-pan-y pb-24" onTouchStart={handleDayTouchStart} onTouchMove={handleDayTouchMove} onTouchEnd={handleDayTouchEnd}>
+                            <div className="overflow-hidden w-full relative h-full">
+                                <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                                    {[-1, 0, 1].map(renderMobileDay)}
                                 </div>
                             </div>
                         </div>
 
-                        {/* --- DESKTOP VY (Gömms helt på mobilen) --- */}
+                        {/* DESKTOP VY */}
                         <div className="hidden md:block bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden rounded-xl mb-6">
                             <div className="overflow-x-auto snap-x snap-mandatory w-full hide-scrollbars">
                                 <div className="w-[140%] sm:w-full min-w-[350px]">
@@ -570,7 +595,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                     {viewMode === 'MONTH' && (
                                         <div className="grid grid-cols-7 divide-x divide-zinc-200 dark:divide-white/10 bg-[#f4f5f7] dark:bg-[#161f30] border-b border-zinc-300 dark:border-white/15">
                                             {weekDays.map((wd, idx) => (
-                                                <div key={wd} className={`py-2.5 text-center text-[10px] md:text-[11px] font-bold uppercase tracking-wider ${idx === 6 ? 'text-red-500 dark:text-red-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                                                <div key={wd} className={`py-2.5 text-center text-[11px] font-bold uppercase tracking-wider ${idx === 6 ? 'text-red-500 dark:text-red-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
                                                     {wd}
                                                 </div>
                                             ))}
@@ -604,11 +629,11 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                     key={i} 
                                                     onDragOver={(e) => { if (!isBlocked) e.preventDefault(); }} 
                                                     onDrop={(e) => onDropToCalendar(e, dStr)} 
-                                                    className={`snap-start group/day min-w-0 flex flex-col transition-all border-b border-zinc-200 dark:border-white/10 ${viewMode === 'WEEK' ? 'min-h-[440px] md:min-h-[580px]' : 'min-h-[140px] md:min-h-[165px]'} ${!isCurrentMonth ? 'bg-zinc-50/40 dark:bg-[#141c2b]/40' : 'bg-white dark:bg-[#1e293b]'} ${blockedBgClass}`}
+                                                    className={`snap-start group/day min-w-0 flex flex-col transition-all border-b border-zinc-200 dark:border-white/10 ${viewMode === 'WEEK' ? 'min-h-[580px]' : 'min-h-[165px]'} ${!isCurrentMonth ? 'bg-zinc-50/40 dark:bg-[#141c2b]/40' : 'bg-white dark:bg-[#1e293b]'} ${blockedBgClass}`}
                                                 >
                                                     <div 
                                                         onClick={() => { if(!isBlocked) setView('NEW_JOB', { job: { datum: `${dStr}T08:00`, status: 'BOKAD' } }); }}
-                                                        className={`relative px-2 py-2 md:px-3 md:py-2.5 border-b transition-colors cursor-pointer group/hdr ${
+                                                        className={`relative px-3 py-2.5 border-b transition-colors cursor-pointer group/hdr ${
                                                             today 
                                                                 ? 'bg-orange-500/10 dark:bg-orange-500/20 border-zinc-200 dark:border-white/10' 
                                                                 : 'bg-[#f8f9fa] dark:bg-[#161f30] border-zinc-200/80 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-orange-500/10'
@@ -617,11 +642,11 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                         <div className="flex justify-between items-center gap-1">
                                                             <div className="flex items-center gap-1.5 min-w-0">
                                                                 {viewMode === 'WEEK' && (
-                                                                    <span className={`text-[9.5px] md:text-[11px] font-black uppercase tracking-wider ${today ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-zinc-300'}`}>
+                                                                    <span className={`text-[11px] font-black uppercase tracking-wider ${today ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-900 dark:text-zinc-300'}`}>
                                                                         {weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1]}
                                                                     </span>
                                                                 )}
-                                                                <span className={`${viewMode === 'WEEK' ? 'text-lg md:text-xl' : 'text-sm md:text-[15px]'} font-black tracking-tight leading-none ${today ? 'text-orange-600 dark:text-orange-400' : isBlocked ? 'text-zinc-400 line-through' : 'text-zinc-900 dark:text-white'}`}>
+                                                                <span className={`${viewMode === 'WEEK' ? 'text-xl' : 'text-[15px]'} font-black tracking-tight leading-none ${today ? 'text-orange-600 dark:text-orange-400' : isBlocked ? 'text-zinc-400 line-through' : 'text-zinc-900 dark:text-white'}`}>
                                                                     {date.getDate()}
                                                                 </span>
                                                             </div>
@@ -642,17 +667,9 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                                 )}
                                                             </div>
                                                         </div>
-
-                                                        {date.getDay() === 5 && weekendJobsCount > 0 && (
-                                                            <div className="absolute right-0 top-0 bottom-0 flex items-center md:hidden z-10 pointer-events-none pr-0">
-                                                                <div className="flex items-center bg-orange-500 text-white text-[7.5px] font-black pl-1.5 pr-0.5 py-1 rounded-l-md shadow-sm opacity-90">
-                                                                    HELG ({weekendJobsCount}) <SafeIcon name="chevron-right" size={10} className="ml-0.5" />
-                                                                </div>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                     
-                                                    <div className="p-1 md:p-2 space-y-1.5 md:space-y-2 flex-1 flex flex-col relative">
+                                                    <div className="p-2 space-y-2 flex-1 flex flex-col relative">
                                                         {displayJobs.map(job => {
                                                             const serviceLabel = job.paket === 'Oljebyte' && job.oljevolym ? `Oljebyte ${job.oljevolym}l` : (job.paket || 'Standard');
                                                             const timeStr = job.datum?.split('T')[1]?.substring(0, 5) || '';
@@ -668,49 +685,15 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                                                     onDragStart={(e) => onDragStart(e, job)} 
                                                                     onDragEnd={(e) => e.currentTarget.style.opacity = '1'} 
                                                                     onClick={(e) => { e.stopPropagation(); setView('NEW_JOB', { job: job }); }} 
-                                                                    className={`group relative bg-white dark:bg-[#161f30] border border-zinc-200 dark:border-white/10 md:p-1 md:px-2.5 md:py-2 transition-all ${!isBlocked ? 'cursor-grab active:cursor-grabbing hover:border-zinc-300 dark:hover:border-white/30 hover:shadow-md hover:-translate-y-0.5' : ''} shadow-xs rounded-lg overflow-hidden ${isKlar ? 'opacity-70 hover:opacity-100' : ''} flex flex-col`}
+                                                                    className={`group relative bg-white dark:bg-[#161f30] border border-zinc-200 dark:border-white/10 px-2.5 py-2 transition-all ${!isBlocked ? 'cursor-grab active:cursor-grabbing hover:border-zinc-300 dark:hover:border-white/30 hover:shadow-md hover:-translate-y-0.5' : ''} shadow-xs rounded-lg overflow-hidden ${isKlar ? 'opacity-70 hover:opacity-100' : ''} flex flex-col`}
                                                                 >
                                                                     {price === 0 && !isKlar && (
                                                                         <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_5px_rgba(239,68,68,0.8)] z-10" title="Pris saknas"></span>
                                                                     )}
 
-                                                                    {/* Statuslinje som stannar ovanför reg-skylten på mobil */}
-                                                                    <div className={`absolute left-0 top-0 bottom-0 md:bottom-0 ${job.regnr && job.regnr !== '-' ? 'max-md:bottom-[16px]' : ''} w-[2.5px] ${statusAccent} z-10`}></div>
+                                                                    <div className={`absolute left-0 top-0 bottom-0 w-[2.5px] ${statusAccent} z-10`}></div>
                                                                     
-                                                                    {/* --- MOBIL VY --- */}
-                                                                    <div className="md:hidden flex flex-col w-full h-full">
-                                                                        {/* Innehållssektion med mjukare padding */}
-                                                                        <div className="flex flex-col gap-[2px] p-1.5 pb-2">
-                                                                            <span className="text-[9.5px] font-bold text-black dark:text-white uppercase tracking-tight truncate w-full">
-                                                                                {job.kundnamn}
-                                                                            </span>
-                                                                            <span className="text-[8.5px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                                                                                {serviceLabel}
-                                                                            </span>
-                                                                            {timeStr !== '00:00' && (
-                                                                                <span className="text-[8.5px] font-semibold text-zinc-900 dark:text-zinc-100">
-                                                                                    {timeStr}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-
-                                                                        {/* Reg-skylt kant-i-kant i botten */}
-                                                                        {job.regnr && job.regnr !== '-' && (
-                                                                            <div className="mt-auto w-full z-20">
-                                                                                <div className="flex items-center w-full bg-white dark:bg-[#121826] border-t border-zinc-200 dark:border-white/10 h-[17px]">
-                                                                                    <div className="bg-[#003399] h-full w-[11px] flex flex-col items-center justify-between py-[1.5px] shrink-0 border-r border-zinc-200 dark:border-white/10">
-                                                                                        <div className="w-[3px] h-[3px] rounded-full border-[0.5px] border-[#ffcc00]"></div>
-                                                                                        <span className="text-[4.5px] font-sans font-black text-white leading-none mb-[0.5px]">S</span>
-                                                                                    </div>
-                                                                                    <span className="font-mono font-bold text-[9.5px] tracking-widest text-black dark:text-white flex-1 text-center truncate bg-white dark:bg-[#121826] pt-[1px]">
-                                                                                        {job.regnr}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-
-                                                                    <div className="hidden md:flex flex-col pl-1.5 w-full">
+                                                                    <div className="flex flex-col pl-1.5 w-full">
                                                                         <div className="flex items-start justify-between gap-1 w-full relative">
                                                                             <span className="text-[12px] font-semibold uppercase tracking-tight text-black dark:text-white truncate group-hover:text-[#f97316] transition-colors leading-snug">
                                                                                 {job.kundnamn}
@@ -804,7 +787,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                         </div>
                     </div>
 
-                    {/* HÖGRA SIDAN: SIDEBAR (0 padding mot höger, döljs helt på mobil) */}
+                    {/* HÖGRA SIDAN: SIDEBAR (Gömms helt på mobilen) */}
                     {isSidebarOpen && (
                         <div 
                             onDragOver={(e) => e.preventDefault()}
