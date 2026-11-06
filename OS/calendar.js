@@ -156,21 +156,37 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     const [isMonthDragging, setIsMonthDragging] = React.useState(false);
     const [monthTransition, setMonthTransition] = React.useState(false);
     const [monthTouchStart, setMonthTouchStart] = React.useState(null);
+    const [monthScrollLock, setMonthScrollLock] = React.useState(null);
 
     const [dayDragX, setDayDragX] = React.useState(0);
     const [isDayDragging, setIsDayDragging] = React.useState(false);
     const [dayTransition, setDayTransition] = React.useState(false);
     const [dayTouchStart, setDayTouchStart] = React.useState(null);
+    const [dayScrollLock, setDayScrollLock] = React.useState(null);
 
     const handleMonthTouchStart = (e) => {
-        setMonthTouchStart(e.targetTouches[0].clientX);
+        setMonthTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
         setIsMonthDragging(true);
         setMonthTransition(false);
+        setMonthScrollLock(null);
     };
     
     const handleMonthTouchMove = (e) => {
         if (!monthTouchStart) return;
-        setMonthDragX(e.targetTouches[0].clientX - monthTouchStart);
+        const currentX = e.targetTouches[0].clientX;
+        const currentY = e.targetTouches[0].clientY;
+        const diffX = currentX - monthTouchStart.x;
+        const diffY = currentY - monthTouchStart.y;
+
+        let lock = monthScrollLock;
+        if (!lock && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
+            lock = Math.abs(diffX) > Math.abs(diffY) ? 'x' : 'y';
+            setMonthScrollLock(lock);
+        }
+
+        if (lock !== 'y') {
+            setMonthDragX(diffX);
+        }
     };
 
     const handleMonthTouchEnd = () => {
@@ -178,28 +194,49 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         setIsMonthDragging(false);
         setMonthTransition(true);
         
-        if (monthDragX < -50) { // Swipe vänster (nästa månad)
-            setMonthDragX(-window.innerWidth);
-            setTimeout(() => { changeDate(30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
-        } else if (monthDragX > 50) { // Swipe höger (förra månaden)
-            setMonthDragX(window.innerWidth);
-            setTimeout(() => { changeDate(-30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
-        } else { // Återgå (inte tillräckligt dragen)
+        if (monthScrollLock !== 'y') {
+            if (monthDragX < -50) {
+                setMonthDragX(-window.innerWidth);
+                setTimeout(() => { changeDate(30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
+            } else if (monthDragX > 50) {
+                setMonthDragX(window.innerWidth);
+                setTimeout(() => { changeDate(-30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
+            } else {
+                setMonthDragX(0);
+                setTimeout(() => setMonthTransition(false), 250);
+            }
+        } else {
             setMonthDragX(0);
-            setTimeout(() => setMonthTransition(false), 250);
+            setMonthTransition(false);
         }
+        
         setMonthTouchStart(null);
+        setMonthScrollLock(null);
     };
 
     const handleDayTouchStart = (e) => {
-        setDayTouchStart(e.targetTouches[0].clientX);
+        setDayTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
         setIsDayDragging(true);
         setDayTransition(false);
+        setDayScrollLock(null);
     };
 
     const handleDayTouchMove = (e) => {
         if (!dayTouchStart) return;
-        setDayDragX(e.targetTouches[0].clientX - dayTouchStart);
+        const currentX = e.targetTouches[0].clientX;
+        const currentY = e.targetTouches[0].clientY;
+        const diffX = currentX - dayTouchStart.x;
+        const diffY = currentY - dayTouchStart.y;
+
+        let lock = dayScrollLock;
+        if (!lock && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
+            lock = Math.abs(diffX) > Math.abs(diffY) ? 'x' : 'y';
+            setDayScrollLock(lock);
+        }
+
+        if (lock !== 'y') {
+            setDayDragX(diffX);
+        }
     };
 
     const handleDayTouchEnd = () => {
@@ -207,17 +244,24 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         setIsDayDragging(false);
         setDayTransition(true);
         
-        if (dayDragX < -50) { // Swipe vänster (nästa dag)
-            setDayDragX(-window.innerWidth);
-            setTimeout(() => { changeSelectedDay(1); setDayDragX(0); setDayTransition(false); }, 250);
-        } else if (dayDragX > 50) { // Swipe höger (förra dagen)
-            setDayDragX(window.innerWidth);
-            setTimeout(() => { changeSelectedDay(-1); setDayDragX(0); setDayTransition(false); }, 250);
+        if (dayScrollLock !== 'y') {
+            if (dayDragX < -50) {
+                setDayDragX(-window.innerWidth);
+                setTimeout(() => { changeSelectedDay(1); setDayDragX(0); setDayTransition(false); }, 250);
+            } else if (dayDragX > 50) {
+                setDayDragX(window.innerWidth);
+                setTimeout(() => { changeSelectedDay(-1); setDayDragX(0); setDayTransition(false); }, 250);
+            } else {
+                setDayDragX(0);
+                setTimeout(() => setDayTransition(false), 250);
+            }
         } else {
             setDayDragX(0);
-            setTimeout(() => setDayTransition(false), 250);
+            setDayTransition(false);
         }
+        
         setDayTouchStart(null);
+        setDayScrollLock(null);
     };
 
     const changeDate = (days, skipAnim = false) => {
