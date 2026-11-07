@@ -446,7 +446,19 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         else if (val === 'Hjulinställning') {
             setExpenses([{ desc: 'Hjulinställning', antal: '1', amount: '1000', type: 'arbetsoperation' }]);
             updatedFormData.kundpris = '1000';
+            updatedFormData.paket = 'Hjulinställning';
         }
+        // --- LÄGG TILL DETTA NYA BLOCK HÄR ---
+        else if (val === 'Kamrem') {
+            setExpenses([
+                { desc: 'Kamremssats inkl. vattenpump', antal: '1', amount: '', type: 'reservdel' },
+                { desc: 'Kylarvätska', antal: '1', amount: '200', type: 'reservdel' },
+                { desc: 'Arbetskostnad Kamremsbyte', antal: '1', amount: '2500', type: 'arbetsoperation' }
+            ]);
+            updatedFormData.kundpris = '2700'; // 2500 arb + 200 vätska (remmens pris fylls i manuellt)
+            updatedFormData.paket = 'Kamremsbyte';
+        }
+        // -------------------------------------
         else if (val === 'Standard') {
             setExpenses([
                 { desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, 
@@ -1087,6 +1099,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 />
                                                 <button 
                                                     type="button"
+                                                    tabIndex="-1"
                                                     onClick={() => {
                                                         if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
                                                         window.postMessage({ action: 'BMG_REMOTE_SEARCH', regnr: formData.regnr, engine: 'combo-ci-om' }, '*');
@@ -1259,10 +1272,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     <div className="animate-in fade-in duration-200">
                                         {/* Verktygsrad (Knapparna fristående precis som på Bild 1) */}
                                         <div className="flex flex-wrap items-center gap-2 mb-3">
-                                            <button type="button" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-transparent border border-[#168a9c] text-[#168a9c] rounded-sm text-[11px] font-bold uppercase tracking-wider hover:bg-[#168a9c] hover:text-white transition-colors">
+                                            <button type="button" tabIndex="-1" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-transparent border border-[#168a9c] text-[#168a9c] rounded-sm text-[11px] font-bold uppercase tracking-wider hover:bg-[#168a9c] hover:text-white transition-colors">
                                                 LÄGG TILL
                                             </button>
-                                            <button type="button" onClick={() => { 
+                                            <button type="button" tabIndex="-1" onClick={() => { 
                                                 const removedAmount = selectedExpenses.reduce((sum, idx) => sum + (parseFloat(expenses[idx]?.amount) || 0), 0);
                                                 const n = expenses.filter((_, idx) => !selectedExpenses.includes(idx)); 
                                                 setExpenses(n); 
@@ -1277,31 +1290,32 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 {/* 1. HUVUDPAKET */}
                                                 <div className="border border-[#168a9c] px-2 py-1 rounded-sm flex items-center bg-white dark:bg-transparent">
                                                     <select 
-                                                        value={formData.paket?.startsWith('Oljebyte') ? 'Oljebyte' : formData.paket} 
+                                                        value={formData.paket?.startsWith('Oljebyte') ? 'Oljebyte' : (formData.paket?.startsWith('Kamrem') ? 'Kamrem' : formData.paket)} 
                                                         onChange={e => handlePackageChange(e.target.value)} 
                                                         className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer"
                                                     >
                                                         <option value="Standard">Standard (Flexibel)</option>
                                                         <option value="Oljebyte">Oljebyte</option>
+                                                        <option value="Kamrem">Kamremsbyte</option>
                                                         <option value="Hjulskifte">Hjulskifte</option>
                                                         <option value="Hjulinställning">Hjulinställning</option>
                                                         <option value="Felsökning">Felsökning</option>
                                                     </select>
                                                 </div>
 
-                                                {/* 2. TILLÄGG */}
-                                                <div className="border border-zinc-300 dark:border-white/10 px-2 py-1 rounded-sm flex items-center bg-zinc-50 dark:bg-white/5">
+                                                {/* 2. TILLÄGG (Nu med skarpare svart text: text-zinc-900) */}
+                                                <div className="border border-zinc-400/70 dark:border-white/20 px-2 py-1 rounded-sm flex items-center bg-zinc-50 dark:bg-white/5 hover:border-zinc-500 transition-colors">
                                                     <select 
                                                         value=""
                                                         onChange={e => handleAddonChange(e.target.value)} 
-                                                        className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 outline-none cursor-pointer"
+                                                        className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-zinc-900 dark:text-white outline-none cursor-pointer [&>option]:text-zinc-900 [&>option]:font-medium"
                                                     >
                                                         <option value="" disabled>+ TILLÄGG</option>
-                                                        <option value="DigitalStampel">+ Digital Stmpl (500 kr)</option>
+                                                        <option value="DigitalStampel">+ Servicebok (500 kr)</option>
                                                         <option value="AddBromsvatska">+ Bromsvätska (550 kr)</option>
                                                         <option value="AddArbete100">+ Arbete (100 kr)</option>
                                                         <option value="AddArbete200">+ Arbete (200 kr)</option>
-                                                        <option value="" disabled>-------</option>
+                                                        <option disabled>──────────────</option>
                                                         <option value="AddHjulskifte">+ Hjulskifte (200 kr)</option>
                                                         <option value="AddHjulinställning">+ Hjulinställn. (1000 kr)</option>
                                                         <option value="AddFelsökning">+ Felsökning (500 kr)</option>
@@ -1335,7 +1349,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                             </td>
                                                             <td className="p-1 sm:p-2 border-r border-zinc-200 dark:border-white/10">
                                                                 <div className="flex items-center gap-1.5 sm:gap-2">
-                                                                    <button type="button" onClick={() => { const n = [...expenses]; n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' }; setExpenses(n); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="shrink-0 p-1 hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors">
+                                                                    <button type="button" tabIndex="-1" onClick={() => { const n = [...expenses]; n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' }; setExpenses(n); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="shrink-0 p-1 hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors">
                                                                         <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={13} className="text-[#168a9c]" />
                                                                     </button>
                                                                     <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => handleUpdateExpense(i, 'desc', e.target.value)} className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text text-[13px] py-0.5" />
@@ -1415,7 +1429,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col p-4 bg-white dark:bg-transparent">
                                         <div className="flex items-center justify-between mb-3">
                                             <span className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Delbetalningar</span>
-                                            <button type="button" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1">
+                                            <button type="button" tabIndex="-1" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1">
                                                 <SafeIcon name="plus" size={10} /> Lägg till
                                             </button>
                                         </div>
@@ -1440,6 +1454,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     </div>
                                                     <button 
                                                         type="button" 
+                                                        tabIndex="-1"
                                                         onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} 
                                                         className="text-zinc-400 hover:text-red-500 p-1 transition-colors"
                                                     >
