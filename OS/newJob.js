@@ -429,8 +429,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     { desc: 'Arbetskostnad Oljebyte', antal: '1', amount: String(laborPrice), type: 'arbetsoperation' }
                 ]);
                 updatedFormData.kundpris = String(oilPrice + filterPrice + laborPrice);
-                
-                // Uppdaterar titeln så den sparas som "Oljebyte 6.4l"
                 updatedFormData.paket = `Oljebyte ${volNum}l`; 
             } else {
                 alert("Välj en giltig oljevolym för att beräkna priset.");
@@ -448,29 +446,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             setExpenses([{ desc: 'Hjulinställning', antal: '1', amount: '1000', type: 'arbetsoperation' }]);
             updatedFormData.kundpris = '1000';
         }
-        else if (val === 'DigitalStampel') {
-            updatedFormData.paket = formData.paket; 
-            setExpenses(prev => [...prev, { desc: 'Digital Servicebok / Stämpel', antal: '1', amount: '500', type: 'arbetsoperation' }]);
-            updatedFormData.kundpris = String(Math.max(0, (parseFloat(formData.kundpris) || 0) + 500));
-        }
-        else if (val === 'AddBromsvatska') {
-            updatedFormData.paket = formData.paket;
-            setExpenses(prev => [...prev, 
-                { desc: 'Bromsvätska', antal: '1', amount: '150', type: 'reservdel' },
-                { desc: 'Byte bromsvätska', antal: '1', amount: '400', type: 'arbetsoperation' }
-            ]);
-            updatedFormData.kundpris = String((parseFloat(formData.kundpris) || 0) + 550);
-        }
-        else if (val === 'AddArbete100') {
-            updatedFormData.paket = formData.paket;
-            setExpenses(prev => [...prev, { desc: 'Extra arbetskostnad tillägg', antal: '1', amount: '100', type: 'arbetsoperation' }]);
-            updatedFormData.kundpris = String((parseFloat(formData.kundpris) || 0) + 100);
-        }
-        else if (val === 'AddArbete200') {
-            updatedFormData.paket = formData.paket;
-            setExpenses(prev => [...prev, { desc: 'Extra arbetskostnad tillägg', antal: '1', amount: '200', type: 'arbetsoperation' }]);
-            updatedFormData.kundpris = String((parseFloat(formData.kundpris) || 0) + 200);
-        }
         else if (val === 'Standard') {
             setExpenses([
                 { desc: '', antal: '1', amount: '', type: 'arbetsoperation' }, 
@@ -481,6 +456,47 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         
         setFormData(p => ({ ...p, ...updatedFormData }));
         setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+    };
+
+    const handleAddonChange = (val) => {
+        let addedExpenses = [];
+        let addedPrice = 0;
+
+        if (val === 'AddHjulskifte') {
+            addedExpenses = [{ desc: 'Hjulskifte', antal: '1', amount: '200', type: 'arbetsoperation' }];
+            addedPrice = 200;
+        } else if (val === 'AddHjulinställning') {
+            addedExpenses = [{ desc: 'Hjulinställning', antal: '1', amount: '1000', type: 'arbetsoperation' }];
+            addedPrice = 1000;
+        } else if (val === 'AddFelsökning') {
+            addedExpenses = [{ desc: 'Felsökning', antal: '1', amount: '500', type: 'arbetsoperation' }];
+            addedPrice = 500;
+        } else if (val === 'DigitalStampel') {
+            addedExpenses = [{ desc: 'Digital Servicebok / Stämpel', antal: '1', amount: '500', type: 'arbetsoperation' }];
+            addedPrice = 500;
+        } else if (val === 'AddBromsvatska') {
+            addedExpenses = [
+                { desc: 'Bromsvätska', antal: '1', amount: '150', type: 'reservdel' },
+                { desc: 'Byte bromsvätska', antal: '1', amount: '400', type: 'arbetsoperation' }
+            ];
+            addedPrice = 550;
+        } else if (val === 'AddArbete100') {
+            addedExpenses = [{ desc: 'Extra arbetskostnad', antal: '1', amount: '100', type: 'arbetsoperation' }];
+            addedPrice = 100;
+        } else if (val === 'AddArbete200') {
+            addedExpenses = [{ desc: 'Extra arbetskostnad', antal: '1', amount: '200', type: 'arbetsoperation' }];
+            addedPrice = 200;
+        }
+
+        if (addedExpenses.length > 0) {
+            setExpenses(prev => {
+                // Lägg till de nya raderna, men filtrera bort helt tomma standard-rader
+                const cleanedPrev = prev.filter(ex => ex.desc !== '' || ex.amount !== '');
+                return [...cleanedPrev, ...addedExpenses];
+            });
+            setFormData(p => ({ ...p, kundpris: String(Math.max(0, (parseFloat(p.kundpris) || 0) + addedPrice)) }));
+            setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+        }
     };
 
     const handleUpdateExpense = (index, field, value) => {
@@ -1196,23 +1212,40 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 TA BORT
                                             </button>
                                             
-                                            <div className="ml-auto flex items-center gap-2 border border-[#168a9c] px-2 py-1 rounded-sm">
-                                                <select 
-                                                    value={formData.paket?.startsWith('Oljebyte') ? 'Oljebyte' : formData.paket} 
-                                                    onChange={e => handlePackageChange(e.target.value)} 
-                                                    className="bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer"
-                                                >
-                                                    <option value="Standard">Standard (Flexibel)</option>
-                                                    <option value="Oljebyte">Oljebyte</option>
-                                                    <option value="Hjulskifte">Hjulskifte</option>
-                                                    <option value="Hjulinställning">Hjulinställning</option>
-                                                    <option value="Felsökning">Felsökning</option>
-                                                    <option disabled>── TILLÄGG x ──</option>
-                                                    <option value="DigitalStampel">+ Digital stämpel (500 kr)</option>
-                                                    <option value="AddBromsvatska">+ Bromsvätskebyte (550 kr)</option>
-                                                    <option value="AddArbete100">+ Extra arbete (100 kr)</option>
-                                                    <option value="AddArbete200">+ Extra arbete (200 kr)</option>
-                                                </select>
+                                            <div className="w-full sm:w-auto sm:ml-auto flex flex-col sm:flex-row sm:items-center gap-2 mt-2 sm:mt-0">
+                                                
+                                                {/* 1. HUVUDPAKET */}
+                                                <div className="border border-[#168a9c] px-2 py-1 rounded-sm flex items-center bg-white dark:bg-transparent">
+                                                    <select 
+                                                        value={formData.paket?.startsWith('Oljebyte') ? 'Oljebyte' : formData.paket} 
+                                                        onChange={e => handlePackageChange(e.target.value)} 
+                                                        className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer"
+                                                    >
+                                                        <option value="Standard">Standard (Flexibel)</option>
+                                                        <option value="Oljebyte">Oljebyte</option>
+                                                        <option value="Hjulskifte">Hjulskifte</option>
+                                                        <option value="Hjulinställning">Hjulinställning</option>
+                                                        <option value="Felsökning">Felsökning</option>
+                                                    </select>
+                                                </div>
+
+                                                {/* 2. TILLÄGG */}
+                                                <div className="border border-zinc-300 dark:border-white/10 px-2 py-1 rounded-sm flex items-center bg-zinc-50 dark:bg-white/5">
+                                                    <select 
+                                                        value=""
+                                                        onChange={e => handleAddonChange(e.target.value)} 
+                                                        className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 outline-none cursor-pointer"
+                                                    >
+                                                        <option value="" disabled>+ TILLÄGG</option>
+                                                        <option value="AddHjulskifte">+ Hjulskifte (200 kr)</option>
+                                                        <option value="AddHjulinställning">+ Hjulinställn. (1000 kr)</option>
+                                                        <option value="AddFelsökning">+ Felsökning (500 kr)</option>
+                                                        <option value="DigitalStampel">+ Digital Stmpl (500 kr)</option>
+                                                        <option value="AddBromsvatska">+ Bromsvätska (550 kr)</option>
+                                                        <option value="AddArbete100">+ Arbete (100 kr)</option>
+                                                        <option value="AddArbete200">+ Arbete (200 kr)</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                         
