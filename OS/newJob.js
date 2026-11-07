@@ -150,6 +150,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [expandedMatchIds, setExpandedMatchIds] = React.useState([]);
 
     const [focusedInput, setFocusedInput] = React.useState(null);
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = React.useState(-1);
     const [showGrunduppgifter, setShowGrunduppgifter] = React.useState(true); // Håller koll på om Steg 2-rutan är öppen
     const [availableDraft, setAvailableDraft] = React.useState(null); // NY: Håller koll på om ett utkast finns
 
@@ -1050,9 +1051,37 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 <input 
                                                     type="text" 
                                                     value={formData.regnr} 
-                                                    onChange={e => setFormData(p => ({ ...p, regnr: e.target.value.toUpperCase().replace(/\s+/g, '') }))} 
-                                                    onFocus={() => setFocusedInput('steg2_regnr')}
+                                                    onChange={e => { setFormData(p => ({ ...p, regnr: e.target.value.toUpperCase().replace(/\s+/g, '') })); setActiveSuggestionIndex(-1); }} 
+                                                    onFocus={() => { setFocusedInput('steg2_regnr'); setActiveSuggestionIndex(-1); }}
                                                     onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'ArrowDown') { 
+                                                            e.preventDefault(); 
+                                                            setActiveSuggestionIndex(p => {
+                                                                const next = Math.min(p + 1, activeRegnrSuggestions.length - 1);
+                                                                setTimeout(() => document.getElementById(`sugg-regnr-${next}`)?.scrollIntoView({ block: 'nearest' }), 0);
+                                                                return next;
+                                                            }); 
+                                                        }
+                                                        else if (e.key === 'ArrowUp') { 
+                                                            e.preventDefault(); 
+                                                            setActiveSuggestionIndex(p => {
+                                                                const next = Math.max(p - 1, -1);
+                                                                setTimeout(() => document.getElementById(`sugg-regnr-${next}`)?.scrollIntoView({ block: 'nearest' }), 0);
+                                                                return next;
+                                                            }); 
+                                                        }
+                                                        else if (e.key === 'Enter') { 
+                                                            e.preventDefault(); 
+                                                            if (activeSuggestionIndex >= 0 && activeRegnrSuggestions[activeSuggestionIndex]) {
+                                                                const r = activeRegnrSuggestions[activeSuggestionIndex];
+                                                                const linkedJob = allJobs.find(j => j.regnr?.toUpperCase().replace(/\s+/g, '') === r);
+                                                                setFormData(p => ({ ...p, regnr: r, kundnamn: p.kundnamn ? p.kundnamn : (linkedJob?.kundnamn || '') }));
+                                                                setFocusedInput(null);
+                                                            } 
+                                                        }
+                                                        else if (e.key === 'Escape') setFocusedInput(null);
+                                                    }}
                                                     placeholder="T.ex. RMK887"
                                                     className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm" 
                                                 />
@@ -1060,7 +1089,6 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     type="button"
                                                     onClick={() => {
                                                         if (!formData.regnr) { alert("Skriv in ett regnr först!"); return; }
-                                                        // Skickar den smarta signalen till Chrome-tillägget för Car.info + Oljemagasinet
                                                         window.postMessage({ action: 'BMG_REMOTE_SEARCH', regnr: formData.regnr, engine: 'combo-ci-om' }, '*');
                                                     }}
                                                     className={`absolute right-1 top-1 bottom-1 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 z-10 ${
@@ -1078,20 +1106,19 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 </button>
                                             </div>
                                             
-                                            {/* DROPDOWN FÖR REGNR */}
                                             {focusedInput === 'steg2_regnr' && activeRegnrSuggestions.length > 0 && (
                                                 <div className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100] animate-in fade-in slide-in-from-top-1">
-                                                    {activeRegnrSuggestions.map(r => {
+                                                    {activeRegnrSuggestions.map((r, idx) => {
                                                         const linkedJob = allJobs.find(j => j.regnr?.toUpperCase().replace(/\s+/g, '') === r);
                                                         const linkedName = linkedJob ? linkedJob.kundnamn : '';
                                                         return (
-                                                            <div key={r} onMouseDown={(e) => {
+                                                            <div key={r} id={`sugg-regnr-${idx}`} onMouseDown={(e) => {
                                                                 e.preventDefault(); 
                                                                 setFormData(p => ({ ...p, regnr: r, kundnamn: p.kundnamn ? p.kundnamn : linkedName }));
                                                                 setFocusedInput(null);
-                                                            }} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#ea580c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0 flex justify-between items-center group">
+                                                            }} className={`px-3 py-2 text-[13px] font-bold cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0 flex justify-between items-center group ${activeSuggestionIndex === idx ? 'bg-[#ea580c] text-white' : 'text-zinc-800 dark:text-zinc-200 hover:bg-[#ea580c] hover:text-white'}`}>
                                                                 <span>{r}</span>
-                                                                {linkedName && <span className="text-[10px] font-normal opacity-60 group-hover:opacity-90 truncate max-w-[120px]">{linkedName}</span>}
+                                                                {linkedName && <span className={`text-[10px] font-normal truncate max-w-[120px] ${activeSuggestionIndex === idx ? 'opacity-90' : 'opacity-60 group-hover:opacity-90'}`}>{linkedName}</span>}
                                                             </div>
                                                         )
                                                     })}
@@ -1105,27 +1132,54 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <input 
                                                 type="text" 
                                                 value={formData.kundnamn} 
-                                                onChange={e => setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() }))} 
-                                                onFocus={() => setFocusedInput('steg2_kundnamn')}
+                                                onChange={e => { setFormData(p => ({ ...p, kundnamn: e.target.value.toUpperCase() })); setActiveSuggestionIndex(-1); }} 
+                                                onFocus={() => { setFocusedInput('steg2_kundnamn'); setActiveSuggestionIndex(-1); }}
                                                 onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'ArrowDown') { 
+                                                        e.preventDefault(); 
+                                                        setActiveSuggestionIndex(p => {
+                                                            const next = Math.min(p + 1, activeKundSuggestions.length - 1);
+                                                            setTimeout(() => document.getElementById(`sugg-kund-${next}`)?.scrollIntoView({ block: 'nearest' }), 0);
+                                                            return next;
+                                                        }); 
+                                                    }
+                                                    else if (e.key === 'ArrowUp') { 
+                                                        e.preventDefault(); 
+                                                        setActiveSuggestionIndex(p => {
+                                                            const next = Math.max(p - 1, -1);
+                                                            setTimeout(() => document.getElementById(`sugg-kund-${next}`)?.scrollIntoView({ block: 'nearest' }), 0);
+                                                            return next;
+                                                        }); 
+                                                    }
+                                                    else if (e.key === 'Enter') { 
+                                                        e.preventDefault(); 
+                                                        if (activeSuggestionIndex >= 0 && activeKundSuggestions[activeSuggestionIndex]) {
+                                                            const c = activeKundSuggestions[activeSuggestionIndex];
+                                                            const linkedJob = allJobs.find(j => j.kundnamn?.toUpperCase().trim() === c.toUpperCase());
+                                                            setFormData(p => ({ ...p, kundnamn: c.toUpperCase(), regnr: p.regnr ? p.regnr : (linkedJob?.regnr || '') }));
+                                                            setFocusedInput(null);
+                                                        } 
+                                                    }
+                                                    else if (e.key === 'Escape') setFocusedInput(null);
+                                                }}
                                                 placeholder="T.ex. ANDERS"
                                                 className="w-full bg-white dark:bg-black/20 border border-orange-200 dark:border-orange-500/30 px-3 py-2.5 rounded-sm outline-none text-zinc-900 dark:text-white font-bold uppercase focus:border-orange-500 transition-colors shadow-sm" 
                                             />
                                             
-                                            {/* DROPDOWN FÖR KUNDNAMN */}
                                             {focusedInput === 'steg2_kundnamn' && activeKundSuggestions.length > 0 && (
                                                 <div className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 shadow-xl rounded-sm z-[100] animate-in fade-in slide-in-from-top-1">
-                                                    {activeKundSuggestions.map(c => {
+                                                    {activeKundSuggestions.map((c, idx) => {
                                                         const linkedJob = allJobs.find(j => j.kundnamn?.toUpperCase().trim() === c.toUpperCase());
                                                         const linkedReg = linkedJob ? linkedJob.regnr : '';
                                                         return (
-                                                            <div key={c} onMouseDown={(e) => {
+                                                            <div key={c} id={`sugg-kund-${idx}`} onMouseDown={(e) => {
                                                                 e.preventDefault(); 
                                                                 setFormData(p => ({ ...p, kundnamn: c.toUpperCase(), regnr: p.regnr ? p.regnr : linkedReg }));
                                                                 setFocusedInput(null);
-                                                            }} className="px-3 py-2 text-[13px] font-bold text-zinc-800 dark:text-zinc-200 hover:bg-[#ea580c] hover:text-white cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0 flex justify-between items-center group">
+                                                            }} className={`px-3 py-2 text-[13px] font-bold cursor-pointer transition-colors border-b border-zinc-100 dark:border-white/5 last:border-0 flex justify-between items-center group ${activeSuggestionIndex === idx ? 'bg-[#ea580c] text-white' : 'text-zinc-800 dark:text-zinc-200 hover:bg-[#ea580c] hover:text-white'}`}>
                                                                 <span className="truncate">{c}</span>
-                                                                {linkedReg && <span className="text-[10px] font-normal opacity-60 group-hover:opacity-90">{linkedReg}</span>}
+                                                                {linkedReg && <span className={`text-[10px] font-normal ${activeSuggestionIndex === idx ? 'opacity-90' : 'opacity-60 group-hover:opacity-90'}`}>{linkedReg}</span>}
                                                             </div>
                                                         )
                                                     })}
@@ -1208,7 +1262,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             <button type="button" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-transparent border border-[#168a9c] text-[#168a9c] rounded-sm text-[11px] font-bold uppercase tracking-wider hover:bg-[#168a9c] hover:text-white transition-colors">
                                                 LÄGG TILL
                                             </button>
-                                            <button type="button" onClick={() => { const n = expenses.filter((_, idx) => !selectedExpenses.includes(idx)); setExpenses(n); setSelectedExpenses([]); }} disabled={selectedExpenses.length === 0} className={`px-3 py-1.5 bg-transparent border rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors ${selectedExpenses.length > 0 ? 'border-zinc-400 text-zinc-600 hover:border-red-500 hover:text-red-500' : 'border-zinc-200 text-zinc-400 cursor-not-allowed'}`}>
+                                            <button type="button" onClick={() => { 
+                                                const removedAmount = selectedExpenses.reduce((sum, idx) => sum + (parseFloat(expenses[idx]?.amount) || 0), 0);
+                                                const n = expenses.filter((_, idx) => !selectedExpenses.includes(idx)); 
+                                                setExpenses(n); 
+                                                setSelectedExpenses([]); 
+                                                setFormData(p => ({ ...p, kundpris: String(Math.max(0, (parseFloat(p.kundpris) || 0) - removedAmount)) }));
+                                            }} disabled={selectedExpenses.length === 0} className={`px-3 py-1.5 bg-transparent border rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors ${selectedExpenses.length > 0 ? 'border-zinc-400 text-zinc-600 hover:border-red-500 hover:text-red-500' : 'border-zinc-200 text-zinc-400 cursor-not-allowed'}`}>
                                                 TA BORT
                                             </button>
                                             
@@ -1237,13 +1297,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 outline-none cursor-pointer"
                                                     >
                                                         <option value="" disabled>+ TILLÄGG</option>
-                                                        <option value="AddHjulskifte">+ Hjulskifte (200 kr)</option>
-                                                        <option value="AddHjulinställning">+ Hjulinställn. (1000 kr)</option>
-                                                        <option value="AddFelsökning">+ Felsökning (500 kr)</option>
                                                         <option value="DigitalStampel">+ Digital Stmpl (500 kr)</option>
                                                         <option value="AddBromsvatska">+ Bromsvätska (550 kr)</option>
                                                         <option value="AddArbete100">+ Arbete (100 kr)</option>
                                                         <option value="AddArbete200">+ Arbete (200 kr)</option>
+                                                        <option value="" disabled>-------</option>
+                                                        <option value="AddHjulskifte">+ Hjulskifte (200 kr)</option>
+                                                        <option value="AddHjulinställning">+ Hjulinställn. (1000 kr)</option>
+                                                        <option value="AddFelsökning">+ Felsökning (500 kr)</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1390,31 +1451,46 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     </div>
 
                                     {/* HÖGER SIDA: SUMMA */}
-                                    <div className="flex-1 flex flex-col p-4 bg-zinc-50/50 dark:bg-[#161f30]/30">
-                                        <div className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">Summa (inkl. moms)</div>
-                                        <div className="flex items-baseline justify-end mb-4">
+                                    <div className="flex-1 flex flex-col p-4 bg-zinc-50/50 dark:bg-[#161f30]/30 relative overflow-hidden">
+                                        <div className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider transition-all duration-500">
+                                            Totalpris (Inkl. moms)
+                                        </div>
+                                        
+                                        {/* Huvudpriset som mjukt krymper och dämpas när en delbetalning läggs till */}
+                                        <div className={`flex items-center justify-end bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-sm focus-within:border-[#168a9c] focus-within:ring-2 focus-within:ring-[#168a9c]/10 transition-all duration-500 shadow-sm ${totalPaid > 0 ? 'mb-2 px-2.5 py-1.5 opacity-75 shadow-none' : 'mb-4 px-3 py-2.5'}`}>
                                             <input 
                                                 type="number" 
                                                 value={formData.kundpris == 0 ? '' : formData.kundpris} 
                                                 onChange={e => setFormData(p => ({ ...p, kundpris: e.target.value }))} 
-                                                className="w-full bg-transparent text-zinc-900 dark:text-white text-3xl font-light tracking-tighter outline-none text-right focus:text-[#168a9c] transition-colors" 
+                                                className={`w-full bg-transparent outline-none text-right transition-all duration-500 ${totalPaid > 0 ? 'text-zinc-500 dark:text-zinc-400 text-[17px] font-normal' : 'text-zinc-900 dark:text-white text-2xl font-medium'}`} 
                                                 placeholder="0" 
                                             />
-                                            <span className="text-[13px] font-bold text-zinc-400 ml-1.5 shrink-0 uppercase">SEK</span>
+                                            <span className={`font-bold text-zinc-400 ml-2 shrink-0 uppercase transition-all duration-500 ${totalPaid > 0 ? 'text-[10px]' : 'text-[13px]'}`}>kr</span>
                                         </div>
                                         
                                         <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-zinc-200 dark:border-white/10">
-                                            <div className="flex justify-between items-center text-[13px]">
-                                                <span className="font-medium text-zinc-500 dark:text-zinc-400">Inbetalt hittills:</span>
-                                                <span className="font-medium text-zinc-500 dark:text-zinc-400">{totalPaid.toLocaleString()} kr</span>
-                                            </div>
-                                            
-                                            {totalPaid > 0 && (
-                                                <div className="flex justify-between items-center text-[13px]">
-                                                    <span className="text-zinc-900 dark:text-white">Kvar att betala:</span>
-                                                    <span className="font-mono font-bold text-orange-600 dark:text-orange-400 text-[14px]">
-                                                        {Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()} kr
-                                                    </span>
+                                            {totalPaid > 0 ? (
+                                                <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+                                                    <div className="flex justify-between items-center text-[13px] mb-2 px-1">
+                                                        <span className="font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><SafeIcon name="check-circle" size={14}/> Inbetalt:</span>
+                                                        <span className="font-medium text-emerald-600 dark:text-emerald-400">- {totalPaid.toLocaleString()} kr</span>
+                                                    </div>
+                                                    
+                                                    {/* Den snygga "Att betala"-rutan du föredrog */}
+                                                    <div className="flex justify-between items-center bg-white dark:bg-[#1e293b] border border-orange-200 dark:border-orange-500/30 rounded-sm px-3 py-2.5 shadow-sm mt-1">
+                                                        <span className="font-bold text-orange-600 dark:text-orange-400 text-[11px] uppercase tracking-wider">Att betala</span>
+                                                        <div className="flex items-center">
+                                                            <span className="text-orange-600 dark:text-orange-400 text-2xl font-medium tracking-tight">
+                                                                {Math.max(0, (parseFloat(formData.kundpris) || 0) - totalPaid).toLocaleString()}
+                                                            </span>
+                                                            <span className="text-[13px] font-bold text-orange-400/70 ml-2 shrink-0 uppercase">kr</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-between items-center text-[13px] px-1 opacity-50 transition-opacity duration-300">
+                                                    <span className="font-medium text-zinc-500 dark:text-zinc-400">Inbetalt hittills:</span>
+                                                    <span className="font-medium text-zinc-500 dark:text-zinc-400">0 kr</span>
                                                 </div>
                                             )}
                                         </div>
