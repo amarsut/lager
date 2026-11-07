@@ -86,7 +86,8 @@ const RichNoteEditor = ({ value, onChange }) => {
                 <div
                     ref={editorRef}
                     contentEditable
-                    onInput={handleInput} 
+                    onClick={(e) => { if(e.target.tagName === 'A') window.open(e.target.href, '_blank'); }}
+                    onInput={handleInput}
                     onPaste={handlePaste}
                     onBlur={(e) => onChange(e.currentTarget.innerHTML)} 
                     dangerouslySetInnerHTML={{ __html: value }}
@@ -478,6 +479,13 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         if (val === 'AddHjulskifte') {
             addedExpenses = [{ desc: 'Hjulskifte', antal: '1', amount: '200', type: 'arbetsoperation' }];
             addedPrice = 200;
+        } else if (val === 'AddKamrem') {
+            addedExpenses = [
+                { desc: 'Kamremssats inkl. vattenpump', antal: '1', amount: '', type: 'reservdel' },
+                { desc: 'Kylarvätska', antal: '1', amount: '200', type: 'reservdel' },
+                { desc: 'Arbetskostnad Kamremsbyte', antal: '1', amount: '2500', type: 'arbetsoperation' }
+            ];
+            addedPrice = 2700;
         } else if (val === 'AddHjulinställning') {
             addedExpenses = [{ desc: 'Hjulinställning', antal: '1', amount: '1000', type: 'arbetsoperation' }];
             addedPrice = 1000;
@@ -603,7 +611,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const isFiltering = searchQuery || advFilters.status !== 'ALLA' || advFilters.dateStart || advFilters.dateEnd;
 
     return (
-        <div className="flex flex-col text-zinc-900 dark:text-white pb-0 md:pb-10 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full min-h-[calc(100vh-80px)]">
+        <>
+        <div className="print:hidden flex flex-col text-zinc-900 dark:text-white pb-0 md:pb-10 transition-colors duration-500 relative max-w-[1400px] ml-0 w-full min-h-[calc(100vh-80px)]">
             
             {/* DATALISTOR FÖR AUTOCOMPLETE (Syns ej, ger bara sökförslag) */}
             <datalist id="customers-list">
@@ -1296,10 +1305,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     >
                                                         <option value="Standard">Standard (Flexibel)</option>
                                                         <option value="Oljebyte">Oljebyte</option>
-                                                        <option value="Kamrem">Kamremsbyte</option>
                                                         <option value="Hjulskifte">Hjulskifte</option>
                                                         <option value="Hjulinställning">Hjulinställning</option>
                                                         <option value="Felsökning">Felsökning</option>
+                                                        <option value="Kamrem">Kamremsbyte</option>
                                                     </select>
                                                 </div>
 
@@ -1319,6 +1328,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         <option value="AddHjulskifte">+ Hjulskifte (200 kr)</option>
                                                         <option value="AddHjulinställning">+ Hjulinställn. (1000 kr)</option>
                                                         <option value="AddFelsökning">+ Felsökning (500 kr)</option>
+                                                        <option value="AddKamrem">&nbsp;&nbsp;+ Kamremsbyte</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1352,7 +1362,14 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                     <button type="button" tabIndex="-1" onClick={() => { const n = [...expenses]; n[i] = { ...n[i], type: ex.type === 'arbetsoperation' ? 'reservdel' : 'arbetsoperation' }; setExpenses(n); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="shrink-0 p-1 hover:bg-zinc-200 dark:hover:bg-white/10 rounded transition-colors">
                                                                         <SafeIcon key={`icon-${ex.type}-${i}`} name={ex.type === 'arbetsoperation' ? 'wrench' : 'tag'} size={13} className="text-[#168a9c]" />
                                                                     </button>
-                                                                    <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => handleUpdateExpense(i, 'desc', e.target.value)} className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text text-[13px] py-0.5" />
+                                                                    <div className="relative w-full flex items-center">
+                                                                        <input placeholder={ex.type === 'arbetsoperation' ? "Arbetsoperation..." : "Reservdel..."} value={ex.desc || ''} onChange={e => handleUpdateExpense(i, 'desc', e.target.value)} className="w-full bg-transparent outline-none text-[#168a9c] hover:underline cursor-text text-[13px] py-0.5 pr-6" />
+                                                                        {ex.desc && ex.desc.match(/https?:\/\/[^\s]+/) && (
+                                                                            <button type="button" tabIndex="-1" onClick={() => window.open(ex.desc.match(/https?:\/\/[^\s]+/)[0], '_blank')} className="absolute right-0 text-[#f97316] hover:text-[#ea580c] transition-colors p-1" title="Öppna länk">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </td>
                                                             
@@ -1527,6 +1544,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <button type="submit" className="w-full px-6 py-3.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-[14px] shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
                                     <SafeIcon name="save" size={18} /> SPARA JOBB
                                 </button>
+                                <button type="button" onClick={() => window.print()} className="w-full px-6 py-3.5 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 text-white font-bold text-[14px] shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    SKRIV UT / PDF
+                                </button>
                                 {formData.status !== 'KLAR' && (
                                     <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-3.5 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold text-[14px] shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
                                         <SafeIcon name="check" size={16} /> SNABBVAL: KLAR
@@ -1542,6 +1563,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 <div className="hidden lg:flex flex-col gap-2">
                                     <button type="submit" className="w-full px-6 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-[13px] tracking-widest uppercase rounded-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
                                         <SafeIcon name="save" size={16} /> SPARA JOBB
+                                    </button>
+                                    <button type="button" onClick={() => window.print()} className="w-full px-6 py-2.5 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold text-[12px] uppercase tracking-widest shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                        SKRIV UT / PDF
                                     </button>
                                     {activeJob && activeJob.status !== 'KLAR' && (
                                         <button type="button" onClick={(e) => handleSave(e, 'KLAR')} className="w-full px-6 py-2.5 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-bold text-[12px] uppercase tracking-widest shadow-sm rounded-sm transition-colors flex items-center justify-center gap-2">
@@ -1769,6 +1794,123 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                     </form>
                 </div>
             )}
-        </div>
+        </div> {/* Stänger den vanliga app-vyn som nu är osynlig vid utskrift */}
+
+            {/* === PROFFSIG UTSKRIFTSVY (Helt separerad) === */}
+            <div id="pro-print-template" className="hidden print:flex flex-col bg-white text-black font-sans absolute top-0 left-0 w-full min-h-screen z-[99999]">
+                <style type="text/css" media="print">
+                    {`
+                        @page { size: A4; margin: 1cm 1.5cm; }
+                        body * { visibility: hidden; }
+                        #pro-print-template, #pro-print-template * { visibility: visible; }
+                        #pro-print-template { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+                        html, body { overflow: visible !important; height: auto !important; position: static !important; }
+                    `}
+                </style>
+                
+                {/* Utskrift Header */}
+                <div className="flex justify-between items-start pb-10">
+                    <div className="w-[450px] h-[120px] flex items-center justify-start"> 
+                        <img 
+                            src="/vag-logga.png" 
+                            alt="Logotyp" 
+                            className="w-full h-full object-contain"
+                            style={{ objectPosition: 'left center' }}
+                        />
+                    </div>
+                    <div className="text-right">
+                        <h2 className="text-xl font-bold text-zinc-900 mb-4">{formData.status === 'FAKTURERAS' ? 'Faktura' : 'Arbetsorder / Kvitto'}</h2>
+                        <div className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-1.5 text-left text-xs ml-auto w-fit">
+                            <span className="font-bold text-zinc-900">Datum</span>
+                            <span>{new Date().toLocaleDateString('sv-SE')}</span>
+                            
+                            <span className="font-bold text-zinc-900">Ordernummer</span>
+                            <span className="uppercase">{activeJob ? activeJob.id.substring(0,8).toUpperCase() : '-'}</span>
+                            
+                            <span className="font-bold text-zinc-900">Kundnamn</span>
+                            <span className="uppercase">{formData.kundnamn || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Fordonsuppgifter (Tunnare ramar, stilrent) */}
+                <div className="border border-zinc-200 grid grid-cols-5 text-[11px] mb-8 divide-x divide-zinc-200">
+                    <div className="p-2.5"><div className="font-bold text-zinc-900 mb-1">Reg.Nr</div><div className="uppercase">{formData.regnr || '-'}</div></div>
+                    <div className="p-2.5"><div className="font-bold text-zinc-900 mb-1">Märke / Modell</div><div className="uppercase line-clamp-1">{fetchedCarInfo?.bilmodell || formData.bilmodell || '-'}</div></div>
+                    <div className="p-2.5"><div className="font-bold text-zinc-900 mb-1">Årsmodell</div><div className="uppercase">{fetchedCarInfo?.årsmodell || formData.årsmodell || '-'}</div></div>
+                    <div className="p-2.5"><div className="font-bold text-zinc-900 mb-1">Chassinummer</div><div className="uppercase">{fetchedCarInfo?.vin || formData.vin || '-'}</div></div>
+                    <div className="p-2.5"><div className="font-bold text-zinc-900 mb-1">Mätarställning</div><div className="uppercase">{fetchedCarInfo?.miltal || formData.miltal || '-'}</div></div>
+                </div>
+
+                {/* Uppdrag / Tabell */}
+                <table className="w-full text-left text-xs mb-6 border-collapse">
+                    <thead>
+                        <tr className="border-b border-zinc-400 text-zinc-900 text-[10px]">
+                            <th className="pb-2 font-bold">Beskrivning</th>
+                            <th className="pb-2 text-center w-16 font-bold">Antal</th>
+                            <th className="pb-2 text-center w-16 font-bold">Enhet</th>
+                            <th className="pb-2 text-right w-32 font-bold">Totalt pris inkl. moms</th>
+                        </tr>
+                    </thead>
+                    <tbody className="text-zinc-800">
+                        {expenses.filter(ex => ex.desc || ex.amount).map((ex, i) => (
+                            <tr key={i}>
+                                <td className="py-1">{ex.desc}</td>
+                                <td className="py-1 text-center">{ex.antal || '1'}</td>
+                                <td className="py-1 text-center">St</td>
+                                <td className="py-1 text-right">{ex.amount ? `${ex.amount} kr` : '-'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {/* Anteckningar (Med snygg linje under TITELN) */}
+                {formData.kommentar && formData.kommentar !== '<br>' && formData.kommentar !== '<div><br></div>' && (
+                    <div className="mb-6">
+                        <h3 className="text-[10px] font-bold text-zinc-900 mb-3 pb-2 border-b border-zinc-400">Anteckningar</h3>
+                        <div className="text-xs text-zinc-800 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: formData.kommentar }}></div>
+                    </div>
+                )}
+
+                {/* Ekonomisk Sammanställning (Stilren utan grå bakgrund) */}
+                <div className="grid grid-cols-5 text-center text-[10px] text-zinc-600 py-3 border-y border-zinc-400 mb-6">
+                    <div>Arbete<br/><span className="font-bold text-zinc-900 text-xs mt-0.5 inline-block">{laborCost.toLocaleString()} kr</span></div>
+                    <div>Material<br/><span className="font-bold text-zinc-900 text-xs mt-0.5 inline-block">{materialCost.toLocaleString()} kr</span></div>
+                    <div>Totalt belopp exkl. moms<br/><span className="font-bold text-zinc-900 text-xs mt-0.5 inline-block">{Math.round(finalPriceNum * 0.8).toLocaleString()} kr</span></div>
+                    <div>Moms %<br/><span className="font-bold text-zinc-900 text-xs mt-0.5 inline-block">25%</span></div>
+                    <div>Totalt belopp inkl. moms<br/><span className="font-bold text-zinc-900 text-xs mt-0.5 inline-block">{finalPriceNum.toLocaleString()} kr</span></div>
+                </div>
+
+                {/* Slutsumma och inbetalningar */}
+                <div className="flex justify-end text-xs mb-12">
+                    <div className="w-[320px]">
+                        {payments.filter(p => p.amount).map((p, i) => (
+                            <div key={i} className="flex justify-between items-start mb-2.5 text-zinc-600">
+                                <span className="pr-4 leading-tight">Avgår inbetalt ({p.desc || 'Förskott'}):</span>
+                                <span className="whitespace-nowrap">- {parseFloat(p.amount).toLocaleString()} kr</span>
+                            </div>
+                        ))}
+                        <div className="flex justify-between items-center font-bold text-lg mt-4 pt-3 border-t-2 border-zinc-900 text-zinc-900">
+                            <span>Totalt att betala:</span>
+                            <span>{Math.max(0, finalPriceNum - totalPaid).toLocaleString()} kr</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Signaturer (Låsta i botten) */}
+                <div className="mt-auto">
+                    <div className="flex gap-12 pt-8">
+                        <div className="flex-1 text-center">
+                            <div className="border-b border-zinc-400 h-10 mb-1.5"></div>
+                            <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Kundens Signatur</span>
+                        </div>
+                        <div className="flex-1 text-center">
+                            <div className="border-b border-zinc-400 h-10 mb-1.5"></div>
+                            <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Verkstadens Signatur</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
     );
 };
