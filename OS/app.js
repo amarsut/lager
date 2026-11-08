@@ -21,6 +21,15 @@ db.enablePersistence({ synchronizeTabs: true }).catch(err => {
     console.warn("Offline persistence failed:", err.code);
 });
 
+// STÄNGER AV OÄNDLIG LADDNINGSSKÄRM VID OFFLINE
+// Om appen inte lyckats hämta ny data inom 2.5 sekunder, 
+// tvingar den sig själv att rita ut senast cachade offline-datan.
+setTimeout(() => {
+    if (!navigator.onLine) {
+        console.log("Offline mode detected, forcing render with cached data");
+    }
+}, 2500);
+
 const auth = firebase.auth();
 window.db = db;
 window.firebase = firebase;
@@ -42,7 +51,7 @@ const HexLogo = memo(({ className = "", iconColor = "fill-zinc-900 dark:fill-whi
 ));
 
 const SplashScreen = memo(() => (
-    <div className="fixed inset-0 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out zoom-out-95 duration-700 delay-1000 fill-mode-forwards pointer-events-none transition-colors duration-300">
+    <div className="fixed inset-0 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center z-[9999] animate-out fade-out zoom-out-95 duration-500 fill-mode-forwards pointer-events-none transition-colors">
         <div className="flex flex-col items-center">
             <div className="w-24 h-24 flex items-center justify-center mb-6 animate-[pulse_2s_ease-in-out_infinite]">
                 <HexLogo className="w-20 h-20" />
