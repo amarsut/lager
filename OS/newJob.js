@@ -453,10 +453,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         else if (val === 'Kamrem') {
             setExpenses([
                 { desc: 'Kamremssats inkl. vattenpump', antal: '1', amount: '', type: 'reservdel' },
-                { desc: 'Kylarvätska', antal: '1', amount: '200', type: 'reservdel' },
+                { desc: 'Kylarvätska', antal: '1', amount: '', type: 'reservdel' },
                 { desc: 'Arbetskostnad Kamremsbyte', antal: '1', amount: '2500', type: 'arbetsoperation' }
             ]);
-            updatedFormData.kundpris = '2700'; // 2500 arb + 200 vätska (remmens pris fylls i manuellt)
+            updatedFormData.kundpris = '2500'; // 2500 arb + 200 vätska (remmens pris fylls i manuellt)
             updatedFormData.paket = 'Kamremsbyte';
         }
         // -------------------------------------
@@ -482,10 +482,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
         } else if (val === 'AddKamrem') {
             addedExpenses = [
                 { desc: 'Kamremssats inkl. vattenpump', antal: '1', amount: '', type: 'reservdel' },
-                { desc: 'Kylarvätska', antal: '1', amount: '200', type: 'reservdel' },
+                { desc: 'Kylarvätska', antal: '1', amount: '', type: 'reservdel' },
                 { desc: 'Arbetskostnad Kamremsbyte', antal: '1', amount: '2500', type: 'arbetsoperation' }
             ];
-            addedPrice = 2700;
+            addedPrice = 2500;
         } else if (val === 'AddHjulinställning') {
             addedExpenses = [{ desc: 'Hjulinställning', antal: '1', amount: '1000', type: 'arbetsoperation' }];
             addedPrice = 1000;
@@ -1280,9 +1280,9 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                 
                                 {activeTab === 'ORDEROMFATTNING' && (
                                     <div className="animate-in fade-in duration-200">
-                                        {/* Verktygsrad (Knapparna fristående precis som på Bild 1) */}
+                                        {/* Verktygsrad (Större format på mobil, kompakt på dator) */}
                                         <div className="flex flex-wrap items-center gap-2 mb-3">
-                                            <button type="button" tabIndex="-1" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-3 py-1.5 bg-transparent border border-[#168a9c] text-[#168a9c] rounded-sm text-[11px] font-bold uppercase tracking-wider hover:bg-[#168a9c] hover:text-white transition-colors">
+                                            <button type="button" tabIndex="-1" onClick={() => { setExpenses([...expenses, { desc: '', antal: '1', amount: '', type: 'reservdel' }]); setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30); }} className="px-4 py-2.5 sm:px-3 sm:py-1.5 bg-transparent border border-[#168a9c] text-[#168a9c] rounded-lg sm:rounded-sm text-[13px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-[#168a9c] hover:text-white transition-colors">
                                                 LÄGG TILL
                                             </button>
                                             <button type="button" tabIndex="-1" onClick={() => { 
@@ -1291,18 +1291,18 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                 setExpenses(n); 
                                                 setSelectedExpenses([]); 
                                                 setFormData(p => ({ ...p, kundpris: String(Math.max(0, (parseFloat(p.kundpris) || 0) - removedAmount)) }));
-                                            }} disabled={selectedExpenses.length === 0} className={`px-3 py-1.5 bg-transparent border rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors ${selectedExpenses.length > 0 ? 'border-zinc-400 text-zinc-600 hover:border-red-500 hover:text-red-500' : 'border-zinc-200 text-zinc-400 cursor-not-allowed'}`}>
+                                            }} disabled={selectedExpenses.length === 0} className={`px-4 py-2.5 sm:px-3 sm:py-1.5 bg-transparent border rounded-lg sm:rounded-sm text-[13px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors ${selectedExpenses.length > 0 ? 'border-zinc-400 text-zinc-600 hover:border-red-500 hover:text-red-500' : 'border-zinc-200 text-zinc-400 cursor-not-allowed'}`}>
                                                 TA BORT
                                             </button>
                                             
-                                            <div className="w-full sm:w-auto sm:ml-auto flex flex-col sm:flex-row sm:items-center gap-2 mt-2 sm:mt-0">
+                                            <div className="w-full sm:w-auto sm:ml-auto flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2 mt-2 sm:mt-0">
                                                 
                                                 {/* 1. HUVUDPAKET */}
-                                                <div className="border border-[#168a9c] px-2 py-1 rounded-sm flex items-center bg-white dark:bg-transparent">
+                                                <div className="border border-[#168a9c] p-3 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-sm flex items-center bg-white dark:bg-transparent shadow-sm sm:shadow-none">
                                                     <select 
                                                         value={formData.paket?.startsWith('Oljebyte') ? 'Oljebyte' : (formData.paket?.startsWith('Kamrem') ? 'Kamrem' : formData.paket)} 
                                                         onChange={e => handlePackageChange(e.target.value)} 
-                                                        className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer"
+                                                        className="w-full sm:w-auto bg-transparent text-[16px] sm:text-[12px] font-bold uppercase tracking-wider text-[#168a9c] outline-none cursor-pointer"
                                                     >
                                                         <option value="Standard">Standard (Flexibel)</option>
                                                         <option value="Oljebyte">Oljebyte</option>
@@ -1313,12 +1313,12 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     </select>
                                                 </div>
 
-                                                {/* 2. TILLÄGG (Nu med skarpare svart text: text-zinc-900) */}
-                                                <div className="border border-zinc-400/70 dark:border-white/20 px-2 py-1 rounded-sm flex items-center bg-zinc-50 dark:bg-white/5 hover:border-zinc-500 transition-colors">
+                                                {/* 2. TILLÄGG */}
+                                                <div className="border border-zinc-400/70 dark:border-white/20 p-3 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-sm flex items-center bg-zinc-50 dark:bg-white/5 hover:border-zinc-500 transition-colors shadow-sm sm:shadow-none">
                                                     <select 
                                                         value=""
                                                         onChange={e => handleAddonChange(e.target.value)} 
-                                                        className="w-full sm:w-auto bg-transparent text-[11px] font-bold uppercase tracking-wider text-zinc-900 dark:text-white outline-none cursor-pointer [&>option]:text-zinc-900 [&>option]:font-medium"
+                                                        className="w-full sm:w-auto bg-transparent text-[16px] sm:text-[12px] font-bold uppercase tracking-wider text-zinc-900 dark:text-white outline-none cursor-pointer [&>option]:text-[16px] [&>option]:sm:text-[14px] [&>option]:text-zinc-900 [&>option]:font-medium"
                                                     >
                                                         <option value="" disabled>+ TILLÄGG</option>
                                                         <option value="DigitalStampel">+ Servicebok (500 kr)</option>
@@ -1329,7 +1329,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         <option value="AddHjulskifte">+ Hjulskifte (200 kr)</option>
                                                         <option value="AddHjulinställning">+ Hjulinställn. (1000 kr)</option>
                                                         <option value="AddFelsökning">+ Felsökning (500 kr)</option>
-                                                        <option value="AddKamrem">&nbsp;&nbsp;+ Kamremsbyte</option>
+                                                        <option value="AddKamrem">&nbsp;&nbsp;+ Kamremsbyte (2500 kr)</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1870,7 +1870,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 <div className="flex justify-between items-start pb-10">
                     <div className="w-[450px] h-[120px] flex items-center justify-start"> 
                         <img 
-                            src="/icons/vag-logga.png" 
+                            src="icons/vag-logga.png" 
                             alt="Logotyp" 
                             className="w-full h-full object-contain"
                             style={{ objectPosition: 'left center' }}
