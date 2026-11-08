@@ -1,5 +1,5 @@
-// sw.js (AutoGrid Offline Core - Skottsäker)
-const CACHE_NAME = 'autogrid-os-v5'; // Uppdaterad version tvingar fram en ny installation
+// sw.js (AutoGrid Offline Core - Skottsäker v6)
+const CACHE_NAME = 'autogrid-os-v6';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -41,7 +41,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Promise.allSettled gör att installationen INTE avbryts om en enda CDN-länk svajar
       return Promise.allSettled(
         ASSETS_TO_CACHE.map(url => cache.add(url))
       );
@@ -64,11 +63,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // 1. Släpp alltid igenom Firebase och externa API:er direkt
+  // 1. Släpp alltid igenom specifika API:er direkt, men blockera INTE ".js"-filerna
   if (
       event.request.url.includes('firestore.googleapis.com') || 
+      event.request.url.includes('securetoken.googleapis.com') ||
       event.request.url.includes('google.firestore') ||
-      event.request.url.includes('firebase') ||
       event.request.url.includes('smhi.se')
   ) {
     return; 
@@ -77,11 +76,11 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    // MAGIN: ignoreSearch: true ignorerar ?homescreen=1 och liknande parametrar
     caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.ok) {
+        // FIX: networkResponse.status === 0 tillåter webbläsaren att cacha Opaque Responses (som Tailwind CDN)
+        if (networkResponse && (networkResponse.ok || networkResponse.status === 0)) {
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, networkResponse.clone());
           });
@@ -100,7 +99,7 @@ self.addEventListener('fetch', (event) => {
       return fetchPromise.then(response => {
         if (response) return response;
         
-        // 4. ULTIMAT FALLBACK: Om nätverket är dött och appen ber om en ny vy/sida, tvinga fram index.html
+        // 4. ULTIMAT FALLBACK
         if (event.request.mode === 'navigate' || event.request.headers.get('accept').includes('text/html')) {
            return caches.match('./index.html', { ignoreSearch: true });
         }
