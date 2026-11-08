@@ -564,6 +564,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 namn: ex.desc || '', 
                 antal: ex.antal || '1', 
                 kostnad: ex.amount || '', 
+                inkopspris: ex.cost || '', // NY RAD
                 type: ex.type || 'reservdel'
             }));
             const finalPayments = (payments || []).filter(p => p && (p.desc || p.amount)).map(p => ({ desc: p.desc, amount: p.amount }));
@@ -1394,44 +1395,84 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
                                 {activeTab === 'KOSTNADSFÖRDELNING' && (
                                     <div className="animate-in fade-in duration-200">
-                                        <div className="border border-zinc-200 dark:border-white/10 rounded-sm overflow-hidden bg-white dark:bg-[#1e293b]">
-                                            <table className="w-full text-left text-[13px] text-zinc-800 dark:text-zinc-200">
-                                                <tbody className="divide-y divide-zinc-200 dark:divide-white/5">
-                                                    <tr>
-                                                        <td className="px-4 py-3 border-r border-zinc-200 dark:border-white/10 w-[60%]">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <SafeIcon name="tag" size={14} className="text-zinc-400 shrink-0" />
-                                                                <span className="font-normal text-zinc-600 dark:text-zinc-300">Reservdelar (Material)</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
-                                                            {materialCost.toLocaleString()} kr
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="px-4 py-3 border-r border-zinc-200 dark:border-white/10">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <SafeIcon name="wrench" size={14} className="text-zinc-400 shrink-0" />
-                                                                <span className="font-normal text-zinc-600 dark:text-zinc-300">Arbetskostnad (Tjänst)</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right font-mono font-medium text-zinc-900 dark:text-white">
-                                                            {laborCost.toLocaleString()} kr
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="px-4 py-3 border-r border-zinc-200 dark:border-white/10">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <SafeIcon name="dollar-sign" size={14} className="text-[#168a9c] shrink-0" />
-                                                                <span className="font-bold text-zinc-900 dark:text-white">Fastställt Totalpris</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right font-mono font-bold text-zinc-900 dark:text-white text-[14px]">
-                                                            {finalPriceNum.toLocaleString()} kr
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                        <div className="border border-zinc-200 dark:border-white/10 rounded-sm p-5 bg-white dark:bg-[#1e293b] shadow-sm flex flex-col gap-6">
+                                            
+                                            {/* ÖVRE RADEN: Mätare för Kostnad & Betalning */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Visuell mätare (% Arbete vs Material) */}
+                                                <div className="flex flex-col justify-center gap-2">
+                                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                                                        <span className="text-[#168a9c] flex items-center gap-1.5"><SafeIcon name="wrench" size={12}/> Arbete ({finalPriceNum > 0 ? Math.round((laborCost/finalPriceNum)*100) : 0}%)</span>
+                                                        <span className="text-zinc-500 flex items-center gap-1.5"><SafeIcon name="tag" size={12}/> Material ({finalPriceNum > 0 ? Math.round((materialCost/finalPriceNum)*100) : 0}%)</span>
+                                                    </div>
+                                                    <div className="h-2.5 w-full bg-zinc-100 dark:bg-white/5 rounded-full overflow-hidden flex shadow-inner">
+                                                        <div style={{ width: `${finalPriceNum > 0 ? (laborCost/finalPriceNum)*100 : 0}%` }} className="bg-[#168a9c] transition-all duration-700 ease-out"></div>
+                                                        <div style={{ width: `${finalPriceNum > 0 ? (materialCost/finalPriceNum)*100 : 0}%` }} className="bg-zinc-300 dark:bg-zinc-600 transition-all duration-700 ease-out"></div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Betalningsstatus (Inbetalt vs Kvar) */}
+                                                <div className="flex flex-col justify-center gap-2">
+                                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                                                        <span className="text-emerald-600 flex items-center gap-1.5"><SafeIcon name="check-circle" size={12}/> Inbetalt ({finalPriceNum > 0 ? Math.round((totalPaid/finalPriceNum)*100) : 0}%)</span>
+                                                        <span className="text-orange-500 flex items-center gap-1.5"><SafeIcon name="clock" size={12}/> Kvar att betala</span>
+                                                    </div>
+                                                    <div className="h-2.5 w-full bg-orange-100 dark:bg-orange-500/10 rounded-full overflow-hidden flex shadow-inner">
+                                                        <div style={{ width: `${finalPriceNum > 0 ? Math.min(100, (totalPaid/finalPriceNum)*100) : 0}%` }} className="bg-emerald-500 transition-all duration-700 ease-out"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* MELLANRADEN: 4 Ekonomiska Kort */}
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                <div className="p-3 bg-zinc-50 dark:bg-[#161f30]/50 rounded-sm border border-zinc-200 dark:border-white/5 flex flex-col justify-center">
+                                                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Arbetskostnad</div>
+                                                    <div className="text-lg font-medium text-zinc-900 dark:text-white">{laborCost.toLocaleString()} kr</div>
+                                                </div>
+                                                <div className="p-3 bg-zinc-50 dark:bg-[#161f30]/50 rounded-sm border border-zinc-200 dark:border-white/5 flex flex-col justify-center">
+                                                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Reservdelar</div>
+                                                    <div className="text-lg font-medium text-zinc-900 dark:text-white">{materialCost.toLocaleString()} kr</div>
+                                                </div>
+                                                <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-sm border border-emerald-200 dark:border-emerald-500/20 flex flex-col justify-center">
+                                                    <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-1">Redan Inbetalt</div>
+                                                    <div className="text-lg font-medium text-emerald-800 dark:text-emerald-300">{totalPaid.toLocaleString()} kr</div>
+                                                </div>
+                                                <div className="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-sm border border-orange-200 dark:border-orange-500/20 flex flex-col justify-center">
+                                                    <div className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">Att betala</div>
+                                                    <div className="text-lg font-bold text-orange-800 dark:text-orange-300">{Math.max(0, finalPriceNum - totalPaid).toLocaleString()} kr</div>
+                                                </div>
+                                            </div>
+
+                                            {/* Smarta insikter (Estimerad tid & Karaktär) */}
+                                            <div className="flex flex-wrap gap-2">
+                                                <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-sm text-blue-700 dark:text-blue-400 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
+                                                    <SafeIcon name="clock" size={13} />
+                                                    Est. Arbetstid: {laborCost > 0 ? (laborCost / 500).toFixed(1).replace('.0', '') : 0}h (beräknat på 500 kr/h)
+                                                </div>
+                                                <div className="px-3 py-1.5 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-sm text-zinc-700 dark:text-zinc-300 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
+                                                    <SafeIcon name="pie-chart" size={13} />
+                                                    {laborCost > materialCost ? 'Tjänstetung order' : (materialCost > laborCost ? 'Materialtung order' : 'Balanserad order')}
+                                                </div>
+                                            </div>
+
+                                            {/* Momsspecifikation */}
+                                            <div className="pt-5 border-t border-zinc-200 dark:border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                                                <div className="flex flex-col gap-1.5 text-[12px] text-zinc-500 dark:text-zinc-400 w-full sm:w-auto">
+                                                    <div className="flex items-center justify-between sm:w-60 bg-zinc-50 dark:bg-white/5 px-2.5 py-1.5 rounded-sm border border-zinc-200 dark:border-white/5">
+                                                        <span>Totalt exkl. moms:</span>
+                                                        <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">{Math.round(finalPriceNum * 0.8).toLocaleString()} kr</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between sm:w-60 px-2.5 py-1">
+                                                        <span>Varav moms (25%):</span>
+                                                        <span className="font-mono text-zinc-700 dark:text-zinc-300">{Math.round(finalPriceNum * 0.2).toLocaleString()} kr</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-left sm:text-right w-full sm:w-auto">
+                                                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">Totalpris inkl. moms</div>
+                                                    <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{finalPriceNum.toLocaleString()} kr</div>
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
                                 )}
@@ -1681,7 +1722,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             // Räkna antal ordrar på denna kund
                                             const visitCount = cleanName.length > 1 ? allJobs.filter(j => (j.kundnamn || '').toUpperCase().trim() === cleanName).length : 0;
                                             
-                                            const isGold = visitCount >= 3;
+                                            const isGold = visitCount >= 5;
                                             const isSilver = visitCount === 2;
                                             const isNew = visitCount === 0;
 
@@ -1829,7 +1870,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 <div className="flex justify-between items-start pb-10">
                     <div className="w-[450px] h-[120px] flex items-center justify-start"> 
                         <img 
-                            src="/vag-logga.png" 
+                            src="/icons/vag-logga.png" 
                             alt="Logotyp" 
                             className="w-full h-full object-contain"
                             style={{ objectPosition: 'left center' }}
