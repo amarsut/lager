@@ -21,15 +21,6 @@ db.enablePersistence({ synchronizeTabs: true }).catch(err => {
     console.warn("Offline persistence failed:", err.code);
 });
 
-// STÄNGER AV OÄNDLIG LADDNINGSSKÄRM VID OFFLINE
-// Om appen inte lyckats hämta ny data inom 2.5 sekunder, 
-// tvingar den sig själv att rita ut senast cachade offline-datan.
-setTimeout(() => {
-    if (!navigator.onLine) {
-        console.log("Offline mode detected, forcing render with cached data");
-    }
-}, 300);
-
 const auth = firebase.auth();
 window.db = db;
 window.firebase = firebase;
@@ -197,7 +188,14 @@ const App = () => {
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1300);
     const [activeFilter, setActiveFilter] = useState('BOKAD');
     const [globalSearch, setGlobalSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState(''); // NY RAD
     const [allJobs, setAllJobs] = useState([]);
+
+    // NY EFFECT: Uppdaterar sökningen först när du slutat skriva i 250ms
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(globalSearch), 250);
+        return () => clearTimeout(timer);
+    }, [globalSearch]);
     const [editingJob, setEditingJob] = useState(null);
     const [allLagerItems, setAllLagerItems] = useState([]);
     const [allNotes, setAllNotes] = useState([]);
@@ -379,6 +377,7 @@ const App = () => {
                 background-color: ${isDark ? '#09090b' : '#fafafa'} !important; 
                 min-height: 100vh;
                 min-height: 100dvh;
+                touch-action: manipulation; /* Eliminerar 300ms klick-fördröjning på mobila enheter */
             }
             
             @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
@@ -522,7 +521,15 @@ const App = () => {
 
     useEffect(() => {
         let isResolved = false;
-        
+        let offlineTimer;
+
+        // 1. Om nätverk saknas fysiskt vid uppstart: Skippa all väntetid och starta direkt från cachen.
+        if (!navigator.onLine) {
+            isResolved = true;
+            setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
+            setLoading(false);
+        }
+
         const unsubscribe = auth.onAuthStateChanged(u => {
             if (!isResolved) {
                 isResolved = true;
@@ -531,19 +538,20 @@ const App = () => {
             }
         });
 
-        // Tvinga fram start om internet saknas eller om Firebase segdrar i offline-läge
-        // Tvinga fram start omedelbart om nätverk saknas
-        const offlineTimer = setTimeout(() => {
-            if (!isResolved) {
-                isResolved = true;
-                setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
-                setLoading(false);
-            }
-        }, 400);
+        // 2. Om nätverk finns men Firebase hänger sig (t.ex. extremt dålig mottagning), bryt efter 400ms.
+        if (!isResolved) {
+            offlineTimer = setTimeout(() => {
+                if (!isResolved) {
+                    isResolved = true;
+                    setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
+                    setLoading(false);
+                }
+            }, 400);
+        }
 
         return () => {
             unsubscribe();
-            clearTimeout(offlineTimer);
+            if (offlineTimer) clearTimeout(offlineTimer);
         };
     }, []);
 
@@ -604,7 +612,7 @@ const App = () => {
 
     const filteredJobs = useMemo(() => {
         let result = allJobs.filter(job => {
-            const q = globalSearch.toLowerCase();
+            const q = debouncedSearch.toLowerCase(); // ÄNDRAD FRÅN globalSearch TILL debouncedSearch
             const matchesGlobal = (job.regnr || '').toLowerCase().includes(q) || (job.kundnamn || '').toLowerCase().includes(q);
             if (activeFilter === 'EJ BOKAD') return matchesGlobal && !job.datum;
             const matchesStatus = activeFilter === 'ALLA' || (job.status || '').toUpperCase() === activeFilter;
@@ -1021,5 +1029,28 @@ const LoginScreen = memo(() => {
     );
 });
 
+const OfflineIndicator = memo(() => {
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    useEffect(() => {
+        const handleStatus = () => setIsOnline(navigator.onLine);
+        window.addEventListener('online', handleStatus);
+        window.addEventListener('offline', handleStatus);
+        return () => { window.removeEventListener('online', handleStatus); window.removeEventListener('offline', handleStatus); };
+    }, []);
+
+    if (isOnline) return null;
+
+    return (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] bg-red-500/95 text-white px-5 py-2.5 rounded-full text-[11px] font-bold tracking-widest uppercase backdrop-blur-md flex items-center gap-2 shadow-[0_10px_30px_rgba(239,68,68,0.4)] animate-in slide-in-from-top-4 fade-in duration-300">
+            <window.Icon name="wifi-off" size={14} /> System Offline
+        </div>
+    );
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(
+    <>
+        <OfflineIndicator />
+        <App />
+    </>
+);
