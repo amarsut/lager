@@ -420,11 +420,14 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                     {showWeekNum ? <div className="flex items-center justify-center text-[9px] font-medium text-black dark:text-white h-8 pr-1">{weekNum}</div> : null}
                                     <div onClick={() => setSelectedMobileDate(date)} className={`relative flex flex-col items-center justify-center h-8 rounded-full cursor-pointer transition-all ${isSelected ? 'bg-orange-500 text-white shadow-md' : isTodayDate ? 'bg-gradient-to-br from-white to-zinc-100 dark:from-zinc-700 dark:to-zinc-800 text-black dark:text-white shadow-sm border border-zinc-200 dark:border-white/10' : !isCurrentMonth ? 'text-zinc-400/50 dark:text-zinc-600' : 'text-zinc-800 dark:text-zinc-200'}`}>
                                         <span className={`text-[13px] ${isSelected || isTodayDate ? 'font-black' : 'font-medium'}`}>{String(date.getDate()).padStart(2, '0')}</span>
-                                        {dayJobs.length > 0 && !isSelected && (
-                                            <div className="absolute bottom-0.5 flex items-center justify-center gap-0.5">
+                                        {dayJobs.length > 0 && (
+                                            <div className={`absolute bottom-0.5 flex items-center justify-center gap-0.5 ${isSelected ? 'brightness-125' : ''}`}>
                                                 {dayJobs.slice(0, 3).map((job, jIdx) => {
                                                     const isKlar = job.status === 'KLAR';
-                                                    const dotColor = isKlar ? 'bg-emerald-500' : job.status === 'FAKTURERAS' ? 'bg-sky-500' : job.status === 'OFFERERAD' ? 'bg-blue-500' : 'bg-[#f97316]';
+                                                    // Om dagen är markerad (orange/vit bakgrund), gör prickarna vita eller extra tydliga
+                                                    let dotColor = isKlar ? 'bg-emerald-500' : job.status === 'FAKTURERAS' ? 'bg-sky-500' : job.status === 'OFFERERAD' ? 'bg-blue-500' : 'bg-[#f97316]';
+                                                    if (isSelected) dotColor = 'bg-white'; // Vit pricka på markerad dag för maximal kontrast!
+                                                    
                                                     return <div key={jIdx} className={`w-1 h-1 rounded-full ${dotColor}`}></div>;
                                                 })}
                                             </div>
