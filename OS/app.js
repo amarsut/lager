@@ -179,50 +179,6 @@ const NAV_GROUPS = [
     }
 ];
 
-window.GamesView = React.memo(() => {
-    const [board, setBoard] = React.useState(Array(9).fill(null));
-    const [xIsNext, setXIsNext] = React.useState(true);
-
-    const winner = (() => {
-        const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-        for (let i = 0; i < lines.length; i++) {
-            const [a, b, c] = lines[i];
-            if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
-        }
-        return null;
-    })();
-    const isDraw = !winner && !board.includes(null);
-
-    const handleClick = (i) => {
-        if (board[i] || winner) return;
-        const newBoard = [...board];
-        newBoard[i] = xIsNext ? 'X' : 'O';
-        setBoard(newBoard);
-        setXIsNext(!xIsNext);
-    };
-
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-300 px-4">
-            <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-widest mb-6">Tre i rad</h2>
-            <div className="bg-white dark:bg-[#1e293b] p-6 rounded-3xl shadow-xl border border-zinc-200 dark:border-white/10 w-full max-w-[320px]">
-                <div className="grid grid-cols-3 gap-2 mb-6">
-                    {board.map((square, i) => (
-                        <button key={i} onClick={() => handleClick(i)} className="w-full aspect-square bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-2xl text-4xl sm:text-5xl font-black flex items-center justify-center hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors focus:outline-none" style={{ color: square === 'X' ? '#f97316' : '#0ea5e9' }}>
-                            {square}
-                        </button>
-                    ))}
-                </div>
-                <div className="text-center h-8 mb-4 font-bold text-lg text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">
-                    {winner ? <span className="text-emerald-500">Vinnare: {winner}</span> : isDraw ? <span className="text-zinc-500">Oavgjort!</span> : <span>Tur: <span style={{ color: xIsNext ? '#f97316' : '#0ea5e9' }}>{xIsNext ? 'X' : 'O'}</span></span>}
-                </div>
-                <button onClick={() => { setBoard(Array(9).fill(null)); setXIsNext(true); }} className="w-full py-3.5 bg-zinc-100 dark:bg-white/5 hover:bg-orange-500 hover:text-white dark:hover:bg-orange-500 rounded-xl text-zinc-600 dark:text-zinc-300 font-bold uppercase tracking-widest transition-colors active:scale-95">
-                    Spela igen
-                </button>
-            </div>
-        </div>
-    );
-});
-
 // --- 3. HUVUDAPPLIKATION (App) ---
 const App = () => {
     const [user, setUser] = useState(null);
