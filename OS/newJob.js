@@ -1680,21 +1680,38 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                             const cleanName = (formData.kundnamn || '').toUpperCase().trim();
                                             // Räkna antal ordrar på denna kund
                                             const visitCount = cleanName.length > 1 ? allJobs.filter(j => (j.kundnamn || '').toUpperCase().trim() === cleanName).length : 0;
-                                            const isVIP = visitCount >= 3; // Gränsen för att bli guld-stammis
+                                            
+                                            const isGold = visitCount >= 3;
+                                            const isSilver = visitCount === 2;
+                                            const isNew = visitCount === 0;
+
+                                            // Färg-variabler baserat på nivå
+                                            let avatarStyles = 'bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 text-zinc-500 shadow-sm';
+                                            let labelColor = 'text-zinc-500';
+                                            let labelText = isNew && formData.kundnamn ? 'Ny Kund' : 'Kund';
+                                            let badgeIcon = null;
+
+                                            if (isGold) {
+                                                avatarStyles = 'bg-gradient-to-br from-yellow-300 to-amber-500 border border-yellow-400 text-amber-950 shadow-[0_0_15px_rgba(245,158,11,0.3)]';
+                                                labelColor = 'text-amber-600 dark:text-amber-500 font-bold';
+                                                labelText = 'Guldkund';
+                                                badgeIcon = '⭐';
+                                            } else if (isSilver) {
+                                                avatarStyles = 'bg-gradient-to-br from-slate-200 to-slate-400 border border-slate-300 text-slate-900 shadow-[0_0_15px_rgba(148,163,184,0.3)]';
+                                                labelColor = 'text-slate-600 dark:text-slate-400 font-bold';
+                                                labelText = 'Silverkund';
+                                                badgeIcon = '✨';
+                                            }
 
                                             return (
                                                 <>
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0 transition-all duration-500 relative ${
-                                                        isVIP 
-                                                        ? 'bg-gradient-to-br from-yellow-300 to-amber-500 border border-yellow-400 text-amber-950 shadow-[0_0_15px_rgba(245,158,11,0.3)]' 
-                                                        : 'bg-zinc-200 dark:bg-[#161f30] border border-zinc-300 dark:border-white/5 text-zinc-500 shadow-sm'
-                                                    }`}
-                                                    title={isVIP ? `Stammis: ${visitCount} tidigare besök` : `${visitCount} tidigare besök`}
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[14px] shrink-0 transition-all duration-500 relative ${avatarStyles}`}
+                                                    title={isGold || isSilver ? `Stammis: ${visitCount} tidigare besök` : `${visitCount} tidigare besök`}
                                                     >
                                                         {formData.kundnamn ? formData.kundnamn.substring(0,2).toUpperCase() : '??'}
-                                                        {isVIP && (
-                                                            <div className="absolute -top-1 -right-1 bg-white dark:bg-[#1e293b] w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-amber-200 dark:border-white/10 text-[9px]">
-                                                                ⭐
+                                                        {badgeIcon && (
+                                                            <div className="absolute -top-1 -right-1 bg-white dark:bg-[#1e293b] w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-zinc-200 dark:border-white/10 text-[9px]">
+                                                                {badgeIcon}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1720,11 +1737,11 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                         )}
                                                         
                                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                                            <span className={`text-[12px] ${isVIP ? 'text-amber-600 dark:text-amber-500 font-bold' : 'text-zinc-500'}`}>
-                                                                {isVIP ? 'Kund' : 'Kund'}
+                                                            <span className={`text-[12px] ${labelColor}`}>
+                                                                {labelText}
                                                             </span>
                                                             {visitCount > 0 && (
-                                                                <span className={`text-[10px] ${isVIP ? 'text-amber-600/70 dark:text-amber-500/70' : 'text-zinc-400'}`}>
+                                                                <span className={`text-[10px] ${isGold ? 'text-amber-600/70 dark:text-amber-500/70' : (isSilver ? 'text-slate-600/80 dark:text-slate-400/80' : 'text-zinc-400')}`}>
                                                                     ({visitCount} {visitCount === 1 ? 'besök' : 'besök'})
                                                                 </span>
                                                             )}
