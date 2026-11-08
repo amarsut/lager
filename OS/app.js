@@ -520,40 +520,29 @@ const App = () => {
     }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes, appReady, isNightLight]);
 
     useEffect(() => {
-        let isResolved = false;
-        let offlineTimer;
-
-        // 1. Om nätverk saknas fysiskt vid uppstart: Skippa all väntetid och starta direkt från cachen.
-        if (!navigator.onLine) {
-            isResolved = true;
-            setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
-            setLoading(false);
-        }
-
+        // Enklare och mycket mer stabil inloggningshanterare
         const unsubscribe = auth.onAuthStateChanged(u => {
-            if (!isResolved) {
-                isResolved = true;
-                setUser(u);
-                setLoading(false);
-            }
+            setUser(u);
+            setLoading(false);
         });
 
-        // 2. Om nätverk finns men Firebase hänger sig (t.ex. extremt dålig mottagning), bryt efter 400ms.
-        if (!isResolved) {
+        // Säkerhetsventil ENDAST om vi faktiskt saknar nätverk
+        let offlineTimer;
+        if (!navigator.onLine) {
             offlineTimer = setTimeout(() => {
-                if (!isResolved) {
-                    isResolved = true;
+                // Vi tvingar in dig offline om inloggningen inte laddat efter 300ms
+                if (loading) {
                     setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
                     setLoading(false);
                 }
-            }, 400);
+            }, 300);
         }
 
         return () => {
             unsubscribe();
             if (offlineTimer) clearTimeout(offlineTimer);
         };
-    }, []);
+    }, []); // Ta bort beroendet till 'loading' för att förhindra om-renderingar
 
     useEffect(() => {
         if (!user) return;
