@@ -79,12 +79,13 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        // FIX: networkResponse.status === 0 tillåter webbläsaren att cacha Opaque Responses (som Tailwind CDN)
-        if (networkResponse && (networkResponse.ok || networkResponse.status === 0)) {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, networkResponse.clone());
-          });
+        if (!networkResponse || (!networkResponse.ok && networkResponse.status !== 0)) {
+            return networkResponse;
         }
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+        });
         return networkResponse;
       }).catch(() => {
         // Tyst felhantering när vi är offline
