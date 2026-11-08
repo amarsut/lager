@@ -521,8 +521,30 @@ const App = () => {
     }, [view, allJobs, sidebarOpen, activeFilter, isDark, isSpotlightOpen, allNotes, appReady, isNightLight]);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(u => { setUser(u); setLoading(false); });
-        return () => unsubscribe();
+        let isResolved = false;
+        
+        const unsubscribe = auth.onAuthStateChanged(u => {
+            if (!isResolved) {
+                isResolved = true;
+                setUser(u);
+                setLoading(false);
+            }
+        });
+
+        // Tvinga fram start om internet saknas eller om Firebase segdrar i offline-läge
+        const offlineTimer = setTimeout(() => {
+            if (!isResolved && (!navigator.onLine || !auth.currentUser)) {
+                isResolved = true;
+                // Om vi är offline låtsas vi att en användare är inloggad för att ladda cachen
+                setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
+                setLoading(false);
+            }
+        }, 1500);
+
+        return () => {
+            unsubscribe();
+            clearTimeout(offlineTimer);
+        };
     }, []);
 
     useEffect(() => {
