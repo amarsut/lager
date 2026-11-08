@@ -158,6 +158,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     }, [viewMode, currentDate, calendarDays, calSearch, allJobs]);
 
     // --- ÄKTA KARUSELL-STATES OCH SCROLL-LOGIK (Med riktningslås för att förhindra fel-swipe) ---
+    // --- ÄKTA KARUSELL-STATES OCH SCROLL-LOGIK ---
     const [monthDragX, setMonthDragX] = React.useState(0);
     const [monthTransition, setMonthTransition] = React.useState(false);
     const [monthTouchStart, setMonthTouchStart] = React.useState(null);
@@ -169,7 +170,11 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     const [dayScrollLock, setDayScrollLock] = React.useState(null);
 
     const handleMonthTouchStart = (e) => {
-        setMonthTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
+        setMonthTouchStart({ 
+            x: e.targetTouches[0].clientX, 
+            y: e.targetTouches[0].clientY,
+            width: e.currentTarget.offsetWidth // EXAKT BREDD PÅ RUTNÄTET
+        });
         setMonthTransition(false);
         setMonthScrollLock(null);
     };
@@ -198,18 +203,48 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const handleMonthTouchEnd = () => {
         if (!monthTouchStart) return;
-        setMonthTransition(true);
         
+        const containerWidth = monthTouchStart.width || document.documentElement.clientWidth;
+
         if (monthScrollLock !== 'y') {
             if (monthDragX < -50) {
-                setMonthDragX(-window.innerWidth);
-                setTimeout(() => { changeDate(30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
+                setMonthTransition(true);
+                setMonthDragX(-containerWidth);
+                setTimeout(() => { 
+                    setMonthTransition(false);
+                    setMonthDragX(0);
+                    
+                    const d = new Date(currentDate);
+                    d.setDate(1); 
+                    d.setMonth(d.getMonth() + 1);
+                    setCurrentDate(d);
+
+                    const sel = new Date(selectedMobileDate);
+                    sel.setDate(1);
+                    sel.setMonth(sel.getMonth() + 1);
+                    setSelectedMobileDate(sel);
+                }, 270);
             } else if (monthDragX > 50) {
-                setMonthDragX(window.innerWidth);
-                setTimeout(() => { changeDate(-30, true); setMonthDragX(0); setMonthTransition(false); }, 250);
+                setMonthTransition(true);
+                setMonthDragX(containerWidth);
+                setTimeout(() => { 
+                    setMonthTransition(false);
+                    setMonthDragX(0);
+                    
+                    const d = new Date(currentDate);
+                    d.setDate(1);
+                    d.setMonth(d.getMonth() - 1);
+                    setCurrentDate(d);
+
+                    const sel = new Date(selectedMobileDate);
+                    sel.setDate(1);
+                    sel.setMonth(sel.getMonth() - 1);
+                    setSelectedMobileDate(sel);
+                }, 270);
             } else {
+                setMonthTransition(true);
                 setMonthDragX(0);
-                setTimeout(() => setMonthTransition(false), 250);
+                setTimeout(() => setMonthTransition(false), 270);
             }
         } else {
             setMonthDragX(0);
@@ -221,7 +256,11 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
     };
 
     const handleDayTouchStart = (e) => {
-        setDayTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
+        setDayTouchStart({ 
+            x: e.targetTouches[0].clientX, 
+            y: e.targetTouches[0].clientY,
+            width: e.currentTarget.offsetWidth // EXAKT BREDD PÅ LISTAN
+        });
         setDayTransition(false);
         setDayScrollLock(null);
     };
@@ -250,18 +289,30 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
 
     const handleDayTouchEnd = () => {
         if (!dayTouchStart) return;
-        setDayTransition(true);
         
+        const containerWidth = dayTouchStart.width || document.documentElement.clientWidth;
+
         if (dayScrollLock !== 'y') {
             if (dayDragX < -50) {
-                setDayDragX(-window.innerWidth);
-                setTimeout(() => { changeSelectedDay(1); setDayDragX(0); setDayTransition(false); }, 250);
+                setDayTransition(true);
+                setDayDragX(-containerWidth);
+                setTimeout(() => { 
+                    setDayTransition(false); 
+                    setDayDragX(0); 
+                    changeSelectedDay(1); 
+                }, 270);
             } else if (dayDragX > 50) {
-                setDayDragX(window.innerWidth);
-                setTimeout(() => { changeSelectedDay(-1); setDayDragX(0); setDayTransition(false); }, 250);
+                setDayTransition(true);
+                setDayDragX(containerWidth);
+                setTimeout(() => { 
+                    setDayTransition(false); 
+                    setDayDragX(0); 
+                    changeSelectedDay(-1); 
+                }, 270);
             } else {
+                setDayTransition(true);
                 setDayDragX(0);
-                setTimeout(() => setDayTransition(false), 250);
+                setTimeout(() => setDayTransition(false), 270);
             }
         } else {
             setDayDragX(0);
@@ -272,17 +323,43 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         setDayScrollLock(null);
     };
 
-    const changeDate = (days, skipAnim = false) => {
+    const changeDate = (amount, skipAnim = false) => {
         if (!skipAnim) {
+            const w = document.documentElement.clientWidth;
             setMonthTransition(true);
-            setMonthDragX(days > 0 ? -window.innerWidth : window.innerWidth);
+            setMonthDragX(amount > 0 ? -w : w);
             setTimeout(() => {
-                const d = new Date(currentDate); d.setDate(d.getDate() + days);
-                setCurrentDate(d); setMonthTransition(false); setMonthDragX(0);
-            }, 250);
+                setMonthTransition(false); 
+                setMonthDragX(0);
+                
+                const d = new Date(currentDate); 
+                if (Math.abs(amount) >= 28) {
+                    d.setDate(1);
+                    d.setMonth(d.getMonth() + (amount > 0 ? 1 : -1));
+                    
+                    const sel = new Date(selectedMobileDate);
+                    sel.setDate(1);
+                    sel.setMonth(sel.getMonth() + (amount > 0 ? 1 : -1));
+                    setSelectedMobileDate(sel);
+                } else {
+                    d.setDate(d.getDate() + amount);
+                }
+                setCurrentDate(d); 
+            }, 270);
             return;
         }
-        const d = new Date(currentDate); d.setDate(d.getDate() + days);
+        const d = new Date(currentDate); 
+        if (Math.abs(amount) >= 28) {
+            d.setDate(1);
+            d.setMonth(d.getMonth() + (amount > 0 ? 1 : -1));
+            
+            const sel = new Date(selectedMobileDate);
+            sel.setDate(1);
+            sel.setMonth(sel.getMonth() + (amount > 0 ? 1 : -1));
+            setSelectedMobileDate(sel);
+        } else {
+            d.setDate(d.getDate() + amount);
+        }
         setCurrentDate(d);
     };
 
@@ -304,13 +381,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         const lastDay = new Date(year, month + 1, 0).getDate();
         for (let i = 1; i <= lastDay; i++) days.push({ date: new Date(year, month, i), isCurrentMonth: true });
 
-        // När kalendern krymper plockar vi bara ut den aktuella veckan
-        let displayDays = days;
-        if (isCollapsed) {
-            const selectedIdx = days.findIndex(d => d.date.getDate() === selectedMobileDate.getDate() && d.date.getMonth() === selectedMobileDate.getMonth());
-            const weekStart = selectedIdx !== -1 ? Math.floor(selectedIdx / 7) * 7 : 0;
-            displayDays = days.slice(weekStart, weekStart + 7);
-        }
+        const displayDays = days; // Vi behåller alltid alla dagar renderade!
 
         return (
             <div key={offset} className="w-1/3 shrink-0 relative px-0">
@@ -322,7 +393,20 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                             <div key={idx} className={`text-center text-[12px] font-medium uppercase ${idx >= 5 ? 'text-red-500' : 'text-black dark:text-white'}`}>{wd}</div>
                         ))}
                     </div>
-                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1 transition-all duration-300">
+                    {/* Yttre container som agerar "mask" och mjukt krymper på höjden */}
+                    <div 
+                        className="overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
+                        style={{ height: isCollapsed ? '44px' : '230px' }} // 44px motsvarar exakt en rad
+                    >
+                        {/* Inre container som rullar uppåt för att visa rätt vecka när vi är ihopfällda */}
+                        <div 
+                            className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-y-3 gap-x-1 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
+                            style={{ 
+                                transform: isCollapsed 
+                                    ? `translateY(-${Math.floor(days.findIndex(d => d.date.getDate() === selectedMobileDate.getDate() && d.date.getMonth() === selectedMobileDate.getMonth()) / 7) * 44}px)` 
+                                    : 'translateY(0px)' 
+                            }}
+                        >
                         {displayDays.map(({ date, isCurrentMonth }, i) => {
                             const showWeekNum = i % 7 === 0; const weekNum = showWeekNum ? getWeekNumber(date) : null;
                             const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -342,6 +426,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                         })}
                     </div>
                 </div>
+            </div>
             </div>
         );
     };
@@ -448,11 +533,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
             <div className="flex flex-col w-full px-2 pt-2 xl:p-0 h-full relative max-md:flex-1 max-md:overflow-hidden">
                 
                 {/* --- MOBIL TOPP (Fast flex-block, ritar aldrig över listan) --- */}
-                <div className="md:hidden shrink-0 z-50 bg-[#f4f5f7] dark:bg-[#0b0f19] -mx-2 px-2 pt-2 border-b border-zinc-200 dark:border-white/10 shadow-sm touch-pan-y transition-all duration-300" 
-                     onTouchStart={handleMonthTouchStart} 
-                     onTouchMove={handleMonthTouchMove} 
-                     onTouchEnd={handleMonthTouchEnd}
-                >
+                <div className="md:hidden shrink-0 z-50 bg-[#f4f5f7] dark:bg-[#0b0f19] -mx-2 px-2 pt-2 border-b border-zinc-200 dark:border-white/10 shadow-sm touch-pan-y transition-all duration-300">
                     {/* Header (KALENDAR + Dagens datum) */}
                     <div className="flex justify-between items-center mb-3 px-1">
                         <div className="flex items-center gap-3">
@@ -481,7 +562,12 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     </div>
                     
                     {/* Själva Rutnätet */}
-                    <div className="overflow-hidden w-full relative">
+                    <div 
+                        className="overflow-hidden w-full relative"
+                        onTouchStart={handleMonthTouchStart} 
+                        onTouchMove={handleMonthTouchMove} 
+                        onTouchEnd={handleMonthTouchEnd}
+                    >
                         <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${monthDragX}px)`, transition: monthTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
                             {[-1, 0, 1].map(renderMobileMonth)}
                         </div>
@@ -579,8 +665,13 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     <div className="flex-1 flex flex-col min-w-0 w-full p-0 relative">
                         
                         {/* MOBILVY: Intern scroll inuti den nedre vyn */}
-                        <div className="md:hidden flex flex-col relative flex-1 overflow-y-auto custom-scrollbar touch-pan-y pb-24" onTouchStart={handleDayTouchStart} onTouchMove={handleDayTouchMove} onTouchEnd={handleDayTouchEnd}>
-                            <div className="overflow-hidden w-full relative h-full">
+                        <div className="md:hidden flex flex-col relative flex-1 overflow-y-auto custom-scrollbar touch-pan-y pb-24">
+                            <div 
+                                className="overflow-hidden w-full relative h-full" 
+                                onTouchStart={handleDayTouchStart} 
+                                onTouchMove={handleDayTouchMove} 
+                                onTouchEnd={handleDayTouchEnd}
+                            >
                                 <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
                                     {[-1, 0, 1].map(renderMobileDay)}
                                 </div>
