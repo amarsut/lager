@@ -626,7 +626,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             </datalist>
 
             {/* === STICKY HEADER === */}
-            <div className="sticky top-[-16px] lg:top-[-32px] z-[100] pt-[28px] lg:pt-[32px] pb-4 px-4 lg:px-8 mb-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-white/10 gap-4 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl shadow-sm -mt-4 lg:-mt-8 w-full lg:-mx-8 lg:w-[calc(100%+64px)]">
+            <div className="sticky top-[-16px] lg:top-[-32px] z-[100] pt-[28px] lg:pt-[32px] pb-4 px-2 lg:px-0 mb-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-white/10 gap-4 bg-white/95 dark:bg-[#1e293b]/95 backdrop-blur-2xl shadow-sm -mt-4 lg:-mt-8 w-full">
                 <div className="flex items-center gap-4">
                     {step === 'DETAIL' ? (
                         <button onClick={() => { window.location.hash = '#new_job'; setStep('SEARCH'); }} className="relative group shrink-0 active:scale-95 transition-all" title="Gå tillbaka till sök">
@@ -657,7 +657,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
             {/* === SÖK VY === */}
             {step === 'SEARCH' && (
-                <div className="w-full flex flex-col gap-2 px-4 lg:px-0 animate-in fade-in duration-300">
+                <div className="w-full flex flex-col gap-2 px-2 lg:px-0 animate-in fade-in duration-300">
                     <div className="bg-white dark:bg-[#1e293b] border border-zinc-200 dark:border-white/10 rounded-2xl p-4 sm:p-6 shadow-sm">
                         
                         {/* FRITEKSTSÖKNING (Modern pill-design för både mobil och dator) */}
@@ -994,7 +994,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
 
             {/* === DETALJ VY (Blanketten) === */}
             {step === 'DETAIL' && (
-                <div className="px-4 lg:px-0 pb-0 lg:pb-6">
+                <div className="px-2 lg:px-0 pb-0 lg:pb-6">
                     <form onSubmit={handleSave} className="flex flex-col lg:flex-row gap-3 lg:gap-8 relative lg:items-stretch mt-0 lg:mt-4">
                         
                         {/* === VÄNSTER KOLUMN === */}
