@@ -28,7 +28,7 @@ setTimeout(() => {
     if (!navigator.onLine) {
         console.log("Offline mode detected, forcing render with cached data");
     }
-}, 2500);
+}, 300);
 
 const auth = firebase.auth();
 window.db = db;
@@ -532,14 +532,14 @@ const App = () => {
         });
 
         // Tvinga fram start om internet saknas eller om Firebase segdrar i offline-läge
+        // Tvinga fram start omedelbart om nätverk saknas
         const offlineTimer = setTimeout(() => {
-            if (!isResolved && (!navigator.onLine || !auth.currentUser)) {
+            if (!isResolved) {
                 isResolved = true;
-                // Om vi är offline låtsas vi att en användare är inloggad för att ladda cachen
                 setUser(auth.currentUser || { email: 'offline@autogrid.local', displayName: 'Offline Operator' });
                 setLoading(false);
             }
-        }, 1500);
+        }, 400);
 
         return () => {
             unsubscribe();
