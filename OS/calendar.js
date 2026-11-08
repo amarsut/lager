@@ -384,9 +384,10 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         const displayDays = days; // Vi behåller alltid alla dagar renderade!
 
         return (
-            <div key={offset} className="w-1/3 shrink-0 relative px-0">
-                <div className="relative -ml-[6px] -mr-[6px]">
-                    <div className="absolute top-0 bottom-0 left-[20px] w-px bg-zinc-200 dark:bg-white/10 z-10 transition-all duration-300"></div>
+            <div key={offset} className={`w-full px-1 ${offset === 0 ? 'relative z-10' : 'absolute top-0 z-0'}`} style={{ left: `${offset * 100}%` }}>
+                <div className="relative w-full">
+                    {/* Linjen är flyttad till left-[24px] för att matcha veckonummer-kolumnen perfekt */}
+                    <div className="absolute top-0 bottom-0 left-[24px] w-px bg-zinc-200 dark:bg-white/10 z-10 transition-all duration-300"></div>
                     <div className="grid grid-cols-[24px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] mb-3 gap-x-1">
                         <div className="text-center text-[9px] font-black text-black dark:text-white pt-0.5 pr-1">V.</div>
                         {["Må", "Ti", "On", "To", "Fr", "Lö", "Sö"].map((wd, idx) => (
@@ -396,7 +397,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     {/* Yttre container som agerar "mask" och mjukt krymper på höjden */}
                     <div 
                         className="overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-                        style={{ height: isCollapsed ? '44px' : '230px' }} // 44px motsvarar exakt en rad
+                        style={{ height: isCollapsed ? '44px' : `${Math.ceil(days.length / 7) * 44}px` }} // Dynamisk höjd: Räknar antalet veckor * 44px
                     >
                         {/* Inre container som rullar uppåt för att visa rätt vecka när vi är ihopfällda */}
                         <div 
@@ -437,9 +438,10 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         const dStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
         const activeJobs = jobsByDate[dStr] || [];
 
-        return (
-            <div key={offset} className="w-1/3 shrink-0 px-0 pb-8">
-                <div className="flex items-baseline gap-2 mb-3 mt-3 pb-2 border-b border-zinc-100 dark:border-white/5 px-2">
+       return (
+            <div key={offset} className={`w-full px-0 pb-8 ${offset === 0 ? 'relative z-10' : 'absolute top-0 z-0'}`} style={{ left: `${offset * 100}%` }}>
+                {/* Bytte mt-3 mot pt-3 för att stoppa margin-collapse-hoppet */}
+                <div className="flex items-baseline gap-2 mb-3 pt-3 pb-2 border-b border-zinc-100 dark:border-white/5 px-2">
                     <h3 className="text-[28px] font-black text-black dark:text-white tracking-tighter leading-none">{targetDate.getDate()}</h3>
                     <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{weekDays[targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1]} {monthNames[targetDate.getMonth()]}</span>
                 </div>
@@ -563,12 +565,12 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                     
                     {/* Själva Rutnätet */}
                     <div 
-                        className="overflow-hidden w-full relative"
+                        className="overflow-hidden w-full relative transition-all duration-300"
                         onTouchStart={handleMonthTouchStart} 
                         onTouchMove={handleMonthTouchMove} 
                         onTouchEnd={handleMonthTouchEnd}
                     >
-                        <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${monthDragX}px)`, transition: monthTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                        <div className="w-full relative" style={{ transform: `translateX(${monthDragX}px)`, transition: monthTransition ? 'transform 0.27s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
                             {[-1, 0, 1].map(renderMobileMonth)}
                         </div>
                     </div>
@@ -672,7 +674,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                                 onTouchMove={handleDayTouchMove} 
                                 onTouchEnd={handleDayTouchEnd}
                             >
-                                <div className="flex w-[300%]" style={{ marginLeft: '-100%', transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                                <div className="w-full relative min-h-full" style={{ transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.27s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
                                     {[-1, 0, 1].map(renderMobileDay)}
                                 </div>
                             </div>
