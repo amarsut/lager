@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        if (localStorage.getItem('sys_theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#09090b';
+        } else {
+            document.documentElement.style.backgroundColor = '#fafafa';
+        }
+    </script>
     <title>AutoGrid</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
