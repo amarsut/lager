@@ -439,8 +439,7 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
         const activeJobs = jobsByDate[dStr] || [];
 
        return (
-            <div key={offset} className={`w-full px-0 pb-8 ${offset === 0 ? 'relative z-10' : 'absolute top-0 z-0'}`} style={{ left: `${offset * 100}%` }}>
-                {/* Bytte mt-3 mot pt-3 för att stoppa margin-collapse-hoppet */}
+            <div key={offset} className={`w-full h-full overflow-y-auto custom-scrollbar px-0 ${offset === 0 ? 'relative z-10' : 'absolute top-0 z-0'}`} style={{ left: `${offset * 100}%` }}>
                 <div className="flex items-baseline gap-2 mb-3 pt-3 pb-2 border-b border-zinc-100 dark:border-white/5 px-2">
                     <h3 className="text-[28px] font-black text-black dark:text-white tracking-tighter leading-none">{targetDate.getDate()}</h3>
                     <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{weekDays[targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1]} {monthNames[targetDate.getMonth()]}</span>
@@ -661,20 +660,20 @@ window.CalendarView = ({ allJobs = [], setEditingJob, setView }) => {
                 </div>
 
                 {/* --- HUVUDGRID --- */}
-                <div className="flex flex-col xl:flex-row w-full gap-2 items-start p-0">
+                <div className="flex flex-col xl:flex-row w-full gap-2 items-start p-0 flex-1 overflow-hidden">
                     
                     {/* VÄNSTRA SIDAN: Kalenderrutnät */}
-                    <div className="flex-1 flex flex-col min-w-0 w-full p-0 relative">
+                    <div className="flex-1 flex flex-col min-w-0 w-full p-0 relative h-full">
                         
-                        {/* MOBILVY: Intern scroll inuti den nedre vyn */}
-                        <div className="md:hidden flex flex-col relative flex-1 overflow-y-auto custom-scrollbar touch-pan-y pb-24">
+                        {/* MOBILVY: Fast yta för sidledssvep (Scroll sker inuti varje dag) */}
+                        <div className="md:hidden flex flex-col relative flex-1 overflow-hidden touch-pan-y">
                             <div 
-                                className="overflow-hidden w-full relative h-full" 
+                                className="w-full h-full relative" 
                                 onTouchStart={handleDayTouchStart} 
                                 onTouchMove={handleDayTouchMove} 
                                 onTouchEnd={handleDayTouchEnd}
                             >
-                                <div className="w-full relative min-h-full" style={{ transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.27s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
+                                <div className="w-full h-full relative" style={{ transform: `translateX(${dayDragX}px)`, transition: dayTransition ? 'transform 0.27s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }}>
                                     {[-1, 0, 1].map(renderMobileDay)}
                                 </div>
                             </div>
