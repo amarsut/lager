@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 1. INITIALISERING & GLOBALA VARIABLER
     // ==========================================
@@ -208,25 +208,56 @@
         });
     }
 
+    const contextMenuModeSelect = document.getElementById('context-menu-mode-select');
+    if (contextMenuModeSelect) {
+        chrome.storage.local.get(['os_context_menu_mode'], (res) => {
+            contextMenuModeSelect.value = res.os_context_menu_mode || 'submenu';
+        });
+        contextMenuModeSelect.addEventListener('change', (e) => {
+            chrome.storage.local.set({ 'os_context_menu_mode': e.target.value });
+            showToast(e.target.value === 'direct' ? 'Högerklick: Direktklick' : 'Högerklick: Bridge-meny');
+        });
+    }
+
+    const styleTrigger = document.getElementById('highlight-style-trigger');
+    const styleOptions = document.getElementById('highlight-style-options');
+    const stylePreview = document.getElementById('active-style-preview');
     const styleBtns = document.querySelectorAll('.style-list-item');
-    if (styleBtns.length > 0) {
-        // Läs in sparad stil från molnet/localstorage
+
+    if (styleTrigger && styleOptions && styleBtns.length > 0) {
         chrome.storage.local.get(['os_highlight_style'], (res) => {
             const activeStyle = res.os_highlight_style || 'saas';
             styleBtns.forEach(btn => {
-                if (btn.dataset.style === activeStyle) btn.classList.add('active');
-                else btn.classList.remove('active');
+                if (btn.dataset.style === activeStyle) {
+                    btn.classList.add('active');
+                    stylePreview.className = btn.dataset.class;
+                } else {
+                    btn.classList.remove('active');
+                }
             });
         });
 
-        // När du klickar på en ny stil i menyn
+        styleTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            styleOptions.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!styleOptions.contains(e.target) && e.target !== styleTrigger) {
+                styleOptions.classList.add('hidden');
+            }
+        });
+
         styleBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Stäng inte inställningsmenyn
+                e.stopPropagation();
                 styleBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 
                 const selectedStyle = btn.dataset.style;
+                stylePreview.className = btn.dataset.class; 
+                styleOptions.classList.add('hidden'); 
+                
                 chrome.storage.local.set({ 'os_highlight_style': selectedStyle });
                 showToast(`Stil sparad. Ladda om fliken för att se ändringen.`, 'success');
             });
@@ -1790,10 +1821,11 @@
         }
     }
 
-    chrome.storage.local.get(['pending_context_search', 'pending_image_scan'], async (res) => {
+    chrome.storage.local.get(['pending_context_search', 'pending_context_engine', 'pending_image_scan'], async (res) => {
         if (res.pending_context_search) {
-            chrome.storage.local.remove('pending_context_search');
-            setTimeout(() => { UI.regInput.value = res.pending_context_search; triggerSearch(STATE.defaultEngine); }, 100);
+            const targetEngine = res.pending_context_engine || STATE.defaultEngine;
+            chrome.storage.local.remove(['pending_context_search', 'pending_context_engine']);
+            setTimeout(() => { UI.regInput.value = res.pending_context_search; triggerSearch(targetEngine); }, 100);
         }
         if (res.pending_image_scan) {
             chrome.storage.local.remove('pending_image_scan');
@@ -1913,5 +1945,43 @@
                 showToast('Inget giltigt reg-nr för värdering', 'error');
             }
         };
+    }
+
+    // --- Växla mellan Standard och Beta UI ---
+    const switchBetaBtn = document.getElementById('switch-beta-btn');
+    if (switchBetaBtn) {
+        switchBetaBtn.addEventListener('click', () => {
+            const isBeta = window.location.pathname.includes('beta.html');
+            const targetFile = isBeta ? 'popup.html' : 'beta.html';
+            chrome.action.setPopup({ popup: targetFile });
+            chrome.storage.local.set({ 'os_active_ui': targetFile }, () => {
+                window.location.href = targetFile;
+            });
+        });
+    }
+
+    // --- Ladda ner uppdatering från GitHub ---
+    const downloadUpdateBtn = document.getElementById('download-update-btn');
+    if (downloadUpdateBtn) {
+        downloadUpdateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Säkerställ att "downloads" finns i manifest.json
+            if (chrome.downloads) {
+                chrome.downloads.download({
+                    url: "https://raw.githubusercontent.com/amarsut/lager/main/chrometillagg/AutoSearch.zip",
+                    filename: "AutoSearch_Uppdatering.zip",
+                    saveAs: true 
+                }, (downloadId) => {
+                    if (chrome.runtime.lastError) {
+                        showToast('Fel: Saknas "downloads" i manifestet?', 'error');
+                    } else {
+                        showToast('Laddar ner filen! Packa upp och ersätt.', 'success');
+                    }
+                });
+            } else {
+                showToast('Nedladdningsbehörighet saknas.', 'error');
+            }
+        });
     }
 });
