@@ -1,4 +1,4 @@
-﻿﻿importScripts('firebase-sync.js');
+importScripts('firebase-sync.js');
 
 const isMobile = /Android|Mobile|Lemur|Kiwi/i.test(navigator.userAgent);
 
@@ -84,9 +84,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
             // 2. Standard-avslut
             if (sender.tab && sender.tab.id) {
-                chrome.storage.local.get(['os_external_task_origin'], (originRes) => {
+                chrome.storage.local.get(['os_external_task_origin', 'os_active_ui'], (originRes) => {
+                    const uiFile = originRes.os_active_ui || 'popup.html';
                     if (isMobile && originRes.os_external_task_origin === 'popup') {
-                        chrome.tabs.update(sender.tab.id, { url: chrome.runtime.getURL("popup.html?mobile_return=true") });
+                        chrome.tabs.update(sender.tab.id, { url: chrome.runtime.getURL(`${uiFile}?mobile_return=true`) });
                     } else {
                         chrome.tabs.remove(sender.tab.id).catch(() => {});
                     }
@@ -170,20 +171,56 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // ==========================================
 // HÖGERKLICK (Får använda den vanliga dropdown-menyn)
 // ==========================================
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.contextMenus.create({ id: "bmg-search-reg", title: "Sök Fordon: '%s'", contexts: ["selection"] });
-    chrome.contextMenus.create({ id: "bmg-scan-image", title: "Skanna Reg-nr från bild", contexts: ["image"] });
+function rebuildContextMenus() {
+    chrome.storage.local.get(['os_context_menu_mode'], (res) => {
+        const mode = res.os_context_menu_mode || 'submenu'; // 'direct' = gamla, 'submenu' = nya
+        chrome.contextMenus.removeAll(() => {
+            if (mode === 'direct') {
+                // GAMLA MENYN: Endast 1 val för textmarkering = Direktklick på toppnivå
+                chrome.contextMenus.create({ id: "bmg-search-reg", title: "Sök Fordon: '%s'", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "bmg-scan-image", title: "Skanna Reg-nr från bild", contexts: ["image"] });
+            } else {
+                // NYA MENYN: Bridge-undermeny med flera val
+                chrome.contextMenus.create({ id: "bmg-search-reg", title: "🟠  Sök Fordon: '%s'", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "porsche-search-reg", title: "🔵  Öppna i Porsche Service: '%s'", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "bmg-sep-1", type: "separator", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "bmg-search-bu", title: "🟢  Sök via Biluppgifter: '%s'", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "open-ci-direct", title: "⚪  Öppna Car.info direkt: '%s'", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "open-bu-direct", title: "⚪  Öppna Biluppgifter direkt: '%s'", contexts: ["selection"] });
+                chrome.contextMenus.create({ id: "bmg-scan-image", title: "🟠  Skanna Reg-nr från bild", contexts: ["image"] });
+            }
+        });
+    });
+}
+
+chrome.runtime.onInstalled.addListener(rebuildContextMenus);
+
+chrome.storage.onChanged.addListener((changes, ns) => {
+    if (ns === 'local' && changes.os_context_menu_mode) {
+        rebuildContextMenus();
+    }
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === "bmg-search-reg") {
-        const rawText = info.selectionText || "";
-        const regnr = rawText.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-        if (regnr.length >= 4 && regnr.length <= 6) {
-            chrome.storage.local.set({ 'pending_context_search': regnr }, openDropdownPopup);
-        }
-    } else if (info.menuItemId === "bmg-scan-image") {
+    if (info.menuItemId === "bmg-scan-image") {
         chrome.storage.local.set({ 'pending_image_scan': info.srcUrl }, openDropdownPopup);
+        return;
+    }
+
+    const rawText = info.selectionText || "";
+    const regnr = rawText.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (regnr.length < 4 || regnr.length > 6) return;
+
+    if (info.menuItemId === "bmg-search-reg") {
+        chrome.storage.local.set({ 'pending_context_search': regnr }, openDropdownPopup);
+    } else if (info.menuItemId === "bmg-search-bu") {
+        chrome.storage.local.set({ 'pending_context_search': regnr, 'pending_context_engine': 'bu' }, openDropdownPopup);
+    } else if (info.menuItemId === "porsche-search-reg") {
+        chrome.tabs.create({ url: `https://ph-veh-se03.cross.porscheinformatik.com/physical-vehicle/search?applicationName=SERVICE&conversation=1794303212235&prodFam=C3&q=${regnr.toLowerCase()}`, active: true });
+    } else if (info.menuItemId === "open-ci-direct") {
+        chrome.tabs.create({ url: `https://www.car.info/sv-se/license-plate/S/${regnr}`, active: true });
+    } else if (info.menuItemId === "open-bu-direct") {
+        chrome.tabs.create({ url: `https://biluppgifter.se/fordon/${regnr}`, active: true });
     }
 });
 
