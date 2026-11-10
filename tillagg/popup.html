@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sv">
 
 <head>
@@ -51,30 +51,34 @@
                 <div class="dropdown-header">Automatisering</div>
                 <label class="setting-row"><span class="label-text">Markera reg-nr på webbsidor</span><div class="toggle-switch"><input type="checkbox" id="toggle-highlight" checked><div class="slider"></div></div></label>
                 <label class="setting-row"><span class="label-text">Autosök reg-nr</span><div class="toggle-switch"><input type="checkbox" id="toggle-autosearch" checked><div class="slider"></div></div></label>
+                <div class="setting-row"><span class="label-text">Högerklicksmeny</span><select id="context-menu-mode-select" class="premium-select"><option value="submenu" selected>Bridge-meny</option><option value="direct">Direktklick</option></select></div>
                 
-                <!-- NYTT: 2x2 Grid för stilarna -->
                 <div class="dropdown-header" style="margin-top: 12px; margin-bottom: 4px;">Stil för sidomarkering</div>
-                <div class="style-selector-grid" id="highlight-style-selector">
-                    <div class="style-list-item" data-style="saas">
-                        <span class="prev-saas">ABC123</span>
+                <div class="custom-select-wrapper" id="highlight-style-wrapper">
+                    <div class="custom-select-trigger" id="highlight-style-trigger">
+                        <span id="active-style-preview" class="prev-saas">ABC123</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
-                    <div class="style-list-item" data-style="underline">
-                        <span class="prev-underline">ABC123</span>
-                    </div>
-                    <div class="style-list-item" data-style="ghost">
-                        <span class="prev-ghost">ABC123</span>
-                    </div>
-                    <div class="style-list-item" data-style="accent">
-                        <span class="prev-accent">ABC123</span>
+                    <div class="custom-select-options hidden" id="highlight-style-options">
+                        <div class="style-list-item" data-style="saas" data-class="prev-saas"><span class="prev-saas">ABC123</span><span class="style-name">SaaS</span></div>
+                        <div class="style-list-item" data-style="underline" data-class="prev-underline"><span class="prev-underline">ABC123</span><span class="style-name">Underline</span></div>
+                        <div class="style-list-item" data-style="ghost" data-class="prev-ghost"><span class="prev-ghost">ABC123</span><span class="style-name">Ghost</span></div>
+                        <div class="style-list-item" data-style="accent" data-class="prev-accent"><span class="prev-accent">ABC123</span><span class="style-name">Accent</span></div>
                     </div>
                 </div>
 
-                <div class="dropdown-header" style="margin-top: 12px;">System & Databas</div>
+                <div class="dropdown-header">System & Databas</div>
                 <label class="setting-row"><span class="label-text">Spela upp aviseringsljud</span><div class="toggle-switch"><input type="checkbox" id="toggle-sound" checked><div class="slider"></div></div></label>
                 <label class="setting-row"><span class="label-text">Molnsynk (Firebase)</span><div class="toggle-switch"><input type="checkbox" id="toggle-cloud-sync" checked><div class="slider"></div></div></label>
-                <div class="setting-row" style="margin-top: 4px;"><span class="label-text">Gränssnittets storlek</span><select id="ui-scale-select" class="premium-select"><option value="0.9">Liten (90%)</option><option value="1">Normal (100%)</option><option value="1.15">Stor (115%)</option><option value="1.3">Max (130%)</option></select></div>
-                <div class="setting-row" style="margin-top: 4px;"><span class="label-text">Sparade sökningar:</span><select id="history-limit-select" class="premium-select"><option value="0">0</option><option value="5">5</option><option value="10">10</option></select></div>
-                <div class="setting-row"><span class="label-text">Standardsökning:</span><select id="default-search-select" class="premium-select"><option value="om">Oljemagasinet</option><option value="ts">Transportstyrelsen</option><option value="ci">Car.info</option><option value="bu">Biluppgifter</option><option value="combo">Kombo (OM + BU)</option><option value="combo-ci-om" selected>Kombo (CI + OM)</option></select></div>
+                <div class="setting-row"><span class="label-text">Gränssnittets storlek</span><select id="ui-scale-select" class="premium-select"><option value="0.9">Liten</option><option value="1">Normal</option><option value="1.15">Stor</option><option value="1.3">Max</option></select></div>
+                <div class="setting-row"><span class="label-text">Sparade sökningar</span><select id="history-limit-select" class="premium-select"><option value="0">0</option><option value="5">5</option><option value="10">10</option></select></div>
+                <div class="setting-row"><span class="label-text">Standardsökning</span><select id="default-search-select" class="premium-select"><option value="om">Oljemagasinet</option><option value="ts">Transportstyrelsen</option><option value="ci">Car.info</option><option value="bu">Biluppgifter</option><option value="combo">BU + OM</option><option value="combo-ci-om" selected>CI + OM</option></select></div>
+                
+                <div class="dropdown-header">Uppdatering & Underhåll</div>
+                <button id="download-update-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #f97316, #ea580c); border: none; color: #ffffff; padding: 12px; border-radius: 10px; font-size: 10.5px; font-weight: 900; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25); transition: all 0.2s; margin-top: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    LADDA NER UPPDATERING
+                </button>
             </div>
         </div>
     </header>
