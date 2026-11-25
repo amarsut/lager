@@ -1468,6 +1468,7 @@ window.DashboardView = React.memo(({
 
                 const meta = getJobVehicleMeta(j);
                 const expensesText = (j.utgifter || []).map(u => `${u.namn || ''} ${u.kostnad || ''}`).join(' ');
+                const paymentsText = (j.delbetalningar || []).map(p => `${p.desc || ''} ${p.amount || ''}`).join(' ');
                 const commentText = stripHtml(j.kommentar || '');
 
                 const searchableString = [
@@ -1479,6 +1480,7 @@ window.DashboardView = React.memo(({
                     j.kundpris,
                     commentText,
                     expensesText,
+                    paymentsText,
                     meta.vin,
                     meta.brand,
                     meta.rawBrand,
@@ -2314,17 +2316,12 @@ window.DashboardView = React.memo(({
                                                                         </button>
                                                                     </div>
 
-                                                                    {/* Trädstruktur med paket, hela kommentaren och utgifter */}
+                                                                    {/* Trädstruktur med paket, hela kommentaren, utgifter och delbetalningar */}
                                                                     <div className="pl-1 space-y-1.5 text-[12px] text-zinc-700 dark:text-zinc-300">
                                                                         <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-white">
                                                                             <window.Icon name="chevron-down" size={13} className="text-zinc-400" />
                                                                             <window.Icon name="box" size={13} className="text-orange-500" />
                                                                             <span>{serviceTitle}</span>
-                                                                            {paid > 0 && (
-                                                                                <span className="ml-2 text-[11px] font-normal text-emerald-600 dark:text-emerald-400">
-                                                                                    (Delbetalt: {paid.toLocaleString('sv-SE')} kr)
-                                                                                </span>
-                                                                            )}
                                                                         </div>
                                                                         {cleanComment && (
                                                                             <div className="pl-6 flex items-start gap-2 text-zinc-600 dark:text-zinc-300 max-w-3xl">
@@ -2340,6 +2337,22 @@ window.DashboardView = React.memo(({
                                                                                 <span>{u.namn} ({u.kostnad} kr)</span>
                                                                             </div>
                                                                         ))}
+                                                                        {job.delbetalningar && job.delbetalningar.filter(p => p.desc || p.amount).length > 0 ? (
+                                                                            job.delbetalningar.filter(p => p.desc || p.amount).map((p, idx) => (
+                                                                                <div key={`pay-${idx}`} className="pl-6 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                                                    <window.Icon name="credit-card" size={11} className="shrink-0" />
+                                                                                    <span onClick={(e) => e.stopPropagation()}>
+                                                                                        {p.desc ? <><window.TaskFormatter text={p.desc} isDone={false} /> </> : ''}
+                                                                                        <span className="opacity-80">(Delbetalt: {(parseFloat(p.amount) || 0).toLocaleString('sv-SE')} kr)</span>
+                                                                                    </span>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : paid > 0 && (
+                                                                            <div className="pl-6 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                                                <window.Icon name="credit-card" size={11} className="shrink-0" />
+                                                                                <span>Delbetalt: {paid.toLocaleString('sv-SE')} kr</span>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -2573,6 +2586,22 @@ window.DashboardView = React.memo(({
                                                                                         <span>{u.namn} ({u.kostnad} kr)</span>
                                                                                     </div>
                                                                                 ))}
+                                                                                {job.delbetalningar && job.delbetalningar.filter(p => p.desc || p.amount).length > 0 ? (
+                                                                                    job.delbetalningar.filter(p => p.desc || p.amount).map((p, idx) => (
+                                                                                        <div key={`pay-sp-${idx}`} className="pl-6 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                                                            <window.Icon name="credit-card" size={11} className="shrink-0" />
+                                                                                            <span onClick={(e) => e.stopPropagation()}>
+                                                                                                {p.desc ? <><window.TaskFormatter text={p.desc} isDone={false} /> </> : ''}
+                                                                                                <span className="opacity-80">(Delbetalt: {(parseFloat(p.amount) || 0).toLocaleString('sv-SE')} kr)</span>
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    ))
+                                                                                ) : paid > 0 && (
+                                                                                    <div className="pl-6 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                                                        <window.Icon name="credit-card" size={11} className="shrink-0" />
+                                                                                        <span>Delbetalt: {paid.toLocaleString('sv-SE')} kr</span>
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
                                                                         </td>
                                                                     </tr>
