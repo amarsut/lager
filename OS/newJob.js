@@ -141,7 +141,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
     const [expenses, setExpenses] = React.useState(emptyExpenses);
     const [selectedExpenses, setSelectedExpenses] = React.useState([]);
     
-    const emptyPayments = [{ desc: '', amount: '' }];
+    const emptyPayments = [{ desc: '', amount: '', date: today }];
     const [payments, setPayments] = React.useState(emptyPayments);
     
     const [fetchedCarInfo, setFetchedCarInfo] = React.useState(null);
@@ -235,9 +235,10 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
             const terms = query.split(/\s+/);
             filtered = filtered.filter(j => {
                 const expensesText = (j.utgifter || []).map(u => u.namn || '').join(' ');
+                const paymentsText = (j.delbetalningar || []).map(p => `${p.desc || ''} ${p.amount || ''} ${p.date || ''}`).join(' ');
                 const cleanComment = (j.kommentar || '').replace(/<[^>]*>?/gm, '');
                 const searchableString = [
-                    j.kundnamn, j.regnr, j.vin, j.bilmodell, j.paket, j.status, cleanComment, expensesText
+                    j.kundnamn, j.regnr, j.vin, j.bilmodell, j.paket, j.status, cleanComment, expensesText, paymentsText
                 ].filter(Boolean).join(' ').toLowerCase();
                 
                 return terms.every(t => searchableString.includes(t));
@@ -567,7 +568,7 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                 inkopspris: ex.cost || '', // NY RAD
                 type: ex.type || 'reservdel'
             }));
-            const finalPayments = (payments || []).filter(p => p && (p.desc || p.amount)).map(p => ({ desc: p.desc, amount: p.amount }));
+            const finalPayments = (payments || []).filter(p => p && (p.desc || p.amount)).map(p => ({ desc: p.desc, amount: p.amount, date: p.date || today }));
             const totalPaidAmount = finalPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
             const resolvedBilmodell = fetchedCarInfo?.bilmodell || formData.bilmodell || '';
@@ -951,6 +952,23 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                                                 <span>{u.antal && u.antal !== '1' ? `${u.antal}x ` : ''}{u.namn || 'Ospecificerad artikel'} {u.kostnad ? ` (${u.kostnad} kr)` : ''}</span>
                                                                             </div>
                                                                         ))}
+                                                                        {job.delbetalningar && job.delbetalningar.filter(p => p.desc || p.amount).length > 0 ? (
+                                                                            job.delbetalningar.filter(p => p.desc || p.amount).map((p, idx) => (
+                                                                                <div key={`pay-${idx}`} className="pl-6 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                                                    <SafeIcon name="credit-card" size={11} className="shrink-0" />
+                                                                                    <span onClick={(e) => e.stopPropagation()}>
+                                                                                        {p.date ? `${p.date.slice(5)} ` : ''}
+                                                                                        {p.desc ? <>{window.TaskFormatter ? <window.TaskFormatter text={p.desc} isDone={false} /> : p.desc} </> : ''}
+                                                                                        <span className="opacity-80">(Delbetalt: {(parseFloat(p.amount) || 0).toLocaleString('sv-SE')} kr)</span>
+                                                                                    </span>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : (parseInt(job.betaltBelopp) || 0) > 0 && (
+                                                                            <div className="pl-6 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                                                <SafeIcon name="credit-card" size={11} className="shrink-0" />
+                                                                                <span>Delbetalt: {(parseInt(job.betaltBelopp) || 0).toLocaleString('sv-SE')} kr</span>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -1487,20 +1505,27 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                     <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col p-4 bg-white dark:bg-transparent">
                                         <div className="flex items-center justify-between mb-3">
                                             <span className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Delbetalningar</span>
-                                            <button type="button" tabIndex="-1" onClick={() => setPayments([...payments, { desc: '', amount: '' }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1">
+                                            <button type="button" tabIndex="-1" onClick={() => setPayments([...payments, { desc: '', amount: '', date: today }])} className="text-[10px] font-bold text-[#168a9c] border border-[#168a9c] hover:bg-[#168a9c] hover:text-white transition-colors uppercase px-2 py-1 rounded-sm flex items-center gap-1">
                                                 <SafeIcon name="plus" size={10} /> Lägg till
                                             </button>
                                         </div>
                                         <div className="space-y-1.5">
                                             {payments.map((p, i) => (
-                                                <div key={i} className="flex gap-2 items-center">
+                                                <div key={i} className="flex gap-1.5 items-center">
+                                                    <input 
+                                                        type="date"
+                                                        value={p.date || ''}
+                                                        onChange={e => { const n = [...payments]; n[i].date = e.target.value; setPayments(n); }}
+                                                        onClick={e => e.target.showPicker && e.target.showPicker()}
+                                                        className="w-[105px] shrink-0 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 px-1.5 text-[11px] outline-none rounded-sm text-zinc-600 dark:text-zinc-300 focus:border-[#168a9c] transition-colors cursor-pointer"
+                                                    />
                                                     <input 
                                                         placeholder="T.ex. Swish" 
                                                         value={p.desc} 
                                                         onChange={e => { const n = [...payments]; n[i].desc = e.target.value; setPayments(n); }} 
-                                                        className="flex-1 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 px-2 text-[13px] outline-none rounded-sm text-zinc-900 dark:text-white focus:border-[#168a9c] transition-colors" 
+                                                        className="flex-1 min-w-0 bg-zinc-50 dark:bg-[#141c2b] border border-zinc-200 dark:border-white/10 py-1.5 px-2 text-[13px] outline-none rounded-sm text-zinc-900 dark:text-white focus:border-[#168a9c] transition-colors" 
                                                     />
-                                                    <div className="relative w-[100px] shrink-0 flex items-center">
+                                                    <div className="relative w-[90px] shrink-0 flex items-center">
                                                         <input 
                                                             placeholder="0" 
                                                             type="number" 
@@ -1513,8 +1538,8 @@ window.NewJobView = ({ editingJob, setView, allJobs = [] }) => {
                                                     <button 
                                                         type="button" 
                                                         tabIndex="-1"
-                                                        onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:''}); setPayments(n); }} 
-                                                        className="text-zinc-400 hover:text-red-500 p-1 transition-colors"
+                                                        onClick={() => { const n = payments.filter((_, idx) => idx !== i); if(n.length===0) n.push({desc:'', amount:'', date: today}); setPayments(n); }} 
+                                                        className="text-zinc-400 hover:text-red-500 p-1 transition-colors shrink-0"
                                                     >
                                                         <SafeIcon name="trash-2" size={14} />
                                                     </button>
