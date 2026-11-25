@@ -763,15 +763,29 @@ window.MobileJobCard = React.memo(({ job, setView, onOpenHistory }) => {
                                         </span>
                                     </div>
                                     {showPriceDetails && (
-                                        <div className="absolute bottom-[120%] right-0 mb-1 bg-zinc-800/95 dark:bg-zinc-100/95 backdrop-blur-sm text-white dark:text-zinc-900 text-[11px] px-2.5 py-2 rounded-lg shadow-lg z-50 whitespace-nowrap animate-in fade-in zoom-in-95 flex flex-col gap-1 border border-zinc-700/50 dark:border-zinc-200/50 min-w-[110px]">
-                                            <div className="flex justify-between gap-3">
+                                        <div className="absolute bottom-[120%] right-0 mb-1 bg-zinc-800/95 dark:bg-zinc-100/95 backdrop-blur-sm text-white dark:text-zinc-900 text-[11px] px-2.5 py-2 rounded-lg shadow-lg z-50 animate-in fade-in zoom-in-95 flex flex-col gap-1 border border-zinc-700/50 dark:border-zinc-200/50 min-w-[140px] max-w-[240px]">
+                                            <div className="flex justify-between gap-3 whitespace-nowrap">
                                                 <span className="text-zinc-400 dark:text-zinc-500">Totalt:</span>
                                                 <span className="font-medium">{price.toLocaleString('sv-SE')} kr</span>
                                             </div>
-                                            <div className="flex justify-between gap-3">
+                                            <div className="flex justify-between gap-3 whitespace-nowrap">
                                                 <span className="text-zinc-400 dark:text-zinc-500">Betalt:</span>
                                                 <span className="font-medium text-emerald-400 dark:text-emerald-600">{paid.toLocaleString('sv-SE')} kr</span>
                                             </div>
+                                            {job.delbetalningar && job.delbetalningar.filter(p => p.desc || p.amount).length > 0 && (
+                                                <div className="mt-1 pt-1 border-t border-zinc-700/60 dark:border-zinc-300/60 flex flex-col gap-1 text-[10px]">
+                                                    {job.delbetalningar.filter(p => p.desc || p.amount).map((p, idx) => (
+                                                        <div key={idx} className="flex justify-between items-start gap-2 text-left">
+                                                            <span className="text-zinc-300 dark:text-zinc-600 leading-tight">
+                                                                {p.date ? `${p.date.slice(5)} ` : ''}{p.desc || 'Inbetalning'}
+                                                            </span>
+                                                            <span className="text-emerald-400 dark:text-emerald-600 font-medium whitespace-nowrap">
+                                                                {(parseFloat(p.amount) || 0).toLocaleString('sv-SE')} kr
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
